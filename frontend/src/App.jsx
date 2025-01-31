@@ -1,13 +1,12 @@
 
 import './App.css'
-import { Button } from './components/ui/button'
+import StudentDashboard from './pages/student-view-pages/Dashboard'
 
 function App() {
  
   return (
     <>
-    <Button>Click me</Button>
-   
+    <StudentDashboard/>
     </>
   )
 }
