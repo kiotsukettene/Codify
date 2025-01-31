@@ -1,14 +1,14 @@
 
 import './App.css'
-import { Button } from './components/ui/button'
+import CodeEditor from './components/CodeEditor'
+
 
 function App() {
  
   return (
-    <>
-    <Button>Click me</Button>
-   
-    </>
+    <div className="container mx-auto p-4">
+      <CodeEditor/>
+    </div>
   )
 }
 
