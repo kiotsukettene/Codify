@@ -68,7 +68,6 @@ function StudentDashboard() {
       <header className="flex h-20 shrink-0 items-center gap-2 px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
-     
         <StudentHeader />
       </header>
       <div className="lg:text-2xl sm:text-3xl text-2xl flex flex-row items-start justify-starttext-foreground dark:text-muted font-normal overflow-hidden p-6 ">
