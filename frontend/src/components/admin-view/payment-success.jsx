@@ -47,7 +47,7 @@ function PaymentSuccess() {
               <h2 className="mb-4 text-sm font-medium text-gray-500">Your Summary</h2>
               <div className="rounded-xl bg-gray-50 p-4">
                 <div className="mb-2 flex items-start gap-3">
-                  <div className="mt-1 h-5 w-5 rounded bg-purple-200" />
+                  <div className="mt-1 " />🌠
                   <div>
                     <h3 className="font-semibold text-gray-900">Codify
                     </h3>
@@ -91,7 +91,7 @@ function PaymentSuccess() {
           </div>
 
           {/* Action Button */}
-          <button onClick={() => navigate('/login')} className="group relative w-full overflow-hidden rounded-xl bg-primary px-6 py-3 text-white transition-all hover:shadow-lg hover:shadow-violet-200">
+          <button onClick={() => navigate('/admin-login')} className="group relative w-full overflow-hidden rounded-xl bg-primary px-6 py-3 text-white transition-all hover:shadow-lg hover:shadow-violet-200">
             <span className="relative z-10 flex items-center justify-center font-medium">
             Start Using Codify 
               <span className="ml-2">→</span>

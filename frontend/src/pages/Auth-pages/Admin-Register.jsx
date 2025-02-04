@@ -12,7 +12,7 @@ import { PasswordStrengthIndicator } from "@/components/ui/Password-Strength-ind
 
 
 
-function AdminRegister() {
+function AdminRegisterPage() {
   const [isSelected, setIsSelected] = useState(false);
   const navigate = useNavigate();
 
@@ -246,4 +246,4 @@ function AdminRegister() {
   );
 }
 
-export default AdminRegister;
+export default AdminRegisterPage;
