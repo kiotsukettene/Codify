@@ -86,3 +86,33 @@ export const sendResetSuccessEmail = async (email) => {
         throw new Error(`Error sending password reset success email: ${error}`)
     }
 }
+
+export const sendStudentWelcomeEmail = async (email, firstName, lastName, password, institutionName) => {
+    const recipient = [{ email }]
+
+    try {
+         const response = await mailtrapClient.send({
+            from: sender,
+            to: recipient,
+            subject: "Welcome to Your Institution's LMS",
+            html: `
+                <p>Hello ${lastName},</p>
+                <p>You have been registered under <strong>${institutionName}</strong>.</p>
+                <p>Your login credentials:</p>
+                <ul>
+                    <li>Email: ${email}</li>
+                    <li>Password: ${password} (please change it after login)</li>
+                </ul>
+                <p>Please change your password upon login.</p>
+                <p>Best regards,</p>
+                <p>Your Institution Team</p>
+            `,
+            category: "Student Registration"
+        });
+
+        console.log("Student welcome email sent successfully", response);
+    } catch (error) {
+        console.error(`Error sending student email: ${error}`);
+        throw new Error(`Error sending student welcome email: ${error}`);
+    }
+}

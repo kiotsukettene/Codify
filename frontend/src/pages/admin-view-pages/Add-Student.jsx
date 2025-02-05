@@ -4,8 +4,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import useToggleVisibility from "@/hooks/use-toggle-visibility"
 import { Eye, EyeOff } from "lucide-react"
+import { useStudentStore } from "@/store/studentStore"
+import { useNavigate } from "react-router-dom"
+import { useAuthStore } from "@/store/authStore"
+import toast from "react-hot-toast"
 
 function AddStudent() {
+  const navigate = useNavigate()
+  const { institution } = useAuthStore()
+  const { addStudent, isLoading, error } = useStudentStore()
   const [isVisible, toggleVisibility] = useToggleVisibility()
   const [formData, setFormData] = useState({
     studentId: "",
@@ -16,7 +23,11 @@ function AddStudent() {
     year: "",
     section: "",
     password: "",
+    institutionId: institution?._id || ""
   })
+
+ 
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -26,8 +37,14 @@ function AddStudent() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault()
+    if (!formData.institutionId) {
+      toast.error("Institution ID is missing!")
+    }
+    await addStudent(formData)
+    navigate("/admin/students")
+    toast.success("Student added successfully")
   }
 
   const handleCancel = () => {
@@ -40,6 +57,7 @@ function AddStudent() {
       year: "",
       section: "",
       password: "",
+      institutionId: institution?._id || ""
     })
   }
 
@@ -77,17 +95,17 @@ function AddStudent() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" required value={formData.email} onChange={handleChange} />
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input id="lastName" name="lastName" type="text" required value={formData.lastName} onChange={handleChange} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="course">Course</Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
-                    id="course"
-                    name="course"
-                    type="text"
+                    id="email"
+                    name="email"
+                    type="email"
                     required
-                    value={formData.course}
+                    value={formData.email}
                     onChange={handleChange}
                   />
                 </div>
@@ -96,13 +114,13 @@ function AddStudent() {
               {/* Right Column */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="course">Course / Program</Label>
                   <Input
-                    id="lastName"
-                    name="lastName"
+                    id="course"
+                    name="course"
                     type="text"
                     required
-                    value={formData.lastName}
+                    value={formData.course}
                     onChange={handleChange}
                   />
                 </div>
@@ -122,17 +140,7 @@ function AddStudent() {
                   />
                 </div>
                 <div className="relative space-y-2">
-                  <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={isVisible ? "text" : "password"}
-                      required
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="pr-10"
-                    />
                     <button
                       className="absolute inset-y-0 right-0 flex h-full w-9 items-center justify-center text-muted-foreground/80 hover:text-foreground transition-colors"
                       type="button"
@@ -157,11 +165,12 @@ function AddStudent() {
               <Button type="button" variant="secondary" onClick={handleCancel} className="min-w-[100px] ">
                 Cancel
               </Button>
-              <Button type="submit" className="min-w-[100px] bg-neutral-900 text-white hover:bg-neutral-700">
-                Add Student
+              <Button type="submit" disabled={isLoading} className="min-w-[100px] bg-neutral-900 text-white hover:bg-neutral-700">
+                {isLoading  ? "Adding..." :"Add Student"}
               </Button>
             </div>
           </form>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
         </main>
       </div>
     </div>

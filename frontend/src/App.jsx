@@ -26,9 +26,10 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
   
 
-  if (isAuthenticated && institution.isVerified) {
-    return <Navigate to="/admin/payment-summary" replace/>;
-  } 
+  if (isAuthenticated && institution.isVerified && institution.isPaid) {
+    return <Navigate to="/admin/dashboard" replace/>;
+  }
+
 
   return children;
 }
@@ -47,12 +48,16 @@ const ProtectedRoute = ({ children }) => {
   if (institution.isVerified && window.location.pathname === "/admin/email-verify") {
     return <Navigate to="/admin/payment-summary" replace />;
   }
+
+  if (institution.isPaid && window.location.pathname === "/admin/payment-summary") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
   return children;
 }
 
 
 function App() {
-  const { isCheckingAuth, checkAuth} = useAuthStore();
+  const { isCheckingAuth, checkAuth } = useAuthStore();
  
   useEffect(() => {
     checkAuth();
@@ -97,7 +102,27 @@ function App() {
           <AdminForgotPasswordPage/>
         </RedirectAuthenticatedInstitution>} />
       <Route path='/admin/reset-password/:token' element={<RedirectAuthenticatedInstitution><AdminNewPasswordPage/></RedirectAuthenticatedInstitution>}/>
-      <Route path='/admin/success-reset' element={<AdminSuccessResetPage/>}/>
+        <Route path='/admin/success-reset' element={<AdminSuccessResetPage />} />
+        
+      <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={
+              <AdminDashboard />
+
+          }
+          />
+        <Route path="professors" element={<ProtectedRoute>
+              <ProfessorList />
+            </ProtectedRoute>} />
+        <Route path="addProfessor" element={<ProtectedRoute>
+              <AddProfessor/>
+            </ProtectedRoute>}/>
+      <Route path="students" element={<ProtectedRoute>
+              <StudentList/>
+            </ProtectedRoute>}/>
+      <Route path="addStudent" element={<ProtectedRoute>
+              <AddStudent/>
+            </ProtectedRoute>}/>
+      </Route>
     </Routes>
     <Toaster/>
 
