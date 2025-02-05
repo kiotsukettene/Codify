@@ -5,10 +5,11 @@ import { Label } from "@radix-ui/react-context-menu";
 import React, { useState } from "react";
 import Logo from "../../assets/picture/logos/Logo.png";
 import { Separator } from "@/components/ui/separator";
-import { BadgeCheck, Circle, LockKeyhole, Rocket, Trophy, Zap } from "lucide-react";
+import { BadgeCheck, Circle, Loader, LockKeyhole, Rocket, Trophy, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {motion} from 'framer-motion'
 import { PasswordStrengthIndicator } from "@/components/ui/Password-Strength-indicator";
+import { useAuthStore } from "@/store/authStore";
 
 
 
@@ -16,15 +17,23 @@ function AdminRegisterPage() {
   const [isSelected, setIsSelected] = useState(false);
   const navigate = useNavigate();
 
-  const [billedTo, setBilledTo] = useState('')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [institutionName, setInstitutionName] = useState('')
   const [address, setAddress] = useState('')
-  const [contactNumber, setContactNumber] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [password, setPassword] = useState('')
+  const { signup, error, isLoading } = useAuthStore()
 
-  const handleAdminRegister = (e) => {
-    e.preventDefault()
+  const handleAdminRegister = async(e) => {
+    e.preventDefault();
+
+    try {
+      await signup(email, password, name, institutionName, address, phoneNumber, 'Annualy', 'Premium', "credit_card", 70000)
+      navigate('/email-verify')
+    } catch (error) {
+      console.error('Error details:', error.response?.data);
+    }
   }
 
   return (
@@ -61,13 +70,13 @@ function AdminRegisterPage() {
                       </Label>
                       <Input
                       className='bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm'
-                        id="billedTo"
+                        id="name"
                         type="text"
-                        value={billedTo}
+                        value={name}
                         placeholder="John Smith"
                         required
-                        onChange={(e) => setBilledTo(e.target.value)}
-                      />
+                        onChange={(e) => setName(e.target.value)}
+                    />
                     </div>
                     <div className="grid gap-2">
                       <Label className="font-medium" htmlFor="email">
@@ -115,17 +124,17 @@ function AdminRegisterPage() {
                     </div>
 
                     <div className="grid gap-2">
-                      <Label className="font-medium" htmlFor="contactNumber">
-                        Contact Number
+                      <Label className="font-medium" htmlFor="phoneNumber">
+                        Phone Number
                       </Label>
                       <Input
                        className='bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm '
-                        id="contactNummber"
+                        id="phoneNumber"
                         type="number"
-                        placeholder="Contact Number"
+                        placeholder="Phone Number"
                         required
-                        value={contactNumber}
-                        onChange={(e) => setContactNumber(e.target.value)}
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
                       />
                     </div>
 
@@ -143,7 +152,7 @@ function AdminRegisterPage() {
                         onChange={(e) => setPassword(e.target.value)}
                     
                     </div> */}
-                       <PasswordStrengthIndicator password={password}/>
+                       <PasswordStrengthIndicator password={password} setPassword={setPassword}/>
              
 
                   </div>
@@ -213,9 +222,13 @@ function AdminRegisterPage() {
 
                 <div className="flex gap-4 mt-6 ">
                     <Button className='font-normal text-sm text-neutral-900 px-7 bg-neutral-200 hover:bg-neutral-300'>Cancel</Button>
-                    <Button onClick={() => navigate('/email-verify')} className='w-full font-normal text-sm '><BadgeCheck/> Verify Your Email</Button>
-
-                    
+                  <Button
+                    // onClick={() => navigate('/email-verify')}
+                    type='submit'
+                    isDisabled = {isLoading}
+                    className='w-full font-normal text-sm '>
+                    <BadgeCheck /> {isLoading ? <Loader className="animate-spin mx-auto" size={24} /> : "Register"}
+                  </Button>          
                 </div>
                 <div className="text-balance mt-5 text-justify text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
                 By Continuing you agree to our {" "}

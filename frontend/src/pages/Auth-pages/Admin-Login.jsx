@@ -11,13 +11,20 @@ import { Label } from "@/components/ui/label";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import LoaderOne from "@/components/ui/loader-one";
+import { useAuthStore } from "@/store/authStore";
 
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const isLoading = false;
-  const handleAdminLogin = (e) => {
+  
+  const { login, isLoading, error } = useAuthStore();
+
+
+
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
+
+    await login(email, password);
   };
 
   return (
@@ -42,7 +49,6 @@ function AdminLoginPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
@@ -58,14 +64,7 @@ function AdminLoginPage() {
                   <div className="grid gap-2">
                     <div className="flex items-center">
                       <Label htmlFor="password">Password</Label>
-
-                      <Link
-                        to="/admin-forgot-password"
-                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                      >
-                        {" "}
-                        Forgot your password?
-                      </Link>
+                   
                     </div>
                     <Input
                       value={password}
@@ -76,6 +75,10 @@ function AdminLoginPage() {
                       disabled={isLoading}
                     />
                   </div>
+                    <Link to='/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                        >  Forgot your password?
+                  </Link>
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
                   <Button type="submit" className="w-full">
                     {isLoading ? <LoaderOne /> : "Login"}
                   </Button>
@@ -89,7 +92,6 @@ function AdminLoginPage() {
                     <span>Login with Google</span>
                   </Button>
                 </div>
-              </form>
             </CardContent>
           </Card>
         </form>
