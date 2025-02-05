@@ -17,7 +17,11 @@ function PaymentSummary() {
   //   total: "₱70,000",
   // };
 
-  const { institution } = useAuthStore();
+  const { institution, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
@@ -84,8 +88,8 @@ function PaymentSummary() {
            
 
            <div className="flex justify-between gap-4 ">
-           <Button onClick={() => navigate('/email-verify')} variant='secondary' className='px-10 py-4 '>Cancel</Button>
-           <Button className='w-full px-6 py-4' onClick={() => navigate('/payment-success')}>Proceed to Payment <ChevronRight/></Button>
+           <Button onClick={handleLogout} variant='secondary' className='px-10 py-4 '>Logout</Button>
+           <Button className='w-full px-6 py-4' onClick={() => navigate('/admin/payment-success')}>Proceed to Payment <ChevronRight/></Button>
            
            </div>
            

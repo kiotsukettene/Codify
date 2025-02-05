@@ -23,7 +23,7 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
   
 
   if (isAuthenticated && institution.isVerified) {
-    return <Navigate to="/payment-summary" replace/>;
+    return <Navigate to="/admin/payment-summary" replace/>;
   } 
 
   return children;
@@ -35,19 +35,14 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
-  if (!institution.isVerified) {
-    return <Navigate to="/email-verify" replace/>;
-  }
 
   // If already verified, prevent access to /email-verify
-  if (institution.isVerified && window.location.pathname === "/email-verify") {
-    return <Navigate to="/payment-summary" replace />;
+  if (institution.isVerified && window.location.pathname === "/admin/email-verify") {
+    return <Navigate to="/admin/payment-summary" replace />;
   }
-
-   
   return children;
 }
 
@@ -67,36 +62,38 @@ function App() {
       <Route path="/student/dashboard" element={<StudentDashboard/>}/>
       <Route path="/code-editor" element={<CodeEditor/>}/>
         <Route
-          path='/admin-register'
+          path='/admin/register'
           element={
             <RedirectAuthenticatedInstitution>
-              <AdminRegister />
+              <AdminRegisterPage />
             </RedirectAuthenticatedInstitution>
           } />
         <Route
-          path='/payment-summary'
+          path='/admin/payment-summary'
           element={
             <ProtectedRoute>
             <PaymentSummary />
             </ProtectedRoute>
           } />
-      <Route path='/payment-success' element={<PaymentSuccess/>}/>
-        <Route path='/login' element={
+      <Route path='/admin/payment-success' element={<PaymentSuccess/>}/>
+        <Route path='/admin/login' element={
           <RedirectAuthenticatedInstitution>
             <AdminLogin />
           </RedirectAuthenticatedInstitution>
       
         }
         />
-        <Route path='/email-verify' element={
+        <Route path='/admin/email-verify' element={
           <ProtectedRoute>
-          <AdminEmailVerificationPage />
-        </ProtectedRoute>
-         
+            <AdminEmailVerificationPage />
+          </ProtectedRoute>
+          
         } />
-      <Route path='/admin-forgot-password' element={<AdminForgotPasswordPage/>}/>
-      <Route path='/admin-setNewPassword' element={<AdminNewPasswordPage/>}/>
-      <Route path='/admin-success-reset' element={<AdminSuccessResetPage/>}/>
+        <Route path='/admin/forgot-password' element={<RedirectAuthenticatedInstitution>
+          <AdminForgotPasswordPage/>
+        </RedirectAuthenticatedInstitution>} />
+      <Route path='/admin/reset-password/:token' element={<RedirectAuthenticatedInstitution><AdminNewPasswordPage/></RedirectAuthenticatedInstitution>}/>
+      <Route path='/admin/success-reset' element={<AdminSuccessResetPage/>}/>
     </Routes>
     <Toaster/>
 

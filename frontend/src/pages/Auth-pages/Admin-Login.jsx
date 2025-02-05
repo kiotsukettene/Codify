@@ -75,7 +75,7 @@ function AdminLoginPage() {
                       disabled={isLoading}
                     />
                   </div>
-                    <Link to='/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    <Link to='/admin/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                         >  Forgot your password?
                   </Link>
                   {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -92,6 +92,12 @@ function AdminLoginPage() {
                     <span>Login with Google</span>
                   </Button>
                 </div>
+            <p className="text-center text-sm mt-4">
+              Don't have an account?{" "}
+              <Link to="/admin/register" className="text-violet-500 underline">
+                Click here to Register
+              </Link>
+            </p>
             </CardContent>
           </Card>
         </form>

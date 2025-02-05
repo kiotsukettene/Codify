@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
+import toast from "react-hot-toast";
 
 function AdminEmailVerificationPage() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -17,53 +19,86 @@ function AdminEmailVerificationPage() {
   const navigate = useNavigate();
   const [resendCode, setResendCode] = useState(false);
   const [resendCodeTimer, setResendCodeTimer] = useState(15 * 60);
-  // const [value, setValue] = useState("");
+
+  const { error, verifyEmail, isLoading } = useAuthStore();
 
   const handleChange = (index, value) => {
-    if (/^[0-9]$/.test(value) || value === "") {
-      const newCode = [...code];
-      newCode[index] = value;
-      setCode(newCode);
+		const newCode = [...code];
 
-      // Move to the next input field if the current one is filled
-      if (value && index < inputRefs.current.length - 1) {
-        inputRefs.current[index + 1].focus();
-      }
-    }
-  };
+		// Handle pasted content
+		if (value.length > 1) {
+			const pastedCode = value.slice(0, 6).split("");
+			for (let i = 0; i < 6; i++) {
+				newCode[i] = pastedCode[i] || "";
+			}
+			setCode(newCode);
+
+			// Focus on the last non-empty input or the first empty one
+			const lastFilledIndex = newCode.findLastIndex((digit) => digit !== "");
+			const focusIndex = lastFilledIndex < 5 ? lastFilledIndex + 1 : 5;
+			inputRefs.current[focusIndex].focus();
+		} else {
+			newCode[index] = value;
+			setCode(newCode);
+
+			// Move focus to the next input field if value is entered
+			if (value && index < 5) {
+				inputRefs.current[index + 1].focus();
+			}
+		}
+	};
 
   const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && code[index] ===  "" && index > 0) {
-      inputRefs.current[index - 1].focus();
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      const newCode = [...code];
+
+      if (newCode[index]) {
+        // Clear current field if it's not empty
+        newCode[index] = "";
+      } else if (index > 0) {
+        // Move to previous field if already empty
+        newCode[index - 1] = "";
+        inputRefs.current[index - 1].focus();
+      }
+
+      setCode(newCode);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    navigate("/payment-summary");
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const verificationCode = code.join("");
+  try {
+    await verifyEmail(verificationCode);
+    navigate('/admin/payment-summary');
+    toast.success('Email verified successfully');
+  } catch (error) {
+    console.error('Error details:', error.response?.data);
+  }
+};
 
-  useEffect(() => {
-    let timer;
-    if (resendCode) {
-      timer = setInterval(() => {
-        setResendCodeTimer((prev) => {
-          if (prev === 1) {
-            clearInterval(timer);
-            setCode(false);
-            return 15 * 60;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [resendCode]);
+useEffect(() => {
+  let timer;
+  if (resendCode) {
+    timer = setInterval(() => {
+      setResendCodeTimer((prev) => {
+        if (prev === 1) {
+          clearInterval(timer);
+          setResendCode(false);
+          return 15 * 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+  return () => clearInterval(timer);
+}, [resendCode]);
 
-  const handleResendCode = () => {
-    setResendCode(true);
-  };
-
+const handleResendCode = () => {
+  setResendCode(true);
+  setResendCodeTimer(15 * 60); // Reset timer to 15 minutes
+};
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
@@ -84,13 +119,13 @@ function AdminEmailVerificationPage() {
                 code below to confirm and start your Codify journey!
               </p>
               <div className="flex justify-center space-x-2">
-                {code.map((data, index) => (
+                {code.map((digit, index) => (
                   <Input
                     key={index}
                     type="text"
-                    maxLength="1"
+                    maxLength="6"
                     className="h-12 w-12 text-center text-lg"
-                    value={data}
+                    value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     ref={(el) => (inputRefs.current[index] = el)}
@@ -98,12 +133,14 @@ function AdminEmailVerificationPage() {
                   />
                 ))}
               </div>
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
               <Button
-                
+                onClick={() => navigate('/admin/payment-summary')}
                 type="submit"
-                className="w-full bg-primary  transition-all hover:shadow-lg hover:shadow-violet-200"
+                className="w-full bg-primary transition-all hover:shadow-lg hover:shadow-violet-200"
+                disabled={isLoading || code.some((digit) => !digit)}
               >
-                Confirm Code
+                {isLoading ? "Verifying..." : "Verify Email"}
               </Button>
               <p className="text-center text-sm text-gray-600">
                 Didn't receive a code?{" "}

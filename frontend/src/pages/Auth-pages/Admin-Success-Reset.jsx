@@ -5,7 +5,7 @@ import React from 'react'
 function AdminSuccessResetPage() {
   return (
     <div>
-      <PasswordResetSuccess navigateTo='/admin-login'/>
+      <PasswordResetSuccess navigateTo='/admin/login'/>
       
     </div>
   )
