@@ -279,7 +279,38 @@ export const checkAuth = async (req, res) => {
         success: true,
         institution
     })
-}   
+}
+
+export const markAsPaid = async (req, res) => {
+    try {
+        const { institutionId } = req.body;
+
+        const institution = await Institution.findById(institutionId);
+
+        if (!institution) {
+            return res.status(404).json({ success: false, message: "Institution not found" });
+        }
+
+        // Extend billingExpiration to one year from NOW
+        const newExpiration = new Date();
+        newExpiration.setFullYear(newExpiration.getFullYear() + 1);
+
+        institution.isPaid = true;
+        institution.billingExpiration = newExpiration;
+
+        await institution.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Payment successful! Subscription activated.",
+            institution
+        });
+
+    } catch (error) {
+        console.error("Error updating payment status:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
 
 export const logoutInstitution = async (req, res) => {
     res.clearCookie("token")

@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LoaderOne from "@/components/ui/loader-one";
 import { useAuthStore } from "@/store/authStore";
 
@@ -23,7 +23,6 @@ function AdminLoginPage() {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-
     await login(email, password);
   };
 
@@ -50,7 +49,8 @@ function AdminLoginPage() {
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col gap-6">
-                  <div className="grid gap-2">
+                <div className="grid gap-2">
+                  
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
@@ -73,16 +73,18 @@ function AdminLoginPage() {
                       type="password"
                       required
                       disabled={isLoading}
-                    />
-                  </div>
-                    <Link to='/admin/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  />
+                  <Link to='/admin/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                         >  Forgot your password?
                   </Link>
-                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                                {error && <p className="text-red-500 text-sm">{error}</p>}
+                  </div>
+                    
+    
                   <Button type="submit" className="w-full">
                     {isLoading ? <LoaderOne /> : "Login"}
                   </Button>
-                  <Button className="px-4 border bg-white flex gap-2 hover:bg-neutral-800 hover:text-white border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500  dark:hover:text-slate-300 hover:shadow transition duration-150">
+                  {/* <Button className="px-4 border bg-white flex gap-2 hover:bg-neutral-800 hover:text-white border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500  dark:hover:text-slate-300 hover:shadow transition duration-150">
                     <img
                       className="w-6 h-6"
                       src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -90,7 +92,7 @@ function AdminLoginPage() {
                       alt="google logo"
                     />
                     <span>Login with Google</span>
-                  </Button>
+                  </Button> */}
                 </div>
             <p className="text-center text-sm mt-4">
               Don't have an account?{" "}

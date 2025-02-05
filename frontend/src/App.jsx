@@ -1,17 +1,21 @@
-
-import './App.css'
-import StudentDashboard from './pages/student-view-pages/Dashboard'
-import CodeEditor from './components/CodeEditor'
-import { Routes, Route, Navigate} from 'react-router-dom'
-import PaymentSuccess from './components/admin-view/payment-success'
-import PaymentSummary from './components/admin-view/payment-summary'
-import AdminLogin from './pages/Auth-pages/Admin-Login'
-import AdminEmailVerificationPage from './pages/Auth-pages/Admin-Email-Verification-Page'
-import AdminRegisterPage from './pages/Auth-pages/Admin-Register'
-import AdminForgotPasswordPage from './pages/Auth-pages/Admin-Forgot-Password'
-import AdminNewPasswordPage from './pages/Auth-pages/Admin-New-Password'
-import AdminSuccessResetPage from './pages/Auth-pages/Admin-Success-Reset'
-import { Toaster } from 'react-hot-toast'
+import "./App.css";
+import StudentDashboard from "./pages/student-view-pages/Dashboard";
+import CodeEditor from "./components/CodeEditor";
+import { Routes, Route, Navigate } from "react-router-dom";
+import PaymentSuccess from "./components/admin-view/payment-success";
+import PaymentSummary from "./components/admin-view/payment-summary";
+import AdminLogin from "./pages/Auth-pages/Admin-Login";
+import AdminEmailVerificationPage from "./pages/Auth-pages/Admin-Email-Verification-Page";
+import AdminRegisterPage from "./pages/Auth-pages/Admin-Register";
+import AdminForgotPasswordPage from "./pages/Auth-pages/Admin-Forgot-Password";
+import AdminNewPasswordPage from "./pages/Auth-pages/Admin-New-Password";
+import AdminSuccessResetPage from "./pages/Auth-pages/Admin-Success-Reset";
+import AdminDashboard from "./pages/admin-view-pages/Dashboard";
+import ProfessorList from "./pages/admin-view-pages/Professor";
+import AdminLayout from "./Layout/AdminLayout";
+import AddProfessor from "./pages/admin-view-pages/Add-Professor";
+import AddStudent from "./pages/admin-view-pages/Add-Student";
+import StudentList from "./pages/admin-view-pages/Student";import { Toaster } from 'react-hot-toast'
 import { useEffect, useCallback } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -22,9 +26,10 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
   
 
-  if (isAuthenticated && institution.isVerified) {
-    return <Navigate to="/admin/payment-summary" replace/>;
-  } 
+  if (isAuthenticated && institution.isVerified && institution.isPaid) {
+    return <Navigate to="/admin/dashboard" replace/>;
+  }
+
 
   return children;
 }
@@ -43,12 +48,16 @@ const ProtectedRoute = ({ children }) => {
   if (institution.isVerified && window.location.pathname === "/admin/email-verify") {
     return <Navigate to="/admin/payment-summary" replace />;
   }
+
+  if (institution.isPaid && window.location.pathname === "/admin/payment-summary") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
   return children;
 }
 
 
 function App() {
-  const { isCheckingAuth, checkAuth} = useAuthStore();
+  const { isCheckingAuth, checkAuth } = useAuthStore();
  
   useEffect(() => {
     checkAuth();
@@ -93,7 +102,27 @@ function App() {
           <AdminForgotPasswordPage/>
         </RedirectAuthenticatedInstitution>} />
       <Route path='/admin/reset-password/:token' element={<RedirectAuthenticatedInstitution><AdminNewPasswordPage/></RedirectAuthenticatedInstitution>}/>
-      <Route path='/admin/success-reset' element={<AdminSuccessResetPage/>}/>
+        <Route path='/admin/success-reset' element={<AdminSuccessResetPage />} />
+        
+      <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={
+              <AdminDashboard />
+
+          }
+          />
+        <Route path="professors" element={<ProtectedRoute>
+              <ProfessorList />
+            </ProtectedRoute>} />
+        <Route path="addProfessor" element={<ProtectedRoute>
+              <AddProfessor/>
+            </ProtectedRoute>}/>
+      <Route path="students" element={<ProtectedRoute>
+              <StudentList/>
+            </ProtectedRoute>}/>
+      <Route path="addStudent" element={<ProtectedRoute>
+              <AddStudent/>
+            </ProtectedRoute>}/>
+      </Route>
     </Routes>
     <Toaster/>
 

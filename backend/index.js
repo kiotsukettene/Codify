@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './database/connectDB.js';
 import authRoutes from './routes/auth.route.js'; 
+import studentRoutes from './routes/student.route.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -21,9 +22,13 @@ app.use(express.json()); // allows us to parse incoming request with JSON payloa
 app.use(cookieParser()); // allows us to parse cookies from the incoming request headers
 
 app.use("/api/auth", authRoutes);
+app.use("/api/students", studentRoutes);
 
 app.listen(PORT, () => {
     connectDB();
     console.log('Server is running on port', PORT);
 });
+
+
+// app.use("/admin", adminRoutes)
 
