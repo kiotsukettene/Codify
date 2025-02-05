@@ -13,6 +13,8 @@ export const registerInstitution = async (req, res) => {
         institutionName, 
         name,
         password,
+        address,
+        phoneNumber,
         subscription, 
         plan,
         paymentMethod,
@@ -21,7 +23,7 @@ export const registerInstitution = async (req, res) => {
 
     try {
         // Validate the data
-        if (!email || !institutionName || !name || !password || !subscription || !plan || !paymentMethod || !amount) {
+        if (!email || !institutionName || !name || !password || !subscription || !plan || !paymentMethod || !amount || !address || !phoneNumber) {
             throw new Error("All fields are required");
         }
 
@@ -45,9 +47,11 @@ export const registerInstitution = async (req, res) => {
         // Step 2: Create and save the Institution with the subscription reference
         const newInstitution = new Institution({
             email,
-            institution_name: institutionName, 
+            institutionName, 
             name,
             password: hashedPassword,
+            address,
+            phoneNumber,
             verificationToken,
             verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
             subscription,
@@ -200,7 +204,7 @@ export const forgotPassword = async ( req, res) => {
 
         // send reset password email
 
-        await sendPasswordResetEmail(institution.email,  `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+        await sendPasswordResetEmail(institution.email,  `${process.env.CLIENT_URL}/admin/reset-password/${resetToken}`);
 
         res.status(200).json({
             success: true,
