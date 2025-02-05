@@ -5,9 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
-function PasswordStrengthIndicator() {
+function PasswordStrengthIndicator({password, setPassword}) {
   const id = useId();
-  const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
 
   const toggleVisibility = () => setIsVisible((prevState) => !prevState);

@@ -11,14 +11,21 @@ import { Label } from "@/components/ui/label";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import LoaderOne from "@/components/ui/loader-one";
+import { useAuthStore } from "@/store/authStore";
 
 
 function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const isLoading = false;
-  const handleAdminLogin = (e) => {
+  
+  const { login, isLoading, error } = useAuthStore();
+
+
+
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
+
+    await login(email, password);
   };
 
   return (
@@ -40,7 +47,6 @@ function AdminLogin() {
               
             </CardHeader>
             <CardContent>
-              <form>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
@@ -56,11 +62,7 @@ function AdminLogin() {
                   <div className="grid gap-2">
                     <div className="flex items-center">
                       <Label htmlFor="password">Password</Label>
-                     
-                        <Link to='/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                        >  Forgot your password?
-                        </Link>
-                     
+                   
                     </div>
                     <Input
                       value={password}
@@ -71,6 +73,10 @@ function AdminLogin() {
                       disabled = {isLoading}
                     />
                   </div>
+                    <Link to='/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                        >  Forgot your password?
+                  </Link>
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
                   <Button type="submit" className="w-full">
                     {
                         isLoading ? <LoaderOne/> : "Login"
@@ -80,8 +86,6 @@ function AdminLogin() {
                     Login with Google
                   </Button>
                 </div>
-              
-              </form>
             </CardContent>
           </Card>
         </form>
