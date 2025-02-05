@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './database/connectDB.js';
 import authRoutes from './routes/auth.route.js'; 
+// import adminRoutes from './routes/adminRoute.js'
+
+
 
 dotenv.config();
 
@@ -25,4 +28,7 @@ app.listen(PORT, () => {
     connectDB();
     console.log('Server is running on port', PORT);
 });
+
+
+// app.use("/admin", adminRoutes)
 

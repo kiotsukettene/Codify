@@ -91,7 +91,7 @@ function PaymentSuccess() {
           </div>
 
           {/* Action Button */}
-          <button onClick={() => navigate('/admin-login')} className="group relative w-full overflow-hidden rounded-xl bg-primary px-6 py-3 text-white transition-all hover:shadow-lg hover:shadow-violet-200">
+          <button onClick={() => navigate('/admin/admin-login')} className="group relative w-full overflow-hidden rounded-xl bg-primary px-6 py-3 text-white transition-all hover:shadow-lg hover:shadow-violet-200">
             <span className="relative z-10 flex items-center justify-center font-medium">
             Start Using Codify 
               <span className="ml-2">→</span>
