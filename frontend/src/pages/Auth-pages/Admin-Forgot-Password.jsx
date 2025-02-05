@@ -11,25 +11,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import PasswordResetConfirmation from "@/components/Auth/Password-reset-confirmation";
+import { useAuthStore } from "@/store/authStore";
+import { Loader } from "lucide-react";
+import toast from "react-hot-toast";
 
 function AdminForgotPasswordPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState("");
 
-  const handleSendResetLink = (e) => {
+  const { isLoading, forgotPassword } = useAuthStore();
+
+  const handleSendResetLink = async(e) => {
     e.preventDefault();
+    await forgotPassword(email);
     setEmailSent(true);
+    toast.success("Password reset link sent to your email");
   };
   return (
     <div className="flex min-h-screen bg-white w-full items-center justify-center p-6 md:p-10">
      {emailSent ? (
         //success message perd
         <div className="text-center">
-           
-              
               <PasswordResetConfirmation/>
         </div>
-       
      ): 
      <Card className="mx-auto max-w-sm ">
         <CardHeader className="space-y-1">
@@ -56,7 +60,7 @@ function AdminForgotPasswordPage() {
                 </p>
               </div>
               <Button type="submit" className="w-full">
-                Send Reset Link
+                {isLoading ? <Loader className='size-6 animate-spin mx-auto'/> : "Send Reset Link"}
               </Button>
         </form>
           <div className="mt-4 text-center text-sm">

@@ -1,7 +1,7 @@
 import "./App.css";
 import StudentDashboard from "./pages/student-view-pages/Dashboard";
 import CodeEditor from "./components/CodeEditor";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import PaymentSuccess from "./components/admin-view/payment-success";
 import PaymentSummary from "./components/admin-view/payment-summary";
 import AdminLogin from "./pages/Auth-pages/Admin-Login";
@@ -15,38 +15,97 @@ import ProfessorList from "./pages/admin-view-pages/Professor";
 import AdminLayout from "./Layout/AdminLayout";
 import AddProfessor from "./pages/admin-view-pages/Add-Professor";
 import AddStudent from "./pages/admin-view-pages/Add-Student";
-import StudentList from "./pages/admin-view-pages/Student";
+import StudentList from "./pages/admin-view-pages/Student";import { Toaster } from 'react-hot-toast'
+import { useEffect, useCallback } from 'react'
+import { useAuthStore } from '@/store/authStore'
+import LoadingSpinner from './components/LoadingSpinner'
+
+// redirect authenticated and paid institution to dashboard page 
+
+const RedirectAuthenticatedInstitution = ({ children }) => {
+  const { isAuthenticated, institution } = useAuthStore();
+  
+
+  if (isAuthenticated && institution.isVerified) {
+    return <Navigate to="/admin/payment-summary" replace/>;
+  } 
+
+  return children;
+}
+
+// protect routes that require authentication
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, institution } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+
+  // If already verified, prevent access to /email-verify
+  if (institution.isVerified && window.location.pathname === "/admin/email-verify") {
+    return <Navigate to="/admin/payment-summary" replace />;
+  }
+  return children;
+}
+
 
 function App() {
+  const { isCheckingAuth, checkAuth} = useAuthStore();
+ 
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+ 
+  if (isCheckingAuth) return <LoadingSpinner/>
   return (
-    // <BrowserRouter>
-    <Routes>
-      <Route path="/student/dashboard" element={<StudentDashboard />} />
-      <Route path="/code-editor" element={<CodeEditor />} />
-      <Route path="/admin-register" element={<AdminRegisterPage />} />
-      <Route path="/payment-summary" element={<PaymentSummary />} />
-      <Route path="/payment-success" element={<PaymentSuccess />} />
-
+  <div>
+    
+      <Routes>
+      <Route path="/student/dashboard" element={<StudentDashboard/>}/>
+      <Route path="/code-editor" element={<CodeEditor/>}/>
+        <Route
+          path='/admin/register'
+          element={
+            <RedirectAuthenticatedInstitution>
+              <AdminRegisterPage />
+            </RedirectAuthenticatedInstitution>
+          } />
+        <Route
+          path='/admin/payment-summary'
+          element={
+            <ProtectedRoute>
+            <PaymentSummary />
+            </ProtectedRoute>
+          } />
+      <Route path='/admin/payment-success' element={<PaymentSuccess/>}/>
+        <Route path='/admin/login' element={
+          <RedirectAuthenticatedInstitution>
+            <AdminLogin />
+          </RedirectAuthenticatedInstitution>
       
-      <Route path="/email-verify" element={<AdminEmailVerificationPage />}/>
-      <Route path="/admin/forgot-password"element={<AdminForgotPasswordPage />}/>
-      <Route path="/admin/set-new-password" element={<AdminNewPasswordPage />} />
-      <Route path="/admin/success-reset" element={<AdminSuccessResetPage />} />
-      <Route path="/admin/admin-login" element={<AdminLogin />} />
-
-
-
-
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="professors" element={<ProfessorList />} />
-        <Route path="addProfessor" element={<AddProfessor/>}/>
-      <Route path="students" element={<StudentList/>}/>
-      <Route path="addStudent" element={<AddStudent/>}/>
-      </Route>
+        }
+        />
+        <Route path='/admin/email-verify' element={
+          <ProtectedRoute>
+            <AdminEmailVerificationPage />
+          </ProtectedRoute>
+          
+        } />
+        <Route path='/admin/forgot-password' element={<RedirectAuthenticatedInstitution>
+          <AdminForgotPasswordPage/>
+        </RedirectAuthenticatedInstitution>} />
+      <Route path='/admin/reset-password/:token' element={<RedirectAuthenticatedInstitution><AdminNewPasswordPage/></RedirectAuthenticatedInstitution>}/>
+      <Route path='/admin/success-reset' element={<AdminSuccessResetPage/>}/>
     </Routes>
-    // </BrowserRouter>
-  );
+    <Toaster/>
+
+  </div>
+  
+    
+    
+  )
 }
 
 export default App;

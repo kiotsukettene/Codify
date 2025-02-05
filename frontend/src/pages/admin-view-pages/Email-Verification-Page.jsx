@@ -1,24 +1,16 @@
-import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { useEffect, useRef, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/authStore";
-import toast from "react-hot-toast";
+import { useNavigate } from 'react-router-dom'
+import { Input } from '@/components/ui/input'
+import { useEffect, useRef, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useAuthStore } from '@/store/authStore'
+import toast from 'react-hot-toast'
 
 function AdminEmailVerificationPage() {
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [code, setCode] = useState(["", "", "", "", "", ""]); // Removed spaces, should be empty strings
   const inputRefs = useRef([]);
   const navigate = useNavigate();
-  const [resendCode, setResendCode] = useState(false);
-  const [resendCodeTimer, setResendCodeTimer] = useState(15 * 60);
 
   const { error, verifyEmail, isLoading } = useAuthStore();
 
@@ -66,39 +58,25 @@ function AdminEmailVerificationPage() {
     }
   };
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  const verificationCode = code.join("");
-  try {
-    await verifyEmail(verificationCode);
-    navigate('/admin/payment-summary');
-    toast.success('Email verified successfully');
-  } catch (error) {
-    console.error('Error details:', error.response?.data);
-  }
-};
+  const handleSubmit =  async(e) => {
+    e.preventDefault();
+    const verificationCode = code.join("");
+    try {
+      await verifyEmail(verificationCode);
+      navigate('/payment-summary');
+      toast.success('Email verified successfully');
+    } catch (error) {
+      console.error('Error details:', error.response?.data);
+    }
 
-useEffect(() => {
-  let timer;
-  if (resendCode) {
-    timer = setInterval(() => {
-      setResendCodeTimer((prev) => {
-        if (prev === 1) {
-          clearInterval(timer);
-          setResendCode(false);
-          return 15 * 60;
-        }
-        return prev - 1;
-      });
-    }, 1000);
   }
-  return () => clearInterval(timer);
-}, [resendCode]);
+  // auto submit when all fields are required
+  useEffect(() => {
+		if (code.every((digit) => digit !== "")) {
+			handleSubmit(new Event("submit"));
+		}
+	}, [code]);
 
-const handleResendCode = () => {
-  setResendCode(true);
-  setResendCodeTimer(15 * 60); // Reset timer to 15 minutes
-};
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
@@ -115,8 +93,8 @@ const handleResendCode = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <p className="text-center text-sm text-gray-600">
-                We've sent a verification code to your email. Enter the 6-digit
-                code below to confirm and start your Codify journey!
+                We've sent a verification code to your email. Enter the 6-digit code below to confirm and start your
+                Codify journey!
               </p>
               <div className="flex justify-center space-x-2">
                 {code.map((digit, index) => (
@@ -135,7 +113,7 @@ const handleResendCode = () => {
               </div>
               {error && <p className="text-red-500 text-sm text-center">{error}</p>}
               <Button
-                onClick={() => navigate('/admin/payment-summary')}
+                onClick={() => navigate('/payment-summary')}
                 type="submit"
                 className="w-full bg-primary transition-all hover:shadow-lg hover:shadow-violet-200"
                 disabled={isLoading || code.some((digit) => !digit)}
@@ -144,20 +122,9 @@ const handleResendCode = () => {
               </Button>
               <p className="text-center text-sm text-gray-600">
                 Didn't receive a code?{" "}
-                <Button
-                  onClick={handleResendCode}
-                  disabled={resendCode}
-                  variant="link"
-                  className={`text-violet-500 hover:underline ${
-                    resendCode ? "bg-gray-200 cursor-not-allowed text-neutral-700" : ""
-                  }`}
-                >
-                  {resendCode
-                    ? `Resend code in ${Math.floor(resendCodeTimer / 60)}:${
-                        resendCodeTimer % 60 < 10 ? "0" : ""
-                      }${resendCodeTimer % 60}`
-                    : "Resend Verification Code"}
-                </Button>
+                <button type="button" className="text-violet-500 hover:underline">
+                  Resend Verification
+                </button>
               </p>
             </form>
           </CardContent>

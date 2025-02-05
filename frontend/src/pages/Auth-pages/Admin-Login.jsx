@@ -11,20 +11,20 @@ import { Label } from "@/components/ui/label";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LoaderOne from "@/components/ui/loader-one";
+import { useAuthStore } from "@/store/authStore";
 
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const isLoading = false;
-  const navigate = useNavigate();
+  
+  const { login, isLoading, error } = useAuthStore();
 
-  
-  const handleForgotPassword = () => {
-    navigate("/admin/forgot-password");
-  }
-  
-  const handleAdminLogin = (e) => {
+
+
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
+
+    await login(email, password);
   };
 
   return (
@@ -49,7 +49,6 @@ function AdminLoginPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
@@ -65,9 +64,7 @@ function AdminLoginPage() {
                   <div className="grid gap-2">
                     <div className="flex items-center">
                       <Label htmlFor="password">Password</Label>
-
-            
-                      <Button className='ml-auto inline-block ' onClick={handleForgotPassword} variant='link'> Forgot your password?</Button>
+                   
                     </div>
                     <Input
                       value={password}
@@ -78,6 +75,10 @@ function AdminLoginPage() {
                       disabled={isLoading}
                     />
                   </div>
+                    <Link to='/admin/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                        >  Forgot your password?
+                  </Link>
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
                   <Button type="submit" className="w-full">
                     {isLoading ? <LoaderOne /> : "Login"}
                   </Button>
@@ -91,7 +92,12 @@ function AdminLoginPage() {
                     <span>Login with Google</span>
                   </Button>
                 </div>
-              </form>
+            <p className="text-center text-sm mt-4">
+              Don't have an account?{" "}
+              <Link to="/admin/register" className="text-violet-500 underline">
+                Click here to Register
+              </Link>
+            </p>
             </CardContent>
           </Card>
         </form>

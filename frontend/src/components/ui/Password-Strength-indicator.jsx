@@ -6,9 +6,8 @@ import useToggleVisibility from "@/hooks/use-toggle-visibility";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
-function PasswordStrengthIndicator() {
+function PasswordStrengthIndicator({password, setPassword}) {
   const id = useId();
-  const [password, setPassword] = useState("");
   const [isVisible, toggleVisibility] = useToggleVisibility();
 
 
