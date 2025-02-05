@@ -1,286 +1,297 @@
 import { Institution } from "../models/institution.model.js";
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
-
-
+import {
+  sendVerificationEmail,
+  sendWelcomeEmail,
+  sendPasswordResetEmail,
+  sendResetSuccessEmail,
+} from "../mailtrap/emails.js";
 
 export const registerInstitution = async (req, res) => {
-    // Prepare the data
-    const {
-        email,
-        institutionName, 
-        name,
-        password,
-        subscription, 
-        plan,
-        paymentMethod,
-        amount
-    } = req.body;
+  // Prepare the data
+  const {
+    email,
+    institutionName,
+    name,
+    password,
+    subscription,
+    plan,
+    paymentMethod,
+    amount,
+  } = req.body;
 
-    try {
-        // Validate the data
-        if (!email || !institutionName || !name || !password || !subscription || !plan || !paymentMethod || !amount) {
-            throw new Error("All fields are required");
-        }
-
-        const institutionAlreadyExists = await Institution.findOne({ email });
-
-        if (institutionAlreadyExists) {
-            return res.status(400).json({
-                success: false,
-                message: "Institution already exists"
-            });
-        }
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Generate a verification token
-        const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-
-       
-
-        // Step 2: Create and save the Institution with the subscription reference
-        const newInstitution = new Institution({
-            email,
-            institution_name: institutionName, 
-            name,
-            password: hashedPassword,
-            verificationToken,
-            verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-            subscription,
-            plan,
-            paymentMethod,
-            amount,
-        });
-
-        const savedInstitution = await newInstitution.save();
-        await savedInstitution.save();
-
-        // Step 4: Generate a token and set cookie
-        generateTokenAndSetCookie(res, savedInstitution._id);
-
-        // Step 5: Send verification email
-        await sendVerificationEmail(savedInstitution.email, verificationToken);
-
-        res.status(201).json({
-            success: true,
-            message: "Institution registered successfully",
-            institution: {
-                ...savedInstitution._doc,
-                password: undefined,
-            }
-        });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+  try {
+    // Validate the data
+    if (
+      !email ||
+      !institutionName ||
+      !name ||
+      !password ||
+      !subscription ||
+      !plan ||
+      !paymentMethod ||
+      !amount
+    ) {
+      throw new Error("All fields are required");
     }
-}
+
+    const institutionAlreadyExists = await Institution.findOne({ email });
+
+    if (institutionAlreadyExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Institution already exists",
+      });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate a verification token
+    const verificationToken = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // Step 2: Create and save the Institution with the subscription reference
+    const newInstitution = new Institution({
+      email,
+      institution_name: institutionName,
+      name,
+      password: hashedPassword,
+      verificationToken,
+      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+      subscription,
+      plan,
+      paymentMethod,
+      amount,
+    });
+
+    const savedInstitution = await newInstitution.save();
+    await savedInstitution.save();
+
+    // Step 4: Generate a token and set cookie
+    generateTokenAndSetCookie(res, savedInstitution._id);
+
+    // Step 5: Send verification email
+    await sendVerificationEmail(savedInstitution.email, verificationToken);
+
+    res.status(201).json({
+      success: true,
+      message: "Institution registered successfully",
+      institution: {
+        ...savedInstitution._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 export const verifyEmail = async (req, res) => {
+  const { code } = req.body;
 
-    const { code } = req.body; 
+  try {
+    console.log("Finding institution with code: ", code);
+    const institution = await Institution.findOne({
+      verificationToken: code,
+      verificationTokenExpiresAt: { $gt: Date.now() },
+    });
 
-    try { 
-        console.log("Finding institution with code: ", code);
-        const institution = await Institution.findOne( {
-            verificationToken: code,
-            verificationTokenExpiresAt: { $gt: Date.now() }
-        })
-
-        if (!institution) {
-            console.log("Invalid or expired verification code");
-            return res.status(400).json({
-                success: false,
-                message: "Invalid or expired verification code"
-            })
-        }
-
-        console.log("Institution found: ", institution);
-        institution.isVerified = true;
-        institution.verificationToken = undefined;
-        institution.verificationTokenExpiresAt = undefined;
-        await institution.save();
-
-        await sendWelcomeEmail(institution.email, institution.name);
-        console.log("Welcome Email Sent")   
-
-        res.status(200).json({
-            success: true,
-            message: "Email verified successfully",
-            institution: {
-                ...institution._doc,
-                password: undefined
-            },
-        });
+    if (!institution) {
+      console.log("Invalid or expired verification code");
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired verification code",
+      });
     }
-    catch(error) {
-        console.log("Error verifying email", error);
-        res.status(500).json({
-            success: false,
-            message: "Error verifying email"
-        })
-    }
-}
 
+    console.log("Institution found: ", institution);
+    institution.isVerified = true;
+    institution.verificationToken = undefined;
+    institution.verificationTokenExpiresAt = undefined;
+    await institution.save();
+
+    await sendWelcomeEmail(institution.email, institution.name);
+    console.log("Welcome Email Sent");
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+      institution: {
+        ...institution._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    console.log("Error verifying email", error);
+    res.status(500).json({
+      success: false,
+      message: "Error verifying email",
+    });
+  }
+};
 
 export const loginInstitution = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const institution = await Institution.findOne({ email });
 
-    const { email, password } = req.body;
-    try {
-        
-        const institution = await Institution.findOne({ email });
-
-        if (!institution) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid credentials"
-            })
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, institution.password);
-
-        if (!isPasswordValid) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid credentials"
-            })
-        }
-
-        generateTokenAndSetCookie(res, institution._id);
-
-        institution.lastLogin = new Date();
-
-        await institution.save();
-
-        res.status(200).json({
-            success: true,
-            message: "Logged in successfully",
-            institution: {
-                ...institution._doc,
-                password: undefined
-            }
-        })
-    } catch (error) {
-        console.log("Error logging in institution", error);
-        res.status(400).json({
-            success: false,
-            message: "Error logging in institution"
-        })
+    if (!institution) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
     }
-}
 
-export const forgotPassword = async ( req, res) => {
-    const { email } = req.body
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      institution.password
+    );
 
-    try {
-        
-        const institution = await Institution.findOne({ email });
-
-        if (!institution) {
-            return res.status(400).json({
-                success: false,
-                message: "Institution not found"
-            })
-        }
-
-        // Generate reset token
-
-        const resetToken = crypto.randomBytes(20).toString("hex");
-        const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
-
-        institution.resetPasswordToken = resetToken;
-        institution.resetPasswordExpiresAt = resetTokenExpiresAt;
-
-        await institution.save();
-
-        // send reset password email
-
-        await sendPasswordResetEmail(institution.email,  `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
-
-        res.status(200).json({
-            success: true,
-            message: "Password reset email sent successfully"
-        })
-
-    } catch (error) {
-        console.log("Error sending password reset email", error);
-        res.status(400).json({
-            success: false,
-            message: "Error sending password reset email"
-        })
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
     }
-}
+
+    generateTokenAndSetCookie(res, institution._id);
+
+    institution.lastLogin = new Date();
+
+    await institution.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      institution: {
+        ...institution._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    console.log("Error logging in institution", error);
+    res.status(400).json({
+      success: false,
+      message: "Error logging in institution",
+    });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const institution = await Institution.findOne({ email });
+
+    if (!institution) {
+      return res.status(400).json({
+        success: false,
+        message: "Institution not found",
+      });
+    }
+
+    // Generate reset token
+
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+
+    institution.resetPasswordToken = resetToken;
+    institution.resetPasswordExpiresAt = resetTokenExpiresAt;
+
+    await institution.save();
+
+    // send reset password email
+
+    await sendPasswordResetEmail(
+      institution.email,
+      `${process.env.CLIENT_URL}/reset-password/${resetToken}`
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset email sent successfully",
+    });
+  } catch (error) {
+    console.log("Error sending password reset email", error);
+    res.status(400).json({
+      success: false,
+      message: "Error sending password reset email",
+    });
+  }
+};
 
 export const resetPassword = async (req, res) => {
-    try {
-        const { token } = req.params;
-        const { password } = req.body;
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
 
-        const institution = await Institution.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpiresAt: { $gt: Date.now() }
-        })
+    const institution = await Institution.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpiresAt: { $gt: Date.now() },
+    });
 
-        if (!institution) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid or expired token"
-            })
-        }   
-
-        // update password
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        institution.password= hashedPassword;
-        institution.resetPasswordToken = undefined;
-        institution.resetPasswordExpiresAt = undefined;
-
-        await institution.save();
-
-        // send reset success email
-
-        await sendResetSuccessEmail(institution.email);
-
-        res.status(200).json({
-            success: true,
-            message: "Password reset successfully"
-        })
-
-
-    } catch (error) {
-        console.log("Error resetting password", error);
-        res.status(400).json({
-            success: false,
-            message: "Error resetting password"
-        })
+    if (!institution) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
     }
-}
 
-export const checkAuth = async (req, res) => {  
-    const institution = await Institution.findById(req.institutionId).select("-password");
+    // update password
 
-    if(!institution) {
-        return res.status(400).json({
-            success: false,
-            message: "Institution not found"
-        })
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    institution.password = hashedPassword;
+    institution.resetPasswordToken = undefined;
+    institution.resetPasswordExpiresAt = undefined;
+
+    await institution.save();
+
+    // send reset success email
+
+    await sendResetSuccessEmail(institution.email);
 
     res.status(200).json({
-        success: true,
-        institution
-    })
-}   
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.log("Error resetting password", error);
+    res.status(400).json({
+      success: false,
+      message: "Error resetting password",
+    });
+  }
+};
+
+export const checkAuth = async (req, res) => {
+  const institution = await Institution.findById(req.institutionId).select(
+    "-password"
+  );
+
+  if (!institution) {
+    return res.status(400).json({
+      success: false,
+      message: "Institution not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    institution,
+  });
+};
 
 export const logoutInstitution = async (req, res) => {
-    res.clearCookie("token")
-    res.status(200).json({
-        sucess: true,
-        message: "Logged out successfully"
-    })
-}
+  res.clearCookie("token");
+  res.status(200).json({
+    sucess: true,
+    message: "Logged out successfully",
+  });
+};
