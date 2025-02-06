@@ -19,7 +19,10 @@ import StudentList from "./pages/admin-view-pages/Student";import { Toaster } fr
 import { useEffect, useCallback } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import LoadingSpinner from './components/LoadingSpinner'
-
+import ProfessorLogin from './pages/Auth-pages/Professor-Login'
+import ProfForgotPassword from './pages/Auth-pages/Professor-Forgot-Password'
+import ProfNewPassword from './pages/Auth-pages/Professor-New-Password'
+import ProfSuccessPassword from './pages/Auth-pages/Professor-Success-Password'
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -70,6 +73,12 @@ function App() {
       <Routes>
       <Route path="/student/dashboard" element={<StudentDashboard/>}/>
       <Route path="/code-editor" element={<CodeEditor/>}/>
+      <Route path="/professor/login" element={<ProfessorLogin/>}/>
+      <Route path="/professor/forgot-password" element={<ProfForgotPassword/>}/>
+      <Route path="/professor/reset-password/:token" element={<ProfNewPassword/>}/>
+      <Route path="/professor/success-reset" element={<ProfSuccessPassword/>}/>
+
+
         <Route
           path='/admin/register'
           element={
