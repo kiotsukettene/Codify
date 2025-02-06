@@ -1,9 +1,9 @@
-import express from "express";
-import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
-import { connectDB } from "./database/connectDB.js";
-import authRoutes from "./routes/auth.route.js";
-import cors from "cors";
+// import express from "express";
+// import dotenv from "dotenv";
+// import cookieParser from "cookie-parser";
+// import { connectDB } from "./database/connectDB.js";
+// import authRoutes from "./routes/auth.route.js";
+// import cors from "cors";
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";

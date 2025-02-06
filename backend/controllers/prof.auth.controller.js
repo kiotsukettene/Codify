@@ -1,6 +1,6 @@
 import { Professor } from "../models/professor.model.js";
 import bcrypt from "bcryptjs";
-import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import { profTokenAndCookie } from "../utils/profTokenAndCookie.js";
 import crypto from "crypto";
 import {
   sendPasswordResetEmail,
@@ -26,7 +26,7 @@ export const loginProfessor = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    generateTokenAndSetCookie(res, professor._id);
+    profTokenAndCookie(res, professor._id); //
 
     professor.lastLogin = new Date();
     await professor.save();
