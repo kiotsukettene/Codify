@@ -12,12 +12,15 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import LoaderOne from "@/components/ui/loader-one";
 import { useAuthStore } from "@/store/authStore";
+import useToggleVisibility from "@/hooks/use-toggle-visibility";
+import { Eye, EyeOff } from "lucide-react";
 
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
   const { login, isLoading, error } = useAuthStore();
+  const [isVisible, toggleVisibility] = useToggleVisibility()
 
 
 
@@ -61,7 +64,7 @@ function AdminLoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
-                  <div className="grid gap-2">
+                  <div className="grid gap-2 relative">
                     <div className="flex items-center">
                       <Label htmlFor="password">Password</Label>
                    
@@ -70,10 +73,24 @@ function AdminLoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       id="password"
-                      type="password"
+                      type={isVisible ? "text" : "password"}
                       required
                       disabled={isLoading}
                     />
+                   <button
+            className="absolute inset-y-3 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            onClick={toggleVisibility}
+            // aria-label={isVisible ? "Hide password" : "Show password"}
+            // aria-pressed={isVisible}
+            aria-controls="password"
+          >
+            {isVisible ? (
+              <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <Eye size={16} strokeWidth={2} aria-hidden="true" />
+            )}
+          </button>
                   </div>
                     <Link to='/admin/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                         >  Forgot your password?

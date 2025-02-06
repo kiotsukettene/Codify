@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './database/connectDB.js';
 import authRoutes from './routes/auth.route.js'; 
+import studentAuthRoutes from './routes/student.auth.route.js'; 
 import cors from 'cors';
 
 dotenv.config();
@@ -21,6 +22,10 @@ app.use(express.json()); // allows us to parse incoming request with JSON payloa
 app.use(cookieParser()); // allows us to parse cookies from the incoming request headers
 
 app.use("/api/auth", authRoutes);
+app.use("/api/studentAuth", studentAuthRoutes);  
+console.log("Registered Routes: /api/auth and /api/studentAuth");
+
+
 
 app.listen(PORT, () => {
     connectDB();

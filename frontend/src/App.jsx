@@ -15,6 +15,8 @@ import { Toaster } from 'react-hot-toast'
 import { useEffect, useCallback } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import LoadingSpinner from './components/LoadingSpinner'
+import StudentLogin from './pages/Auth-pages/Student-Login'
+import { useStudentAuthStore } from './store/studentAuthStore'
 
 // redirect authenticated and paid institution to dashboard page 
 
@@ -47,9 +49,42 @@ const ProtectedRoute = ({ children }) => {
 }
 
 
+// redirect authenticated for student to dashboard page 
+
+const RedirectAuthenticatedStudent = ({ children }) => {
+  const { isAuthenticated } = useStudentAuthStore();
+
+  if (isAuthenticated) {
+    return <Navigate to="/student/dashboard" replace />;
+  }
+
+  return children;
+};
+
+
+// protect routes FOR STUDENT
+const ProtectedStudentRoute = ({ children }) => {
+  const { isAuthenticated, isCheckingAuthStudent } = useStudentAuthStore();
+
+  if (isCheckingAuthStudent) return <LoadingSpinner />;
+
+  if (!isAuthenticated) {
+    return <Navigate to="/student/login" replace />;
+  }
+
+  return children;
+};
+
+
 function App() {
   const { isCheckingAuth, checkAuth} = useAuthStore();
- 
+
+  const { checkAuthStudent, student, isAuthenticated} = useStudentAuthStore();
+
+  useEffect(() => {
+    checkAuthStudent();
+  }, [checkAuthStudent]);
+  
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -59,8 +94,22 @@ function App() {
   <div>
     
       <Routes>
-      <Route path="/student/dashboard" element={<StudentDashboard/>}/>
+       {/* Protected Student Routes */}
+  <Route path="/student/dashboard" element={
+    <ProtectedStudentRoute>
+      <StudentDashboard />
+    </ProtectedStudentRoute>
+  }/>
+
       <Route path="/code-editor" element={<CodeEditor/>}/>
+
+   {/* Redirect already logged-in students from login/signup */}
+  <Route path='/student/login' element={
+    <RedirectAuthenticatedStudent>
+      <StudentLogin />
+    </RedirectAuthenticatedStudent>
+  }/>
+
         <Route
           path='/admin/register'
           element={
@@ -89,6 +138,8 @@ function App() {
           </ProtectedRoute>
           
         } />
+
+
         <Route path='/admin/forgot-password' element={<RedirectAuthenticatedInstitution>
           <AdminForgotPasswordPage/>
         </RedirectAuthenticatedInstitution>} />
