@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import ProfForgotPassword from "@/pages/Auth-pages/Professor-Forgot-Password";
 //import { isAborted } from "zod";
 
 const API_URL = "http://localhost:5000/api/auth"; //change sa local host 5000 kasi gamit q

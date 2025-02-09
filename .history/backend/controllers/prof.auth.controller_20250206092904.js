@@ -103,7 +103,7 @@ export const ForgotPasswordProfessor = async (req, res) => {
     // Sending email
     await sendPasswordResetEmail(
       professor.email,
-      `${process.env.CLIENT_URL}/professor/reset-password/${resetToken}`
+      `${process.env.CLIENT_URL}/professor-reset-password/${resetToken}`
     );
 
     res.status(200).json({

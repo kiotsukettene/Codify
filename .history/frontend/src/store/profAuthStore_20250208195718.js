@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 //import { isAborted } from "zod";
 
-const API_URL = "http://localhost:5000/api/auth"; //change sa local host 5000 kasi gamit q
+const API_URL = "http://localhost:5000/api/auth";
 
 axios.defaults.withCredentials = true;
 
@@ -32,31 +32,6 @@ export const useprofAuthStore = create((set) => ({
     } catch (error) {
       set({
         error: error.response.data.message || "Error logging in",
-        isLoading: false,
-      });
-      throw error;
-    }
-  },
-
-  forgotPassword: async (email) => {
-    set({
-      isLoading: true,
-      error: null,
-    });
-    try {
-      const response = await axios.post(
-        `${API_URL}/professor-forgot-password`,
-        {
-          email,
-        }
-      );
-      set({
-        message: response.data.message,
-        isLoading: false,
-      });
-    } catch (error) {
-      set({
-        error: error.response.data.message || "Error sending email",
         isLoading: false,
       });
       throw error;

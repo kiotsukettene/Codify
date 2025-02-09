@@ -6,8 +6,6 @@ import { Mail, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useprofAuthStore } from "../../store/profAuthStore";
-import toast from "react-hot-toast";
-import ProfPasswordResetConfirmation from "@/components/Auth/Prof-Password-reset";
 import Astro from "../../assets/picture/random background/Astro.png";
 import FiveStar from "../../assets/picture/random background/FiveStar.png";
 import FourStar from "../../assets/picture/random background/FourStar.png";
@@ -18,10 +16,12 @@ import Waves from "../../assets/picture/random background/Waves.png";
 import logo from "../../assets/picture/logos/logo.png";
 
 const ProfForgotPassword = () => {
+  {
+    /* connection to backend */
+  }
   const [email, setEmail] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
-  const { isLoading, forgotPassword } = useprofAuthStore();
-
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const { isLoading, forgotPasswrod } = useprofAuthStore();
   const handleSendResetLink = async (e) => {
     e.preventDefault();
     await forgotPassword(email);
@@ -88,56 +88,49 @@ const ProfForgotPassword = () => {
           className="absolute bottom-0 left-0 w-52 lg:w-72"
         />
       </div>
-      {emailSent ? (
-        //success message
-        <div className="text-center">
-          <ProfPasswordResetConfirmation />
+      <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
+        <CardHeader className="space-y-2 text-center p-0">
+          <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
+            Forgot Password?
+          </h1>
+          <p className="text-sm sm:text-[15px] text-muted-foreground">
+            Enter your email for instructions.
+          </p>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4 p-0 mt-6 sm:mt-8">
+            <div className="space-y-3 sm:space-y-4 relative">
+              <Input
+                icon={Mail}
+                type="email"
+                value={email}
+                placeholder="Email Address"
+                onchange={(e) => setEmail(e.target.value)}
+                className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
+              />
+              <p className="text-xs py-2 text-gray-500 text-center">
+                A password reset link will be sent to the provided email
+                address.
+              </p>
+            </div>
+            <div className="pt-2 space-y-3">
+              <Button type="submit" className="w-full">
+                {isLoading ? (
+                  <Loader className="size-6 animate-spin mx-auto" />
+                ) : (
+                  "Send Reset Link"
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </form>
+        <div className="mt-4 text-center text-sm">
+          Remembered your password?{" "}
+          <Link to="/professor-login" className="underline" prefetch={false}>
+            Go back to login
+          </Link>
         </div>
-      ) : (
-        <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
-          <CardHeader className="space-y-2 text-center p-0">
-            <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
-              Forgot Password?
-            </h1>
-            <p className="text-sm sm:text-[15px] text-muted-foreground">
-              Enter your email for instructions.
-            </p>
-          </CardHeader>
-          <form onSubmit={handleSendResetLink}>
-            <CardContent className="space-y-4 p-0 mt-6 sm:mt-8">
-              <div className="space-y-3 sm:space-y-4 relative">
-                <Input
-                  icon={Mail}
-                  type="email"
-                  value={email}
-                  placeholder="Email Address"
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
-                />
-                <p className="text-xs py-2 text-gray-500 text-center">
-                  A password reset link will be sent to the provided email
-                  address.
-                </p>
-              </div>
-              <div className="pt-2 space-y-3">
-                <Button type="submit" className="w-full">
-                  {isLoading ? (
-                    <Loader className="size-6 animate-spin mx-auto" />
-                  ) : (
-                    "Send Reset Link"
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </form>
-          <div className="mt-4 text-center text-sm">
-            Remembered your password?{" "}
-            <Link to="/professor/login" className="underline">
-              Go back to login
-            </Link>
-          </div>
-        </Card>
-      )}
+      </Card>
     </div>
   );
 };

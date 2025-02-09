@@ -62,7 +62,9 @@ function App() {
       <Routes>
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/code-editor" element={<CodeEditor />} />
-        <Route path="/professor/login" element={<ProfessorLogin />} />
+        <BrowserRouter>
+          <Route path="/professor/login" element={<ProfessorLogin />} />
+        </BrowserRouter>
 
         <Route
           path="/professor/forgot-password"

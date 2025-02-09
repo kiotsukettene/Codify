@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useprofAuthStore } from "../../store/profAuthStore";
 import toast from "react-hot-toast";
-import ProfPasswordResetConfirmation from "@/components/Auth/Prof-Password-reset";
+import PasswordResetConfirmation from "@/components/Auth/Password-reset-confirmation";
 import Astro from "../../assets/picture/random background/Astro.png";
 import FiveStar from "../../assets/picture/random background/FiveStar.png";
 import FourStar from "../../assets/picture/random background/FourStar.png";
@@ -91,7 +91,7 @@ const ProfForgotPassword = () => {
       {emailSent ? (
         //success message
         <div className="text-center">
-          <ProfPasswordResetConfirmation />
+          <PasswordResetConfirmation />
         </div>
       ) : (
         <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">

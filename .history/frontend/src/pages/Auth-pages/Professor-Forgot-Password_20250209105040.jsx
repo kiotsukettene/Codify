@@ -91,7 +91,7 @@ const ProfForgotPassword = () => {
       {emailSent ? (
         //success message
         <div className="text-center">
-          <ProfPasswordResetConfirmation />
+          <PasswordResetConfirmation />
         </div>
       ) : (
         <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">

@@ -1,7 +1,7 @@
 import "./App.css";
 import StudentDashboard from "./pages/student-view-pages/Dashboard";
 import CodeEditor from "./components/CodeEditor";
-import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import PaymentSuccess from "./components/admin-view/payment-success";
 import PaymentSummary from "./components/admin-view/payment-summary";
 import AdminLogin from "./pages/Auth-pages/Admin-Login";
@@ -63,7 +63,6 @@ function App() {
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/code-editor" element={<CodeEditor />} />
         <Route path="/professor/login" element={<ProfessorLogin />} />
-
         <Route
           path="/professor/forgot-password"
           element={<ProfForgotPassword />}

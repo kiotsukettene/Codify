@@ -81,8 +81,8 @@ const ProfessorLogin = () => {
 
       {/* Login Card */}
 
-      <form onSubmit={handleProfessorLogin}>
-        <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
+      <form onSubmit={handleProfessorLogin} className="w-full max-w-[450px]">
+        <Card className="p-6 sm:p-10 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
             <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
               Sign in
