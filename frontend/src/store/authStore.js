@@ -111,6 +111,15 @@ export const useAuthStore = create((set) => ({
             throw error;
         }
     },
+
+    loginWithGoogle: async () => {
+    
+    try {
+        window.location.href = "http://localhost:3000/api/auth/google"; // Redirect user
+    } catch (error) {
+        toast.error("Google login failed");
+    }
+},
     logout: async () => {
         set({
             isLoading: true,
