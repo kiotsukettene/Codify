@@ -6,6 +6,9 @@ import { useprofAuthStore } from "@/store/profAuthStore";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { PasswordStrengthIndicator } from "@/components/ui/Password-Strength-indicator";
+import { Eye, EyeOff } from "lucide-react";
+import useToggleVisibility from "@/hooks/use-toggle-visibility";
 
 //bg images
 import Astro from "../../assets/picture/random background/Astro.png";
@@ -18,6 +21,7 @@ import Waves from "../../assets/picture/random background/Waves.png";
 import logo from "../../assets/picture/logos/logo.png";
 
 const ProfNewPassword = () => {
+  const [isVisible, toggleVisibility] = useToggleVisibility(); //toggle for password visibility
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
@@ -125,31 +129,63 @@ const ProfNewPassword = () => {
               </label>
               <Input
                 id="password"
-                type="password"
+                type={isVisible ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Enter your new password"
                 className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
               />
+              <button
+                className="  absolute inset-y-3  end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                onClick={toggleVisibility}
+                aria-controls="password"
+              >
+                {isVisible ? (
+                  <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <Eye size={16} strokeWidth={2} aria-hidden="true" />
+                )}
+              </button>
             </div>
 
             <div className="relative">
-              <label
-                htmlFor="email"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Confirm Password
-              </label>
-              <Input
-                id="ConfirmNewPassword"
-                type="password"
-                value={ConfirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                placeholder="Re-enter your new password"
-                className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
-                required
-              />
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Confirm Password
+                </label>
+                <Input
+                  id="ConfirmNewPassword"
+                  type={isVisible ? "text" : "password"}
+                  value={ConfirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Re-enter your new password"
+                  className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
+                  required
+                />
+                {/* <button
+                  className="  absolute inset-y-3  end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  onClick={toggleVisibility}
+                  aria-controls="password"
+                >
+                  {isVisible ? (
+                    <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+                  ) : (
+                    <Eye size={16} strokeWidth={2} aria-hidden="true" />
+                  )}
+                </button> */}
+              </div>
+              <div>
+                <PasswordStrengthIndicator
+                  password={password}
+                  useExternalInput={true}
+                />
+              </div>
             </div>
 
             <div className="pt-2 space-y-3">
