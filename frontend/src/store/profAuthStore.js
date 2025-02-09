@@ -38,6 +38,30 @@ export const useprofAuthStore = create((set) => ({
     }
   },
 
+  checkAuth: async () => {
+    set({
+      isCheckingAuth: true,
+      error: null,
+    });
+    try {
+      const response = await axios.get(`${API_URL}/professor-check-auth`);
+      set({
+        professor: response.data.professor,
+        role: "professor",
+        isAuthenticated: true,
+        isCheckingAuth: false,
+      });
+    } catch (error) {
+      set({
+        isCheckingAuth: false,
+        error: null,
+        isAuthenticated: false,
+        role: null,
+      });
+      throw error;
+    }
+  },
+
   forgotPassword: async (email) => {
     set({
       isLoading: true,
@@ -60,27 +84,6 @@ export const useprofAuthStore = create((set) => ({
         isLoading: false,
       });
       throw error;
-    }
-  },
-
-  checkAuth: async () => {
-    set({
-      isCheckingAuth: true,
-      error: null,
-    });
-    try {
-      const response = await axios.get(`${API_URL}/professor-check-auth`);
-      set({
-        professor: response.data.professor,
-        isAuthenticated: true,
-        isCheckingAuth: false,
-      });
-    } catch (error) {
-      set({
-        isCheckingAuth: false,
-        error: null,
-        isAuthenticated: false,
-      });
     }
   },
 

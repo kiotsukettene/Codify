@@ -64,6 +64,24 @@ export const logoutProfessor = async (req, res) => {
   }
 };
 
+export const checkAuthProfessor = async (req, res) => {
+  const professor = await Professor.findById(req.professorId).select(
+    "-password"
+  );
+
+  if (!professor) {
+    return res.status(400).json({
+      success: false,
+      message: "professor not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    professor,
+  });
+};
+
 export const ForgotPasswordProfessor = async (req, res) => {
   const { email } = req.body;
 
@@ -157,20 +175,61 @@ export const resetPasswordProfessor = async (req, res) => {
   }
 };
 
-export const checkAuthProfessor = async (req, res) => {
-  const professor = await Professor.findById(req.professorId).select(
-    "-password"
-  );
+//register profeqssor
+export const registerProfessor = async (req, res) => {
+  const { firstName, lastName, email } = req.body;
 
-  if (!professor) {
-    return res.status(400).json({
+  try {
+    // Validate the data
+    if (!email || !firstName || !lastName) {
+      throw new Error("All fields are required");
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error("Invalid email format");
+    }
+
+    const profAlreadyExists = await Professor.findOne({ email });
+    if (profAlreadyExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Professor already has an account",
+      });
+    }
+
+    // Hash the last name as the password
+    const hashedPassword = await bcrypt.hash(lastName, 10);
+
+    // Create and save the professor
+    const newProfessor = new Professor({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+    });
+
+    const savedProfessor = await newProfessor.save();
+
+    // Generate a token and set cookie
+    profTokenAndCookie(res, savedProfessor._id);
+
+    // Send success email
+    await sendResetSuccessEmail(savedProfessor.email);
+
+    res.status(201).json({
+      success: true,
+      message: "Professor registered successfully",
+      professor: {
+        ...savedProfessor._doc,
+        password: undefined, // Hide password from response
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
       success: false,
-      message: "professor not found",
+      message: error.message,
     });
   }
-
-  res.status(200).json({
-    success: true,
-    professor,
-  });
 };

@@ -14,8 +14,8 @@ import {
   logoutProfessor,
   ForgotPasswordProfessor,
   resetPasswordProfessor,
-} from "../controllers/prof.auth.controller.js"; //
-
+  registerProfessor,
+} from "../controllers/prof.auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
@@ -36,5 +36,6 @@ router.post("/professor-login", loginProfessor);
 router.post("/professor-logout", logoutProfessor);
 router.post("/professor-forgot-password", ForgotPasswordProfessor);
 router.post("/professor-reset-password/:token", resetPasswordProfessor);
+router.post("/professor-register", registerProfessor);
 
 export default router;

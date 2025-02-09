@@ -4,6 +4,8 @@ const professorSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    firstName: { type: String },
+    lastName: { type: String },
     lastLogin: { type: Date, default: Date.now },
     resetPasswordToken: { type: String }, // Add inside the schema
     resetPasswordExpiresAt: { type: Date }, // Add inside the schema

@@ -93,3 +93,39 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
 </body>
 </html>
 `;
+
+export const ACCOUNT_DETAILS_TEMPLATE = (email, password) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Account Details</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #4CAF50, #45a049); padding: 20px; text-align: center;">
+    <h1 style="color: white; margin: 0;">Your Account Details</h1>
+  </div>
+  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>Hello,</p>
+    <p>Here are your account details:</p>
+    <div style="background-color: #f1f1f1; padding: 15px; border-radius: 5px;">
+      <p><strong>Email:</strong> "ayrelmay@gmail.com" </p> //${email}
+      <p><strong>Password:</strong> "password" </p> //${password}
+    </div>
+    <p>Please keep this information secure and do not share it with anyone.</p>
+    <p>For security reasons, we recommend that you:</p>
+    <ul>
+      <li>Change your password after your first login</li>
+      <li>Use a strong, unique password</li>
+      <li>Enable two-factor authentication if available</li>
+    </ul>
+    <p>Thank you for being a valued user.</p>
+    <p>Best regards,<br>Your App Team</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+    <p>This is an automated message, please do not reply to this email.</p>
+  </div>
+</body>
+</html>
+`;
