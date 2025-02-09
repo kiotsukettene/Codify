@@ -156,3 +156,21 @@ export const resetPasswordProfessor = async (req, res) => {
       .json({ success: false, message: "Error resetting password" });
   }
 };
+
+export const checkAuthProfessor = async (req, res) => {
+  const professor = await Professor.findById(req.professorId).select(
+    "-password"
+  );
+
+  if (!professor) {
+    return res.status(400).json({
+      success: false,
+      message: "professor not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    professor,
+  });
+};

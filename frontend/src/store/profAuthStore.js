@@ -62,4 +62,51 @@ export const useprofAuthStore = create((set) => ({
       throw error;
     }
   },
+
+  checkAuth: async () => {
+    set({
+      isCheckingAuth: true,
+      error: null,
+    });
+    try {
+      const response = await axios.get(`${API_URL}/professor-check-auth`);
+      set({
+        professor: response.data.professor,
+        isAuthenticated: true,
+        isCheckingAuth: false,
+      });
+    } catch (error) {
+      set({
+        isCheckingAuth: false,
+        error: null,
+        isAuthenticated: false,
+      });
+    }
+  },
+
+  resetPassword: async (token, password) => {
+    set({
+      isLoading: true,
+      error: null,
+    });
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/professor-reset-password/${token}`,
+        {
+          password,
+        }
+      );
+      set({
+        message: response.data.message,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error.response.data.message || "Error resetting password",
+      });
+      throw error;
+    }
+  },
 }));
