@@ -1,32 +1,16 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {
-  File,
-  Home,
-  LineChart,
-  ListFilter,
-  MoreHorizontal,
-  Package,
-  Package2,
-  PanelLeft,
+ 
   Plus,
-  PlusCircle,
-  Search,
-  Settings,
-  ShoppingCart,
   SlidersHorizontal,
-  Users2,
 } from "lucide-react"
-import { Link, useNavigate } from 'react-router-dom'
-import { Badge } from "@/components/ui/badge"
 
 import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card"
 
 import {
@@ -38,10 +22,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import AddProfessor from "../admin-professor/Add-Professor"
 
 function ProfessorList() {
-  const navigate = useNavigate()
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const ProfessorList = [
     {
       firstname: 'John',
@@ -53,9 +38,6 @@ function ProfessorList() {
     }
   ]
 
-  const handleAddProfessor = () => {  
-    navigate('/admin/addProfessor')
-  }
   return (
     <div className="flex flex-1 flex-col w-full h-full p-6 mt-4 bg-white rounded-lg ">
       <h1 className="text-3xl font-semibold text-neutral-900">Professors Management</h1>
@@ -66,15 +48,25 @@ function ProfessorList() {
       <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
         <main className="flex-1 w-full">
           
-  
            
-              <Card className="w-full">
+             <Card className="w-full">
                 <CardHeader>
-                  {/* <CardTitle>Products</CardTitle> */}
                   <CardDescription className="flex items-center gap-4 mx-auto w-full justify-end">
-                    {/* Manage your products and view their sales performance. */}
-                    <Button onClick={handleAddProfessor} className="bg-neutral-900 text-white hover:bg-neutral-700"><Plus/> Add Professor</Button>
-                    <Button variant='outline' className="text-neutral-900"><SlidersHorizontal/> Filter</Button>
+                  <Dialog open={isModalOpen} onOpenChange={(open) => setIsModalOpen(open)} modal>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setIsModalOpen(true)} className="bg-neutral-900 text-white hover:bg-neutral-700">
+                      <Plus /> Add Professor
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg"> 
+                    <AddProfessor onClose={() => setIsModalOpen(false)} /> 
+                  </DialogContent>
+                </Dialog>
+
+
+
+                
+                <Button variant='outline' className="text-neutral-900"><SlidersHorizontal/> Filter</Button>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

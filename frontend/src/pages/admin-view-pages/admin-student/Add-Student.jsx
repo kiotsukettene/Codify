@@ -1,19 +1,19 @@
-import { useState } from "react"
+import { useState} from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import useToggleVisibility from "@/hooks/use-toggle-visibility"
 import { Eye, EyeOff } from "lucide-react"
 import { useStudentStore } from "@/store/studentStore"
-import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "@/store/authStore"
 import toast from "react-hot-toast"
+import useToggleVisibility from "@/hooks/use-toggle-visibility"
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription} from "@/components/ui/dialog"
 
-function AddStudent() {
-  const navigate = useNavigate()
+
+function AddStudent({ onClose }) {
   const { institution } = useAuthStore()
   const { addStudent, isLoading, error } = useStudentStore()
-  const [isVisible, toggleVisibility] = useToggleVisibility()
+  const [isVisible, toggleVisibility] = useToggleVisibility();
   const [formData, setFormData] = useState({
     studentId: "",
     firstName: "",
@@ -26,8 +26,20 @@ function AddStudent() {
     institutionId: institution?._id || ""
   })
 
- 
-  
+  const handleCancel = () => {
+    setFormData({
+      studentId: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      course: "",
+      year: "",
+      section: "",
+      password: "",
+    });
+    onClose()
+
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -47,27 +59,15 @@ function AddStudent() {
     toast.success("Student added successfully")
   }
 
-  const handleCancel = () => {
-    setFormData({
-      studentId: "",
-      firstName: "",
-      lastName: "",
-      email: "",
-      course: "",
-      year: "",
-      section: "",
-      password: "",
-      institutionId: institution?._id || ""
-    })
-  }
-
   return (
-    <div className="flex flex-1 flex-col w-full h-full p-6 mt-4 bg-white rounded-lg">
-      <h1 className="text-3xl font-semibold text-neutral-900">Create New Student Account</h1>
-      <h4 className="pt-3 font-normal">Manage and view the list of students, their assigned courses, and details.</h4>
+    <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Create New Student Account</DialogTitle>
+      <DialogDescription>
+        Manage and view the list of students, their assigned courses, and details.
+      </DialogDescription>
+    </DialogHeader>
 
-      <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
-        <main className="flex-1 w-full">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
@@ -165,15 +165,13 @@ function AddStudent() {
               <Button type="button" variant="secondary" onClick={handleCancel} className="min-w-[100px] ">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading} className="min-w-[100px] bg-neutral-900 text-white hover:bg-neutral-700">
+              <Button type="submit" disabled={isLoading}>
                 {isLoading  ? "Adding..." :"Add Student"}
               </Button>
             </div>
           </form>
           {error && <p className="text-red-500 text-sm">{error}</p>}
-        </main>
-      </div>
-    </div>
+        </DialogContent>
   )
 }
 
