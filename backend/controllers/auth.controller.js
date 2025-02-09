@@ -53,7 +53,7 @@ export const registerInstitution = async (req, res) => {
             address,
             phoneNumber,
             verificationToken,
-            verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+            verificationTokenExpiresAt: Date.now() + (60 * 1000), // 1 minute
             subscription,
             plan,
             paymentMethod,
@@ -100,7 +100,7 @@ export const verifyEmail = async (req, res) => {
             console.log("Invalid or expired verification code");
             return res.status(400).json({
                 success: false,
-                message: "Invalid or expired verification code"
+                message: "Invalid or expired verification code. Please request a new one."
             })
         }
 
@@ -110,8 +110,7 @@ export const verifyEmail = async (req, res) => {
         institution.verificationTokenExpiresAt = undefined;
         await institution.save();
 
-        await sendWelcomeEmail(institution.email, institution.name);
-        console.log("Welcome Email Sent")   
+        
 
         res.status(200).json({
             success: true,
@@ -127,6 +126,45 @@ export const verifyEmail = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error verifying email"
+        })
+    }
+}
+
+export const resendVerificationCode = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const institution = await Institution.findOne({ email });
+
+        if (!institution) {
+            return res.status(400).json({
+                success: false,
+                messsage: "Institution not found"
+            })
+        }
+
+        // Generate new verification code
+
+        const newVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+        institution.verificationToken = newVerificationToken;
+        institution.verificationTokenExpiresAt = Date.now() + (60 * 1000); // 1 minute
+
+        await institution.save();
+
+        // Send new verification email
+
+        await sendVerificationEmail(institution.email, newVerificationToken)
+
+        res.status(200).json({
+            success: true,
+            message: "New verification code sent"
+        })
+    } catch (error) {
+        console.log("Error resending verification code: ", error)
+        res.status(500).json({
+            success: false,
+            message: "Error resending verification code",
+            debugToken: newVerificationToken // ✅ Temporary Debugging
         })
     }
 }
@@ -298,6 +336,8 @@ export const markAsPaid = async (req, res) => {
         institution.isPaid = true;
         institution.billingExpiration = newExpiration;
 
+        await sendWelcomeEmail(institution.email, institution.name);
+        console.log("Welcome Email Sent")  
         await institution.save();
 
         res.status(200).json({

@@ -30,6 +30,10 @@ const institutionSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    role: {
+        type: String,
+        default: "admin"
+    },
     lastLogin: {
         type: Date,
         default: Date.now

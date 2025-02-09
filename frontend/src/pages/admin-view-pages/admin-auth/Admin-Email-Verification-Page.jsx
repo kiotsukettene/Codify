@@ -18,9 +18,9 @@ function AdminEmailVerificationPage() {
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const [resendCode, setResendCode] = useState(false);
-  const [resendCodeTimer, setResendCodeTimer] = useState(15 * 60);
+  const [resendCodeTimer, setResendCodeTimer] = useState(60);
 
-  const { error, verifyEmail, isLoading } = useAuthStore();
+  const { error, verifyEmail, isLoading, resendVerificationCode, institution } = useAuthStore();
 
   const handleChange = (index, value) => {
 		const newCode = [...code];
@@ -76,7 +76,14 @@ function AdminEmailVerificationPage() {
   } catch (error) {
     console.error('Error details:', error.response?.data);
   }
-};
+  };
+  
+    // auto submit when all fields are required
+  useEffect(() => {
+		if (code.every((digit) => digit !== "")) {
+			handleSubmit(new Event("submit"));
+		}
+	}, [code]);
 
 useEffect(() => {
   let timer;
@@ -86,7 +93,7 @@ useEffect(() => {
         if (prev === 1) {
           clearInterval(timer);
           setResendCode(false);
-          return 15 * 60;
+          return 60;
         }
         return prev - 1;
       });
@@ -95,10 +102,32 @@ useEffect(() => {
   return () => clearInterval(timer);
 }, [resendCode]);
 
-const handleResendCode = () => {
-  setResendCode(true);
-  setResendCodeTimer(15 * 60); // Reset timer to 15 minutes
+  const handleResendCode = async () => {
+  if (!institution?.email) {
+    toast.error("Error: Email not found. Please log in again.");
+    return;
+  }
+
+  try {
+    // ✅ Clear any previous error message before sending a new request
+    setCode(["", "", "", "", "", ""]); // Clear input fields
+    setResendCode(true);
+    setResendCodeTimer(60); // Reset timer to 15 minutes
+    useAuthStore.setState({ error: null }); // ✅ Clear error from global state
+
+    const response = await resendVerificationCode(institution.email);
+
+    toast.success("A new verification code has been sent to your email!");
+
+  } catch (error) {
+    console.error("🚨 Error resending code:", error);
+    toast.error(error.response?.data?.message || "Error resending verification code");
+  }
 };
+
+
+  
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
@@ -129,7 +158,6 @@ const handleResendCode = () => {
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     ref={(el) => (inputRefs.current[index] = el)}
-                    required
                   />
                 ))}
               </div>
@@ -140,7 +168,7 @@ const handleResendCode = () => {
                 className="w-full bg-primary transition-all hover:shadow-lg hover:shadow-violet-200"
                 disabled={isLoading || code.some((digit) => !digit)}
               >
-                {isLoading ? "Verifying..." : "Verify Email"}
+                {isLoading  ? "Verifying..." : "Verify Email"}
               </Button>
               <p className="text-center text-sm text-gray-600">
                 Didn't receive a code?{" "}

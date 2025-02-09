@@ -2,15 +2,15 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import Astro from "../../assets/picture/random background/Astro.png"
-import FiveStar from "../../assets/picture/random background/FiveStar.png"
-import FourStar from "../../assets/picture/random background/FourStar.png"
-import PinkStar from "../../assets/picture/random background/PinkStar.png"
-import VioletStar from "../../assets/picture/random background/VioletStar.png"
-import SpaceShip from "../../assets/picture/random background/Spaceship.png"
-import Waves from "../../assets/picture/random background/Waves.png"
-import logo from "../../assets/picture/logos/logo.png"
-import success from "../../assets/picture/random background/success.png"
+import Astro from "../../../assets/picture/random background/Astro.png"
+import FiveStar from "../../../assets/picture/random background/FiveStar.png"
+import FourStar from "../../../assets/picture/random background/FourStar.png"
+import PinkStar from "../../../assets/picture/random background/PinkStar.png"
+import VioletStar from "../../../assets/picture/random background/VioletStar.png"
+import SpaceShip from "../../../assets/picture/random background/Spaceship.png"
+import Waves from "../../../assets/picture/random background/Waves.png"
+import logo from "../../../assets/picture/logos/logo.png"
+import success from "../../../assets/picture/random background/success.png"
 
 
 const ProfSuccessPassword = () => {

@@ -4,13 +4,13 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import union from "../../assets/picture/random background/union.png"
-import pinkFlower from "../../assets/picture/random background/pink-flower.png"
-import blueFlower from "../../assets/picture/random background/blue-flower.png"
-import purpleFlower from "../../assets/picture/random background/purple-flower.png"
-import arrow from "../../assets/picture/random background/arrow.png"
-import mascot from "../../assets/picture/random background/mascot.png"
-import logo from "../../assets/picture/logos/logo.png"
+import union from "../../../assets/picture/random background/union.png"
+import pinkFlower from "../../../assets/picture/random background/pink-flower.png"
+import blueFlower from "../../../assets/picture/random background/blue-flower.png"
+import purpleFlower from "../../../assets/picture/random background/purple-flower.png"
+import arrow from "../../../assets/picture/random background/arrow.png"
+import mascot from "../../../assets/picture/random background/mascot.png"
+import logo from "../../../assets/picture/logos/logo.png"
 import { Eye, EyeOff } from 'lucide-react'
 
 const ProfessorLogin = () => {

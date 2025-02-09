@@ -4,25 +4,25 @@ import CodeEditor from "./components/CodeEditor";
 import { Routes, Route, Navigate } from "react-router-dom";
 import PaymentSuccess from "./components/admin-view/payment-success";
 import PaymentSummary from "./components/admin-view/payment-summary";
-import AdminLogin from "./pages/Auth-pages/Admin-Login";
-import AdminEmailVerificationPage from "./pages/Auth-pages/Admin-Email-Verification-Page";
-import AdminRegisterPage from "./pages/Auth-pages/Admin-Register";
-import AdminForgotPasswordPage from "./pages/Auth-pages/Admin-Forgot-Password";
-import AdminNewPasswordPage from "./pages/Auth-pages/Admin-New-Password";
-import AdminSuccessResetPage from "./pages/Auth-pages/Admin-Success-Reset";
+import AdminLogin from "./pages/admin-view-pages/admin-auth/Admin-Login";
+import AdminEmailVerificationPage from "./pages/admin-view-pages/admin-auth/Admin-Email-Verification-Page";
+import AdminRegisterPage from "./pages/admin-view-pages/admin-auth/Admin-Register";
+import AdminForgotPasswordPage from "./pages/admin-view-pages/admin-auth/Admin-Forgot-Password";
+import AdminNewPasswordPage from "./pages/admin-view-pages/admin-auth/Admin-New-Password";
+import AdminSuccessResetPage from "./pages/admin-view-pages/admin-auth/Admin-Success-Reset";
 import AdminDashboard from "./pages/admin-view-pages/Dashboard";
-import ProfessorList from "./pages/admin-view-pages/Professor";
+import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
 import AdminLayout from "./Layout/AdminLayout";
-import AddProfessor from "./pages/admin-view-pages/Add-Professor";
-import AddStudent from "./pages/admin-view-pages/Add-Student";
-import StudentList from "./pages/admin-view-pages/Student";import { Toaster } from 'react-hot-toast'
+import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
+import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
+import StudentList from "./pages/admin-view-pages/admin-student/Student";import { Toaster } from 'react-hot-toast'
 import { useEffect, useCallback } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import LoadingSpinner from './components/LoadingSpinner'
-import ProfessorLogin from './pages/Auth-pages/Professor-Login'
-import ProfForgotPassword from './pages/Auth-pages/Professor-Forgot-Password'
-import ProfNewPassword from './pages/Auth-pages/Professor-New-Password'
-import ProfSuccessPassword from './pages/Auth-pages/Professor-Success-Password'
+import ProfessorLogin from './pages/professor-view-pages/professor-auth/Professor-Login'
+import ProfForgotPassword from './pages/professor-view-pages/professor-auth/Professor-Forgot-Password'
+import ProfNewPassword from './pages/professor-view-pages/professor-auth/Professor-New-Password'
+import ProfSuccessPassword from './pages/professor-view-pages/professor-auth/Professor-Success-Password'
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -32,6 +32,10 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
   if (isAuthenticated && institution.isVerified && institution.isPaid) {
     return <Navigate to="/admin/dashboard" replace/>;
   }
+
+  if (isAuthenticated && institution.isVerified && !institution.isPaid) {
+    return <Navigate to="/admin/payment-summary" replace/>;
+   }
 
 
   return children;

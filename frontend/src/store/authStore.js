@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import axios from 'axios'
+import { TrainFrontTunnelIcon } from 'lucide-react';
+import { Fallback } from '@radix-ui/react-avatar';
+import toast from 'react-hot-toast';
 
 const API_URL = "http://localhost:3000/api/auth";
 
@@ -16,7 +19,7 @@ export const useAuthStore = create((set) => ({
     signup: async (email, password, name, institutionName, address, phoneNumber, subscription, plan, paymentMethod, amount) => {
         set({
             isLoading: true,
-            error: null
+            message: null
         })
         try {
             const response = await axios.post(`${API_URL}/signup`, {
@@ -38,7 +41,7 @@ export const useAuthStore = create((set) => ({
             })
         } catch (error) {
             set({
-                error: error.response.data.message || "Error signing up",
+                message: error.response.data.message || "Error signing up",
                 isLoading: false
             })
             throw error;
@@ -48,7 +51,7 @@ export const useAuthStore = create((set) => ({
     verifyEmail: async (code) => {
         set({
             isLoading: true,
-            error: null
+            error: null,
         })
         try {
             const response = await axios.post(`${API_URL}/verify-email`, { code })
@@ -56,7 +59,6 @@ export const useAuthStore = create((set) => ({
                 institution: response.data.institution,
                 isAuthenticated: true,
                 isLoading: false,
-                error: null
             })
             return response.data
         } catch (error) {
@@ -68,6 +70,25 @@ export const useAuthStore = create((set) => ({
         }
     },
 
+   resendVerificationCode: async (email) => {
+    set({ isLoading: true, error: null }); // ✅ Reset error before resending
+
+    try {
+        const response = await axios.post(`${API_URL}/resend-verification`, { email });
+
+        set({ isLoading: false, error: null }); // ✅ Ensure error is cleared on success
+
+        return response.data;
+    } catch (error) {
+        toast.error(error.response?.data?.message || "Error resending verification code");
+        set({
+            isLoading: false,
+            error: error.response?.data?.message || "Error resending verification code"
+        });
+
+        throw error;
+    }
+},
     login: async (email, password) => {
         set({
             isLoading: true,
@@ -113,7 +134,8 @@ export const useAuthStore = create((set) => ({
     forgotPassword: async (email) => {
         set({
             isLoading: true,
-            error: null
+            error: null,
+            message: null,
         })
         try {
             const response = await axios.post(`${API_URL}/forgot-password`, { email })
@@ -131,7 +153,8 @@ export const useAuthStore = create((set) => ({
     resetPassword: async (token, password) => { 
         set({
             isLoading: true,
-            error: null
+            error: null,
+            message: null,
         })
 
         try {

@@ -7,7 +7,8 @@ import {
      forgotPassword,
      resetPassword,
      checkAuth,
-     markAsPaid
+     markAsPaid,
+     resendVerificationCode
 
 } from '../controllers/auth.controller.js';
 
@@ -25,6 +26,7 @@ router.post("/login", loginInstitution)
 router.post("/logout", logoutInstitution)
 
 router.post("/verify-email", verifyEmail)
+router.post("/resend-verification", resendVerificationCode)
 router.post("/mark-as-paid", markAsPaid)
 router.post("/forgot-password", forgotPassword)
 router.post("/reset-password/:token", resetPassword)

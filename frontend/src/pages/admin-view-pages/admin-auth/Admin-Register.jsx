@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-context-menu";
 import React, { useState } from "react";
-import Logo from "../../assets/picture/logos/Logo.png";
+import Logo from "../../../assets/picture/logos/Logo.png";
 import { Separator } from "@/components/ui/separator";
 import { BadgeCheck, Circle, Loader, LockKeyhole } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +23,7 @@ function AdminRegisterPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
-  const { signup, error, isLoading } = useAuthStore();
+  const { signup, error, isLoading, message } = useAuthStore();
 
   const handleAdminRegister = async (e) => {
     e.preventDefault();
@@ -62,7 +62,9 @@ function AdminRegisterPage() {
                   </p>
                 </div>
                 <div className="text-sm space-y-3" style={{ color: "#383838" }}>
+
                   <div className="grid gap-2">
+                  {message && <p className="text-red-500 text-sm">{message}</p>}
                     <Label className="font-medium" htmlFor="name">
                       Billed to
                     </Label>
@@ -72,7 +74,6 @@ function AdminRegisterPage() {
                       type="text"
                       value={name}
                       placeholder="John Smith"
-                      required
                       onChange={(e) => setName(e.target.value)}
                     />
                   </div>
@@ -86,7 +87,6 @@ function AdminRegisterPage() {
                       type="email"
                       placeholder="m@example.com"
                       value={email}
-                      required
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
@@ -101,7 +101,6 @@ function AdminRegisterPage() {
                       type="text"
                       value={institutionName}
                       placeholder="University of Caloocan City"
-                      required
                       onChange={(e) => setInstitutionName(e.target.value)}
                     />
                   </div>
@@ -115,7 +114,6 @@ function AdminRegisterPage() {
                       id="address"
                       type="text"
                       placeholder="23J+R9M, Congressional Rd Ext, Caloocan, Metro Manila"
-                      required
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                     />
@@ -130,7 +128,6 @@ function AdminRegisterPage() {
                       id="phoneNumber"
                       type="number"
                       placeholder="Phone Number"
-                      required
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                     />
@@ -184,8 +181,8 @@ function AdminRegisterPage() {
                   </div>
                 </div>
 
-                <Button type="submit" isDisabled={isLoading} className="w-full font-normal text-sm">
-                  <BadgeCheck /> {isLoading ? <Loader className="animate-spin mx-auto" size={24} /> : "Register"}
+                <Button type="submit" disabled={isLoading} className="w-full font-normal text-sm">
+                  <BadgeCheck /> {isLoading && !message ? <Loader className="animate-spin mx-auto" size={24} /> : "Register"}
                 </Button>
               <div className="flex  mt-2">
                 <p className="text-sm text-muted-foreground">
