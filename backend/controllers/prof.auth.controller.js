@@ -15,7 +15,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/auth/google/callback",
+      callbackURL: "http://localhost:5000/api/auth/professor-google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -74,12 +74,13 @@ export const googleCallbackProfessor = (req, res, next) => {
   )(req, res, next);
 };
 
-// ✅ Keep Unauthorized Redirect as is
+//Keep Unauthorized Redirect as is
 export const googleUnauthorizedProfessor = (req, res) => {
   res.redirect(
     `${process.env.CLIENT_URL}/professor/login?error=Unauthorized access.`
   );
 };
+
 // Successful Google Login
 export const googleSuccessProfessor = (req, res) => {
   if (!req.professor) {
@@ -164,6 +165,7 @@ export const loginProfessor = async (req, res) => {
   }
 };
 
+//logout
 export const logoutProfessor = async (req, res) => {
   try {
     res.clearCookie("token");
@@ -180,6 +182,7 @@ export const logoutProfessor = async (req, res) => {
   }
 };
 
+//checkAuth
 export const checkAuthProfessor = async (req, res) => {
   const professor = await Professor.findById(req.professorId).select(
     "-password"
@@ -198,6 +201,7 @@ export const checkAuthProfessor = async (req, res) => {
   });
 };
 
+//ForgotPass
 export const ForgotPasswordProfessor = async (req, res) => {
   const { email } = req.body;
 
@@ -253,6 +257,7 @@ export const ForgotPasswordProfessor = async (req, res) => {
   }
 };
 
+//ResetPass
 export const resetPasswordProfessor = async (req, res) => {
   try {
     const { token } = req.params;

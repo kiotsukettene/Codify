@@ -17,13 +17,9 @@ import {
   registerProfessor,
   googleAuthProfessor,
   googleCallbackProfessor,
-  googleUnauthorizedProfessor,
   googleSuccessProfessor,
 } from "../controllers/prof.auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
-
-//google auth imports
-import passport from "../config/passport.js";
 
 const router = express.Router();
 
@@ -44,7 +40,11 @@ router.post("/professor-logout", logoutProfessor);
 router.post("/professor-forgot-password", ForgotPasswordProfessor);
 router.post("/professor-reset-password/:token", resetPasswordProfessor);
 router.post("/professor-register", registerProfessor);
-router.get("/google", googleAuthProfessor);
-router.get("/google/callback", googleCallbackProfessor, googleSuccessProfessor);
+router.get("/professor-google", googleAuthProfessor);
+router.get(
+  "/professor-google/callback",
+  googleCallbackProfessor,
+  googleSuccessProfessor
+);
 
 export default router;
