@@ -17,13 +17,8 @@ import { useAuthStore } from "@/store/authStore";
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorDisplayed, setErrorDisplayed] = useState(false);
 
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const errorMessage = searchParams.get("error");
-  
-  const { login, logout, isLoading, error, loginWithGoogle } = useAuthStore();
+  const { login, isLoading, error, loginWithGoogle } = useAuthStore();
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
@@ -33,21 +28,6 @@ function AdminLoginPage() {
   const handleGoogleLogin = async () => {
     await loginWithGoogle();
   }
-
-  useEffect(() => {
-        if (errorMessage) {
-            logout(); 
-        }
-  }, [logout, errorMessage]);
-
-  useEffect(() => {
-        // ✅ Detect Back button press and force logout
-        if (window.performance && window.performance.navigation.type === 2) {
-            console.log("Back button pressed: Logging out user");
-            logout();
-        }
-    }, [location, logout]);
-  
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
@@ -73,11 +53,6 @@ function AdminLoginPage() {
             <CardContent>
               <div className="flex flex-col gap-6">
                 {error && <p className="text-red-500 text-sm">{error}</p>}
-                  {errorMessage && (
-                <p className="text-red-500 text-sm">
-                    {decodeURIComponent(errorMessage)}
-                </p>
-            )}
                 <div className="grid gap-2">
                   
                     <Label htmlFor="email">Email</Label>
@@ -99,14 +74,13 @@ function AdminLoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       id="password"
                       type="password"
-                      disabled={isLoading}
                   />
                   <Link to='/admin/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                         >  Forgot your password?
                   </Link>
                   
                   </div>
-                  <Button type="submit" className="w-full">
+                <Button type="submit" disabled={ isLoading } className="w-full">
                     {isLoading && !error ? <LoaderOne /> : "Login"}
                 </Button>
                 <div className="relative">

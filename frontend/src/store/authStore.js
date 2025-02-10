@@ -112,30 +112,43 @@ export const useAuthStore = create((set) => ({
             })
             throw error;
         }
+        set({
+            isLoading: false
+        })
     },
 
-        loginWithGoogle: async () => {
-            set({ isLoading: true, error: null });
+    loginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
 
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                const token = await result.user.getIdToken(); // Get Firebase token
+    let token = null;
 
-                // Send token to backend for verification and login
-                const response = await axios.post(`${API_URL}/google-login`, { token });
+    // 🔹 First try-catch: Handle popup closure
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        token = await result.user.getIdToken(); // ✅ Get Firebase token
+    } catch (error) {
+        if (error.code === "auth/popup-closed-by-user") {
+            toast.error("Google Sign-In cancelled.");
+        } else {
+            toast.error("Google Login Failed: " + error.message);
+        }
+        set({ isLoading: false });
+        return; // ⛔ Exit early if popup was closed
+    }
 
-                set({ institution: response.data.institution, isAuthenticated: true, isLoading: false });
-            } catch (error) {
-                set({ error: error.response, isLoading: false });
-                
-                // Check if error is due to popup being closed
-                if (error.code === 'auth/popup-closed-by-user') {
-                    window.location.href = '/admin/login';
-                }
-            }
-            set({ isLoading: false });
-        },
-        logout: async () => {
+    // 🔹 Second try-catch: Handle backend token verification
+    try {
+        const response = await axios.post(`${API_URL}/google-login`, { token });
+
+        set({ institution: response.data.institution, isAuthenticated: true, isLoading: false });
+    } catch (error) {
+        set({ error: error.response?.data?.message || "Server Error", isLoading: false });
+    }
+
+    set({ isLoading: false });
+},
+
+    logout: async () => {
         set({ isLoading: true, error: null });
 
         try {
