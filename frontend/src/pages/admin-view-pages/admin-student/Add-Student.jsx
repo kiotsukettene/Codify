@@ -60,15 +60,16 @@ function AddStudent({ onClose }) {
   }
 
   return (
-    <DialogContent>
+    <DialogContent className="max-w-2xl">
     <DialogHeader>
       <DialogTitle>Create New Student Account</DialogTitle>
       <DialogDescription>
-        Manage and view the list of students, their assigned courses, and details.
+        Add New student
       </DialogDescription>
     </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+          
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
               <div className="space-y-4">
@@ -78,7 +79,6 @@ function AddStudent({ onClose }) {
                     id="studentId"
                     name="studentId"
                     type="text"
-                    required
                     value={formData.studentId}
                     onChange={handleChange}
                   />
@@ -89,22 +89,28 @@ function AddStudent({ onClose }) {
                     id="firstName"
                     name="firstName"
                     type="text"
-                    required
                     value={formData.firstName}
                     onChange={handleChange}
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" name="lastName" type="text" required value={formData.lastName} onChange={handleChange} />
+                  <Input 
+                  id="lastName"
+                  name="lastName" 
+                  type="text"
+                  value={formData.lastName} 
+                  onChange={handleChange} />
                 </div>
+
+                
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    required
                     value={formData.email}
                     onChange={handleChange}
                   />
@@ -119,7 +125,6 @@ function AddStudent({ onClose }) {
                     id="course"
                     name="course"
                     type="text"
-                    required
                     value={formData.course}
                     onChange={handleChange}
                   />
@@ -134,33 +139,11 @@ function AddStudent({ onClose }) {
                     id="section"
                     name="section"
                     type="text"
-                    required
                     value={formData.section}
                     onChange={handleChange}
                   />
                 </div>
-                <div className="relative space-y-2">
-                  <div className="relative">
-                    <button
-                      className="absolute inset-y-0 right-0 flex h-full w-9 items-center justify-center text-muted-foreground/80 hover:text-foreground transition-colors"
-                      type="button"
-                      onClick={toggleVisibility}
-                      aria-label={isVisible ? "Hide password" : "Show password"}
-                      aria-pressed={isVisible}
-                      aria-controls="password"
-                    >
-                      {isVisible ? (
-                        <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-                      ) : (
-                        <Eye size={16} strokeWidth={2} aria-hidden="true" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Button Group */}
+                  {/* Button Group */}
             <div className="flex justify-end space-x-4 pt-6">
               <Button type="button" variant="secondary" onClick={handleCancel} className="min-w-[100px] ">
                 Cancel
@@ -169,6 +152,10 @@ function AddStudent({ onClose }) {
                 {isLoading  ? "Adding..." :"Add Student"}
               </Button>
             </div>
+              </div>
+            </div>
+
+          
           </form>
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </DialogContent>

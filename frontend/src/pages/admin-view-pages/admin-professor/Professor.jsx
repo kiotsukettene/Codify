@@ -52,7 +52,7 @@ function ProfessorList() {
              <Card className="w-full">
                 <CardHeader>
                   <CardDescription className="flex items-center gap-4 mx-auto w-full justify-end">
-                  <Dialog open={isModalOpen} onOpenChange={(open) => setIsModalOpen(open)} modal>
+              <Dialog open={isModalOpen} onOpenChange={(open) => setIsModalOpen(open)} modal>
                   <DialogTrigger asChild>
                     <Button onClick={() => setIsModalOpen(true)} className="bg-neutral-900 text-white hover:bg-neutral-700">
                       <Plus /> Add Professor
@@ -61,17 +61,14 @@ function ProfessorList() {
                   <DialogContent className="max-w-lg"> 
                     <AddProfessor onClose={() => setIsModalOpen(false)} /> 
                   </DialogContent>
-                </Dialog>
+              </Dialog>
 
-
-
-                
-                <Button variant='outline' className="text-neutral-900"><SlidersHorizontal/> Filter</Button>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table className="w-full">
-                    <TableHeader>
+              <Button variant='outline' className="text-neutral-900"><SlidersHorizontal/> Filter</Button>
+               </CardDescription>
+                 </CardHeader>
+                   <CardContent>
+                     <Table className="w-full">
+                     <TableHeader>
                       <TableRow>
                         <TableHead>Firstname</TableHead>
                         <TableHead>Lastname</TableHead>
