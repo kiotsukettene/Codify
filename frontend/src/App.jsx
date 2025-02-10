@@ -23,6 +23,11 @@ import ProfessorLogin from './pages/professor-view-pages/professor-auth/Professo
 import ProfForgotPassword from './pages/professor-view-pages/professor-auth/Professor-Forgot-Password'
 import ProfNewPassword from './pages/professor-view-pages/professor-auth/Professor-New-Password'
 import ProfSuccessPassword from './pages/professor-view-pages/professor-auth/Professor-Success-Password'
+import StudentLayout from "./Layout/StudentLayout";
+import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
+import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
+import { useStudentStore } from "./store/studentStore";
+import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -71,6 +76,8 @@ function App() {
   }, [checkAuth]);
  
   if (isCheckingAuth) return <LoadingSpinner/>
+
+
   return (
   <div>
     
@@ -137,6 +144,18 @@ function App() {
               <AddStudent/>
             </ProtectedRoute>}/>
       </Route>
+
+      
+
+      <Route path="/student-login" element={<StudentLoginPage/>}/>
+      <Route path="/student-forgot-password" element={<StudentForgotPasswordPage/>}/>
+      <Route path="/student/reset-password/:token"element={<StudentNewPasswordPage />}/>
+
+
+
+      <Route path='/student' element={<StudentLayout/>}>
+       <Route path='dashboard' element={<StudentDashboard/>}/>
+     </Route>
     </Routes>
     <Toaster/>
 

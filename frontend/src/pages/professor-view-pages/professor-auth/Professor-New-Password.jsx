@@ -9,8 +9,7 @@ import PinkStar from "../../../assets/picture/random background/PinkStar.png"
 import VioletStar from "../../../assets/picture/random background/VioletStar.png"
 import SpaceShip from "../../../assets/picture/random background/Spaceship.png"
 import Waves from "../../../assets/picture/random background/Waves.png"
-import logo from "../../../assets/picture/logos/logo.png"
-
+import logo from '@/assets/picture/logos/logo.png'
 
 const ProfNewPassword = () => {
 
