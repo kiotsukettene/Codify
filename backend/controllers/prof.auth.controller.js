@@ -2,31 +2,146 @@ import { Professor } from "../models/professor.model.js";
 import bcrypt from "bcryptjs";
 import { profTokenAndCookie } from "../utils/profTokenAndCookie.js";
 import crypto from "crypto";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
 } from "../mailtrap/emails.js";
 
+//sign in with google
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:5000/api/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const professor = await Professor.findOne({
+          email: profile.emails[0].value,
+        });
+
+        if (!professor) {
+          console.log("Professor not found, rejecting access.");
+          return done(null, false);
+        }
+
+        console.log("Google Authentication Success:", professor);
+        return done(null, professor);
+      } catch (error) {
+        console.error("Google Authentication Error:", error);
+        return done(error, false);
+      }
+    }
+  )
+);
+
+export const googleAuthProfessor = passport.authenticate("google", {
+  scope: ["profile", "email"],
+  prompt: "select_account", // ✅ Forces account selection every time
+});
+
+// Google Callback Handler
+export const googleCallbackProfessor = (req, res, next) => {
+  passport.authenticate(
+    "google",
+    {
+      session: false,
+      failureRedirect: `${process.env.CLIENT_URL}/professor/login`,
+    },
+    (err, professor, info) => {
+      if (err || !professor) {
+        console.error(
+          "Google Authentication Error:",
+          err || "User did not select an account."
+        );
+        return res.redirect(
+          `${process.env.CLIENT_URL}/professor/login?error=Unauthorized access`
+        );
+      }
+      console.log("Google Authentication Success:", professor);
+
+      // ✅ Fix: Generate token using professor._id
+      const token = profTokenAndCookie(res, professor._id);
+
+      // ✅ Redirect user to frontend with token
+      res.redirect(
+        `${process.env.CLIENT_URL}/professor/dashboard?token=${token}`
+      );
+    }
+  )(req, res, next);
+};
+
+// ✅ Keep Unauthorized Redirect as is
+export const googleUnauthorizedProfessor = (req, res) => {
+  res.redirect(
+    `${process.env.CLIENT_URL}/professor/login?error=Unauthorized access.`
+  );
+};
+// Successful Google Login
+export const googleSuccessProfessor = (req, res) => {
+  if (!req.professor) {
+    return res.redirect(
+      `${process.env.CLIENT_URL}/professor/login?error=Unauthorized access`
+    );
+  }
+  // ✅ Generate Token & Set Cookie
+  profTokenAndCookie(res, req.professor._id);
+  // ✅ Redirect Logic: If token is missing, go to login
+  const token = req.cookies.token;
+  if (!token) {
+    return res.redirect(`${process.env.CLIENT_URL}/professor/login`);
+  }
+  // ✅ Redirect to Dashboard if authenticated
+  res.redirect(`${process.env.CLIENT_URL}/professor/dashboard`);
+};
+
+//login
 export const loginProfessor = async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const professor = await Professor.findOne({ email });
     console.log("Professor query result:", professor);
+
     if (!professor) {
-      console.log("professor not found");
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid credentials" });
-    }
-    const isPasswordValid = await bcrypt.compare(password, professor.password);
-    if (!isPasswordValid) {
-      console.log("professor pasaword not valid");
+      console.log("Professor not found");
       return res
         .status(400)
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    profTokenAndCookie(res, professor._id); //
+    // ✅ If user signed up via Google, do NOT check password
+    if (!professor.password) {
+      console.log("Google user detected, bypassing password check.");
+      const token = profTokenAndCookie(res, professor._id);
+
+      professor.lastLogin = new Date();
+      await professor.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Google login successful",
+        token,
+        professor: {
+          ...professor._doc,
+          password: undefined, // Remove password from response
+        },
+      });
+    }
+
+    // ✅ Regular login: Check password
+    const isPasswordValid = await bcrypt.compare(password, professor.password);
+    if (!isPasswordValid) {
+      console.log("Professor password not valid");
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid credentials" });
+    }
+
+    const token = profTokenAndCookie(res, professor._id);
 
     professor.lastLogin = new Date();
     await professor.save();
@@ -34,9 +149,10 @@ export const loginProfessor = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
+      token,
       professor: {
         ...professor._doc,
-        password: undefined,
+        password: undefined, // Hide password from response
       },
     });
   } catch (error) {
