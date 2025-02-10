@@ -19,7 +19,7 @@ export const useAuthStore = create((set) => ({
     signup: async (email, password, name, institutionName, address, phoneNumber, subscription, plan, paymentMethod, amount) => {
         set({
             isLoading: true,
-            message: null
+            error: null
         })
         try {
             const response = await axios.post(`${API_URL}/signup`, {
@@ -41,7 +41,7 @@ export const useAuthStore = create((set) => ({
             })
         } catch (error) {
             set({
-                message: error.response.data.message || "Error signing up",
+                error: error.response.data.message || "Error signing up",
                 isLoading: false
             })
             throw error;
@@ -113,7 +113,7 @@ export const useAuthStore = create((set) => ({
     },
 
     loginWithGoogle: async () => {
-    
+    set({ isLoading: true, error: null }); // ✅ Reset error before login
     try {
         window.location.href = "http://localhost:3000/api/auth/google"; // Redirect user
     } catch (error) {
@@ -154,7 +154,7 @@ export const useAuthStore = create((set) => ({
             })
         } catch (error) {
             set({
-                message: error.response.data.message || "Error sending reset link",
+                error: error.response.data.message || "Error sending reset link",
             })
             throw error;
         }

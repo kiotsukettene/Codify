@@ -23,7 +23,7 @@ function AdminLoginPage() {
   const searchParams = new URLSearchParams(location.search);
   const errorMessage = searchParams.get("error");
   
-  const { login, logout, isLoading, error } = useAuthStore();
+  const { login, logout, isLoading, error, loginWithGoogle } = useAuthStore();
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
@@ -38,7 +38,15 @@ function AdminLoginPage() {
         if (errorMessage) {
             logout(); 
         }
-  }, [logout]);
+  }, [logout, errorMessage]);
+
+  useEffect(() => {
+        // ✅ Detect Back button press and force logout
+        if (window.performance && window.performance.navigation.type === 2) {
+            console.log("Back button pressed: Logging out user");
+            logout();
+        }
+    }, [location, logout]);
   
 
   return (
@@ -111,7 +119,13 @@ function AdminLoginPage() {
                       </span>
                     </div>
                   </div>
-                  <Button className="px-4 border bg-white flex gap-2 hover:bg-neutral-100 hover:text-black border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500  dark:hover:text-slate-300 hover:shadow transition duration-150" onClick={handleGoogleLogin}>
+                  <Button className="px-4 border bg-white flex gap-2 hover:bg-neutral-100 hover:text-black border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500  dark:hover:text-slate-300 hover:shadow transition duration-150" 
+                   onClick={(e) => {
+                    e.preventDefault(); // Prevent form submission
+                    handleGoogleLogin();
+                  }}
+                  disabled={isLoading}
+  >
                     <img
                       className="w-6 h-6"
                       src="https://www.svgrepo.com/show/475656/google-color.svg"

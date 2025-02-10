@@ -19,7 +19,7 @@ function AdminForgotPasswordPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState("");
 
-  const { isLoading, forgotPassword, message } = useAuthStore();
+  const { isLoading, forgotPassword, error } = useAuthStore();
 
   const handleSendResetLink = async(e) => {
     e.preventDefault();
@@ -54,14 +54,14 @@ function AdminForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                {message && <p className="text-red-500 text-sm">{message}</p>}
+                {error && <p className="text-red-500 text-sm">{error}</p>}
                 <p className="text-sm py-2 text-gray-500">
                   A password reset link will be sent to the provided email
                   address.
                 </p>
               </div>
               <Button type="submit" className="w-full">
-                {isLoading && !message ? <Loader className='size-6 animate-spin mx-auto'/> : "Send Reset Link"}
+                {isLoading && !error ? <Loader className='size-6 animate-spin mx-auto'/> : "Send Reset Link"}
               </Button>
         </form>
           <div className="mt-4 text-center text-sm">

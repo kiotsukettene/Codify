@@ -1,4 +1,9 @@
-import { PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE } from "./emailTemplates.js"
+import {
+    PASSWORD_RESET_REQUEST_TEMPLATE,
+    PASSWORD_RESET_SUCCESS_TEMPLATE,
+    VERIFICATION_EMAIL_TEMPLATE,
+    WELCOME_EMAIL_STUDENT_TEMPLATE
+} from "./emailTemplates.js"
 import { mailtrapClient, sender } from "./mailtrap.config.js"
 
 export const sendVerificationEmail = async (email, verificationToken) => {
@@ -90,23 +95,19 @@ export const sendResetSuccessEmail = async (email) => {
 export const sendStudentWelcomeEmail = async (email, firstName, lastName, password, institutionName) => {
     const recipient = [{ email }]
 
+    const emailBody = WELCOME_EMAIL_STUDENT_TEMPLATE
+        .replace(/{firstName}/g, firstName)
+        .replace(/{lastName}/g, lastName)
+        .replace(/{email}/g, email)
+        .replace(/{password}/g, password)
+        .replace(/{institutionName}/g, institutionName);
+
     try {
          const response = await mailtrapClient.send({
             from: sender,
             to: recipient,
             subject: "Welcome to Your Institution's LMS",
-            html: `
-                <p>Hello ${lastName},</p>
-                <p>You have been registered under <strong>${institutionName}</strong>.</p>
-                <p>Your login credentials:</p>
-                <ul>
-                    <li>Email: ${email}</li>
-                    <li>Password: ${password} (please change it after login)</li>
-                </ul>
-                <p>Please change your password upon login.</p>
-                <p>Best regards,</p>
-                <p>Your Institution Team</p>
-            `,
+            html: emailBody,
             category: "Student Registration"
         });
 

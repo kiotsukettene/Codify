@@ -378,26 +378,32 @@ passport.use(
             callbackURL: "http://localhost:3000/api/auth/google/callback",
             passReqToCallback: true
         },
-        async (accessToken, refreshToken, profile, done) => {
+        async (req, accessToken, refreshToken, profile, done) => {
             try {
-                // Find existing institution by email
+                // ✅ Ensure profile data exists
+                if (!profile || !profile.emails || profile.emails.length === 0) {
+                    return done(null, false, { message: "No email found in Google profile" });
+                }
 
+                // ✅ Check if the user exists in database
                 const institution = await Institution.findOne({
                     email: profile.emails[0].value
                 });
 
                 if (!institution) {
-                    return done(null, false, {
-                        message: "Access denied. You are not registered as an institution"
-                    })
+                    return done(null, false, { message: "Access denied. You are not registered as an institution" });
                 }
+
                 return done(null, institution);
             } catch (error) {
-                return done(error, false)
+                console.error("Google Strategy Error:", error);
+                return done(null, false, { message: "Authentication failed. Please try again." });
             }
         }
     )
 );
+
+
 
 export const googleAuth = passport.authenticate("google", {
     scope: ["profile", "email"],
@@ -410,7 +416,7 @@ export const googleCallback = (req, res, next) => {
     passport.authenticate("google", { session: false, failureRedirect: `${process.env.CLIENT_URL}/admin/login`}, (err, user, info) => {
         if (err || !user) {
             console.error("Google Authentication Error:", err || "User did not select an account.");
-            return res.redirect(`${process.env.CLIENT_URL}/admin/login?error=Unauthorized access`);
+            return res.redirect(`${process.env.CLIENT_URL}/admin/login?error=No account found. Please register first.`);
         }
 
         // ✅ Store user data in request for the next step
@@ -433,16 +439,17 @@ export const googleSuccess = (req, res) => {
         return res.redirect(`${process.env.CLIENT_URL}/admin/login?error=Unauthorized access`);
     }
 
-    // ✅ Generate Token & Set Cookie
+    // ✅ Clear any old authentication session before setting new one
+    res.clearCookie("token");
+
+    // ✅ Generate new token
     generateTokenAndSetCookie(res, req.user._id);
 
-    // ✅ Redirect Logic: If token is missing, go to login
-    const token = req.cookies.token;
-    if (!token) {
-        return res.redirect(`${process.env.CLIENT_URL}/admin/login`);
-    }
-
-    // ✅ Redirect to Dashboard if authenticated
-    res.redirect(`${process.env.CLIENT_URL}/admin/dashboard`);
+    // ✅ Force browser to update authentication state
+    res.send(`
+        <script>
+            document.cookie = "token=; Max-Age=0; path=/";
+            window.location.href = "${process.env.CLIENT_URL}/admin/dashboard";
+        </script>
+    `);
 };
-

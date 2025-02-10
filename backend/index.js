@@ -39,6 +39,8 @@ app.use(passport.session()); // ✅ Enable session for Google Login
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 
+
+
 app.listen(PORT, () => {
     connectDB();
     console.log('Server is running on port', PORT);
