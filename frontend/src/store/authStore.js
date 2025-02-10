@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import axios from 'axios'
 import { TrainFrontTunnelIcon } from 'lucide-react';
 import { Fallback } from '@radix-ui/react-avatar';
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../utils/firebase.config";
 import toast from 'react-hot-toast';
 
 const API_URL = "http://localhost:3000/api/auth";
@@ -112,31 +114,37 @@ export const useAuthStore = create((set) => ({
         }
     },
 
-    loginWithGoogle: async () => {
-    set({ isLoading: true, error: null }); // ✅ Reset error before login
-    try {
-        window.location.href = "http://localhost:3000/api/auth/google"; // Redirect user
-    } catch (error) {
-        toast.error("Google login failed");
-    }
-},
-    logout: async () => {
-        set({
-            isLoading: true,
-            error: null
-        })
+        loginWithGoogle: async () => {
+            set({ isLoading: true, error: null });
+
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const token = await result.user.getIdToken(); // Get Firebase token
+
+                // Send token to backend for verification and login
+                const response = await axios.post(`${API_URL}/google-login`, { token });
+
+                set({ institution: response.data.institution, isAuthenticated: true, isLoading: false });
+            } catch (error) {
+                set({ error: error.response, isLoading: false });
+                
+                // Check if error is due to popup being closed
+                if (error.code === 'auth/popup-closed-by-user') {
+                    window.location.href = '/admin/login';
+                }
+            }
+            set({ isLoading: false });
+        },
+        logout: async () => {
+        set({ isLoading: true, error: null });
+
         try {
-            await axios.post(`${API_URL}/logout`);
-            set({
-                institution: null,
-                isAuthenticated: false,
-                isLoading: false
-            })
+            await auth.signOut(); // Firebase logout
+            await axios.post(`${API_URL}/logout`); // Backend logout
+
+            set({ institution: null, isAuthenticated: false, isLoading: false });
         } catch (error) {
-            set({
-                error: "Error logging out",
-                isLoading: false,
-            })
+            set({ error: error.message, isLoading: false });
         }
     },
 

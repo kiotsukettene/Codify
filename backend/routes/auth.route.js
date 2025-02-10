@@ -9,9 +9,7 @@ import {
      checkAuth,
      markAsPaid,
      resendVerificationCode,
-     googleAuth,
-     googleCallback,
-     googleSuccess
+     googleLogin
 
 } from '../controllers/auth.controller.js';
 
@@ -25,8 +23,7 @@ router.get("/check-auth",  verifyToken, checkAuth)
 router.post("/signup", registerInstitution)
 
 router.post("/login", loginInstitution)
-router.get("/google", googleAuth);
-router.get("/google/callback", googleCallback, googleSuccess);
+router.post("/google-login", googleLogin)
 
 router.post("/logout", logoutInstitution)
 

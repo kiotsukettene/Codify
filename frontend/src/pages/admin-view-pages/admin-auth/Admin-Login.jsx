@@ -31,7 +31,7 @@ function AdminLoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
+    await loginWithGoogle();
   }
 
   useEffect(() => {

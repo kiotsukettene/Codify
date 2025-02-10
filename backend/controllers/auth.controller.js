@@ -1,8 +1,7 @@
 import { Institution } from "../models/institution.model.js";
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import passport from 'passport'
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import admin from "../utils/firebaseAdmin.js"
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import {
     sendVerificationEmail,
@@ -362,7 +361,6 @@ export const markAsPaid = async (req, res) => {
 
 export const logoutInstitution = async (req, res) => {
     res.clearCookie("token")
-
     res.status(200).json({
         sucess: true,
         message: "Logged out successfully"
@@ -370,86 +368,25 @@ export const logoutInstitution = async (req, res) => {
 }
 
 
-passport.use(
-    new GoogleStrategy(
-        {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: "http://localhost:3000/api/auth/google/callback",
-            passReqToCallback: true
-        },
-        async (req, accessToken, refreshToken, profile, done) => {
-            try {
-                // ✅ Ensure profile data exists
-                if (!profile || !profile.emails || profile.emails.length === 0) {
-                    return done(null, false, { message: "No email found in Google profile" });
-                }
+export const googleLogin = async (req, res) => {
+    const { token } = req.body;
 
-                // ✅ Check if the user exists in database
-                const institution = await Institution.findOne({
-                    email: profile.emails[0].value
-                });
+    try {
+        // Verify Firebase ID Token
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const email = decodedToken.email;
 
-                if (!institution) {
-                    return done(null, false, { message: "Access denied. You are not registered as an institution" });
-                }
+        let institution = await Institution.findOne({ email });
 
-                return done(null, institution);
-            } catch (error) {
-                console.error("Google Strategy Error:", error);
-                return done(null, false, { message: "Authentication failed. Please try again." });
-            }
-        }
-    )
-);
-
-
-
-export const googleAuth = passport.authenticate("google", {
-    scope: ["profile", "email"],
-    prompt: "select_account", // ✅ Forces account selection every time
-});
-
-// Google Callback Handler
-
-export const googleCallback = (req, res, next) => {
-    passport.authenticate("google", { session: false, failureRedirect: `${process.env.CLIENT_URL}/admin/login`}, (err, user, info) => {
-        if (err || !user) {
-            console.error("Google Authentication Error:", err || "User did not select an account.");
-            return res.redirect(`${process.env.CLIENT_URL}/admin/login?error=No account found. Please register first.`);
+        if (!institution) {
+            return res.status(400).json({ success: false, message: "No registered institution found with this email" });
         }
 
-        // ✅ Store user data in request for the next step
-        req.user = user;
-        next(); // ✅ Pass control to `googleSuccess`
-    })(req, res, next);
-};
+        generateTokenAndSetCookie(res, institution._id);
 
-
-// ✅ Keep Unauthorized Redirect as is
-export const googleUnauthorized = (req, res) => {
-    res.redirect(`${process.env.CLIENT_URL}/admin/login?error=Unauthorized access.`);
-};
-
-
-// Successful Google Login
-
-export const googleSuccess = (req, res) => {
-    if (!req.user) {
-        return res.redirect(`${process.env.CLIENT_URL}/admin/login?error=Unauthorized access`);
+        res.status(200).json({ success: true, institution });
+    } catch (error) {
+        console.error("Error verifying Firebase token", error);
+        res.status(401).json({ success: false, message: "Invalid Google token" });
     }
-
-    // ✅ Clear any old authentication session before setting new one
-    res.clearCookie("token");
-
-    // ✅ Generate new token
-    generateTokenAndSetCookie(res, req.user._id);
-
-    // ✅ Force browser to update authentication state
-    res.send(`
-        <script>
-            document.cookie = "token=; Max-Age=0; path=/";
-            window.location.href = "${process.env.CLIENT_URL}/admin/dashboard";
-        </script>
-    `);
 };
