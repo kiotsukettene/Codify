@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import toast from "react-hot-toast";
 //import { isAborted } from "zod";
 
 const API_URL = "http://localhost:5000/api/auth"; //change sa local host 5000 kasi gamit q
@@ -110,6 +111,38 @@ export const useprofAuthStore = create((set) => ({
         error: error.response.data.message || "Error resetting password",
       });
       throw error;
+    }
+  },
+
+  loginWithGoogle: async () => {
+    try {
+      window.location.href = "http://localhost:5000/api/auth/professor-google"; // Redirect user
+    } catch (error) {
+      toast.error("Google login failed", error);
+    }
+  },
+
+  logoutProfessor: async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/auth/professor-logout",
+        {
+          method: "POST",
+          credentials: "include", // Ensure cookies are included in the request
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        set({ user: null, isAuthenticated: false }); // Reset state
+        toast.success("Logged out successfully");
+      } else {
+        toast.error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("An error occurred during logout");
     }
   },
 }));

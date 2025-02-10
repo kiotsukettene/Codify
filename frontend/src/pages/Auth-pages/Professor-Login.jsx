@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,12 +24,21 @@ const ProfessorLogin = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   //
-  const { login, isLoading, error } = useprofAuthStore();
+  const { login, isLoading, error, Logout, errorMessage } = useprofAuthStore();
 
   const handleProfessorLogin = async (e) => {
     e.preventDefault();
     await login(email, password);
   };
+
+  const handleGoogleLogin = async () => {
+    window.location.href = "http://localhost:5000/api/auth/professor-google";
+  };
+  useEffect(() => {
+    if (errorMessage) {
+      Logout();
+    }
+  }, [Logout]);
 
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
@@ -166,6 +175,7 @@ const ProfessorLogin = () => {
               </Button>
 
               <Button
+                onClick={handleGoogleLogin}
                 variant="outline"
                 className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white"
               >
