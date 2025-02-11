@@ -271,7 +271,7 @@ function AdminRegisterPage() {
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full font-normal text-sm">
                   <BadgeCheck />{" "}
-                  {isLoading && !message ? <Loader className="animate-spin mx-auto" size={24} /> : "Register"}
+                  {isLoading && !error ? <Loader className="animate-spin mx-auto" size={24} /> : "Register"}
                 </Button>
                 <div className="flex mt-2">
                   <p className="text-sm text-muted-foreground">
