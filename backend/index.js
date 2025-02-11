@@ -21,6 +21,10 @@ app.use(cors({
 app.use(express.json()); // allows us to parse incoming request with JSON payloads (req.body)
 app.use(cookieParser()); // allows us to parse cookies from the incoming request headers
 
+// ✅ Handle CORS Preflight Requests
+app.options("*", cors());
+
+
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 

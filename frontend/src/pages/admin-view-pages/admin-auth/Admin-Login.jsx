@@ -12,19 +12,31 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LoaderOne from "@/components/ui/loader-one";
 import { useAuthStore } from "@/store/authStore";
+import toast from "react-hot-toast";
 
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
   const { login, isLoading, error } = useAuthStore();
-
+  const navigate = useNavigate(); // ✅ Use React Router navigation
 
 
   const handleAdminLogin = async (e) => {
-    e.preventDefault();
-    await login(email, password);
+    e.preventDefault(); // ✅ Prevent page reload
+
+    try {
+      await login(email, password); // ✅ Call Zustand store login function
+      toast.success("Login successful!");
+
+      // ✅ Navigate to admin dashboard
+      navigate("/admin/dashboard", { replace: true });
+
+    } catch (error) {
+      toast.error(error?.message || "Failed to login. Try again.");
+    }
   };
+
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">

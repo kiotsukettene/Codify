@@ -1,6 +1,4 @@
-import AppSidebar from '@/components/student-view/Sidebar'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from '@radix-ui/react-context-menu'
+
 import Typewriter from '@/components/fancy/typewriter'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartNoAxesColumnIncreasing, LibraryBig, NotebookTabs, Trophy } from 'lucide-react'
@@ -8,8 +6,11 @@ import { Button } from '@/components/ui/button'
 import dashboardImage from "../../assets/picture/random background/dashboard-img.png";
 import StudentHeader from '@/components/student-view/Header'
 import spaceShip from "../../assets/picture/random background/dashboard-spaceShip.png";
+import { useStudentStore } from '@/store/studentStore';
 
 function StudentDashboard() {
+  const { student } = useStudentStore(); 
+  const studentName = student ? student.firstName : "Student";
   const classes = [
     {
       initials: "SE",
@@ -62,22 +63,30 @@ function StudentDashboard() {
   ]
   return (
     <div className="flex flex-col mx-7">
-    {/* Greeting Section at the Top */}
-    <div className="w-full text-2xl flex flex-row items-start justify-start text-foreground dark:text-muted font-normal overflow-hidden p-6">
-      <p className="whitespace-pre-wrap">
-        <span>{"Hi Momo 🌞 "}</span>
-        <br />
-        <Typewriter
-          text={["Welcome to Codify", "Good to see you!", "Ready to create something awesome?", "Keep shining 🌟", "Fuel your creativity today!"]}
-          speed={70}
-          className="text-primary font-semibold"
-          waitTime={1500}
-          deleteSpeed={40}
-          cursorChar={"_"}
-        />
-      </p>
-    </div>
-  
+  {/* ✅ Greeting Section at the Top */}
+
+<div className="w-full flex flex-col items-start justify-start px-4 pt-6">
+  <p className="text-2xl text-foreground dark:text-muted font-normal leading-tight">
+  <span className="block">Hi, {studentName} 🌞</span> {/* ✅ Display student name */}
+  <Typewriter
+      text={[
+        "Welcome to Codify",
+        "Manage your platform easily!",
+        "Let's keep things organized!",
+        "Keep shining 🌟",
+        "Stay on top of everything!",
+      ]}
+      speed={70}
+      className="text-primary font-semibold"
+      waitTime={1500}
+      deleteSpeed={40}
+      cursorChar={"_"}
+    />
+  </p>
+</div>
+
+
+
     {/* Main Content Layout */}
     <div className="flex flex-col lg:flex-row gap-3">
       {/* Left Side Content */}
@@ -149,8 +158,31 @@ function StudentDashboard() {
                 </div>
               </div>
             </div>
+
+            <div className="rounded-lg w-auto h-32 bg-white flex justify-start items-center gap-4 px-8">
+              <h1 className="w-24 h-24 bg-violet-100 rounded-lg font-medium text-4xl flex justify-center items-center">SE</h1>
+              <div>
+                <h1 className="font-semibold">Software Engineering</h1>
+                <div className="flex space-x-8">
+                  <div className="flex items-center gap-2">
+                    <NotebookTabs color="#C2A6DE" />
+                    <p className="text-sm text-neutral-800">12 Lessons</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Trophy color="#C2A6DE" />
+                    <p className="text-sm text-neutral-800">Average</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
           </div>
+
+          
         </div>
+
+        
       </div>
   
       {/* Right Side Content */}

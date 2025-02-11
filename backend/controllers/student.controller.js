@@ -8,6 +8,8 @@ import {
   sendStudentWelcomeEmail,
 } from "../mailtrap/emails.js";
 import { studentTokenAndCookie } from "../utils/studentTokenAndCookie.js";
+import admin from "../utils/firebaseStudent.js"; // Import Firebase without reinitializing
+
 
 export const registerStudent = async (req, res) => {
   const {
@@ -224,11 +226,16 @@ export const loginStudent = async (req, res) => {
 };
 
 export const logoutStudent = async (req, res) => {
-  res.clearCookie("token");
-  res
-    .status(200)
-    .json({ status: "success", message: "Logged out successfully" });
-};
+    res.cookie("token", "", {
+      httpOnly: true,
+      expires: new Date(0), // ✅ Expire the cookie immediately
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict"
+    });
+  
+    res.status(200).json({ status: "success", message: "Logged out successfully" });
+  };
+  
 
 export const studentForgotPassword = async (req, res) => {
   const { email } = req.body;
@@ -356,3 +363,50 @@ export const studentCheckAuth = async (req,res) => {
         })
     }
 }
+
+
+  
+  // Google Login Route
+  export const googleLogin = async (req, res) => {
+    try {
+      const { token } = req.body;
+  
+      // Verify Firebase Token
+      const decoded = await admin.auth().verifyIdToken(token);
+      const email = decoded.email;
+  
+      console.log("Google Login Attempt:", email);
+  
+      // Check if student exists in database
+      let student = await Student.findOne({ email });
+  
+      if (!student) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied. Your email is not registered in the system."
+        });
+      }
+  
+      // If student exists, generate login token
+      studentTokenAndCookie(res, student._id);
+  
+      // Exclude password from response
+      const { password, ...studentWithoutPassword } = student._doc;
+  
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        student: studentWithoutPassword
+      });
+  
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      res.status(401).json({
+        success: false,
+        message: error.message.includes("auth/id-token-expired")
+          ? "Google session expired. Please sign in again."
+          : "Invalid Google authentication"
+      });
+    }
+  };
+  

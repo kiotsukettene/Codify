@@ -17,6 +17,10 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStudentStore } from '@/store/studentStore'
 import { useState } from 'react'
+import { auth, googleProvider } from "@/firebase";
+import { signInWithPopup } from "firebase/auth";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 function StudentLoginPage() {
     const [isVisible, toggleVisibility] = useToggleVisibility()
@@ -36,6 +40,73 @@ function StudentLoginPage() {
       navigate('/student/dashboard');  // Redirect to the dashboard after successful login
 
     }
+
+//   const handleGoogleSignIn = async () => {
+//     console.log("🚀 Google Sign-In Button Clicked!"); // ✅ Debugging
+
+//     try {
+//         const result = await signInWithPopup(auth, googleProvider);
+//         console.log("✅ Google Sign-In Success:", result.user.email); // ✅ Debugging
+
+//         const token = await result.user.getIdToken(); // Get Firebase token
+//         console.log("🔑 Firebase Token:", token); // ✅ Debugging
+
+//         // Send token to backend
+//         const response = await axios.post("http://localhost:3000/api/students/student-google-login", { token });
+//         console.log("📨 Backend Response:", response.data); // ✅ Debugging
+
+//         if (response.data.success) {
+//             toast.success("Login successful!");
+
+//             // ✅ Store Student Data in Global Store
+//             useStudentStore.getState().setStudent(response.data.student);
+
+//             // ✅ Redirect to Dashboard without refreshing the page
+//             navigate("/student/dashboard", { replace: true });
+//         } else {
+//             toast.error("Login failed. Please use a registered email.");
+//         }
+
+//     } catch (error) {
+//         console.error("❌ Google Sign-In Error:", error);
+//         toast.error("Google login failed. Try again.");
+//     }
+// };
+
+const handleGoogleSignIn = async () => {
+  console.log("🚀 Google Sign-In Button Clicked!"); // ✅ Debugging
+
+  try {
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("✅ Google Sign-In Success:", result.user.email); // ✅ Debugging
+
+      const token = await result.user.getIdToken(); // Get Firebase token
+      console.log("🔑 Firebase Token:", token); // ✅ Debugging
+
+      // Send token to backend
+      const response = await axios.post("http://localhost:3000/api/students/student-google-login", { token });
+      console.log("📨 Backend Response:", response.data); // ✅ Debugging
+
+      if (response.data.success) {
+          toast.success("Login successful!");
+
+          // ✅ Store Student Data in Zustand store
+          useStudentStore.getState().setStudent(response.data.student);
+
+          // ✅ Redirect to Dashboard using React Router
+          navigate("/student/dashboard", { replace: true });
+      } else {
+          toast.error("Login failed. Please use a registered email.");
+      }
+
+  } catch (error) {
+      console.error("❌ Google Sign-In Error:", error);
+      toast.error("Google login failed. Try again.");
+  }
+};
+
+
+    
     return (
         <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
     
@@ -166,6 +237,8 @@ function StudentLoginPage() {
             </motion.button>
     
               <Button
+                onClick={handleGoogleSignIn} // ✅ Ensure this function is called onClick
+
                 variant="outline"
                 className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white">
                 <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />

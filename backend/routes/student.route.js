@@ -10,6 +10,7 @@ import {
   studentForgotPassword,
   studentRestPassword,
   studentCheckAuth,
+  googleLogin,
 } from "../controllers/student.controller.js";
 
 import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
@@ -29,5 +30,7 @@ router.post("/logoutStudent", logoutStudent);
 router.post("/loginStudent", loginStudent);
 router.post("/student-forgot-password", studentForgotPassword);
 router.post("/student-reset-password/:token", studentRestPassword);
+router.post("/student-google-login", googleLogin);
+
 
 export default router;

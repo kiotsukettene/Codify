@@ -103,7 +103,7 @@ const ProfForgotPassword = () => {
         </div>
       </CardContent>
     </Card>
-  </div>
+    </div>
   )
 }
 
