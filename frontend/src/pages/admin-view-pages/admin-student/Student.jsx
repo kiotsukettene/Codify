@@ -1,16 +1,10 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Badge } from "@/components/ui/badge"
-import { useEffect } from 'react'
-
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card"
 
 import {
@@ -25,21 +19,19 @@ import { Plus, SlidersHorizontal } from 'lucide-react'
 
 import { useStudentStore } from '@/store/studentStore'
 import { toast } from 'react-hot-toast'
-
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import AddStudent from '../admin-student/Add-Student'
+ 
 
 
 function StudentList() {
-  const navigate = useNavigate()
-
   const { students, fetchStudents, deleteStudent, isLoading, error } = useStudentStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   
   useEffect(() => {
     fetchStudents();
   }, [fetchStudents]);
-
-  const handleAddStudent = () => {  
-    navigate('/admin/addStudent')
-  }
 
   const handleDelete = async (id) => {
     await deleteStudent(id);
@@ -60,8 +52,28 @@ function StudentList() {
                   {/* <CardTitle>Products</CardTitle> */}
                   <CardDescription className="flex items-center gap-4 mx-auto w-full justify-end">
                     {/* Manage your products and view their sales performance. */}
-                <Button onClick={handleAddStudent} className="bg-neutral-900 text-white hover:bg-neutral-700"><Plus /> Register New Student</Button>
-                
+{/* DialogTrigger to open the modal */}
+<Dialog
+                  open={isModalOpen}
+                  onOpenChange={(open) => setIsModalOpen(open)}
+                  modal
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      onClick={() => setIsModalOpen(true)}
+                      className="bg-neutral-900 text-white hover:bg-neutral-700"
+                    >
+                      <Plus /> Register New Student
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <AddStudent onClose={() => setIsModalOpen(false)} />
+                  </DialogContent>
+                </Dialog>
+
+
+
+
                 <Button variant='outline' className="text-neutral-900"><SlidersHorizontal /> Filter</Button>
                   </CardDescription>
             </CardHeader>

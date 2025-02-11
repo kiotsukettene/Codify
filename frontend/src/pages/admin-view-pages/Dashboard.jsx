@@ -1,10 +1,13 @@
 import Typewriter from '@/components/fancy/typewriter';
+import { useAuthStore } from '@/store/authStore';
 
 function AdminDashboard() {
+
+  const { institution } = useAuthStore();
   return (
     <div className="lg:text-2xl sm:text-3xl text-2xl flex flex-row items-start justify-start text-foreground dark:text-muted font-normal overflow-hidden p-6">
       <p className="whitespace-pre-wrap">
-        <span>{"Hi Admin 🌞 "}</span>
+        <span>{`Welcome to Codify, ${institution.institutionName}🌞 `}</span>
         <br />
         <Typewriter
           text={[
