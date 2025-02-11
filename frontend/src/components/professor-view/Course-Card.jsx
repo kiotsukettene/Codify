@@ -1,11 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Monitor } from 'lucide-react'
-// import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { Avatar, AvatarImage } from '../ui/avatar'
 
 const Card = ({ lessonCount, languages, title, courseCode, section }) => {
   return (
-    <div className="w-full sm:w-[240px] h-[320px]  transform hover:scale-105 transition-transform duration-300">
+    <div className="w-[230px] sm:w-[240px] h-[320px] transform hover:scale-105 transition-transform duration-300">
       <div className="relative w-full h-full shadow-lg"
            style={{
              transform: 'skewX(-15deg)',
@@ -29,18 +29,18 @@ const Card = ({ lessonCount, languages, title, courseCode, section }) => {
 
           {/* Pics */}
 
-{/* 
-          <div className="absolute bottom-4 right-6 flex -space-x-2">
-          <Avatar>
+
+          <div className="absolute bottom-2 right-3 flex -space-x-2">
+          <Avatar className="w-6 h-6">
          <AvatarImage src="https://github.com/shadcn.png" />
           </Avatar>
-          <Avatar>
+          <Avatar className="w-6 h-6">
          <AvatarImage src="https://github.com/shadcn.png" />
           </Avatar>
-          <Avatar>
+          <Avatar className="w-6 h-6">
          <AvatarImage src="https://github.com/shadcn.png" />
           </Avatar>
-          </div> */}
+          </div>
 
         </div>
         {/* Bottom section */}

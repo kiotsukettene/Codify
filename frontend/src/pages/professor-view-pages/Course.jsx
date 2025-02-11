@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import Card from '../../components/professor-view/CardCourse';
-// import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/Components/ui/sidebar';
+import Card from '../../components/professor-view/Course-Card';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Plus } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/Components/ui/pagination';
-// import AppSidebar from '@/components/professor-view/Sidebar';
+import AppSidebar from '../../components/professor-view/Sidebar';
 import { Separator } from '@/Components/ui/separator';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import CourseModal from '@/components/professor-view/Add-Course-Modal';
 
 const Courses = () => {
   const courses = [
@@ -26,6 +28,7 @@ const Courses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(courses.length / itemsPerPage);
   const [selectedLanguage, setSelectedLanguage] = useState([]); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Add this state to track sidebar status
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -59,34 +62,53 @@ const Courses = () => {
 
 
   return (
-    // <SidebarProvider>
-    //   <AppSidebar />
-    //   <div className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300">
-    //     <SidebarInset className="flex-1">
-    //       <header className="flex h-20 shrink-0 items-center gap-2 px-4">
-    //         <SidebarTrigger 
-    //           className="-ml-1"   
-    //           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-    //         />
-    //         <Separator orientation="vertical" className="mr-2 h-4" />
-    //       </header>
-
-
+    <SidebarProvider>
+      <AppSidebar />
+      <div className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300">
+        <SidebarInset className="flex-1">
+          <header className="flex h-20 shrink-0 items-center gap-2 px-4">
+            <SidebarTrigger 
+              className="-ml-1"   
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+          </header>
 
         
-          <div className="flex bg-white min-h-screen ml-7">
-            <div className="w-full p-4 sm:p-6">
+          <div>
+            <div className="w-full p-2 sm:p-6">
               
               {/* Fixed header section */}
-              <div className="bg-white pb-4 ">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                  <div className="flex justify-between items-center w-full sm:w-auto">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">Course</h1>
-                    <Button className="bg-purple-700 hover:bg-purple-800 sm:hidden">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+              <div className="bg-white pb-4">
+              <div className="flex items-center justify-between mb-6">
+  <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">Course</h1>
+
+  <Dialog open={isModalOpen} onOpenChange={(open) => setIsModalOpen(open)} modal>
+    <DialogTrigger asChild>
+      <Button
+        onClick={() => setIsModalOpen(true)}
+        className="bg-purple-700 hover:bg-purple-800 p-6 rounded-2xl sm:hidden"
+      >
+        <Plus className="w-5 h-5" />
+      </Button>
+    </DialogTrigger>
+
+    <DialogTrigger asChild>
+      <Button
+        onClick={() => setIsModalOpen(true)}
+        className="hidden sm:flex items-center bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg"
+      >
+        <Plus className="w-4 h-4 mr-2" /> Create Course
+      </Button>
+    </DialogTrigger>
+
+    <DialogContent>
+      <CourseModal onClose={() => setIsModalOpen(false)} />
+    </DialogContent>
+  </Dialog>
+</div>
+
+
 
                 {/* Filter Tags */}
                 <div className="flex items-center justify-between w-full flex-wrap gap-2">
@@ -106,16 +128,17 @@ const Courses = () => {
                   ))}
                   </div>
 
-                  <div className='ml-auto'>
-                  <Button className="bg-purple-700 hover:bg-purple-800">
-                    <Plus className="w-4 h-4 mr-2" /> Create Course
-                  </Button>
-                  </div>
+                  
+
+
+
+
+
                     </div>
                     </div>
 
               {/* Courses Grid */}
-              <div className={`grid place-items-center sm:place-items-start gap-11 sm:gap-20 mt-6 transition-all duration-300 
+              <div className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 mt-4 transition-all duration-300
   ${isSidebarOpen ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"}`}>
   {currentCourses.map((course, index) => (
     <Card 
@@ -159,9 +182,9 @@ const Courses = () => {
               </div>
             </div>
           </div>
-    //     </SidebarInset>
-    //   </div>
-    // </SidebarProvider>
+         </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
