@@ -8,96 +8,7 @@ import {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
 } from "../mailtrap/emails.js";
-
-//sign in with google
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/auth/professor-google/callback",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const professor = await Professor.findOne({
-          email: profile.emails[0].value,
-        });
-
-        if (!professor) {
-          console.log("Professor not found, rejecting access.");
-          return done(null, false);
-        }
-
-        console.log("Google Authentication Success:", professor);
-        return done(null, professor);
-      } catch (error) {
-        console.error("Google Authentication Error:", error);
-        return done(error, false);
-      }
-    }
-  )
-);
-
-export const googleAuthProfessor = passport.authenticate("google", {
-  scope: ["profile", "email"],
-  prompt: "select_account", // ✅ Forces account selection every time
-});
-
-// Google Callback Handler
-export const googleCallbackProfessor = (req, res, next) => {
-  passport.authenticate(
-    "google",
-    {
-      session: false,
-      failureRedirect: `${process.env.CLIENT_URL}/professor/login`,
-    },
-    (err, professor, info) => {
-      if (err || !professor) {
-        console.error(
-          "Google Authentication Error:",
-          err || "User did not select an account."
-        );
-        return res.redirect(
-          `${process.env.CLIENT_URL}/professor/login?error=Unauthorized access`
-        );
-      }
-      console.log("Google Authentication Success:", professor);
-
-      // ✅ Fix: Generate token using professor._id
-      const token = profTokenAndCookie(res, professor._id);
-
-      // ✅ Redirect user to frontend with token
-      res.redirect(
-        `${process.env.CLIENT_URL}/professor/dashboard?token=${token}`
-      );
-    }
-  )(req, res, next);
-};
-
-//Keep Unauthorized Redirect as is
-export const googleUnauthorizedProfessor = (req, res) => {
-  res.redirect(
-    `${process.env.CLIENT_URL}/professor/login?error=Unauthorized access.`
-  );
-};
-
-// Successful Google Login
-export const googleSuccessProfessor = (req, res) => {
-  if (!req.professor) {
-    return res.redirect(
-      `${process.env.CLIENT_URL}/professor/login?error=Unauthorized access`
-    );
-  }
-  // ✅ Generate Token & Set Cookie
-  profTokenAndCookie(res, req.professor._id);
-  // ✅ Redirect Logic: If token is missing, go to login
-  const token = req.cookies.token;
-  if (!token) {
-    return res.redirect(`${process.env.CLIENT_URL}/professor/login`);
-  }
-  // ✅ Redirect to Dashboard if authenticated
-  res.redirect(`${process.env.CLIENT_URL}/professor/dashboard`);
-};
+import admin from "../utils/firebaseAdmin.js";
 
 //login
 export const loginProfessor = async (req, res) => {
@@ -352,5 +263,73 @@ export const registerProfessor = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+//SSO
+// export const googleLoginProfessor = async (req, res) => {
+//   const { token } = req.body;
+
+//   try {
+//     // Verify Firebase ID Token
+//     const decodedToken = await professor.auth().verifyIdToken(token);
+//     const email = decodedToken.email;
+
+//     let professor = await Professor.findOne({ email });
+
+//     if (!professor) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "No registered institution found with this email",
+//       });
+//     }
+
+//     profTokenAndCookie(res, professor._id);
+
+//     res.status(200).json({ success: true, professor });
+//   } catch (error) {
+//     console.error("Error verifying Firebase token", error);
+//     res.status(401).json({ success: false, message: "Invalid Google token" });
+//   }
+// };
+export const googleLoginProfessor = async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    console.log("📌 Received Token in Backend:", token); // ✅ Debugging
+
+    if (!token) {
+      console.error("❌ Token is missing!");
+      return res
+        .status(400)
+        .json({ success: false, message: "Token is missing" });
+    }
+
+    // ✅ FIXED: Verify Firebase Token using Firebase Admin SDK
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    console.log("✅ Decoded Token:", decodedToken);
+
+    const email = decodedToken.email;
+    console.log("📌 Searching for professor with email:", email);
+
+    // ✅ FIXED: Rename variable to avoid conflict
+    let professorUser = await Professor.findOne({ email });
+
+    if (!professorUser) {
+      console.error("❌ No registered professor found for:", email);
+      return res.status(400).json({
+        success: false,
+        message: "No registered institution found with this email",
+      });
+    }
+
+    // ✅ FIXED: Use correct variable name
+    profTokenAndCookie(res, professorUser._id);
+
+    console.log("✅ Found Professor:", professorUser);
+    res.status(200).json({ success: true, professor: professorUser });
+  } catch (error) {
+    console.error("❌ Error verifying Firebase token:", error);
+    res.status(401).json({ success: false, message: "Invalid Google token" });
   }
 };

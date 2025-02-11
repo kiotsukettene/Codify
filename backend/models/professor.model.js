@@ -7,6 +7,10 @@ const professorSchema = new mongoose.Schema(
     password: { type: String }, // Password should be optional for Google SSO users
     firstName: { type: String },
     lastName: { type: String },
+    role: {
+      type: String,
+      default: "professor",
+    },
     avatar: { type: String }, // Store profile picture from Google
     lastLogin: { type: Date, default: Date.now },
     resetPasswordToken: { type: String },

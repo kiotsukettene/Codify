@@ -24,7 +24,8 @@ const ProfessorLogin = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   //
-  const { login, isLoading, error, Logout, errorMessage } = useprofAuthStore();
+  const { login, isLoading, error, errorMessage, LoginWithGoogle } =
+    useprofAuthStore();
 
   const handleProfessorLogin = async (e) => {
     e.preventDefault();
@@ -32,13 +33,8 @@ const ProfessorLogin = () => {
   };
 
   const handleGoogleLogin = async () => {
-    window.location.href = "http://localhost:5000/api/auth/professor-google";
+    await LoginWithGoogle();
   };
-  useEffect(() => {
-    if (errorMessage) {
-      Logout();
-    }
-  }, [Logout]);
 
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
@@ -175,7 +171,11 @@ const ProfessorLogin = () => {
               </Button>
 
               <Button
-                onClick={handleGoogleLogin}
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent form submission
+                  handleGoogleLogin();
+                }}
+                disabled={isLoading}
                 variant="outline"
                 className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white"
               >

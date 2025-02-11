@@ -2,6 +2,8 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 //import { isAborted } from "zod";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../utils/firebase.config";
 
 const API_URL = "http://localhost:5000/api/auth"; //change sa local host 5000 kasi gamit q
 
@@ -114,13 +116,93 @@ export const useprofAuthStore = create((set) => ({
     }
   },
 
-  loginWithGoogle: async () => {
+  LoginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+
+    let token = null;
+
+    // 🔹 First try-catch: Handle popup closure
     try {
-      window.location.href = "http://localhost:5000/api/auth/professor-google"; // Redirect user
+      const result = await signInWithPopup(auth, googleProvider);
+      token = await result.user.getIdToken(); // ✅ Get Firebase token
     } catch (error) {
-      toast.error("Google login failed", error);
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.error("Google Sign-In cancelled.");
+      } else {
+        toast.error("Google Login Failed: " + error.message);
+      }
+      set({ isLoading: false });
+      return; // ⛔ Exit early if popup was closed
     }
+
+    // 🔹 Second try-catch: Handle backend token verification
+    try {
+      const response = await axios.post(`${API_URL}/professor-google-login`, {
+        token,
+      });
+
+      set({
+        professor: response.data.professor,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Server Error",
+        isLoading: false,
+      });
+    }
+
+    set({ isLoading: false });
   },
+
+  // LoginWithGoogle: async () => {
+  //   set({ isLoading: true, error: null });
+
+  //   let token = null;
+
+  //   try {
+  //     const result = await signInWithPopup(auth, googleProvider);
+  //     console.log("Google Auth Result:", result); // Debugging ✅
+
+  //     token = await result.user.getIdToken();
+  //     console.log("Firebase Token:", token); // Debugging ✅
+  //   } catch (error) {
+  //     console.error("Google Login Error:", error);
+
+  //     if (error.code === "auth/popup-closed-by-user") {
+  //       toast.error("Google Sign-In cancelled.");
+  //     } else {
+  //       toast.error("Google Login Failed: " + error.message);
+  //     }
+  //     set({ isLoading: false });
+  //     return;
+  //   }
+
+  //   // 🔹 Second try-catch: Send token to backend
+  //   try {
+  //     const response = await axios.post(`${API_URL}/professor-google-login`, {
+  //       token,
+  //     });
+
+  //     console.log("Backend Response:", response.data); // Debugging ✅
+
+  //     set({
+  //       professor: response.data.professor,
+  //       isAuthenticated: true,
+  //       isLoading: false,
+  //     });
+  //   } catch (error) {
+  //     console.error("Backend Login Error:", error.response?.data || error);
+
+  //     set({
+  //       error: error.response?.data?.message || "Server Error",
+  //       isLoading: false,
+  //     });
+  //   }
+
+  //   set({ isLoading: false });
+  // },
 
   logoutProfessor: async () => {
     try {

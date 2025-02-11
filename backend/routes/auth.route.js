@@ -15,9 +15,7 @@ import {
   ForgotPasswordProfessor,
   resetPasswordProfessor,
   registerProfessor,
-  googleAuthProfessor,
-  googleCallbackProfessor,
-  googleSuccessProfessor,
+  googleLoginProfessor,
 } from "../controllers/prof.auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -40,11 +38,6 @@ router.post("/professor-logout", logoutProfessor);
 router.post("/professor-forgot-password", ForgotPasswordProfessor);
 router.post("/professor-reset-password/:token", resetPasswordProfessor);
 router.post("/professor-register", registerProfessor);
-router.get("/professor-google", googleAuthProfessor);
-router.get(
-  "/professor-google/callback",
-  googleCallbackProfessor,
-  googleSuccessProfessor
-);
+router.post("/professor-google-login", googleLoginProfessor);
 
 export default router;
