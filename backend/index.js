@@ -5,6 +5,8 @@ import { connectDB } from './database/connectDB.js';
 import authRoutes from './routes/auth.route.js'; 
 import studentRoutes from './routes/student.route.js';
 import cors from 'cors';
+import session from 'express-session';
+import passport from 'passport';
 
 dotenv.config();
 
@@ -18,11 +20,26 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 
+app.use(session({
+    secret: process.env.JWT_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === "production", // Only true in production
+        httpOnly: true,
+        sameSite: "strict",
+    }
+}));
+
 app.use(express.json()); // allows us to parse incoming request with JSON payloads (req.body)
 app.use(cookieParser()); // allows us to parse cookies from the incoming request headers
+app.use(passport.initialize());
+app.use(passport.session()); // ✅ Enable session for Google Login
 
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
+
+
 
 app.listen(PORT, () => {
     connectDB();

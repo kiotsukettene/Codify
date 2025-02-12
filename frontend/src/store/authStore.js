@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import axios from 'axios'
 import { TrainFrontTunnelIcon } from 'lucide-react';
 import { Fallback } from '@radix-ui/react-avatar';
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../utils/firebase.config";
 import toast from 'react-hot-toast';
 
 const API_URL = "http://localhost:3000/api/auth";
@@ -19,7 +21,7 @@ export const useAuthStore = create((set) => ({
     signup: async (email, password, name, institutionName, address, phoneNumber, subscription, plan, paymentMethod, amount) => {
         set({
             isLoading: true,
-            message: null
+            error: null
         })
         try {
             const response = await axios.post(`${API_URL}/signup`, {
@@ -41,7 +43,7 @@ export const useAuthStore = create((set) => ({
             })
         } catch (error) {
             set({
-                message: error.response.data.message || "Error signing up",
+                error: error.response.data.message || "Error signing up",
                 isLoading: false
             })
             throw error;
@@ -110,24 +112,52 @@ export const useAuthStore = create((set) => ({
             })
             throw error;
         }
-    },
-    logout: async () => {
         set({
-            isLoading: true,
-            error: null
+            isLoading: false
         })
+    },
+
+    loginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+
+    let token = null;
+
+    // 🔹 First try-catch: Handle popup closure
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        token = await result.user.getIdToken(); // ✅ Get Firebase token
+    } catch (error) {
+        if (error.code === "auth/popup-closed-by-user") {
+            toast.error("Google Sign-In cancelled.");
+        } else {
+            toast.error("Google Login Failed: " + error.message);
+        }
+        set({ isLoading: false });
+        return; // ⛔ Exit early if popup was closed
+    }
+
+    // 🔹 Second try-catch: Handle backend token verification
+    try {
+        const response = await axios.post(`${API_URL}/google-login`, { token });
+
+        set({ institution: response.data.institution, isAuthenticated: true, isLoading: false });
+    } catch (error) {
+        set({ error: error.response?.data?.message || "Server Error", isLoading: false });
+    }
+
+    set({ isLoading: false });
+},
+
+    logout: async () => {
+        set({ isLoading: true, error: null });
+
         try {
-            await axios.post(`${API_URL}/logout`);
-            set({
-                institution: null,
-                isAuthenticated: false,
-                isLoading: false
-            })
+            await auth.signOut(); // Firebase logout
+            await axios.post(`${API_URL}/logout`); // Backend logout
+
+            set({ institution: null, isAuthenticated: false, isLoading: false });
         } catch (error) {
-            set({
-                error: "Error logging out",
-                isLoading: false,
-            })
+            set({ error: error.message, isLoading: false });
         }
     },
 
@@ -145,7 +175,7 @@ export const useAuthStore = create((set) => ({
             })
         } catch (error) {
             set({
-                message: error.response.data.message || "Error sending reset link",
+                error: error.response.data.message || "Error sending reset link",
             })
             throw error;
         }

@@ -1,8 +1,15 @@
 import { Institution } from "../models/institution.model.js";
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import admin from "../utils/firebaseAdmin.js"
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
+import {
+    sendVerificationEmail,
+    sendWelcomeEmail,
+    sendPasswordResetEmail,
+    sendResetSuccessEmail
+} from "../mailtrap/emails.js";
+
 
 
 
@@ -359,3 +366,27 @@ export const logoutInstitution = async (req, res) => {
         message: "Logged out successfully"
     })
 }
+
+
+export const googleLogin = async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        // Verify Firebase ID Token
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const email = decodedToken.email;
+
+        let institution = await Institution.findOne({ email });
+
+        if (!institution) {
+            return res.status(400).json({ success: false, message: "No registered institution found with this email" });
+        }
+
+        generateTokenAndSetCookie(res, institution._id);
+
+        res.status(200).json({ success: true, institution });
+    } catch (error) {
+        console.error("Error verifying Firebase token", error);
+        res.status(401).json({ success: false, message: "Invalid Google token" });
+    }
+};
