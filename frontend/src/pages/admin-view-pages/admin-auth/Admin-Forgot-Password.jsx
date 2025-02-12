@@ -66,7 +66,7 @@ function AdminForgotPasswordPage() {
         </form>
           <div className="mt-4 text-center text-sm">
             Remembered your password?{" "}
-            <Link to="/admin-login" className="underline" prefetch={false}>
+            <Link to="/admin/login" className="underline" prefetch={false}>
               Go back to login
             </Link>
           </div>

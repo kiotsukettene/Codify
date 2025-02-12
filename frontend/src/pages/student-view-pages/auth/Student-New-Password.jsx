@@ -13,15 +13,17 @@ import logo from "@/assets/picture/logos/logo.png";
 import { motion } from "framer-motion";
 import { useStudentStore } from "@/store/studentStore";
 import { useNavigate, useParams } from "react-router-dom";
-import toast from "react-hot-toast";
 import useToggleVisibility from "@/hooks/use-toggle-visibility";
+import { Eye, EyeOff } from "lucide-react";
+import { XCircle } from "lucide-react"; // Or any icon library
+import toast from "react-hot-toast";
+import { PasswordStrengthIndicator } from "@/components/ui/Password-Strength-indicator";
 
 function StudentNewPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const { studentResetPassword, isLoading, error, message } = useStudentStore();
-  const [isVisible, toggleVisibility] = useToggleVisibility(); //toggle for password visibility
-
+  const [isVisible, toggleVisibility] = useToggleVisibility();
 
   const { token } = useParams();
   const navigate = useNavigate();
@@ -30,7 +32,19 @@ function StudentNewPasswordPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      return alert("Passwords do not match");
+      toast.error("Passwords do not match", {
+        style: {
+          border: "1px solid #EF4444", // Red border
+          padding: "12px",
+          color: "#B91C1C", // Dark red text
+          backgroundColor: "#FFF5F5", // Light red background
+        },
+        iconTheme: {
+          primary: "#B91C1C",
+          secondary: "#FFFFFF",
+        },
+      });
+      return; // Stop execution if passwords do not match
     }
 
     try {
@@ -119,21 +133,22 @@ function StudentNewPasswordPage() {
 
           <form onSubmit={handleNewPassword}>
             <CardContent className="space-y-4 p-0 mt-6 sm:mt-8">
-              <div className="relative">
+              <div className="space-y-3 sm:space-y-4 relative">
                 <label
                   htmlFor="email"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   New Password
                 </label>
-                <Input
-                  type="password"
-                  name="password"
-                  value={password}
-                  placeholder="Enter your new password"
+              
+                <PasswordStrengthIndicator
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
+                  value={password}
+                  password={password}
+                  setPassword={setPassword}
                 />
+
+        
               </div>
 
               <div className="relative">

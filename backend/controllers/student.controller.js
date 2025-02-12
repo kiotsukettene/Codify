@@ -294,8 +294,6 @@ export const studentForgotPassword = async (req, res) => {
 };
 
 
-
-
 export const studentRestPassword = async (req, res) => {
     try {
         const { token } = req.params;
@@ -309,7 +307,7 @@ export const studentRestPassword = async (req, res) => {
         if (!student) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid or expired token"
+                message: "Session Expired. Please request a new password reset link"
             })
         }   
 
@@ -364,8 +362,6 @@ export const studentCheckAuth = async (req,res) => {
     }
 }
 
-
-  
   // Google Login Route
   export const googleLogin = async (req, res) => {
     try {

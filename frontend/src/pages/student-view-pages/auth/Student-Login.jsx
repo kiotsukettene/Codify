@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import useToggleVisibility from '@/hooks/use-toggle-visibility'
-import { Eye, EyeOff, Loader } from 'lucide-react'
+import {  Eye, EyeOff, Loader } from 'lucide-react'
 import union from "../../../assets/picture/random background/union.png"
 import pinkFlower from "../../../assets/picture/random background/pink-flower.png"
 import blueFlower from "../../../assets/picture/random background/blue-flower.png"

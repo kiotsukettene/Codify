@@ -243,6 +243,9 @@ import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
 import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
 import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
 import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
+import { Toaster } from "react-hot-toast";
+import AdminForgotPasswordPage from "./pages/admin-view-pages/admin-auth/Admin-Forgot-Password";
+import AdminRegisterPage from "./pages/admin-view-pages/admin-auth/Admin-Register";
 
 
 
@@ -250,7 +253,11 @@ import StudentCourseListPage from "./pages/student-view-pages/course-management/
 
 function App() {
   return (
-    <Routes>
+    
+   <div>
+      <Toaster position="top-right"/>
+
+     <Routes>
   {/* ✅ Admin Protected Routes */}
   <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
     <Route path="/admin" element={<AdminLayout />}>
@@ -274,11 +281,14 @@ function App() {
   <Route path="*" element={<Navigate to="/student-login" replace />} />
 
   <Route path="/student-forgot-password" element={<StudentForgotPasswordPage />} />
+  <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
+  <Route path="/admin/register" element={<AdminRegisterPage/>}/>
 
 {/* ✅ Student Reset Password Route (Token-Based) */}
 <Route path="/student/reset-password/:token" element={<StudentNewPasswordPage />} />
 </Routes>
 
+   </div>
   );
 }
 
