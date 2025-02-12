@@ -91,21 +91,33 @@ export const logoutProfessor = async (req, res) => {
 
 //checkAuth
 export const checkAuthProfessor = async (req, res) => {
-  const professor = await Professor.findById(req.professorId).select(
-    "-password"
-  );
+  console.log("Decoded Token Data:", req.user); // ✅ Debugging log
 
-  if (!professor) {
-    return res.status(400).json({
-      success: false,
-      message: "professor not found",
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: No professor ID found",
+      });
+    }
+
+    const professor = await Professor.findById(req.user.id).select("-password");
+
+    if (!professor) {
+      return res.status(404).json({
+        success: false,
+        message: "Professor not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      professor,
     });
+  } catch (error) {
+    console.error("Error in checkAuthProfessor:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
-
-  res.status(200).json({
-    success: true,
-    professor,
-  });
 };
 
 //ForgotPass
@@ -247,60 +259,50 @@ export const googleLoginProfessor = async (req, res) => {
 
 //register profeqssor
 export const registerProfessor = async (req, res) => {
-  const { firstName, lastName, email } = req.body;
-
   try {
-    // Validate the data
-    if (!email || !firstName || !lastName) {
-      throw new Error("All fields are required");
+    const { firstName, lastName, email, institutionId } = req.body;
+
+    if (!firstName || !lastName || !email || !institutionId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error("Invalid email format");
+    const existingProfessor = await Professor.findOne({ email });
+
+    if (existingProfessor) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Professor already exists" });
     }
 
-    const profAlreadyExists = await Professor.findOne({ email });
-    if (profAlreadyExists) {
-      return res.status(400).json({
-        success: false,
-        message: "Professor already has an account",
-      });
-    }
-
-    // Hash the last name as the password
     const hashedPassword = await bcrypt.hash(lastName, 10);
 
-    // Create and save the professor
     const newProfessor = new Professor({
       firstName,
       lastName,
       email,
       password: hashedPassword,
+      institution: institutionId, // ✅ Ensure institution ID is set
     });
 
     const savedProfessor = await newProfessor.save();
 
-    // Generate a token and set cookie
-    profTokenAndCookie(res, savedProfessor._id);
-
-    // Send success email
-    await sendResetSuccessEmail(savedProfessor.email);
+    const token = jwt.sign(
+      { id: savedProfessor._id, institutionId: savedProfessor.institution },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(201).json({
       success: true,
       message: "Professor registered successfully",
-      professor: {
-        ...savedProfessor._doc,
-        password: undefined, // Hide password from response
-      },
+      professor: { ...savedProfessor._doc, password: undefined }, // ✅ Hide password in response
+      token, // ✅ Ensure token is included in the response
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    console.error("Error in registerProfessor:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

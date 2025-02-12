@@ -1,168 +1,124 @@
-import React from 'react'
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import useToggleVisibility from '@/hooks/use-toggle-visibility'
-import { Eye, EyeOff } from 'lucide-react'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import useToggleVisibility from "@/hooks/use-toggle-visibility";
+import { Eye, EyeOff } from "lucide-react";
+import { useprofAuthStore } from "@/store/profAuthStore";
 
-
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import toast from "react-hot-toast";
 
 function AddProfessor() {
+  const navigate = useNavigate();
+  const { institution } = useAuthStore();
+  const { AddProfessor, isLoading, error } = useprofAuthStore();
   const [isVisible, toggleVisibility] = useToggleVisibility();
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-      })
-    
-      const handleChange = (e) => {
-        const { name, value } = e.target
-        setFormData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }))
-      }
-    
-      const handleSubmit = (e) => {
-        e.preventDefault()
-        
-      
-      }
-    
-      const handleCancel = () => {
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          password: "",
-          confirmPassword: "",  
-        })
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    institutionId: institution?._id || "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    console.log("Submitting Professor Data:", formData); // ✅ Debugging log
+
+    if (!formData.institutionId) {
+      toast.error("Institution ID is missing!");
+      return;
     }
 
-    
+    try {
+      await AddProfessor(formData);
+      navigate("/admin/professors");
+    } catch (error) {
+      console.error("Error saving professor:", error); // ✅ Debugging log
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      institutionId: institution?._id || "",
+    });
+  };
+
   return (
-      <div className="flex flex-1 flex-col w-full h-full p-6 mt-4 bg-white rounded-lg ">
-
-<h1 className="text-3xl font-semibold text-neutral-900">Create New Professor Account</h1>
-      <h4 className='pt-3 font-normal'>Manage and view the list of professors, their assigned courses, and details.
+    <div className="flex flex-1 flex-col w-full h-full p-6 mt-4 bg-white rounded-lg">
+      <h1 className="text-3xl font-semibold text-neutral-900">
+        Create New Student Account
+      </h1>
+      <h4 className="pt-3 font-normal">
+        Manage and view the list of students, their assigned courses, and
+        details.
       </h4>
-  
+
       <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
-        <main className="flex-1 w-full">    
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                First Name
-              </Label>
+        <main className="flex-1 w-full">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  required
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="firstName"
-                name="firstName"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
-                className="mt-1"
-                value={formData.firstName}
+                value={formData.email}
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <Label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                Last Name
-              </Label>
-              <Input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                className="mt-1"
-                value={formData.lastName}
-                onChange={handleChange}
-              />
+
+            <div className="flex justify-end space-x-4 pt-4">
+              <Button type="button" onClick={handleCancel} variant="outline">
+                Cancel
+              </Button>
+              <Button type="submit">Save Professor</Button>
             </div>
-          </div>
-          <div>
-            <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="mt-1"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
-          <div className='relative'>
-            <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </Label>
-            <Input
-              id="password"
-              name="password"
-              type={isVisible ? "text" : "password"}
-              required
-              className="mt-1"
-              value={formData.password}
-              onChange={handleChange}
-            />
-              <button
-            className="absolute inset-y-3 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
-            type="button"
-            onClick={toggleVisibility}
-            aria-label={isVisible ? "Hide password" : "Show password"}
-             aria-pressed={isVisible}
-            aria-controls="password"
-          >
-            {isVisible ? (
-              <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-            ) : (
-              <Eye size={16} strokeWidth={2} aria-hidden="true" />
-            )}
-          </button>
-          </div>
-          <div>
-            <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
-             Confirm Password
-            </Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="confirmPassword"
-              required
-              className="mt-1"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button
-              type="button"
-              onClick={handleCancel}
-              className="px-6 py-3 bg-gray-200 text-gray-800 hover:bg-gray-300"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" className="px-6 py-3 bg-neutral-900 text-white hover:bg-neutral-700">
-              Save Professor
-            </Button>
-          </div>
-        </form> 
-            </main>
-
-  </div>
-
-
-
-
-
+          </form>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+        </main>
+      </div>
     </div>
-       
-      
-  )
+  );
 }
 
-export default AddProfessor
+export default AddProfessor;
