@@ -141,7 +141,7 @@ function StudentForgotPasswordPage() {
         </form>
         <div className="mt-4 text-center text-sm">
           Remembered your password?{" "}
-          <Link to="/student-login" className="underline">
+          <Link to="/student/login" className="underline">
             Go back to login
           </Link>
         </div>

@@ -114,7 +114,7 @@ function AdminForgotPasswordPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
                   />
-                  {message && <p className="text-red-500 text-sm">{message}</p>}
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
                   <p className="text-xs py-2 text-gray-500 text-center">
                     A password reset link will be sent to the provided email
                     address.
@@ -122,7 +122,7 @@ function AdminForgotPasswordPage() {
                 </div>
                 <div className="pt-2 space-y-3">
                   <Button type="submit" className="w-full">
-                    {isLoading && !message ? (
+                    {isLoading && !error ? (
                       <Loader className="size-6 animate-spin mx-auto" />
                     ) : (
                       "Send Reset Link"

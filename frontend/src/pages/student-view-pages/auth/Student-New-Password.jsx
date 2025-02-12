@@ -53,7 +53,7 @@ function StudentNewPasswordPage() {
 
       toast.success("Password reset successful, redirecting to login page...");
       setTimeout(() => {
-        navigate("/student-login");
+        navigate("/student/login");
       }, 2000);
     } catch (error) {
       console.log(error);

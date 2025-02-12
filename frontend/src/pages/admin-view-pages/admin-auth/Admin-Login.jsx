@@ -51,14 +51,13 @@ function AdminLoginPage() {
 
   const handleGoogleLogin = async () => {
     await loginWithGoogle();
-    toast.success("Login successful!");
 
     navigate("/admin/dashboard", { replace: true });
 
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
+    <div className="relative h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
        {/* Background Images */}
                 <Link to="/">
                   <img 

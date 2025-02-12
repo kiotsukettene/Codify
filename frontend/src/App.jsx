@@ -28,6 +28,11 @@ import { useStudentStore } from "./store/studentStore";
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
 import StudentLayout from "./Layout/StudentLayout";
 import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
+import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
+import MainLogin from "./pages/Guest-view-pages/Login";
+import LandingPage from "./pages/Guest-view-pages/Landing-page";
+import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
+import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -40,7 +45,11 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
 
   if (isAuthenticated && institution.isVerified && !institution.isPaid) {
     return <Navigate to="/admin/payment-summary" replace/>;
-   }
+  }
+  
+  if (isAuthenticated && !institution.isVerified && !institution.isPaid) { 
+    return <Navigate to="/admin/email-verify" replace/>;
+  }
 
 
   return children;
@@ -106,12 +115,21 @@ function App() {
       <Route path="/professor/reset-password/:token" element={<ProfNewPassword/>}/>
       <Route path="/professor/success-reset" element={<ProfSuccessPassword/>}/>
 
+     
 
         <Route path="/student/login" element={
           <RedirectAuthenticatedStudent>
             <StudentLoginPage/>
           </RedirectAuthenticatedStudent>
         } />
+
+        <Route path="/student/forgot-password" element={
+          <RedirectAuthenticatedStudent>
+            <StudentForgotPasswordPage/>
+          </RedirectAuthenticatedStudent>
+        } />
+        
+        <Route path="/student/reset-password/:token" element={<RedirectAuthenticatedStudent><StudentNewPasswordPage /></RedirectAuthenticatedStudent>} />
 
        <Route path="/student" element={<StudentLayout />}>
           <Route path="dashboard" element={
@@ -134,15 +152,8 @@ function App() {
               <AdminRegisterPage />
             </RedirectAuthenticatedInstitution>
           } />
-
-
           
-          <Route path='/admin/email-verify' element={
-          <ProtectedRouteInstitution>
-            <AdminEmailVerificationPage />
-          </ProtectedRouteInstitution>
-          
-          } />
+
           
           <Route
           path='/admin/payment-summary'
@@ -151,7 +162,18 @@ function App() {
             <PaymentSummary />
             </ProtectedRouteInstitution>
           } />
+
+             <Route path="*" element={<PageNotFoundPage />} />
+        <Route path="/login" element={<MainLogin />} />
+         <Route index element={<LandingPage/>}/>
         </Route>
+
+                  <Route path='/admin/email-verify' element={
+          <ProtectedRouteInstitution>
+            <AdminEmailVerificationPage />
+          </ProtectedRouteInstitution>
+          
+          } />
         
         
       <Route path='/admin/payment-success' element={

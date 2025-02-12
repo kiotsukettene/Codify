@@ -41,7 +41,7 @@ const roles = [
     textColor: "text-[#A855F7]",
     hoverBg: "hover:bg-[#F3E8FF]",
     iconBg: "bg-[#A855F7]",
-    to: "/student-login",
+    to: "/student/login",
   },
 ];
 

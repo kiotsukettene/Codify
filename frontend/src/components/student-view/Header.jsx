@@ -17,7 +17,7 @@ function StudentHeader() {
   const handleLogout = async () => {
     await logout(); // ✅ Call the store logout function
     toast.success("Logged out successfully!");
-    navigate("/student-login", { replace: true }); // ✅ Now this works
+    navigate("/student/login", { replace: true }); // ✅ Now this works
 };
 
   // Toggle dropdown visibility
