@@ -3,20 +3,21 @@ import { useAuthStore } from "@/store/authStore";
 import { useStudentStore } from "@/store/studentStore";
 
 const RedirectIfAuthenticated = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore(); // Admin & Professors
-  const { isStudentAuthenticated, student } = useStudentStore(); // Students
+  const { institution, isAuthenticated: isAdminAuthenticated } = useAuthStore();
+  const { student, isAuthenticated: isStudentAuthenticated } = useStudentStore();
 
-  let currentUser = user || student;
-  let isAuthenticatedUser = isAuthenticated || isStudentAuthenticated;
+  const isAuthenticatedUser = isAdminAuthenticated || isStudentAuthenticated;
+  const currentUser = institution || student;
+  const role = currentUser?.role;
 
-  // ✅ If the user is authenticated, redirect to their respective dashboard
+  // Redirect users based on their role
   if (isAuthenticatedUser && currentUser) {
-    if (currentUser.role === "admin") return <Navigate to="/admin/dashboard" replace />;
-    if (currentUser.role === "student") return <Navigate to="/student/dashboard" replace />;
-    if (currentUser.role === "professor") return <Navigate to="/professor/dashboard" replace />;
+    if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
+    if (role === "professor") return <Navigate to="/professor/dashboard" replace />;
+    if (role === "student") return <Navigate to="/student/dashboard" replace />;
   }
 
-  return children; // ✅ Allow access if not authenticated
+  return children;
 };
 
 export default RedirectIfAuthenticated;

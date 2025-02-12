@@ -29,7 +29,7 @@ router.post("/logout", logoutInstitution)
 
 router.post("/verify-email", verifyEmail)
 router.post("/resend-verification", resendVerificationCode)
-// router.post("/mark-as-paid", markAsPaid)
+router.post("/mark-as-paid", markAsPaid)
 router.post("/forgot-password", forgotPassword)
 router.post("/reset-password/:token", resetPassword)
 

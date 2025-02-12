@@ -28,9 +28,11 @@ import logo from '../../../assets/picture/logos/Logo.png'
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-const [isVisible, toggleVisibility] = useToggleVisibility();
-  const { login, isLoading, error, loginWithGoogle } = useAuthStore();
+  const [isVisible, toggleVisibility] = useToggleVisibility();
   const navigate = useNavigate(); // ✅ Use React Router navigation  const [isVisible, toggleVisibility] = useToggleVisibility()
+
+
+  const { login, isLoading, error, loginWithGoogle } = useAuthStore();
 
   const handleAdminLogin = async (e) => {
     e.preventDefault(); // ✅ Prevent page reload
@@ -49,6 +51,10 @@ const [isVisible, toggleVisibility] = useToggleVisibility();
 
   const handleGoogleLogin = async () => {
     await loginWithGoogle();
+    toast.success("Login successful!");
+
+    navigate("/admin/dashboard", { replace: true });
+
   }
 
   return (

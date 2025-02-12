@@ -13,7 +13,7 @@ return {
 
     student: storedStudent || null,
     isAuthenticated: !!storedStudent, // ✅ Set authentication state based on stored student
-    students: null,
+    students: [],
     error: null,
     isLoading: false,
     isCheckingAuth: true,
@@ -202,7 +202,7 @@ return {
         });
 
         // ✅ Force page reload to apply changes
-        window.location.href = "/student-login";
+        window.location.href = "/student/login";
 
     } catch (error) {
         set({

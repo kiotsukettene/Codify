@@ -1,27 +1,23 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuthStore } from "@/store/authStore"; // Admin authentication
-import { useStudentStore } from "@/store/studentStore"; // Student authentication
+import { Navigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { useStudentStore } from "@/store/studentStore";
 
-const ProtectedRoute = ({ allowedRoles }) => {
-  const { institution, isAuthenticated: isAdminAuthenticated } = useAuthStore(); // Admin user
-  const { student, isAuthenticated: isStudentAuthenticated } = useStudentStore(); // Student user
+const RedirectIfAuthenticated = ({ children }) => {
+  const { institution, isAuthenticated: isAdminAuthenticated } = useAuthStore();
+  const { student, isAuthenticated: isStudentAuthenticated } = useStudentStore();
 
-  // Determine if the user is logged in
+  const isAuthenticatedUser = isAdminAuthenticated || isStudentAuthenticated;
   const currentUser = institution || student;
-  const isAuthenticated = isAdminAuthenticated || isStudentAuthenticated;
   const role = currentUser?.role;
 
-  // If no user is logged in, redirect to login page
-  if (!isAuthenticated || !currentUser) {
-    return <Navigate to="/student-login" replace />;
+  // Redirect users based on their role
+  if (isAuthenticatedUser && currentUser) {
+    if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
+    if (role === "professor") return <Navigate to="/professor/dashboard" replace />;
+    if (role === "student") return <Navigate to="/student/dashboard" replace />;
   }
 
-  // If the role is not allowed, redirect them away
-  if (!allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <Outlet />; // Render the protected page
+  return children;
 };
 
-export default ProtectedRoute;
+export default RedirectIfAuthenticated;
