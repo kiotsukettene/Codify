@@ -22,6 +22,17 @@ export const registerStudent = async (req, res) => {
     section,
     institutionId,
   } = req.body;
+export const registerStudent = async (req, res) => {
+  const {
+    studentId,
+    firstName,
+    lastName,
+    email,
+    course,
+    year,
+    section,
+    institutionId,
+  } = req.body;
 
   try {
     if (
@@ -349,60 +360,29 @@ export const studentCheckAuth = async (req,res) => {
             })
         }
 
-        res.status(200).json({
-            success: true,
-            student
-        })
-    } catch (error) {
-        console.log("Error checking student authentication", error);
-        res.status(400).json({
-            success: false,
-            message: "Error checking student authentication"
-        })
-    }
-}
+    res.status(200).json({
+      success: true,
+      message: "Student updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
-  // Google Login Route
-  export const googleLogin = async (req, res) => {
-    try {
-      const { token } = req.body;
-  
-      // Verify Firebase Token
-      const decoded = await admin.auth().verifyIdToken(token);
-      const email = decoded.email;
-  
-      console.log("Google Login Attempt:", email);
-  
-      // Check if student exists in database
-      let student = await Student.findOne({ email });
-  
-      if (!student) {
-        return res.status(403).json({
-          success: false,
-          message: "Access denied. Your email is not registered in the system."
-        });
-      }
-  
-      // If student exists, generate login token
-      studentTokenAndCookie(res, student._id);
-  
-      // Exclude password from response
-      const { password, ...studentWithoutPassword } = student._doc;
-  
-      res.status(200).json({
-        success: true,
-        message: "Login successful",
-        student: studentWithoutPassword
-      });
-  
-    } catch (error) {
-      console.error("Google Login Error:", error);
-      res.status(401).json({
-        success: false,
-        message: error.message.includes("auth/id-token-expired")
-          ? "Google session expired. Please sign in again."
-          : "Invalid Google authentication"
-      });
+export const deleteStudent = async (req, res) => {
+  try {
+    const deletedStudent = await Student.findByIdAndDelete(req.params.id);
+
+    if (!deletedStudent) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
     }
-  };
-  
+
+    res
+      .status(200)
+      .json({ success: true, message: "Student deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

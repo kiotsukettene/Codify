@@ -27,7 +27,7 @@ function AdminForgotPasswordPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState("");
 
-  const { isLoading, forgotPassword, message } = useAuthStore();
+  const { isLoading, forgotPassword, error } = useAuthStore();
 
   const handleSendResetLink = async (e) => {
     e.preventDefault();
