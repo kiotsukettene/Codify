@@ -6,7 +6,7 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = "http://localhost:3000/api/auth";
 
 axios.defaults.withCredentials = true;
 

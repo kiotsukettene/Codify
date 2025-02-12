@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
 
-const API_URL = "http://localhost:5000/api/professors";
+const API_URL = "http://localhost:3000/api/professors";
 
 const storedProfessor = localStorage.getItem("professor");
 const parsedProfessor =
@@ -122,7 +122,7 @@ export const useprofAuthStore = create((set) => ({
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/professors/register",
+        "http://localhost:3000/api/professors/register",
         professorData
       );
 
