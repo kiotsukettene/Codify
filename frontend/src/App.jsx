@@ -24,6 +24,7 @@ import ProfForgotPassword from './pages/professor-view-pages/professor-auth/Prof
 import ProfNewPassword from './pages/professor-view-pages/professor-auth/Professor-New-Password'
 import ProfSuccessPassword from './pages/professor-view-pages/professor-auth/Professor-Success-Password'
 import Courses from "./pages/professor-view-pages/Course";
+import LessonOverview from "./pages/professor-view-pages/Lesson-Overview";
 
 // redirect authenticated and paid institution to dashboard page 
 
@@ -84,6 +85,8 @@ function App() {
       <Route path="/professor/reset-password/:token" element={<ProfNewPassword/>}/>
       <Route path="/professor/success-reset" element={<ProfSuccessPassword/>}/>
       <Route path="/professor/courses" element={<Courses/>}/>
+      <Route path="/professor/lesson-overview" element={<LessonOverview/>}/>
+
     
 
 
