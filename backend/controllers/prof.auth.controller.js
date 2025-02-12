@@ -1,12 +1,15 @@
 import { Professor } from "../models/professor.model.js";
+import { Institution } from "../models/institution.model.js";
 import bcrypt from "bcryptjs";
 import { profTokenAndCookie } from "../utils/profTokenAndCookie.js";
 import crypto from "crypto";
 import {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
+  sendProfessorWelcomeEmail,
 } from "../mailtrap/emails.js";
 import admin from "../utils/firebaseAdmin.js";
+import jwt from "jsonwebtoken";
 
 //login
 export const loginProfessor = async (req, res) => {
@@ -258,6 +261,59 @@ export const googleLoginProfessor = async (req, res) => {
 };
 
 //register profeqssor
+// export const registerProfessor = async (req, res) => {
+//   try {
+//     const { firstName, lastName, email, institutionId } = req.body;
+
+//     if (!firstName || !lastName || !email || !institutionId) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "All fields are required" });
+//     }
+
+//     const existingProfessor = await Professor.findOne({ email });
+
+//     if (existingProfessor) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Professor already exists" });
+//     }
+
+//     const plainPassword = lastName.trim();
+//     const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+//     const newProfessor = new Professor({
+//       firstName,
+//       lastName,
+//       email,
+//       password: hashedPassword,
+//       institution: institutionId, // ✅ Ensure institution ID is set
+//     });
+
+//     const savedProfessor = await Professor.findById(
+//       savedProfessor._id
+//     ).populate("institution", "institutionName");
+
+//     await sendProfessorWelcomeEmail(
+//       savedProfessor.email,
+//       savedProfessor.firstName,
+//       savedProfessor.lastName,
+//       plainPassword, // Send lastName as their temporary password
+//       savedProfessor.institution.institutionName
+//     );
+
+//     res.status(201).json({
+//       success: true,
+//       message: "Professor registered successfully",
+//       professor: { ...savedProfessor._doc, password: undefined }, // ✅ Hide password in response
+//       token, // ✅ Ensure token is included in the response
+//     });
+//   } catch (error) {
+//     console.error("Error in registerProfessor:", error.message);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 export const registerProfessor = async (req, res) => {
   try {
     const { firstName, lastName, email, institutionId } = req.body;
@@ -268,16 +324,19 @@ export const registerProfessor = async (req, res) => {
         .json({ success: false, message: "All fields are required" });
     }
 
+    // Check if professor already exists
     const existingProfessor = await Professor.findOne({ email });
-
     if (existingProfessor) {
       return res
         .status(400)
         .json({ success: false, message: "Professor already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(lastName, 10);
+    // Generate temporary password (using last name)
+    const plainPassword = lastName.trim();
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
+    // Create new professor object
     const newProfessor = new Professor({
       firstName,
       lastName,
@@ -286,19 +345,44 @@ export const registerProfessor = async (req, res) => {
       institution: institutionId, // ✅ Ensure institution ID is set
     });
 
-    const savedProfessor = await newProfessor.save();
+    // Save professor to database first
+    let savedProfessor = await newProfessor.save();
 
+    // Fetch again with institution details
+    savedProfessor = await Professor.findById(savedProfessor._id).populate(
+      "institution",
+      "institutionName"
+    );
+
+    // ✅ Ensure institutionName is defined
+    const institutionName =
+      savedProfessor.institution?.institutionName || "Your Institution";
+
+    // Send email with login details
+    await sendProfessorWelcomeEmail(
+      savedProfessor.email,
+      savedProfessor.firstName,
+      savedProfessor.lastName,
+      plainPassword, // Send lastName as temporary password
+      institutionName
+    );
+
+    // Generate JWT Token
     const token = jwt.sign(
-      { id: savedProfessor._id, institutionId: savedProfessor.institution },
+      { id: savedProfessor._id, institutionId: savedProfessor.institution._id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+    // Convert to plain object and remove password before sending response
+    const responseProfessor = savedProfessor.toObject();
+    delete responseProfessor.password;
+
     res.status(201).json({
       success: true,
       message: "Professor registered successfully",
-      professor: { ...savedProfessor._doc, password: undefined }, // ✅ Hide password in response
-      token, // ✅ Ensure token is included in the response
+      professor: responseProfessor, // ✅ Hide password in response
+      token, // ✅ Include token
     });
   } catch (error) {
     console.error("Error in registerProfessor:", error.message);

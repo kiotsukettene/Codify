@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const professorSchema = new mongoose.Schema(
   {
-    googleId: { type: String, unique: true }, // Add this field for Google OAuth
+    googleId: { type: String, unique: true }, // Google OAuth ID
     email: { type: String, required: true, unique: true },
-    password: { type: String }, // Password should be optional for Google SSO users
-    firstName: { type: String },
-    lastName: { type: String },
+    password: { type: String }, // Optional for Google SSO users
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
     role: {
       type: String,
       default: "professor",
@@ -16,7 +16,6 @@ const professorSchema = new mongoose.Schema(
       ref: "Institution",
       required: false,
     },
-    avatar: { type: String }, // Store profile picture from Google
     lastLogin: { type: Date, default: Date.now },
     resetPasswordToken: { type: String },
     resetPasswordExpiresAt: { type: Date },
