@@ -22,6 +22,53 @@ function AddProfessor() {
     institutionId: institution?._id || "",
   });
 
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+  });
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { ...errors };
+    // Name regex: Only letters, spaces, and hyphens are allowed
+    const nameRegex = /^[a-zA-Z\s-]+$/;
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First name is required.";
+      valid = false;
+    } else if (!nameRegex.test(formData.firstName)) {
+      newErrors.firstName = "Invalid name format.";
+      valid = false;
+    } else {
+      newErrors.firstName = "";
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required.";
+      valid = false;
+    } else if (!nameRegex.test(formData.lastName)) {
+      newErrors.lastName = "Invalid name format.";
+      valid = false;
+    } else {
+      newErrors.lastName = "";
+    }
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required.";
+      valid = false;
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Invalid email format.";
+      valid = false;
+    } else {
+      newErrors.email = "";
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -34,7 +81,7 @@ function AddProfessor() {
     e.preventDefault();
 
     console.log("Submitting Professor Data:", formData); // ✅ Debugging log
-
+    if (!validateForm()) return;
     if (!formData.institutionId) {
       toast.error("Institution ID is missing!");
       return;
@@ -75,10 +122,12 @@ function AddProfessor() {
                   id="firstName"
                   name="firstName"
                   type="text"
-                  required
                   value={formData.firstName}
                   onChange={handleChange}
                 />
+                {errors.firstName && (
+                  <p className="text-red-500 text-sm">{errors.firstName}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
@@ -86,10 +135,12 @@ function AddProfessor() {
                   id="lastName"
                   name="lastName"
                   type="text"
-                  required
                   value={formData.lastName}
                   onChange={handleChange}
                 />
+                {errors.lastName && (
+                  <p className="text-red-500 text-sm">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -99,10 +150,12 @@ function AddProfessor() {
                 id="email"
                 name="email"
                 type="email"
-                required
-                value={formData.email}
+                vvalue={formData.email}
                 onChange={handleChange}
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
             </div>
 
             <div className="flex justify-end space-x-4 pt-4">
