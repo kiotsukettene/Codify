@@ -1,4 +1,4 @@
-
+            
 import Typewriter from '@/components/fancy/typewriter'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartNoAxesColumnIncreasing, LibraryBig, NotebookTabs, Trophy } from 'lucide-react'

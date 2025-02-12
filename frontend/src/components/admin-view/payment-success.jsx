@@ -33,7 +33,7 @@ function PaymentSuccess() {
   }, [institution, setInstitution]);
 
   return (
-    <div className="flex items-center min-h-screen bg-violet-500 p-6">
+    <div className="flex items-center min-h-screen p-6">
       <div className="relative mx-auto max-w-md">
         <Confetti className="absolute left-0 top-0 z-0 size-full" />
         <div className="rounded-3xl bg-white p-8 shadow-lg">

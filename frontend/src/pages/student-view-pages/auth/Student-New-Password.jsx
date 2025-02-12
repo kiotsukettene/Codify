@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -64,11 +65,13 @@ function StudentNewPasswordPage() {
     <motion.div>
       <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
         {/* Background Images */}
-        <img
-          src={logo}
-          alt="Logo"
-          className="absolute top-20 lg:top-7 left-24 lg:left-10 lg:w-28"
-        />
+        <Link to="/">
+          <img 
+            src={logo}
+            alt="Logo" 
+            className="absolute top-7 left-24 lg:left-10 lg:w-28" 
+          />
+          </Link>
         <img
           src={Astro}
           alt="Mascot"

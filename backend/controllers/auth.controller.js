@@ -226,7 +226,7 @@ export const forgotPassword = async ( req, res) => {
         if (!institution) {
             return res.status(400).json({
                 success: false,
-                message: "Institution not found"
+                message: "Please provide an valid email"
             })
         }
 

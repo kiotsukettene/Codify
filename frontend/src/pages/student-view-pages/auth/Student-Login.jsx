@@ -13,7 +13,7 @@ import arrow from "../../../assets/picture/random background/arrow.png"
 import mascot from "../../../assets/picture/random background/mascot.png"
 import logo from "../../../assets/picture/logos/logo.png"
 import { Form } from '@/components/ui/form'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStudentStore } from '@/store/studentStore'
 import { useState } from 'react'
@@ -111,11 +111,13 @@ const handleGoogleSignIn = async () => {
         <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
     
           {/* Background Images */}
+          <Link to="/">
           <img 
             src={logo}
             alt="Logo" 
             className="absolute top-7 left-24 lg:left-10 lg:w-28" 
           />
+          </Link>
           <img 
             src={pinkFlower}
             alt="Pink Flower" 

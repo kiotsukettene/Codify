@@ -246,6 +246,13 @@ import StudentCourseListPage from "./pages/student-view-pages/course-management/
 import { Toaster } from "react-hot-toast";
 import AdminForgotPasswordPage from "./pages/admin-view-pages/admin-auth/Admin-Forgot-Password";
 import AdminRegisterPage from "./pages/admin-view-pages/admin-auth/Admin-Register";
+import LandingPage from "./pages/Guest-view-pages/Landing-page";
+import MainLogin from "./pages/Guest-view-pages/Login";
+import GuestLayout from "./Layout/GuestLayout";
+import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
+import AdminEmailVerificationPage from "./pages/admin-view-pages/admin-auth/Admin-Email-Verification-Page";
+import PaymentSummary from "./components/admin-view/payment-summary";
+import AdminNewPasswordPage from "./pages/admin-view-pages/admin-auth/Admin-New-Password";
 
 
 
@@ -273,19 +280,33 @@ function App() {
     </Route>
   </Route>
 
-  {/* ✅ Login Routes */}
-  <Route path="/admin/login" element={<AdminLogin />} />
-  <Route path="/student-login" element={<StudentLoginPage />} />
+  
 
   {/* ✅ Default Fallback Route */}
-  <Route path="*" element={<Navigate to="/student-login" replace />} />
+  <Route path="*" element={<PageNotFoundPage/>} />
 
   <Route path="/student-forgot-password" element={<StudentForgotPasswordPage />} />
   <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
-  <Route path="/admin/register" element={<AdminRegisterPage/>}/>
+  <Route path='/admin/reset-password/:token' element={<AdminNewPasswordPage/>}/>
+
+
+{/* ✅ Login Routes */}
+  <Route path="/admin/login" element={<AdminLogin />} />
+  <Route path="/student-login" element={<StudentLoginPage />} />
+  
 
 {/* ✅ Student Reset Password Route (Token-Based) */}
 <Route path="/student/reset-password/:token" element={<StudentNewPasswordPage />} />
+
+<Route path='/' element={<GuestLayout/>}>
+      <Route index element={<LandingPage/>}/>
+      <Route path='login' element={<MainLogin/>}/>
+      <Route path="/admin/register" element={<AdminRegisterPage/>}/>
+      <Route path="/admin/email-verify" element={<AdminEmailVerificationPage/>}/>
+      <Route path="/admin/payment-summary" element={<PaymentSummary/>}/>
+</Route>
+
+
 </Routes>
 
    </div>
