@@ -65,22 +65,12 @@ const LessonOverview = () => {
             <Separator orientation="vertical" className="mx-2 h-4" />
           </header>
 
-          <div className="px-4">
-            <div className="flex gap-2 mb-4">
-              <Button className="bg-violet-600 hover:bg-violet-700">
-                <Video className="mr-2 h-4 w-4" />
-                Meet
-              </Button>
-              <Button variant="outline" className="border-violet-600 text-violet-600 hover:bg-violet-50">
-                <Code className="mr-2 h-4 w-4" />
-                Code Battle
-              </Button>
-            </div>
-            
+          <div className="p-12 pt-6 space-y-6"> 
             <div className="bg-violet-50 rounded-lg p-6 mb-6">
               <h1 className="text-2xl font-bold mb-2">Programming Languages</h1>
-              <p className="text-gray-600">Programming languages are the foundation of software development.</p>
-              
+              <p className="text-gray-600">Programming languages are the foundation of software development.</p>   
+
+              <div className='justify-between flex'>     
               <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
                 <span className="flex items-center gap-2">
                   <img src="/path-to-java-icon.png" alt="Java" className="w-4 h-4" />
@@ -92,7 +82,21 @@ const LessonOverview = () => {
                 <span>CS110</span>
                 <span>BSCS 3B</span>
               </div>
+
+              <div className="flex gap-2 mb-4">
+              <Button className="bg-violet-600 hover:bg-violet-700">
+                <Video className="mr-2 h-4 w-4" />
+                Meet
+              </Button>
+              <Button variant="outline" className="border-violet-600 text-violet-600 hover:bg-violet-50">
+                <Code className="mr-2 h-4 w-4" />
+                Code Battle
+              </Button>
             </div>
+            </div>
+            </div>   
+
+
 
             <div className="w-full">
               <div className="border-b mb-6">

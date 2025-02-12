@@ -22,7 +22,7 @@ import LoadingSpinner from './components/LoadingSpinner'
 import ProfessorLogin from './pages/professor-view-pages/professor-auth/Professor-Login'
 import ProfForgotPassword from './pages/professor-view-pages/professor-auth/Professor-Forgot-Password'
 import ProfNewPassword from './pages/professor-view-pages/professor-auth/Professor-New-Password'
-import ProfSuccessPassword from './pages/professor-view-pages/professor-auth/Professor-Success-Password'
+import ProfessorVerify from "./pages/professor-view-pages/professor-auth/Professor-Verify-Email"; 
 import Courses from "./pages/professor-view-pages/Course";
 import LessonOverview from "./pages/professor-view-pages/Lesson-Overview";
 
@@ -83,9 +83,9 @@ function App() {
       <Route path="/professor/login" element={<ProfessorLogin/>}/>
       <Route path="/professor/forgot-password" element={<ProfForgotPassword/>}/>
       <Route path="/professor/reset-password/:token" element={<ProfNewPassword/>}/>
-      <Route path="/professor/success-reset" element={<ProfSuccessPassword/>}/>
       <Route path="/professor/courses" element={<Courses/>}/>
       <Route path="/professor/lesson-overview" element={<LessonOverview/>}/>
+      <Route path="/professor/verify-email" element={<ProfessorVerify/>}/>
 
     
 
