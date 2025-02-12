@@ -45,9 +45,9 @@ const CourseModal = () => {
 
     
   return (
-      <DialogContent className="sm:max-w-[500px] max-w-[300px]">
+      <DialogContent className="max-w-[320px] sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Plus className="h-5 w-5 text-purple-500" />
             Create Course
           </DialogTitle>
@@ -56,7 +56,7 @@ const CourseModal = () => {
     <form onSubmit={handleSubmit} className="space-y-4">
 
           <div className='space-y-2'>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm sm:text-base font-medium text-gray-700">
               Class name
               <span className="text-red-500">*</span>
             </label>
@@ -65,11 +65,13 @@ const CourseModal = () => {
             placeholder="class name" 
             value={formValues.className}
             onChange={handleChange}
+            className="w-full"
             />
           </div>
 
+
           <div className='space-y-2'>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm sm:text-base font-medium text-gray-700">
                 Program
             </label>
             <Input 
@@ -77,12 +79,14 @@ const CourseModal = () => {
             placeholder="Program" 
             value={formValues.program}
             onChange={handleChange}
+            className="w-full"
+
             />
-            <p className="text-xs text-gray-500">e.g. Bachelor of Science in Information Technology (BSIT)</p>
+            <p className="text-xs sm:text-sm text-gray-500">e.g. Bachelor of Science in Information Technology (BSIT)</p>
           </div>
 
           <div className='space-y-2'>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm sm:text-base font-medium text-gray-700">
                 Section
             </label>
             <Input 
@@ -90,19 +94,21 @@ const CourseModal = () => {
             placeholder="section" 
             value={formValues.section}
             onChange={handleChange}
+            className="w-full"
+
             />
           </div>
 
           <div className='space-y-2'>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm sm:text-base font-medium text-gray-700">
               Programming Language
             </label>
             <Select 
             name="programmingLanguage" 
             onValueChange={(value) => setFormValues(prev => ({ ...prev, programmingLanguage: value }))}
             >     
-              <SelectTrigger>
-                <SelectValue placeholder="select an option" />
+              <SelectTrigger className="w-full">
+              <SelectValue placeholder="select an option" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="javascript">JavaScript</SelectItem>
@@ -113,17 +119,17 @@ const CourseModal = () => {
             </Select>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm sm:text-base font-medium text-gray-700">
                 Day
               </label>
               <Select 
                 name="day" 
                 onValueChange={(value) => setFormValues(prev => ({ ...prev, day: value }))}
                 >                
-                <SelectTrigger>
-                  <SelectValue placeholder="Select day" />
+                <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select day" />
                 </SelectTrigger>
                 <SelectContent>
                   {daysOfWeek.map((day) => (
@@ -136,15 +142,15 @@ const CourseModal = () => {
             </div>
 
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm sm:text-base font-medium text-gray-700">
                     Time
                 </label>
                 <Select 
                      name="time" 
                      onValueChange={(value) => setFormValues(prev => ({ ...prev, time: value }))}
                         >                
-                <SelectTrigger>
-                  <SelectValue placeholder="Select time" />
+                <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select time" />
                   <Clock className="h-4 w-4 opacity-50" />
                 </SelectTrigger>
                 <SelectContent>
@@ -158,7 +164,7 @@ const CourseModal = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3">
             <DialogTrigger asChild>
               <Button 
               type="button" 
@@ -170,7 +176,7 @@ const CourseModal = () => {
 
             <Button 
                 type="submit" 
-                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400  disabled:pointer-events-none" 
+                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:pointer-events-none text-sm sm:text-base" 
                 disabled={!isFormComplete}>
                 Save
             </Button>

@@ -29,8 +29,6 @@ const Courses = () => {
   const totalPages = Math.ceil(courses.length / itemsPerPage);
   const [selectedLanguage, setSelectedLanguage] = useState([]); 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Add this state to track sidebar status
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleLanguage = (language) => {
@@ -62,127 +60,164 @@ const Courses = () => {
 
 
   return (
+
+    // SIDEBAR SECTION
+
     <SidebarProvider>
       <AppSidebar />
-      <div className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300">
-        <SidebarInset className="flex-1">
-          <header className="flex h-20 shrink-0 items-center gap-2 px-4">
-            <SidebarTrigger 
-              className="-ml-1"   
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-          </header>
-
-        
-          <div>
-            <div className="w-full p-2 sm:p-6">
-              
-              {/* Fixed header section */}
-              <div className="bg-white pb-4">
-              <div className="flex items-center justify-between mb-6">
-  <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">Course</h1>
-
-  <Dialog open={isModalOpen} onOpenChange={(open) => setIsModalOpen(open)} modal>
-    <DialogTrigger asChild>
-      <Button
-        onClick={() => setIsModalOpen(true)}
-        className="bg-purple-700 hover:bg-purple-800 p-6 rounded-2xl sm:hidden"
-      >
-        <Plus className="w-5 h-5" />
-      </Button>
-    </DialogTrigger>
-
-    <DialogTrigger asChild>
-      <Button
-        onClick={() => setIsModalOpen(true)}
-        className="hidden sm:flex items-center bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg"
-      >
-        <Plus className="w-4 h-4 mr-2" /> Create Course
-      </Button>
-    </DialogTrigger>
-
-    <DialogContent>
-      <CourseModal onClose={() => setIsModalOpen(false)} />
-    </DialogContent>
-  </Dialog>
-</div>
+        <div 
+        className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300"
+        >
+      <SidebarInset
+        className="flex-1"
+        >
+        <header 
+        className="flex h-20 shrink-0 items-center gap-2 px-4"
+        >
+      <SidebarTrigger 
+        className="-ml-1"   
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+     <Separator orientation="vertical" className="mr-2 h-4" />
+        </header>
 
 
+      {/* HEADER SECTION */}
 
-                {/* Filter Tags */}
-                <div className="flex items-center justify-between w-full flex-wrap gap-2">
-                  <div className='flex flex-wrap gap-2'>
-                  {["C#", "AI", "CSS", "Javascript", "Python", "HTML", "C++"].map((tag, index) => (
-                    <Button
-                      key={index}
-                      className={`${
-                        selectedLanguage.includes(tag) 
-                          ? `${languageColors[tag]?.bg} ${languageColors[tag]?.text} border border-purple-700`
-                          : `${languageColors[tag]?.bg} ${languageColors[tag]?.text} hover:text-white` 
+    <div>
+          <div className="w-full p-2 sm:p-6">
+          <div className='pb-10'>
+          <div className="w-full flex items-center justify-between mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">
+          Course
+          </h1>
+
+      <div className="flex">
+          <Dialog 
+          open={isModalOpen} 
+          onOpenChange={(open) => setIsModalOpen(open)} 
+          modal
+          >
+
+            <DialogTrigger asChild>
+              <Button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-purple-700 hover:bg-purple-800 p-5 rounded-md sm:hidden"
+              >
+              <Plus className="w-5 h-5" />
+              </Button>
+            </DialogTrigger>
+
+            <DialogTrigger asChild>
+              <Button
+              onClick={() => setIsModalOpen(true)}
+              className="hidden sm:flex items-center bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg"
+              >
+              <Plus className="w-4 h-4 mr-2" /> 
+              Create Course
+              </Button>
+            </DialogTrigger>
+
+            <CourseModal onClose={() => setIsModalOpen(false)} />
+
+          </Dialog>
+        </div>
+      </div>
+
+
+      {/* Filter Tags */}
+
+      <div className="flex items-center justify-between w-full flex-wrap gap-2">
+            <div className='flex flex-wrap gap-2'>
+              {["C#", "AI", "CSS", "Javascript", "Python", "HTML", "C++"].map((tag, index) => (
+                <Button
+                  key={index}
+                  className={`${
+                  selectedLanguage.includes(tag) 
+                    ? `${languageColors[tag]?.bg} ${languageColors[tag]?.text} border border-purple-700`
+                    : `${languageColors[tag]?.bg} ${languageColors[tag]?.text} hover:text-white` 
                       } px-2 sm:px-3 py-1 text-xs whitespace-nowrap rounded-full`}
-                      onClick={() => toggleLanguage(tag)}
-                    >
-                      {tag}
-                    </Button>
+                  onClick={() => toggleLanguage(tag)}
+                  >
+                  {tag}
+                </Button>
                   ))}
-                  </div>
+            </div>
+        </div>
+    </div>
+                    
+                    
+      {/* Card Courses */}
+                    
+      <div 
+        className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 transition-all duration-300
+        ${isSidebarOpen ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"}`}
+        >
+          {currentCourses.length > 0 ? (
+          currentCourses.map((course, index) => (
+        <Card 
+        key={index}
+        lessonCount={course.lessonCount}
+        languages={course.languages}
+        title={course.title}
+        courseCode={course.courseCode}
+        section={course.section}
+        />
+        ))
+        ) : (
+        <div className="flex items-center justify-center w-full min-h-[50vh]">
+          <p className="text-gray-500 text-base text-center">No programming language found.</p>
+        </div>
+  
+        )}
+      </div>  
 
+      {/* Pagination */}
+
+      <div className="flex justify-center mt-8">
+      <Pagination>
+        <PaginationContent>
+
+          <PaginationItem>
+            <PaginationPrevious 
+            href="#" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} 
+            />
+          </PaginationItem>
                   
+        {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
 
+          <PaginationItem key={i}>
+            <PaginationLink 
+            href="#" onClick={() => setCurrentPage(i + 1)} 
+            isActive={currentPage === i + 1}
+            >
+            {i + 1}
+            </PaginationLink>
+          </PaginationItem>
+            ))}
 
+        {/* Ellipsis if there are more than 3 pages */}
 
-
-
-                    </div>
-                    </div>
-
-              {/* Courses Grid */}
-              <div className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 mt-4 transition-all duration-300
-  ${isSidebarOpen ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"}`}>
-  {currentCourses.map((course, index) => (
-    <Card 
-      key={index}
-      lessonCount={course.lessonCount}
-      languages={course.languages}
-      title={course.title}
-      courseCode={course.courseCode}
-      section={course.section}
-    />
-  ))}
-</div>
-
-              {/* Pagination */}
-              <div className="flex justify-center mt-8">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious href="#" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} />
-                    </PaginationItem>
-
-                    {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
-                      <PaginationItem key={i}>
-                        <PaginationLink href="#" onClick={() => setCurrentPage(i + 1)} isActive={currentPage === i + 1}>
-                          {i + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                  {/* Ellipsis if there are more than 3 pages */}
-          {totalPages > 3 && (
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
+        {totalPages > 3 && (
+          <PaginationItem>
+            <PaginationEllipsis />
+          </PaginationItem>
           )}
 
-                    <PaginationItem>
-                      <PaginationNext href="#" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            </div>
+          <PaginationItem>
+            <PaginationNext 
+            href="#" 
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} 
+            />
+          </PaginationItem>
+
+        </PaginationContent>
+      </Pagination>
+
           </div>
-         </SidebarInset>
+          </div>
+          </div>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );
