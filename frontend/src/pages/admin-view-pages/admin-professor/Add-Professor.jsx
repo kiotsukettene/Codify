@@ -1,20 +1,224 @@
+// import { useState } from "react";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import useToggleVisibility from "@/hooks/use-toggle-visibility";
+// import { Eye, EyeOff } from "lucide-react";
+// import { useprofAuthStore } from "@/store/profAuthStore";
+
+// import { useNavigate } from "react-router-dom";
+// import { useAuthStore } from "@/store/authStore";
+// import toast from "react-hot-toast";
+
+// function AddProfessor({ onClose, fetchProfessors }) {
+//   const navigate = useNavigate();
+//   const { institution } = useAuthStore();
+//   const { AddProfessor, isLoading, error } = useprofAuthStore();
+//   const [isVisible, toggleVisibility] = useToggleVisibility();
+//   const [formData, setFormData] = useState({
+//     firstName: "",
+//     lastName: "",
+//     email: "",
+//     institutionId: institution?._id || "",
+//   });
+
+//   const [errors, setErrors] = useState({
+//     firstName: "",
+//     lastName: "",
+//     email: "",
+//   });
+
+//   const validateForm = () => {
+//     let valid = true;
+//     const newErrors = { ...errors };
+//     // Name regex: Only letters, spaces, and hyphens are allowed
+//     const nameRegex = /^[a-zA-Z\s-]+$/;
+
+//     if (!formData.firstName.trim()) {
+//       newErrors.firstName = "First name is required.";
+//       valid = false;
+//     } else if (!nameRegex.test(formData.firstName)) {
+//       newErrors.firstName = "Invalid name format.";
+//       valid = false;
+//     } else {
+//       newErrors.firstName = "";
+//     }
+
+//     if (!formData.lastName.trim()) {
+//       newErrors.lastName = "Last name is required.";
+//       valid = false;
+//     } else if (!nameRegex.test(formData.lastName)) {
+//       newErrors.lastName = "Invalid name format.";
+//       valid = false;
+//     } else {
+//       newErrors.lastName = "";
+//     }
+//     // Email validation
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     if (!formData.email.trim()) {
+//       newErrors.email = "Email is required.";
+//       valid = false;
+//     } else if (!emailRegex.test(formData.email)) {
+//       newErrors.email = "Invalid email format.";
+//       valid = false;
+//     } else {
+//       newErrors.email = "";
+//     }
+
+//     setErrors(newErrors);
+//     return valid;
+//   };
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       [name]: value,
+//     }));
+//   };
+
+//   // const handleSubmit = async (e) => {
+//   //   e.preventDefault();
+
+//   //   console.log("Submitting Professor Data:", formData);
+//   //   if (!validateForm()) return;
+//   //   if (!formData.institutionId) {
+//   //     toast.error("Institution ID is missing!");
+//   //     return;
+//   //   }
+
+//   //   try {
+//   //     await AddProfessor(formData);
+//   //     toast.success("Professor added successfully");
+
+//   //     if (onClose) {
+//   //       onClose();
+//   //     }
+
+//   //     navigate("/admin/professors", { replace: true });
+//   //   } catch (error) {
+//   //     console.error("Error saving professor:", error);
+//   //   }
+//   // };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     console.log("Submitting Professor Data:", formData);
+//     if (!validateForm()) return;
+//     if (!formData.institutionId) {
+//       toast.error("Institution ID is missing!");
+//       return;
+//     }
+
+//     try {
+//       await AddProfessor(formData);
+
+//       // ✅ Call fetchProfessors to refresh the table after adding
+//       if (fetchProfessors) {
+//         await fetchProfessors();
+//       }
+
+//       // ✅ Close the modal
+//       if (onClose) {
+//         onClose();
+//       }
+//     } catch (error) {
+//       console.error("Error saving professor:", error);
+//     }
+//   };
+
+// const handleCancel = () => {
+//   setFormData({
+//     firstName: "",
+//     lastName: "",
+//     email: "",
+//     institutionId: institution?._id || "",
+//   });
+//   onClose();
+// };
+
+//   return (
+//     <div className="flex flex-1 flex-col w-full h-full p-6 mt-4 bg-white rounded-lg">
+//       <h1 className="text-3xl font-semibold text-neutral-900">
+//         Create New Professor Account
+//       </h1>
+//       <h4 className="pt-3 font-normal">
+//         Manage and view the list of professor
+//       </h4>
+//       <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
+//         <main className="flex-1 w-full">
+//           <form onSubmit={handleSubmit} className="space-y-6">
+//             <div className="space-y-4">
+//               <div className="space-y-2">
+//     <Label htmlFor="firstName">First Name</Label>
+//     <Input
+//       id="firstName"
+//       name="firstName"
+//       type="text"
+//       value={formData.firstName}
+//       onChange={handleChange}
+//     />
+//     {errors.firstName && (
+//       <p className="text-red-500 text-sm">{errors.firstName}</p>
+//     )}
+//   </div>
+//   <div className="space-y-2">
+//     <Label htmlFor="lastName">Last Name</Label>
+//     <Input
+//       id="lastName"
+//       name="lastName"
+//       type="text"
+//       value={formData.lastName}
+//       onChange={handleChange}
+//     />
+//     {errors.lastName && (
+//       <p className="text-red-500 text-sm">{errors.lastName}</p>
+//     )}
+//   </div>
+// </div>
+
+//             <div className="space-y-2">
+//               <Label htmlFor="email">Email</Label>
+//               <Input
+//                 id="email"
+//                 name="email"
+//                 type="email"
+//                 vvalue={formData.email}
+//                 onChange={handleChange}
+//               />
+//               {errors.email && (
+//                 <p className="text-red-500 text-sm">{errors.email}</p>
+//               )}
+//             </div>
+
+// <div className="flex justify-end space-x-4 pt-4">
+//   <Button type="button" onClick={handleCancel} variant="outline">
+//     Cancel
+//   </Button>
+//   <Button type="submit">Save Professor</Button>
+// </div>
+//           </form>
+//           {error && <p className="text-red-500 text-sm">{error}</p>}
+//         </main>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default AddProfessor;
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import useToggleVisibility from "@/hooks/use-toggle-visibility";
-import { Eye, EyeOff } from "lucide-react";
 import { useprofAuthStore } from "@/store/profAuthStore";
-
-import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
 
-function AddProfessor() {
-  const navigate = useNavigate();
+function AddProfessor({ onClose, fetchProfessors }) {
   const { institution } = useAuthStore();
   const { AddProfessor, isLoading, error } = useprofAuthStore();
-  const [isVisible, toggleVisibility] = useToggleVisibility();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -31,7 +235,6 @@ function AddProfessor() {
   const validateForm = () => {
     let valid = true;
     const newErrors = { ...errors };
-    // Name regex: Only letters, spaces, and hyphens are allowed
     const nameRegex = /^[a-zA-Z\s-]+$/;
 
     if (!formData.firstName.trim()) {
@@ -53,7 +256,7 @@ function AddProfessor() {
     } else {
       newErrors.lastName = "";
     }
-    // Email validation
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = "Email is required.";
@@ -79,8 +282,6 @@ function AddProfessor() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Submitting Professor Data:", formData); // ✅ Debugging log
     if (!validateForm()) return;
     if (!formData.institutionId) {
       toast.error("Institution ID is missing!");
@@ -89,9 +290,20 @@ function AddProfessor() {
 
     try {
       await AddProfessor(formData);
-      navigate("/admin/professors");
+
+      // ✅ Refresh the professor list after adding
+      if (fetchProfessors) {
+        await fetchProfessors();
+      }
+
+      toast.success("Professor added successfully");
+
+      // ✅ Close the modal
+      if (onClose) {
+        onClose();
+      }
     } catch (error) {
-      console.error("Error saving professor:", error); // ✅ Debugging log
+      console.error("Error saving professor:", error);
     }
   };
 
@@ -102,6 +314,7 @@ function AddProfessor() {
       email: "",
       institutionId: institution?._id || "",
     });
+    onClose();
   };
 
   return (
@@ -110,63 +323,60 @@ function AddProfessor() {
         Create New Professor Account
       </h1>
       <h4 className="pt-3 font-normal">
-        Manage and view the list of professor
+        Manage and view the list of professors.
       </h4>
       <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
-        <main className="flex-1 w-full">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
-                {errors.firstName && (
-                  <p className="text-red-500 text-sm">{errors.firstName}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-                {errors.lastName && (
-                  <p className="text-red-500 text-sm">{errors.lastName}</p>
-                )}
-              </div>
-            </div>
-
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="firstName">First Name</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                vvalue={formData.email}
+                id="firstName"
+                name="firstName"
+                type="text"
+                value={formData.firstName}
                 onChange={handleChange}
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email}</p>
+              {errors.firstName && (
+                <p className="text-red-500 text-sm">{errors.firstName}</p>
               )}
             </div>
-
-            <div className="flex justify-end space-x-4 pt-4">
-              <Button type="button" onClick={handleCancel} variant="outline">
-                Cancel
-              </Button>
-              <Button type="submit">Save Professor</Button>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                name="lastName"
+                type="text"
+                value={formData.lastName}
+                onChange={handleChange}
+              />
+              {errors.lastName && (
+                <p className="text-red-500 text-sm">{errors.lastName}</p>
+              )}
             </div>
-          </form>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-        </main>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              vvalue={formData.email}
+              onChange={handleChange}
+            />{" "}
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-4 pt-4">
+            <Button type="button" onClick={handleCancel} variant="outline">
+              Cancel
+            </Button>
+            <Button type="submit">Save Professor</Button>
+          </div>
+        </form>
       </div>
     </div>
   );
