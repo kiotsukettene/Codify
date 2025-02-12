@@ -60,13 +60,11 @@ function AddProfessor() {
   return (
     <div className="flex flex-1 flex-col w-full h-full p-6 mt-4 bg-white rounded-lg">
       <h1 className="text-3xl font-semibold text-neutral-900">
-        Create New Student Account
+        Create New Professor Account
       </h1>
       <h4 className="pt-3 font-normal">
-        Manage and view the list of students, their assigned courses, and
-        details.
+        Manage and view the list of professor
       </h4>
-
       <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
         <main className="flex-1 w-full">
           <form onSubmit={handleSubmit} className="space-y-6">

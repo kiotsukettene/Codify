@@ -43,6 +43,46 @@ export const useprofAuthStore = create((set) => ({
     }
   },
 
+  LoginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+
+    let token = null;
+
+    // 🔹 First try-catch: Handle popup closure
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      token = await result.user.getIdToken(); // ✅ Get Firebase token
+    } catch (error) {
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.error("Google Sign-In cancelled.");
+      } else {
+        toast.error("Google Login Failed: " + error.message);
+      }
+      set({ isLoading: false });
+      return; // ⛔ Exit early if popup was closed
+    }
+
+    // 🔹 Second try-catch: Handle backend token verification
+    try {
+      const response = await axios.post(`${API_URL}/google-login`, {
+        token,
+      });
+
+      set({
+        professor: response.data.professor,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Server Error",
+        isLoading: false,
+      });
+    }
+
+    set({ isLoading: false });
+  },
+
   checkAuth: async () => {
     set({ isCheckingAuth: true, error: null });
 
@@ -170,6 +210,27 @@ export const useprofAuthStore = create((set) => ({
         error: error.response?.data?.message || "Error deleting professor",
         isLoading: false,
       });
+    }
+  },
+  forgotPassword: async (email) => {
+    set({
+      isLoading: true,
+      error: null,
+    });
+    try {
+      const response = await axios.post(`${API_URL}/forgot-password`, {
+        email,
+      });
+      set({
+        message: response.data.message,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error sending email",
+        isLoading: false,
+      });
+      throw error;
     }
   },
 }));

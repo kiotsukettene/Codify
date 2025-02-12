@@ -1,6 +1,6 @@
-import React from 'react'
-import { Button } from '../ui/button'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Button } from "../ui/button";
+import { Link } from "react-router-dom";
 
 function PasswordResetConfirmation() {
   return (
@@ -24,15 +24,19 @@ function PasswordResetConfirmation() {
               <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
-          <p className="text-gray-500 text-sm">We have sent password recovery instructions to your email.</p>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Check your email
+          </h1>
+          <p className="text-gray-500 text-sm">
+            We have sent password recovery instructions to your email.
+          </p>
         </div>
         <Button className="w-full   text-white">
-          <Link to="/admin/login">Back to login</Link>
+          <Link to="/professor/login">Back to login</Link>
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
-export default PasswordResetConfirmation
+export default PasswordResetConfirmation;
