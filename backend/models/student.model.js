@@ -45,7 +45,15 @@ const studentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Institution',
         required: false,
-    }
+    },
+    lastLogin: {
+        type: Date,
+        default: Date.now,
+    },
+    resetPasswordToken: String,
+    resetPasswordExpiresAt: Date,
+    // verificationToken: String,
+    // verificationTokenExpiresAt: Date,
 }, { timestamps: true });
 
 export const Student = mongoose.model('Student', studentSchema);

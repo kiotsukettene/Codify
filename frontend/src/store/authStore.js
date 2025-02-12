@@ -173,7 +173,6 @@ export const useAuthStore = create((set) => ({
 
     set({ isLoading: false });
   },
-
   logout: async () => {
     set({ isLoading: true, error: null });
 

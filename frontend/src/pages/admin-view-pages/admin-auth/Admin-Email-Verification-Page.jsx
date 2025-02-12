@@ -12,6 +12,8 @@ import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
+import { Particles } from "@/components/ui/particles";
+
 
 function AdminEmailVerificationPage() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -129,7 +131,17 @@ useEffect(() => {
   
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10">
+    <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full h-screen overflow-hidden flex flex-col items-center py-12">
+         <div className="absolute inset-0 z-0">
+        <Particles
+          className="w-full h-full"
+          quantity={300}
+          ease={60}
+          color="#8A2BE2"
+          refresh
+        />
+      </div>
+        <div className="flex h-screen overflow-hidden absolute w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
         <Card className="w-full max-w-md border-purple-100 bg-white/90 backdrop-blur-sm">
           <CardHeader>
@@ -192,7 +204,10 @@ useEffect(() => {
         </Card>
       </div>
     </div>
-  );
+  
+    </main>
+
+  )
 }
 
 export default AdminEmailVerificationPage;

@@ -13,23 +13,102 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LoaderOne from "@/components/ui/loader-one";
 import { useAuthStore } from "@/store/authStore";
+import toast from "react-hot-toast";
+import useToggleVisibility from "@/hooks/use-toggle-visibility";
+import { Eye, EyeOff } from "lucide-react";
+
+import union from "../../../assets/picture/random background/union.png"
+import pinkFlower from "../../../assets/picture/random background/pink-flower.png"
+import blueFlower from "../../../assets/picture/random background/blue-flower.png"
+import purpleFlower from "../../../assets/picture/random background/purple-flower.png"
+import arrow from "../../../assets/picture/random background/arrow.png"
+import mascot from "../../../assets/picture/random background/mascot.png"
+import logo from '../../../assets/picture/logos/Logo.png'
 
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isVisible, toggleVisibility] = useToggleVisibility();
+  const navigate = useNavigate(); // ✅ Use React Router navigation  const [isVisible, toggleVisibility] = useToggleVisibility()
+
 
   const { login, isLoading, error, loginWithGoogle } = useAuthStore();
 
   const handleAdminLogin = async (e) => {
-    e.preventDefault();
-    await login(email, password);
+    e.preventDefault(); // ✅ Prevent page reload
+
+    try {
+      await login(email, password); // ✅ Call Zustand store login function
+      toast.success("Login successful!");
+
+      // ✅ Navigate to admin dashboard
+      navigate("/admin/dashboard", { replace: true });
+
+    } catch (error) {
+      toast.error(error?.message || "Failed to login. Try again.");
+    }
   };
 
   const handleGoogleLogin = async () => {
     await loginWithGoogle();
+    toast.success("Login successful!");
+
+    navigate("/admin/dashboard", { replace: true });
+
   }
 
   return (
+    <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
+       {/* Background Images */}
+                <Link to="/">
+                  <img 
+                   src={logo}
+                   alt="Logo" 
+                   className="absolute top-7 left-24 lg:left-10 lg:w-28" 
+                   />
+                </Link>
+                <img 
+                  src={pinkFlower}
+                  alt="Pink Flower" 
+                  className="absolute top-16 lg:top-32 left-[-28px] w-16 lg:w-32 opacity-90"
+                />
+                <img 
+                  src={purpleFlower}
+                  alt="Purple Flower" 
+                  className="absolute bottom-[100px] left-[-30px] w-20 lg:w-52 opacity-90"
+                />
+                <img 
+                  src={blueFlower}
+                  alt="Blue Flower" 
+                  className="absolute top-[250px] right-[-30px] w-16 lg:w-56 opacity-90"
+                />
+                <img 
+                  src={union}
+                  alt="Star" 
+                  className="absolute top-10 right-96 w-10 lg:w-52"
+                />
+                <img 
+                  src={arrow}
+                  alt="Arrow" 
+                  className="absolute top-10 left-24 w-10 lg:w-52"
+                />
+                <img 
+                  src={arrow}
+                  alt="Arrow" 
+                  className="absolute bottom-20 left-44 w-10 lg:w-52"
+                />
+                <img 
+                  src={arrow}
+                  alt="Arrow" 
+                  className="absolute bottom-20 right-0 w-20 lg:w-72 rotate-180"
+                />
+                <img 
+                  src={mascot}
+                  alt="Mascot" 
+                  className="absolute bottom-[-150px] right-[-100px] w-72 lg:w-96"
+                />
+
+    
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-md">
         <form onSubmit={handleAdminLogin}>
@@ -64,7 +143,7 @@ function AdminLoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
-                  <div className="grid gap-2">
+                  <div className="grid gap-2  relative">
                     <div className="flex items-center">
                       <Label htmlFor="password">Password</Label>
                    
@@ -73,8 +152,24 @@ function AdminLoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       id="password"
-                      type="password"
+                      type={isVisible ? "text" : "password"}
+                      required
+                      disabled={isLoading}
                   />
+                   <button
+            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            onClick={toggleVisibility}
+            aria-label={isVisible ? "Hide password" : "Show password"}
+            aria-pressed={isVisible}
+            aria-controls="password"
+          >
+            {isVisible ? (
+              <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <Eye size={16} strokeWidth={2} aria-hidden="true" />
+            )}
+          </button>
                   <Link to='/admin/forgot-password' className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                         >  Forgot your password?
                   </Link>
@@ -120,6 +215,9 @@ function AdminLoginPage() {
         </form>
       </div>
     </div>
+
+
+  </div>
   );
 }
 

@@ -23,6 +23,11 @@ import ProfessorLogin from './pages/professor-view-pages/professor-auth/Professo
 import ProfForgotPassword from './pages/professor-view-pages/professor-auth/Professor-Forgot-Password'
 import ProfNewPassword from './pages/professor-view-pages/professor-auth/Professor-New-Password'
 import ProfSuccessPassword from './pages/professor-view-pages/professor-auth/Professor-Success-Password'
+import GuestLayout from "./Layout/GuestLayout";
+import { useStudentStore } from "./store/studentStore";
+import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
+import StudentLayout from "./Layout/StudentLayout";
+import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -41,9 +46,20 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
   return children;
 }
 
+const RedirectAuthenticatedStudent = ({ children }) => {
+  const { isAuthenticated } = useStudentStore();
+  
+
+  if (isAuthenticated) {
+    return <Navigate to="/student/dashboard" replace/>;
+  }
+
+  return children;
+}
+
 // protect routes that require authentication
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRouteInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
 
   if (!isAuthenticated) {
@@ -62,6 +78,15 @@ const ProtectedRoute = ({ children }) => {
   return children;
 }
 
+const ProtectedRouteStudents = ({ children }) => {
+  const { isAuthenticated } = useStudentStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/student/login" replace />;
+  }
+  return children;
+}
+
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -75,7 +100,6 @@ function App() {
   <div>
     
       <Routes>
-      <Route path="/student/dashboard" element={<StudentDashboard/>}/>
       <Route path="/code-editor" element={<CodeEditor/>}/>
       <Route path="/professor/login" element={<ProfessorLogin/>}/>
       <Route path="/professor/forgot-password" element={<ProfForgotPassword/>}/>
@@ -83,38 +107,67 @@ function App() {
       <Route path="/professor/success-reset" element={<ProfSuccessPassword/>}/>
 
 
-        <Route
+        <Route path="/student/login" element={
+          <RedirectAuthenticatedStudent>
+            <StudentLoginPage/>
+          </RedirectAuthenticatedStudent>
+        } />
+
+       <Route path="/student" element={<StudentLayout />}>
+          <Route path="dashboard" element={
+            <ProtectedRouteStudents>
+            <StudentDashboard />
+            </ProtectedRouteStudents>
+            } />
+          <Route path="course-list" element={
+            <ProtectedRouteStudents>
+               <StudentCourseListPage />
+            </ProtectedRouteStudents>  
+          } />
+    </Route>
+        
+        <Route path="/" element={<GuestLayout />}>
+          <Route
           path='/admin/register'
           element={
             <RedirectAuthenticatedInstitution>
               <AdminRegisterPage />
             </RedirectAuthenticatedInstitution>
           } />
-        <Route
+
+
+          
+          <Route path='/admin/email-verify' element={
+          <ProtectedRouteInstitution>
+            <AdminEmailVerificationPage />
+          </ProtectedRouteInstitution>
+          
+          } />
+          
+          <Route
           path='/admin/payment-summary'
           element={
-            <ProtectedRoute>
+            <ProtectedRouteInstitution>
             <PaymentSummary />
-            </ProtectedRoute>
+            </ProtectedRouteInstitution>
           } />
-      <Route path='/admin/payment-success' element={<PaymentSuccess/>}/>
-        <Route path='/admin/login' element={
+        </Route>
+        
+        
+      <Route path='/admin/payment-success' element={
+        <ProtectedRouteInstitution>
+          <PaymentSuccess />
+        </ProtectedRouteInstitution>
+        } />
+
+
+          <Route path='/admin/login' element={
           <RedirectAuthenticatedInstitution>
             <AdminLogin />
           </RedirectAuthenticatedInstitution>
-      
         }
-        />
-        <Route path='/admin/login' element={
-            <AdminLogin />
-        }
-        />
-        <Route path='/admin/email-verify' element={
-          <ProtectedRoute>
-            <AdminEmailVerificationPage />
-          </ProtectedRoute>
-          
-        } />
+          />
+
         <Route path='/admin/forgot-password' element={<RedirectAuthenticatedInstitution>
           <AdminForgotPasswordPage/>
         </RedirectAuthenticatedInstitution>} />
@@ -123,26 +176,27 @@ function App() {
         
       <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={
-            <ProtectedRoute><AdminDashboard /></ProtectedRoute>
-              
-
+            <ProtectedRouteInstitution><AdminDashboard /></ProtectedRouteInstitution>
           }
           />
-        <Route path="professors" element={<ProtectedRoute>
+        <Route path="professors" element={<ProtectedRouteInstitution>
               <ProfessorList />
-            </ProtectedRoute>} />
-        <Route path="addProfessor" element={<ProtectedRoute>
+            </ProtectedRouteInstitution>} />
+        <Route path="addProfessor" element={<ProtectedRouteInstitution>
               <AddProfessor/>
-            </ProtectedRoute>}/>
-      <Route path="students" element={<ProtectedRoute>
+            </ProtectedRouteInstitution>}/>
+      <Route path="students" element={<ProtectedRouteInstitution>
               <StudentList/>
-            </ProtectedRoute>}/>
-      <Route path="addStudent" element={<ProtectedRoute>
+            </ProtectedRouteInstitution>}/>
+      <Route path="addStudent" element={<ProtectedRouteInstitution>
               <AddStudent/>
-            </ProtectedRoute>}/>
-      </Route>
+            </ProtectedRouteInstitution>}/>
+        </Route>
+        
+
+
     </Routes>
-    <Toaster/>
+    <Toaster position="top-right"/>
 
   </div>
   

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { Particles } from "@/components/ui/particles";
+
 import toast from 'react-hot-toast';
 
 function PaymentSummary() {
@@ -23,7 +25,18 @@ function PaymentSummary() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
+    <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full min-h-screen flex flex-col items-center py-12">
+       <div className="absolute inset-0 z-0">
+        <Particles
+          className="w-full h-full"
+          quantity={300}
+          ease={60}
+          color="#8A2BE2"
+          refresh
+        />
+      </div>
+
+    <div className="flex items-center absolute justify-center min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
       <div className="w-full max-w-3xl">
         <Card className="overflow-hidden bg-white/80">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-100/50 via-blue-100/50 to-pink-100/50 opacity-50" />
@@ -78,6 +91,7 @@ function PaymentSummary() {
         </Card>
       </div>
     </div>
+    </main>
   );
 }
 

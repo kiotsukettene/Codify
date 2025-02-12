@@ -41,6 +41,10 @@ app.use(cookieParser()); // allows us to parse cookies from the incoming request
 app.use(passport.initialize());
 app.use(passport.session()); // ✅ Enable session for Google Login
 
+// ✅ Handle CORS Preflight Requests
+app.options("*", cors());
+
+
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/professors", professorRoutes);
