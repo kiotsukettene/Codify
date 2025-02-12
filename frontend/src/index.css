@@ -31,6 +31,7 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --header-color: 230 53% 23%;
     font-family: 'Poppins', sans-serif;
   }
 
@@ -70,5 +71,13 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  img {
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: high-quality;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
   }
 }

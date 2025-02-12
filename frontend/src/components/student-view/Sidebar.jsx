@@ -18,7 +18,7 @@ import {
 // Student Sidebar Menu Data
 const studentMenu = [
   { to: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/student/course", icon: Layers, label: "Course" },
+  { to: "/student/course-list", icon: Layers, label: "Course" },
   { to: "/student/schedules", icon: Calendar, label: "Schedules" },
   { to: "/student/challenges", icon: Gamepad2, label: "Challenges" },
   { to: "/student/code-battles", icon: Sword, label: "Code Battles" },

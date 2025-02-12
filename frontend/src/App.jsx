@@ -242,6 +242,11 @@ import AdminLogin from "./pages/admin-view-pages/admin-auth/Admin-Login";
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
 import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
 import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
+import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
+
+
+
+
 
 function App() {
   return (
@@ -257,6 +262,7 @@ function App() {
   <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
     <Route path="/student" element={<StudentLayout />}>
       <Route path="dashboard" element={<StudentDashboard />} />
+      <Route path="course-list" element={<StudentCourseListPage/>}/>
     </Route>
   </Route>
 

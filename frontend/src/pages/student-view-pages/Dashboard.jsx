@@ -62,7 +62,7 @@ function StudentDashboard() {
     },
   ]
   return (
-    <div className="flex flex-col mx-7">
+    <div className="flex flex-col mx-6">
   {/* ✅ Greeting Section at the Top */}
 
 <div className="w-full flex flex-col items-start justify-start px-4 pt-6">
