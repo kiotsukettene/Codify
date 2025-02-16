@@ -99,27 +99,26 @@ const Courses = () => {
           modal
           >
 
-            <DialogTrigger asChild>
-              <Button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-purple-700 hover:bg-purple-800 p-5 rounded-md sm:hidden"
-              >
-              <Plus className="w-5 h-5" />
-              </Button>
-            </DialogTrigger>
+          <DialogTrigger asChild>
+            <Button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-purple-700 hover:bg-purple-800 p-5 rounded-md sm:hidden"
+            >
+          <Plus className="w-5 h-5" />
+          </Button>
+          </DialogTrigger>
 
-            <DialogTrigger asChild>
-              <Button
-              onClick={() => setIsModalOpen(true)}
-              className="hidden sm:flex items-center bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg"
-              >
-              <Plus className="w-4 h-4 mr-2" /> 
+          <DialogTrigger asChild>
+            <Button
+            onClick={() => setIsModalOpen(true)}
+            className="hidden sm:flex items-center bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg"
+            >
+            <Plus className="w-4 h-4 mr-2" /> 
               Create Course
-              </Button>
-            </DialogTrigger>
+            </Button>
+          </DialogTrigger>
 
-            <CourseModal onClose={() => setIsModalOpen(false)} />
-
+          <CourseModal onClose={() => setIsModalOpen(false)} />
           </Dialog>
         </div>
       </div>
@@ -177,20 +176,19 @@ const Courses = () => {
       <div className="flex justify-center mt-8">
       <Pagination>
         <PaginationContent>
-
           <PaginationItem>
             <PaginationPrevious 
-            href="#" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} 
-            />
+              href="#" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} 
+              />
           </PaginationItem>
                   
         {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
 
           <PaginationItem key={i}>
             <PaginationLink 
-            href="#" onClick={() => setCurrentPage(i + 1)} 
-            isActive={currentPage === i + 1}
-            >
+              href="#" onClick={() => setCurrentPage(i + 1)} 
+              isActive={currentPage === i + 1}
+              >
             {i + 1}
             </PaginationLink>
           </PaginationItem>
@@ -200,7 +198,7 @@ const Courses = () => {
 
         {totalPages > 3 && (
           <PaginationItem>
-            <PaginationEllipsis />
+          <PaginationEllipsis />
           </PaginationItem>
           )}
 
