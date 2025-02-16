@@ -22,10 +22,7 @@ import LoadingSpinner from './components/LoadingSpinner'
 import ProfessorLogin from './pages/professor-view-pages/professor-auth/Professor-Login'
 import ProfForgotPassword from './pages/professor-view-pages/professor-auth/Professor-Forgot-Password'
 import ProfNewPassword from './pages/professor-view-pages/professor-auth/Professor-New-Password'
-import ProfessorVerify from "./pages/professor-view-pages/professor-auth/Professor-Verify-Email"; 
-import Courses from "./pages/professor-view-pages/Course";
-
-import ProfSuccessPassword from './pages/professor-view-pages/professor-auth/Professor-Success-Password'
+import ProfessorVerify from "./pages/professor-view-pages/professor-auth/Professor-Verify-Email";
 import GuestLayout from "./Layout/GuestLayout";
 import { useStudentStore } from "./store/studentStore";
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -48,8 +45,23 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
 
   if (isAuthenticated && institution.isVerified && !institution.isPaid) {
     return <Navigate to="/admin/payment-summary" replace/>;
-   }
+  }
+  
+  if (isAuthenticated && !institution.isVerified && !institution.isPaid) { 
+    return <Navigate to="/admin/email-verify" replace/>;
+  }
 
+
+  return children;
+}
+
+const RedirectAuthenticatedStudent = ({ children }) => {
+  const { isAuthenticated } = useStudentStore();
+  
+
+  if (isAuthenticated) {
+    return <Navigate to="/student/dashboard" replace/>;
+  }
 
   return children;
 }
@@ -101,13 +113,39 @@ function App() {
       <Route path="/professor/login" element={<ProfessorLogin/>}/>
       <Route path="/professor/forgot-password" element={<ProfForgotPassword/>}/>
       <Route path="/professor/reset-password/:token" element={<ProfNewPassword/>}/>
-      <Route path="/professor/courses" element={<Courses/>}/>
       <Route path="/professor/verify-email" element={<ProfessorVerify/>}/>
 
-    
+     
 
+        <Route path="/student/login" element={
+          <RedirectAuthenticatedStudent>
+            <StudentLoginPage/>
+          </RedirectAuthenticatedStudent>
+        } />
 
-        <Route
+        <Route path="/student/forgot-password" element={
+          <RedirectAuthenticatedStudent>
+            <StudentForgotPasswordPage/>
+          </RedirectAuthenticatedStudent>
+        } />
+        
+        <Route path="/student/reset-password/:token" element={<RedirectAuthenticatedStudent><StudentNewPasswordPage /></RedirectAuthenticatedStudent>} />
+
+       <Route path="/student" element={<StudentLayout />}>
+          <Route path="dashboard" element={
+            <ProtectedRouteStudents>
+            <StudentDashboard />
+            </ProtectedRouteStudents>
+            } />
+          <Route path="course-list" element={
+            <ProtectedRouteStudents>
+               <StudentCourseListPage />
+            </ProtectedRouteStudents>  
+          } />
+    </Route>
+        
+        <Route path="/" element={<GuestLayout />}>
+          <Route
           path='/admin/register'
           element={
             <RedirectAuthenticatedInstitution>

@@ -1,26 +1,11 @@
-import React from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import ProfBg2 from '@/components/Auth/Prof-Bg-2'
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Mail, Loader } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import toast from "react-hot-toast";
 import ProfPasswordResetConfirmation from "@/components/Auth/Password-reset-confirmation";
-import Astro from "../../../assets/picture/random background/Astro.png";
-import FiveStar from "../../../assets/picture/random background/FiveStar.png";
-import FourStar from "../../../assets/picture/random background/FourStar.png";
-import PinkStar from "../../../assets/picture/random background/PinkStar.png";
-import VioletStar from "../../../assets/picture/random background/VioletStar.png";
-import SpaceShip from "../../../assets/picture/random background/Spaceship.png";
-import Waves from "../../../assets/picture/random background/Waves.png";
-import logo from "../../../assets/picture/logos/logo.png";
+import ProfBg2 from "@/components/Auth/Prof-Bg-2";
 
 const ProfForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -35,7 +20,10 @@ const ProfForgotPassword = () => {
   };
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
-    <ProfBg2 />
+
+      {/* Background Images */}
+          <ProfBg2 />
+      
 
 
     <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
