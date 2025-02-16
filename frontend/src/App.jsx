@@ -25,6 +25,17 @@ import ProfNewPassword from './pages/professor-view-pages/professor-auth/Profess
 import ProfessorVerify from "./pages/professor-view-pages/professor-auth/Professor-Verify-Email"; 
 import Courses from "./pages/professor-view-pages/Course";
 
+import ProfSuccessPassword from './pages/professor-view-pages/professor-auth/Professor-Success-Password'
+import GuestLayout from "./Layout/GuestLayout";
+import { useStudentStore } from "./store/studentStore";
+import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
+import StudentLayout from "./Layout/StudentLayout";
+import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
+import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
+import MainLogin from "./pages/Guest-view-pages/Login";
+import LandingPage from "./pages/Guest-view-pages/Landing-page";
+import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
+import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -45,7 +56,7 @@ const RedirectAuthenticatedInstitution = ({ children }) => {
 
 // protect routes that require authentication
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRouteInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
 
   if (!isAuthenticated) {
@@ -64,6 +75,15 @@ const ProtectedRoute = ({ children }) => {
   return children;
 }
 
+const ProtectedRouteStudents = ({ children }) => {
+  const { isAuthenticated } = useStudentStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/student/login" replace />;
+  }
+  return children;
+}
+
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -77,7 +97,6 @@ function App() {
   <div>
     
       <Routes>
-      <Route path="/student/dashboard" element={<StudentDashboard/>}/>
       <Route path="/code-editor" element={<CodeEditor/>}/>
       <Route path="/professor/login" element={<ProfessorLogin/>}/>
       <Route path="/professor/forgot-password" element={<ProfForgotPassword/>}/>
@@ -95,31 +114,44 @@ function App() {
               <AdminRegisterPage />
             </RedirectAuthenticatedInstitution>
           } />
-        <Route
+          
+
+          
+          <Route
           path='/admin/payment-summary'
           element={
-            <ProtectedRoute>
+            <ProtectedRouteInstitution>
             <PaymentSummary />
-            </ProtectedRoute>
+            </ProtectedRouteInstitution>
           } />
-      <Route path='/admin/payment-success' element={<PaymentSuccess/>}/>
-        <Route path='/admin/login' element={
+
+             <Route path="*" element={<PageNotFoundPage />} />
+        <Route path="/login" element={<MainLogin />} />
+         <Route index element={<LandingPage/>}/>
+        </Route>
+
+                  <Route path='/admin/email-verify' element={
+          <ProtectedRouteInstitution>
+            <AdminEmailVerificationPage />
+          </ProtectedRouteInstitution>
+          
+          } />
+        
+        
+      <Route path='/admin/payment-success' element={
+        <ProtectedRouteInstitution>
+          <PaymentSuccess />
+        </ProtectedRouteInstitution>
+        } />
+
+
+          <Route path='/admin/login' element={
           <RedirectAuthenticatedInstitution>
             <AdminLogin />
           </RedirectAuthenticatedInstitution>
-      
         }
-        />
-        <Route path='/admin/login' element={
-            <AdminLogin />
-        }
-        />
-        <Route path='/admin/email-verify' element={
-          <ProtectedRoute>
-            <AdminEmailVerificationPage />
-          </ProtectedRoute>
-          
-        } />
+          />
+
         <Route path='/admin/forgot-password' element={<RedirectAuthenticatedInstitution>
           <AdminForgotPasswordPage/>
         </RedirectAuthenticatedInstitution>} />
@@ -128,26 +160,27 @@ function App() {
         
       <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={
-            <ProtectedRoute><AdminDashboard /></ProtectedRoute>
-              
-
+            <ProtectedRouteInstitution><AdminDashboard /></ProtectedRouteInstitution>
           }
           />
-        <Route path="professors" element={<ProtectedRoute>
+        <Route path="professors" element={<ProtectedRouteInstitution>
               <ProfessorList />
-            </ProtectedRoute>} />
-        <Route path="addProfessor" element={<ProtectedRoute>
+            </ProtectedRouteInstitution>} />
+        <Route path="addProfessor" element={<ProtectedRouteInstitution>
               <AddProfessor/>
-            </ProtectedRoute>}/>
-      <Route path="students" element={<ProtectedRoute>
+            </ProtectedRouteInstitution>}/>
+      <Route path="students" element={<ProtectedRouteInstitution>
               <StudentList/>
-            </ProtectedRoute>}/>
-      <Route path="addStudent" element={<ProtectedRoute>
+            </ProtectedRouteInstitution>}/>
+      <Route path="addStudent" element={<ProtectedRouteInstitution>
               <AddStudent/>
-            </ProtectedRoute>}/>
-      </Route>
+            </ProtectedRouteInstitution>}/>
+        </Route>
+        
+
+
     </Routes>
-    <Toaster/>
+    <Toaster position="top-right"/>
 
   </div>
   

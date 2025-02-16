@@ -151,7 +151,6 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
 </html>
 
 `;
-
 export const WELCOME_EMAIL_STUDENT_TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
 <head>

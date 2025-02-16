@@ -4,9 +4,35 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import ProfBg2 from '@/components/Auth/Prof-Bg-2'
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Mail, Loader } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useprofAuthStore } from "@/store/profAuthStore";
+import toast from "react-hot-toast";
+import ProfPasswordResetConfirmation from "@/components/Auth/Password-reset-confirmation";
+import Astro from "../../../assets/picture/random background/Astro.png";
+import FiveStar from "../../../assets/picture/random background/FiveStar.png";
+import FourStar from "../../../assets/picture/random background/FourStar.png";
+import PinkStar from "../../../assets/picture/random background/PinkStar.png";
+import VioletStar from "../../../assets/picture/random background/VioletStar.png";
+import SpaceShip from "../../../assets/picture/random background/Spaceship.png";
+import Waves from "../../../assets/picture/random background/Waves.png";
+import logo from "../../../assets/picture/logos/logo.png";
 
 const ProfForgotPassword = () => {
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const { isLoading, forgotPassword } = useprofAuthStore();
 
+  const handleSendResetLink = async (e) => {
+    e.preventDefault();
+    await forgotPassword(email);
+    setEmailSent(true);
+    toast.success("Password reset link sent to your email");
+  };
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
     <ProfBg2 />
@@ -38,8 +64,8 @@ const ProfForgotPassword = () => {
         </div>
       </CardContent>
     </Card>
-  </div>
+    </div>
   )
 }
 
-export default ProfForgotPassword
+export default ProfForgotPassword;

@@ -18,7 +18,7 @@ function AdminLayout() {
             <header className="flex h-20 items-center gap-2 px-4 border-b">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
-              <AdminHeader />
+            <AdminHeader/>
             </header>
 
             {/* Page Content - Ensures Full Width & Height */}

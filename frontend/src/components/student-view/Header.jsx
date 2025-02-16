@@ -4,21 +4,21 @@ import { BellRing, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import badge from "../../assets/picture/achievements/sampleBadge.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useStudentStore } from "@/store/studentStore";
 
 function StudentHeader() {
-  const { logout } = useAuthStore();
+  const { logout } = useStudentStore()
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout(); // ✅ Call the store logout function
     toast.success("Logged out successfully!");
-    navigate("/admin/login");
-  };
+    navigate("/student/login", { replace: true }); // ✅ Now this works
+};
 
   // Toggle dropdown visibility
   const toggleDropdown = () => {

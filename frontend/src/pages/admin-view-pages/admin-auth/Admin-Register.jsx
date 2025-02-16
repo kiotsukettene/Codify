@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { PasswordStrengthIndicator } from "@/components/ui/Password-Strength-indicator";
 import { useAuthStore } from "@/store/authStore";
+import { Particles } from "@/components/ui/particles";
 
 function AdminRegisterPage() {
   const navigate = useNavigate();
@@ -128,7 +129,20 @@ function AdminRegisterPage() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-      <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10 px-11">
+     
+<main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full h-screen overflow-hidden flex flex-col items-center py-12">
+      <div className="absolute inset-0 z-0">
+        <Particles
+          className="w-full h-full"
+          quantity={300}
+          ease={60}
+          color="#8A2BE2"
+          refresh
+        />
+      </div>
+
+
+      <div className="flex min-h-svh absolute flex-col items-center justify-center p-6 md:p-10 px-11">
         <div className="w-full max-w-sm md:max-w-5xl">
           <div className="flex flex-col gap-6 bg-white">
             <form onSubmit={handleAdminRegister} className="p-6 m-0 md:p-8 grid md:grid-cols-2 gap-4">
@@ -271,7 +285,7 @@ function AdminRegisterPage() {
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full font-normal text-sm">
                   <BadgeCheck />{" "}
-                  {isLoading && !message ? <Loader className="animate-spin mx-auto" size={24} /> : "Register"}
+                  {isLoading && !error ? <Loader className="animate-spin mx-auto" size={24} /> : "Register"}
                 </Button>
                 <div className="flex mt-2">
                   <p className="text-sm text-muted-foreground">
@@ -286,6 +300,11 @@ function AdminRegisterPage() {
           </div>
         </div>
       </div>
+
+     
+
+     
+ </main>
     </motion.div>
   );
 }
