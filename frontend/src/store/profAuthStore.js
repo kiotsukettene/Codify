@@ -29,13 +29,19 @@ export const useprofAuthStore = create((set) => ({
         password,
       });
 
+      const { professor, token } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("professor", JSON.stringify(professor));
+      }
+
       set({
-        professor: response.data.professor,
+        professor,
         isAuthenticated: true,
         isLoading: false,
       });
     } catch (error) {
-      //////missing error
       set({
         error: error.response?.data?.message || "Error logging in",
         isLoading: false,
