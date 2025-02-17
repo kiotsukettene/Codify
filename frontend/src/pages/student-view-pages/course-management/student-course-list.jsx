@@ -11,6 +11,9 @@ import { BookOpenCheck, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchForm from "@/components/student-view/SearchForm";
 import { Input } from "@/components/ui/input";
+import card1 from '../../../assets/picture/courses/card1.png';
+import StudentCourseCard from "@/components/student-view/student-course-card";
+
 
 function StudentCourseListPage() {
 
@@ -78,9 +81,35 @@ function StudentCourseListPage() {
 
 
       <div className="flex px-8 text-center justify-between items-center">
-        <h1 className="text-header font-semibold text-2xl">My Courses</h1>
+        <h1 className="text-header font-semibold text-4xl">My Courses</h1>
         <SearchForm/>
       </div>
+
+      {/* <div className="flex justify-center items-center h-screen bg-gray-100">
+      <StudentCourseCard
+        lessons={18}
+        image={spa}
+        title="Networks and Communication"
+        professor="Prof. Dave Benjamin Cruz"
+        category="Networking"
+      />
+    </div> */}
+
+
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
+{courses.map((course, index) => (
+   <StudentCourseCard
+   key={index}
+   lessons={course.lessons}
+   image={card1}
+   title={course.title}
+   professor={course.professor}
+   tags={course.tags || []} 
+ />
+))}
+      
+  
+   </div>
     </div>
 
   );

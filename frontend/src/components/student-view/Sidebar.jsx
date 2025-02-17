@@ -27,9 +27,9 @@ const studentMenu = [
 
 function StudentSidebar() {
   return (
-    <Sidebar className="w-64 h-screen border-r flex flex-col">
+    <Sidebar className="w-72 h-screen border-r flex flex-col">
       {/* Sidebar Header */}
-     <SidebarHeader className="border-b border-gray-200 pl-6">
+     <SidebarHeader className="border-b border-gray-200 pl-6 mt-2">
             <div>
               <img src={Logo} className="w-26 h-auto" alt="Logo" />
             </div>
