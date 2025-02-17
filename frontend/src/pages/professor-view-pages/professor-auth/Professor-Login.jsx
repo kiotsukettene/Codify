@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import union from "../../../assets/picture/random background/union.png";
 import pinkFlower from "@/assets/picture/random background/pink-flower.png";
@@ -22,6 +22,7 @@ const ProfessorLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const navigate = useNavigate();
 
   //
   const { login, isLoading, error, LoginWithGoogle } = useprofAuthStore();
@@ -29,10 +30,12 @@ const ProfessorLogin = () => {
   const handleProfessorLogin = async (e) => {
     e.preventDefault();
     await login(email, password);
+    navigate("/professor/dashboard");
   };
 
   const handleGoogleLogin = async () => {
     await LoginWithGoogle();
+    navigate("/professor/dashboard");
   };
 
   return (
