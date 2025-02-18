@@ -101,11 +101,11 @@ const ProfDashboard = () => {
       <Hearder />
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
         {/* Left Section: Stats Cards and Battle Card */}
-        <div className="space-y-6 md:col-span-2">
+        <div className="space-y-6 md:col-span-2 lg:col-span-3">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
             <StatsCard
               title="Total Students"
               value="150"
@@ -127,9 +127,11 @@ const ProfDashboard = () => {
           <BattleCard />
         </div>
 
-        {/* Today's Schedule */}
-        <div className="bg-white border border-black/5 p-6 rounded-lg shadow-sm text-left w-full md:col-span-2">
-          <ScheduleList scheduleData={mockSchedule} />
+        {/* Today's Schedule - Remains beside the stats & battle card */}
+        <div className="bg-white border border-black/5 p-6 rounded-lg shadow-sm text-left w-full md:col-span-1">
+          <div className="overflow-hidden">
+            <ScheduleList scheduleData={mockSchedule} />
+          </div>
         </div>
       </div>
 
