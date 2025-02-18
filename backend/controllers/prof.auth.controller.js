@@ -393,13 +393,23 @@ export const registerProfessor = async (req, res) => {
 //fetch professor
 export const getProfessors = async (req, res) => {
   try {
-    const professors = await Professor.find().populate(
+    // Ensure institutionId is available from authentication middleware
+    if (!req.institutionId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized access. Institution ID missing.",
+      });
+    }
+
+    // Fetch students that belong to the authenticated institution
+    const professors = await Professor.find({ institution: req.institutionId }).populate(
       "institution",
       "institutionName"
     );
+
     res.status(200).json({
       success: true,
-      professors, // ✅ Make sure this matches what the frontend expects
+      professors,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

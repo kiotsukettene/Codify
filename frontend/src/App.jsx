@@ -59,7 +59,7 @@ function App() {
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+  }, []);
 
   if (isCheckingAuth) return <LoadingSpinner />;
 
@@ -119,27 +119,46 @@ function App() {
         <Route path="/professor/reset-password/:token" element={<ProfNewPassword />} />
         <Route path="/professor/success-reset" element={<ProfSuccessPassword />} />
 
-        {/* Protected Institution (Admin) Routes */}
-        <Route path="/admin" element={<ProtectedRouteInstitution />}>
-          <Route element={<AdminLayout />}>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="email-verify" element={<AdminEmailVerificationPage />} />
-            <Route path="payment-summary" element={<PaymentSummary />} />
-            <Route path="payment-success" element={<PaymentSuccess />} />
-            <Route path="professors" element={<ProfessorList />} />
-            <Route path="addProfessor" element={<AddProfessor />} />
-            <Route path="students" element={<StudentList />} />
-            <Route path="addStudent" element={<AddStudent />} />
-          </Route>
+        <Route path="admin/email-verify" element={
+          <ProtectedRouteInstitution>
+            <AdminEmailVerificationPage />
+          </ProtectedRouteInstitution>
+        } />
+
+        <Route path="admin/payment-summary" element={
+          <ProtectedRouteInstitution>
+            <PaymentSummary />
+          </ProtectedRouteInstitution>
+        } />
+
+        <Route path="admin/payment-success" element={
+          <ProtectedRouteInstitution>
+            <PaymentSuccess />
+          </ProtectedRouteInstitution>
+        } />
+
+        {/* Admin Routes */}
+        <Route path="/admin/" element={<AdminLayout />}>
+          <Route path="dashboard" element={<ProtectedRouteInstitution><AdminDashboard /></ProtectedRouteInstitution>} />
+          <Route path="professors" element={<ProtectedRouteInstitution><ProfessorList /></ProtectedRouteInstitution>} />
+          <Route path="addProfessor" element={<ProtectedRouteInstitution><AddProfessor /></ProtectedRouteInstitution>} />
+          <Route path="students" element={<ProtectedRouteInstitution><StudentList /></ProtectedRouteInstitution>} />
+          <Route path="addStudent" element={<ProtectedRouteInstitution><AddStudent /></ProtectedRouteInstitution>} />
         </Route>
 
-        {/* Protected Student Routes */}
-        <Route path="/student" element={<ProtectedRouteStudents />}>
-          <Route element={<StudentLayout />}>
-            <Route path="dashboard" element={<StudentDashboard />} />
-            <Route path="course-list" element={<StudentCourseListPage />} />
-          </Route>
-        </Route>
+<Route
+  path="/student/*"
+  element={
+    <ProtectedRouteStudents>
+      <StudentLayout>
+        <Routes>
+          <Route path="dashboard" element={<StudentDashboard />} />
+          <Route path="course-list" element={<StudentCourseListPage />} />
+        </Routes>
+      </StudentLayout>
+    </ProtectedRouteStudents>
+  }
+/>
 
         {/* Additional Routes */}
         <Route path="/code-editor" element={<CodeEditor />} />

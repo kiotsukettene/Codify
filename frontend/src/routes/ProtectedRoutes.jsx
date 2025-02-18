@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useStudentStore } from "@/store/studentStore";
 
@@ -8,18 +9,16 @@ export const RedirectAuthenticatedInstitution = ({ children }) => {
   const { isAuthenticated: isStudentAuthenticated } = useStudentStore();
   const location = useLocation();
 
-  // 🚫 Prevent admin from accessing student login pages
   if (isAuthenticated && location.pathname.startsWith("/student")) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
   if (isAuthenticated) {
-    if (!institution.isVerified) return <Navigate to="/admin/email-verify" replace />;
-    if (!institution.isPaid) return <Navigate to="/admin/payment-summary" replace />;
+    if (!institution?.isVerified) return <Navigate to="/admin/email-verify" replace />;
+    if (!institution?.isPaid) return <Navigate to="/admin/payment-summary" replace />;
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  // 🚫 Prevent student from accessing admin login pages
   if (isStudentAuthenticated && location.pathname.startsWith("/admin")) {
     return <Navigate to="/student/dashboard" replace />;
   }
@@ -33,12 +32,10 @@ export const RedirectAuthenticatedStudent = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   const location = useLocation();
 
-  // 🚫 Prevent student from accessing admin login pages
   if (isStudentAuthenticated && location.pathname.startsWith("/admin")) {
     return <Navigate to="/student/dashboard" replace />;
   }
 
-  // 🚫 Prevent admin from accessing student login pages
   if (isAuthenticated && location.pathname.startsWith("/student")) {
     return <Navigate to="/admin/dashboard" replace />;
   }
@@ -46,22 +43,31 @@ export const RedirectAuthenticatedStudent = ({ children }) => {
   return isStudentAuthenticated ? <Navigate to="/student/dashboard" replace /> : children;
 };
 
-// ✅ Protects institution-related routes (Admin)
-export const ProtectedRouteInstitution = () => {
+// ✅ Fix: Prevent infinite re-renders in ProtectedRouteInstitution
+export const ProtectedRouteInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
   const location = useLocation();
 
-  if (!isAuthenticated) return <Navigate to="/admin/login" replace />;
-  if (!institution.isVerified && location.pathname !== "/admin/email-verify") 
-    return <Navigate to="/admin/email-verify" replace />;
-  if (!institution.isPaid && location.pathname !== "/admin/payment-summary") 
-    return <Navigate to="/admin/payment-summary" replace />;
+   if (!isAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
 
-  return <Outlet />;
+  // If already verified, prevent access to /email-verify
+  if (institution.isVerified && window.location.pathname === "/admin/email-verify") {
+    return <Navigate to="/admin/payment-summary" replace />;
+  }
+
+  if (institution.isPaid && window.location.pathname === "/admin/payment-summary") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  return children;
 };
 
-// ✅ Protects student-related routes
-export const ProtectedRouteStudents = () => {
+
+// ✅ Fix: Prevent infinite re-renders in ProtectedRouteStudents
+export const ProtectedRouteStudents = ({ children }) => {
   const { isAuthenticated: isStudentAuthenticated } = useStudentStore();
-  return isStudentAuthenticated ? <Outlet /> : <Navigate to="/student/login" replace />;
+
+  return isStudentAuthenticated ? children : <Navigate to="/student/login" replace />;
 };
