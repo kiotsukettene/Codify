@@ -33,6 +33,9 @@ import MainLogin from "./pages/Guest-view-pages/Login";
 import LandingPage from "./pages/Guest-view-pages/Landing-page";
 import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
 import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
+import StudentLessonListPage from "./pages/student-view-pages/course-management/student-lesson-list";
+import StudentModulePage from "./pages/student-view-pages/course-management/student-module";
+import StudentTaskPage from "./pages/student-view-pages/Task-Activity-list";
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -137,11 +140,16 @@ function App() {
             <StudentDashboard />
             </ProtectedRouteStudents>
             } />
-          <Route path="course-list" element={
+          {/* <Route path="course-list" element={
             <ProtectedRouteStudents>
                <StudentCourseListPage />
             </ProtectedRouteStudents>  
-          } />
+          } /> */}
+
+          <Route path="course-list" element={<StudentCourseListPage/>}/>
+          <Route path="lesson-list" element={<StudentLessonListPage/>}/>
+          <Route path="module" element={<StudentModulePage/>}/>
+          <Route path="task-list" element={<StudentTaskPage/>}/>
     </Route>
         
         <Route path="/" element={<GuestLayout />}>

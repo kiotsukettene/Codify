@@ -22,7 +22,7 @@ const studentMenu = [
   { to: "/student/schedules", icon: Calendar, label: "Schedules" },
   { to: "/student/challenges", icon: Gamepad2, label: "Challenges" },
   { to: "/student/code-battles", icon: Sword, label: "Code Battles" },
-  { to: "/student/task", icon: CircleCheckBig, label: "Task" },
+  { to: "/student/task-list", icon: CircleCheckBig, label: "Task" },
 ];
 
 function StudentSidebar() {
