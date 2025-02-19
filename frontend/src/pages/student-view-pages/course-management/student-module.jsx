@@ -19,10 +19,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CheckCircle, ChevronDown, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle, PlayCircle } from "lucide-react";
 import XPChallengeCard from "@/components/student-view/XPChallengeCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import StudentActivityPage from "./student-activity";
 
 function StudentModulePage() {
   const location = useLocation();

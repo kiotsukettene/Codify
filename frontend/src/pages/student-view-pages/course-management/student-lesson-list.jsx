@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Blend, Flower, GraduationCap, Star, Tags, Video } from "lucide-react";
+import { Blend, Flower, GraduationCap, PlayIcon, Star, Tags, Video } from "lucide-react";
 import React from "react";
 import { motion } from "framer-motion";
 
@@ -18,7 +18,17 @@ import { motion } from "framer-motion";
 import lessonData from "@/mock/lesson-list";
 import lessonOverview from "@/mock/lesson-overview";
 
+
+import { useNavigate } from "react-router-dom";
+
+
+
+
+
+
+
 function StudentLessonListPage() {
+  const navigate = useNavigate();
  
 
   return (
@@ -118,41 +128,102 @@ function StudentLessonListPage() {
       ========Right Side Content ======
       =============================*/}
 
-        {/* Right Side Content */}
         <div className="w-full lg:w-1/3 p-4">
           <div className="bg-blue-200 text-neutral-900 py-3 px-4 font-medium rounded-lg mb-6 text-center">
             Explore Your Cosmic Lessons
           </div>
 
-          {/* Lesson List */}
+          {/*==================== Lesson List=================== */}
           <motion.div>
-            {lessonData.map((lesson) => (
-              <div key={lesson.id} className="relative">
-                {/* Course Card */}
-                <Card className="bg-white shadow-none border-none rounded-lg mb-5 overflow-hidden">
-                  <CardHeader className="flex gap-3">
-                    <span className="text-5xl text-blue-600">{lesson.icon}</span>
-                    <div className="flex flex-col">
-                      <CardTitle className="text-lg font-semibold">{lesson.title}</CardTitle>
-                      <CardDescription className="text-sm font-light">{lesson.description}</CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardFooter className="flex items-center justify-between">
-                    <Badge className="text-sm font-medium bg-[#ffdc9b] text-orange-500">
-                      {lesson.code}
-                    </Badge>
-                    <Button
-                      onClick={() => navigate(`/student/module/${lesson.id}`)}
-                      variant="secondary"
-                      className="border-primary text-primary"
-                    >
-                      Start Learning
-                    </Button>
-                  </CardFooter>
-                </Card>
+      {lessonData.map((lesson, index) => (
+        <motion.div
+          key={lesson.id}
+          className="relative"
+          whileHover={
+            index === 0
+              ? {
+                  scale: 1.02,
+                  transition: { duration: 0.2 },
+                }
+              : {}
+          }
+        >
+          {/* Blur Effect and Overlay for First Lesson Only */}
+          {index === 0 && (
+            <motion.div
+              initial={{ opacity: 0.6 }}
+              whileHover={{ opacity: 1 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-10 rounded-lg cursor-pointer"
+              // onClick={() => navigate(`/student/module/${lesson.id}`)}
+              onClick={() => navigate("/student/module")}  
+            >
+              <motion.span
+                className="text-white text-lg font-semibold flex items-center gap-2 px-6 py-3 bg-primary/80 rounded-full"
+                whileHover={{
+                  scale: 1.1,
+                  backgroundColor: "rgba(var(--primary), 1)",
+                  boxShadow: "0 0 10px rgba(var(--primary), 0.5)",
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 10,
+                }}
+              >
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{
+                    duration: 1,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <PlayIcon className="w-5 h-5" />
+                </motion.div>
+                Start Learning
+              </motion.span>
+            </motion.div>
+          )}
+
+          {/*==================== Course Card ====================*/}
+          <Card
+            className={`bg-white shadow-none border-none rounded-lg mb-5 overflow-hidden relative transition-all duration-300 ${
+              index === 0 ? "opacity-90 hover:opacity-100" : "hover:shadow-sm hover:translate-y-[-2px]"
+            }`}
+          >
+            <CardHeader className="flex gap-3">
+              <motion.span
+                className="text-5xl text-blue-600"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {lesson.icon}
+              </motion.span>
+              <div className="flex flex-col">
+                <CardTitle className="text-lg font-semibold">{lesson.title}</CardTitle>
+                <CardDescription className="text-sm font-light">{lesson.description}</CardDescription>
               </div>
-            ))}
-          </motion.div>
+            </CardHeader>
+            <CardFooter className="flex items-center justify-between">
+              <Badge className="text-sm font-medium bg-[#ffdc9b] text-orange-500">{lesson.code}</Badge>
+              {index !== 0 && (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    onClick={() => navigate(`/student/module/${lesson.id}`)}
+                    variant="secondary"
+                    className="border-primary text-primary hover:bg-primary hover:text-white transition-colors duration-300"
+                  >
+                    Start Learning
+                  </Button>
+                </motion.div>
+              )}
+            </CardFooter>
+          </Card>
+        </motion.div>
+      ))}
+    </motion.div>
+
+
         </div>
       </div>
        

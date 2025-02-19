@@ -5,8 +5,11 @@ import { Badge } from "../ui/badge";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { FolderClosed } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const StudentTaskCard = ({ subject, activity, dueDate, status, isCompleted, }) => {
+
+  const navigate = useNavigate()
   return (
     <div className="bg-white py-4 px-6 rounded-xl">
       {/* =============== CARD HEADER (Icon & Status) ==================== */}
@@ -35,6 +38,7 @@ const StudentTaskCard = ({ subject, activity, dueDate, status, isCompleted, }) =
 
       <div className="flex justify-end mt-3">
         <Button
+          onClick={() => navigate("/student/activity")}
           variant="link"
           className="text-gray-600 hover:text-primary flex items-center"
         >
