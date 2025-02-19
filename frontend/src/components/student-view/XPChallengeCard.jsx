@@ -39,7 +39,7 @@ function XPChallengeCard() {
           </h1>
           {/* Small XP Badge Below the Text */}
           <span className="mt-2 px-3 py-1 bg-primary text-white text-xs font-medium rounded-lg">
-            ✨ Come Join Us!
+            ✨Join Us!
           </span>
         </div>
       </div>
