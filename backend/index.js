@@ -5,6 +5,7 @@ import { connectDB } from "./database/connectDB.js";
 import authRoutes from "./routes/auth.route.js";
 import studentRoutes from "./routes/student.route.js";
 import professorRoutes from "./routes/professor.route.js";
+import courseRoutes from "./routes/course.route.js";
 import cors from "cors";
 import session from "express-session";
 import passport from "passport";
@@ -44,10 +45,10 @@ app.use(passport.session()); // ✅ Enable session for Google Login
 // ✅ Handle CORS Preflight Requests
 app.options("*", cors());
 
-
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/professors", professorRoutes);
+app.use("/api/courses", courseRoutes);
 
 app.listen(PORT, () => {
   connectDB();
