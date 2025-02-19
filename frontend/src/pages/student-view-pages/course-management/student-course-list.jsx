@@ -13,9 +13,11 @@ import SearchForm from "@/components/student-view/SearchForm";
 import { Input } from "@/components/ui/input";
 import card1 from '../../../assets/picture/courses/card1.png';
 import StudentCourseCard from "@/components/student-view/student-course-card";
+import { useNavigate } from "react-router-dom";
 
 
 function StudentCourseListPage() {
+  const navigate = useNavigate()
 
   const courses = [
     {
@@ -65,7 +67,7 @@ function StudentCourseListPage() {
             <h4>Prof. Dave Benjamin Cruz</h4>
           </CardContent>
           <CardFooter>
-            <Button>Start Learning 🚀</Button>
+            <Button onClick={() => navigate("/student/lesson-list")}>Start Learning 🚀</Button>
           </CardFooter>
         </div>
 
