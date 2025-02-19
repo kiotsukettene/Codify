@@ -41,43 +41,6 @@ export const createCourse = async (req, res) => {
   }
 };
 
-/**
- * @desc    Create a new course
- * @route   POST /api/courses/create
- * @access  Private (Professor)
- */
-// export const createCourse = async (req, res) => {
-//   try {
-//     const { professorId, className, program, section, language, schedule } =
-//       req.body;
-
-//     const course = new Course({
-//       professorId,
-//       className,
-//       program,
-//       section,
-//       language,
-//       schedule,
-//     });
-
-//     await course.save();
-
-//     res.status(201).json({
-//       message: "Course created successfully!",
-//       course,
-//     });
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ message: "Error creating course", error: error.message });
-//   }
-// };
-
-/**
- * @desc    Get all courses by professor
- * @route   GET /api/courses/:professorId
- * @access  Private (Professor)
- */
 export const getCoursesByProfessor = async (req, res) => {
   try {
     const { professorId } = req.params;
@@ -91,11 +54,6 @@ export const getCoursesByProfessor = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get a single course by ID
- * @route   GET /api/courses/course/:courseId
- * @access  Private (Professor & Students)
- */
 export const getCourseById = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -111,11 +69,6 @@ export const getCourseById = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update a course
- * @route   PUT /api/courses/update/:courseId
- * @access  Private (Professor)
- */
 export const updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -137,11 +90,6 @@ export const updateCourse = async (req, res) => {
   }
 };
 
-/**
- * @desc    Delete a course
- * @route   DELETE /api/courses/delete/:courseId
- * @access  Private (Professor)
- */
 export const deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.params;

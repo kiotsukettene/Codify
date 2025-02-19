@@ -1,10 +1,5 @@
 import Lesson from "../models/lesson.model.js";
 
-/**
- * @desc    Create a new lesson
- * @route   POST /api/lessons/create
- * @access  Private (Professor)
- */
 export const createLesson = async (req, res) => {
   try {
     const { courseId, title, sections } = req.body;
@@ -28,11 +23,6 @@ export const createLesson = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get all lessons for a specific course
- * @route   GET /api/lessons/:courseId
- * @access  Private (Professor & Students)
- */
 export const getLessonsByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -46,11 +36,6 @@ export const getLessonsByCourse = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get a single lesson by ID
- * @route   GET /api/lessons/lesson/:lessonId
- * @access  Private (Professor & Students)
- */
 export const getLessonById = async (req, res) => {
   try {
     const { lessonId } = req.params;
@@ -66,11 +51,6 @@ export const getLessonById = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update a lesson
- * @route   PUT /api/lessons/update/:lessonId
- * @access  Private (Professor)
- */
 export const updateLesson = async (req, res) => {
   try {
     const { lessonId } = req.params;
@@ -92,11 +72,6 @@ export const updateLesson = async (req, res) => {
   }
 };
 
-/**
- * @desc    Delete a lesson
- * @route   DELETE /api/lessons/delete/:lessonId
- * @access  Private (Professor)
- */
 export const deleteLesson = async (req, res) => {
   try {
     const { lessonId } = req.params;

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import crypto from "crypto";
 import { generateCourseCode } from "../utils/generateCourseCode.js";
 
 const CourseSchema = new mongoose.Schema(

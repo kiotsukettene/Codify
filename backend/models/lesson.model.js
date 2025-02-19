@@ -7,13 +7,13 @@ const LessonSchema = new mongoose.Schema(
       ref: "Course",
       required: true,
     },
-    title: { type: String, required: true }, // Main lesson title
+    title: { type: String, required: true },
     sections: [
       {
-        subTitle: { type: String, required: true }, // Sub-title for each section
+        subTitle: { type: String, required: true },
         description: { type: String },
-        codeSnippets: [{ type: String }], // Supports multiple code snippets
-        notes: [{ type: String }], // Supports multiple notes per section
+        codeSnippets: [{ type: String }],
+        notes: [{ type: String }],
       },
     ],
     createdAt: { type: Date, default: Date.now },
