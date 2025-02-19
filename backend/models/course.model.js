@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
+import { generateCourseCode } from "../utils/generateCourseCode.js";
 
 const CourseSchema = new mongoose.Schema(
   {
@@ -15,7 +17,14 @@ const CourseSchema = new mongoose.Schema(
       day: { type: String, required: true },
       time: { type: String, required: true },
     },
-    createdAt: { type: Date, default: Date.now },
+    courseCode: {
+      type: String,
+      unique: true,
+      default: generateCourseCode, // Generate course code on creation
+    },
+    studentsEnrolled: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
+    ],
   },
   { timestamps: true }
 );

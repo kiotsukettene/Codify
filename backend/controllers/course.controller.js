@@ -1,14 +1,21 @@
 import Course from "../models/course.model.js";
+import { generateCourseCode } from "../utils/generateCourseCode.js";
 
-/**
- * @desc    Create a new course
- * @route   POST /api/courses/create
- * @access  Private (Professor)
- */
 export const createCourse = async (req, res) => {
   try {
     const { professorId, className, program, section, language, schedule } =
       req.body;
+
+    // Generate a unique course code
+    let courseCode;
+    let isUnique = false;
+
+    // Ensure courseCode is unique in the database
+    while (!isUnique) {
+      courseCode = generateCourseCode();
+      const existingCourse = await Course.findOne({ courseCode });
+      if (!existingCourse) isUnique = true; // Only break loop if the code is unique
+    }
 
     const course = new Course({
       professorId,
@@ -17,12 +24,14 @@ export const createCourse = async (req, res) => {
       section,
       language,
       schedule,
+      courseCode, // ✅ Add generated course code
     });
 
     await course.save();
 
     res.status(201).json({
       message: "Course created successfully!",
+      courseCode: course.courseCode, // Send generated course code
       course,
     });
   } catch (error) {
@@ -31,6 +40,38 @@ export const createCourse = async (req, res) => {
       .json({ message: "Error creating course", error: error.message });
   }
 };
+
+/**
+ * @desc    Create a new course
+ * @route   POST /api/courses/create
+ * @access  Private (Professor)
+ */
+// export const createCourse = async (req, res) => {
+//   try {
+//     const { professorId, className, program, section, language, schedule } =
+//       req.body;
+
+//     const course = new Course({
+//       professorId,
+//       className,
+//       program,
+//       section,
+//       language,
+//       schedule,
+//     });
+
+//     await course.save();
+
+//     res.status(201).json({
+//       message: "Course created successfully!",
+//       course,
+//     });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error creating course", error: error.message });
+//   }
+// };
 
 /**
  * @desc    Get all courses by professor
