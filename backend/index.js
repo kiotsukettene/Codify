@@ -7,6 +7,7 @@ import studentRoutes from "./routes/student.route.js";
 import professorRoutes from "./routes/professor.route.js";
 import courseRoutes from "./routes/course.route.js";
 import lessonRoutes from "./routes/lesson.route.js";
+import activityRoutes from "./routes/activity.route.js";
 import cors from "cors";
 import session from "express-session";
 import passport from "passport";
@@ -51,6 +52,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/professors", professorRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/lessons", lessonRoutes);
+app.use("/api/activities", activityRoutes);
 
 app.listen(PORT, () => {
   connectDB();
