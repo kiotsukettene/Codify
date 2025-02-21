@@ -23,7 +23,6 @@ const Courses = () => {
     
   ];
 
-  // Pagination state
   const itemsPerPage = 8;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(courses.length / itemsPerPage);

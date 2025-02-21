@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-const timeSlots = Array.from({ length: 13 }, (_, i) => {
-    const hour = i + 8 // Start from 8 AM
+const timeSlots = Array.from({ length: 15 }, (_, i) => {
+    const hour = i + 7 // Start from 7 AM
     const ampm = hour >= 12 ? "PM" : "AM"
     const hour12 = hour > 12 ? hour - 12 : hour
     return {
@@ -25,14 +25,148 @@ const CourseModal = () => {
         programmingLanguage: "",
         day: "",
         time: ""
-    }); 
-    
-    
+    });
+
+    const [errors, setErrors] = useState({
+        className: "",
+        program: "",
+        section: "",
+        programmingLanguage: "",
+        day: "",
+        time: ""
+    });
+
+    const validateForm = () => {
+        let valid = true;
+        const newErrors = { ...errors };
+
+        // Class name validation - only letters, numbers, spaces and basic punctuation
+        const classNameRegex = /^[a-zA-Z0-9\s\-()]+$/;
+        if (!formValues.className.trim()) {
+            newErrors.className = "Class name is required.";
+            valid = false;
+        } else if (!classNameRegex.test(formValues.className)) {
+            newErrors.className = "Invalid class name format.";
+            valid = false;
+        } else {
+            newErrors.className = "";
+        }
+
+        // Program validation
+        if (!formValues.program.trim()) {
+            newErrors.program = "Program is required.";
+            valid = false;
+        } else {
+            newErrors.program = "";
+        }
+
+        // Section validation - alphanumeric
+        const sectionRegex = /^[a-zA-Z0-9\-]+$/;
+        if (!formValues.section.trim()) {
+            newErrors.section = "Section is required.";
+            valid = false;
+        } else if (!sectionRegex.test(formValues.section)) {
+            newErrors.section = "Invalid section format.";
+            valid = false;
+        } else {
+            newErrors.section = "";
+        }
+
+        // Programming Language validation
+        if (!formValues.programmingLanguage) {
+            newErrors.programmingLanguage = "Programming language is required.";
+            valid = false;
+        } else {
+            newErrors.programmingLanguage = "";
+        }
+
+        // Day validation
+        if (!formValues.day) {
+            newErrors.day = "Day is required.";
+            valid = false;
+        } else {
+            newErrors.day = "";
+        }
+
+        // Time validation
+        if (!formValues.time) {
+            newErrors.time = "Time is required.";
+            valid = false;
+        } else {
+            newErrors.time = "";
+        }
+
+        setErrors(newErrors);
+        return valid;
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormValues((prevValues) => ({
             ...prevValues,
             [name]: value
+        }));
+        
+        // Validate the field that just changed
+        const newErrors = { ...errors };
+        
+        switch (name) {
+            case 'className':
+                const classNameRegex = /^[a-zA-Z0-9\s\-()]+$/;
+                if (!value.trim()) {
+                    newErrors.className = "Class name is required.";
+                } else if (!classNameRegex.test(value)) {
+                    newErrors.className = "Invalid class name format.";
+                } else {
+                    newErrors.className = "";
+                }
+                break;
+            
+            case 'program':
+                if (!value.trim()) {
+                    newErrors.program = "Program is required.";
+                } else {
+                    newErrors.program = "";
+                }
+                break;
+            
+            case 'section':
+                const sectionRegex = /^[a-zA-Z0-9\-]+$/;
+                if (!value.trim()) {
+                    newErrors.section = "Section is required.";
+                } else if (!sectionRegex.test(value)) {
+                    newErrors.section = "Invalid section format.";
+                } else {
+                    newErrors.section = "";
+                }
+                break;
+        }
+        
+        setErrors(newErrors);
+    };
+
+    // Add handlers for select components
+    const handleProgrammingLanguageChange = (value) => {
+        setFormValues(prev => ({ ...prev, programmingLanguage: value }));
+        setErrors(prev => ({
+            ...prev,
+            programmingLanguage: !value ? "Programming language is required." : ""
+        }));
+    };
+
+    const handleDayChange = (value) => {
+        setFormValues(prev => ({ ...prev, day: value }));
+        setErrors(prev => ({
+            ...prev,
+            day: !value ? "Day is required." : ""
+        }));
+    };
+
+    const handleTimeChange = (value) => {
+        setFormValues(prev => ({ ...prev, time: value }));
+        setErrors(prev => ({
+            ...prev,
+            time: !value ? "Time is required." : ""
         }));
     };
 
@@ -40,7 +174,10 @@ const CourseModal = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        console.log(formValues);
+        if (validateForm()) {
+            console.log(formValues);
+            // Ready to send to backend
+        }
     };
 
     
@@ -67,6 +204,9 @@ const CourseModal = () => {
             onChange={handleChange}
             className="w-full"
             />
+            {errors.className && (
+                <p className="text-red-500 text-sm">{errors.className}</p>
+              )}
           </div>
 
 
@@ -80,8 +220,10 @@ const CourseModal = () => {
             value={formValues.program}
             onChange={handleChange}
             className="w-full"
-
             />
+             {errors.program && (
+                <p className="text-red-500 text-sm">{errors.program}</p>
+              )}
             <p className="text-xs sm:text-sm text-gray-500">e.g. Bachelor of Science in Information Technology (BSIT)</p>
           </div>
 
@@ -95,8 +237,10 @@ const CourseModal = () => {
             value={formValues.section}
             onChange={handleChange}
             className="w-full"
-
             />
+             {errors.section && (
+                <p className="text-red-500 text-sm">{errors.section}</p>
+              )}
           </div>
 
           <div className='space-y-2'>
@@ -105,7 +249,7 @@ const CourseModal = () => {
             </label>
             <Select 
             name="programmingLanguage" 
-            onValueChange={(value) => setFormValues(prev => ({ ...prev, programmingLanguage: value }))}
+            onValueChange={handleProgrammingLanguageChange}
             >     
               <SelectTrigger className="w-full">
               <SelectValue placeholder="select an option" />
@@ -117,6 +261,9 @@ const CourseModal = () => {
                 <SelectItem value="cpp">C++</SelectItem>
               </SelectContent>
             </Select>
+            {errors.programmingLanguage && (
+                <p className="text-red-500 text-sm">{errors.programmingLanguage}</p>
+              )}
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -126,7 +273,7 @@ const CourseModal = () => {
               </label>
               <Select 
                 name="day" 
-                onValueChange={(value) => setFormValues(prev => ({ ...prev, day: value }))}
+                onValueChange={handleDayChange}
                 >                
                 <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select day" />
@@ -139,6 +286,9 @@ const CourseModal = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.day && (
+                <p className="text-red-500 text-sm">{errors.day}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -147,7 +297,7 @@ const CourseModal = () => {
                 </label>
                 <Select 
                      name="time" 
-                     onValueChange={(value) => setFormValues(prev => ({ ...prev, time: value }))}
+                     onValueChange={handleTimeChange}
                         >                
                 <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select time" />
@@ -161,6 +311,9 @@ const CourseModal = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.time && (
+                <p className="text-red-500 text-sm">{errors.time}</p>
+              )}
             </div>
           </div>
 

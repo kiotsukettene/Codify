@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 function AddProfessor({ onClose, fetchProfessors }) {
   const { institution } = useAuthStore();
@@ -62,12 +63,67 @@ function AddProfessor({ onClose, fetchProfessors }) {
     return valid;
   };
 
+  const isFormValid = () => {
+    const requiredFields = ['firstName', 'lastName', 'email'];
+    
+    const isComplete = requiredFields.every(field => formData[field].trim() !== '');
+    
+    const hasNoErrors = Object.values(errors).every(error => error === '');
+    
+    return isComplete && hasNoErrors;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+    
+    validateField(name, value);
+  };
+
+  const validateField = (fieldName, value) => {
+    const newErrors = { ...errors };
+    const nameRegex = /^[a-zA-Z\s-]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    switch (fieldName) {
+      case 'firstName':
+        if (!value.trim()) {
+          newErrors.firstName = "First name is required.";
+        } else if (!nameRegex.test(value)) {
+          newErrors.firstName = "Invalid name format.";
+        } else {
+          newErrors.firstName = "";
+        }
+        break;
+
+      case 'lastName':
+        if (!value.trim()) {
+          newErrors.lastName = "Last name is required.";
+        } else if (!nameRegex.test(value)) {
+          newErrors.lastName = "Invalid name format.";
+        } else {
+          newErrors.lastName = "";
+        }
+        break;
+
+      case 'email':
+        if (!value.trim()) {
+          newErrors.email = "Email is required.";
+        } else if (!emailRegex.test(value)) {
+          newErrors.email = "Invalid email format.";
+        } else {
+          newErrors.email = "";
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    setErrors(newErrors);
   };
 
   const handleSubmit = async (e) => {
@@ -108,13 +164,18 @@ function AddProfessor({ onClose, fetchProfessors }) {
   };
 
   return (
-    <div className="flex flex-1 flex-col w-full h-full  mt-4 bg-white rounded-lg">
-      <h1 className="text-xl font-semibold text-neutral-900">
-        Create New Professor Account
-      </h1>
-      <h4 className="pt-1 text-sm font-normal text-gray-500">
-        Manage and view the list of professors.
-      </h4>
+    <DialogContent 
+      onPointerDownOutside={(e) => {
+        e.preventDefault();
+      }}
+      className="max-w-lg"
+    >
+      <DialogHeader>
+        <DialogTitle>Create New Professor Account</DialogTitle>
+        <DialogDescription>
+          Manage and view the list of professors.
+        </DialogDescription>
+      </DialogHeader>
       <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
@@ -164,11 +225,17 @@ function AddProfessor({ onClose, fetchProfessors }) {
             <Button type="button" onClick={handleCancel} variant="outline">
               Cancel
             </Button>
-            <Button type="submit">Save Professor</Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading || !isFormValid()}
+              className={!isFormValid() ? "opacity-50 cursor-not-allowed bg-gray-400" : ""}
+            >
+              {isLoading ? "Saving..." : "Save Professor"}
+            </Button>
           </div>
         </form>
       </div>
-    </div>
+    </DialogContent>
   );
 }
 

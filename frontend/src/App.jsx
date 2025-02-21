@@ -33,6 +33,15 @@ import MainLogin from "./pages/Guest-view-pages/Login";
 import LandingPage from "./pages/Guest-view-pages/Landing-page";
 import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
 import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
+import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-overview";
+import Courses from "./pages/professor-view-pages/Course";
+import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
+import ActivityPage from "./pages/professor-view-pages/Course-management/Activity-Page";
+import CreateActivity from "./pages/professor-view-pages/Course-management/Create-Activity";
+import CreateLesson from "./pages/professor-view-pages/Course-management/Create-Lesson";
+import Topic from "./pages/professor-view-pages/Course-management/Topic";
+
+
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -114,6 +123,14 @@ function App() {
       <Route path="/professor/forgot-password" element={<ProfForgotPassword/>}/>
       <Route path="/professor/reset-password/:token" element={<ProfNewPassword/>}/>
       <Route path="/professor/verify-email" element={<ProfessorVerify/>}/>
+      <Route path="/professor/dashboard" element={<ProfDashboard/>}/>
+      <Route path="/professor/course" element={<Courses/>}/>
+      <Route path="/professor/course/lesson-overview" element={<LessonOverview/>}/>
+      <Route path="/professor/course/activities" element={<ActivityPage/>}/>
+      <Route path="/professor/course/create-activity" element={<CreateActivity/>}/>
+      <Route path="/professor/course/create-lesson" element={<CreateLesson/>}/>
+      <Route path="/professor/course/topic" element={<Topic/>}/>
+
 
      
 
