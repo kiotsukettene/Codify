@@ -14,10 +14,12 @@ import { Input } from "@/components/ui/input";
 import card1 from '../../../assets/picture/courses/card1.png';
 import StudentCourseCard from "@/components/student-view/student-course-card";
 import { useNavigate } from "react-router-dom";
+import JoinCourseModal from "@/components/student-view/join-course-modal";
 
 
 function StudentCourseListPage() {
   const navigate = useNavigate()
+  const [joinCourse, setJoinCourse] = useState(false)
 
   const courses = [
     {
@@ -68,11 +70,19 @@ function StudentCourseListPage() {
           </CardContent>
           <CardFooter>
             
-            <Button>Join Course 🚀</Button>
+            <Button onClick={() => setJoinCourse(true)}>Join Course 🚀</Button>
           </CardFooter>
+
+
+            {/* ==============================================
+            ============MODAL FOR JOIN COURSE CODE ===========
+            ==================================================*/}
+          <JoinCourseModal isOpen={joinCourse} onClose={() => setJoinCourse(false)}/>
+
+
+
         </div>
 
-        {/* Right Content - Image Wrapper */}
         <div className="relative w-[50%] h-full ml-auto">
           <img
             src={header}
@@ -88,16 +98,7 @@ function StudentCourseListPage() {
         <SearchForm/>
       </div>
 
-      {/* <div className="flex justify-center items-center h-screen bg-gray-100">
-      <StudentCourseCard
-        lessons={18}
-        image={spa}
-        title="Networks and Communication"
-        professor="Prof. Dave Benjamin Cruz"
-        category="Networking"
-      />
-    </div> */}
-
+    
 
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
 {courses.map((course, index) => (
