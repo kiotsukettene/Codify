@@ -8,7 +8,7 @@ const StudentLessonContent = ({ title, content }) => {
       <h2 className="font-medium text-xl text-gray-900 rounded-md p-2 bg-purple-100/80">{title}</h2>
 
       {/* Lesson Content */}
-      <p className="text-gray-800 text-sm mt-4 leading-relaxed">{content}</p>
+      <p className="text-gray-800 text-sm mt-4 leading-7 text-justify">{content}</p>
 
     
     </div>

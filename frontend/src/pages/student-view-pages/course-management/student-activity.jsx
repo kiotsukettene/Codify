@@ -52,6 +52,8 @@ function StudentActivityPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Instructions and Upload */}
           <div className="lg:col-span-2 space-y-8">
+
+            
          {/*======================= Instruction Section================================*/}
 
             <div className="space-y-6">

@@ -15,7 +15,7 @@ const lessonOverview = {
     courseCode: "CCS 103",
   },
   stats: {
-    totalLessons: 20,
+    totalLessons: 2,
     totalStudents: 20,
   },
 };

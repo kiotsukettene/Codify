@@ -4,7 +4,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import React from "react";
+import React, { useState } from "react";
 import header from "@/assets/picture/courses/course-header.png";
 import { Separator } from "@/components/ui/separator";
 import { BookOpenCheck, Search, Users } from "lucide-react";
@@ -34,7 +34,7 @@ function StudentCourseListPage() {
       professor: "Prof. Joemen D. Barrios",
       lessons: 2,
       image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
-      tags: ["Profitable", "AI"],
+      tags: ["OOP", "AI"],
     },
     // Duplicate the second course 6 more times to fill the grid
     ...Array(6).fill({
@@ -43,7 +43,7 @@ function StudentCourseListPage() {
       professor: "Prof. Joemen D. Barrios",
       lessons: 2,
       image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
-      tags: ["Profitable", "AI"],
+      tags: ["OOP", "AI"],
     }),
   ]
 
@@ -61,13 +61,14 @@ function StudentCourseListPage() {
 
           <CardContent className="flex gap-4 mt-4 text-header font-medium">
             <BookOpenCheck />
-            <h4>20 Lessons</h4>
+            <h4>2 Lessons</h4>
             <Separator orientation="vertical" />
             <Users />
             <h4>Prof. Dave Benjamin Cruz</h4>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => navigate("/student/lesson-list")}>Start Learning 🚀</Button>
+            
+            <Button>Join Course 🚀</Button>
           </CardFooter>
         </div>
 
