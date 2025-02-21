@@ -31,24 +31,16 @@ import PaymentSuccess from "./components/admin-view/payment-success";
 import ProfessorLogin from "./pages/professor-view-pages/professor-auth/Professor-Login";
 import ProfForgotPassword from "./pages/professor-view-pages/professor-auth/Professor-Forgot-Password";
 import ProfNewPassword from "./pages/professor-view-pages/professor-auth/Professor-New-Password";
-import ProfSuccessPassword from "./pages/professor-view-pages/professor-auth/Professor-Success-Password";
+import ProfVerifyEmail from "./pages/professor-view-pages/professor-auth/Professor-Verify-Email";
+import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-Overview";
+import Courses from "./pages/professor-view-pages/Course";
+import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
+import ActivityPage from "./pages/professor-view-pages/Course-management/Activity-Page";
+import CreateActivity from "./pages/professor-view-pages/Course-management/Create-Activity";
+import CreateLesson from "./pages/professor-view-pages/Course-management/Create-Lesson";
+import Topic from "./pages/professor-view-pages/Course-management/Topic";
 
 // Student Pages
-import AdminDashboard from "./pages/admin-view-pages/Dashboard";
-import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
-import AdminLayout from "./Layout/AdminLayout";
-import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
-import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
-import StudentList from "./pages/admin-view-pages/admin-student/Student";import { Toaster } from 'react-hot-toast'
-import { useEffect, useCallback } from 'react'
-import { useAuthStore } from '@/store/authStore'
-import LoadingSpinner from './components/LoadingSpinner'
-import ProfessorLogin from './pages/professor-view-pages/professor-auth/Professor-Login'
-import ProfForgotPassword from './pages/professor-view-pages/professor-auth/Professor-Forgot-Password'
-import ProfNewPassword from './pages/professor-view-pages/professor-auth/Professor-New-Password'
-import ProfessorVerify from "./pages/professor-view-pages/professor-auth/Professor-Verify-Email";
-import GuestLayout from "./Layout/GuestLayout";
-import { useStudentStore } from "./store/studentStore";
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
 import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
 import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
@@ -68,81 +60,8 @@ import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
 
 // Editor
 import CodeEditor from "./components/CodeEditor";
-import LandingPage from "./pages/Guest-view-pages/Landing-page";
-import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
-import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
-import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-overview";
-import Courses from "./pages/professor-view-pages/Course";
-import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
-import ActivityPage from "./pages/professor-view-pages/Course-management/Activity-Page";
-import CreateActivity from "./pages/professor-view-pages/Course-management/Create-Activity";
-import CreateLesson from "./pages/professor-view-pages/Course-management/Create-Lesson";
-import Topic from "./pages/professor-view-pages/Course-management/Topic";
-
 
 // redirect authenticated and paid institution to dashboard page 
-
-const RedirectAuthenticatedInstitution = ({ children }) => {
-  const { isAuthenticated, institution } = useAuthStore();
-  
-
-  if (isAuthenticated && institution.isVerified && institution.isPaid) {
-    return <Navigate to="/admin/dashboard" replace/>;
-  }
-
-  if (isAuthenticated && institution.isVerified && !institution.isPaid) {
-    return <Navigate to="/admin/payment-summary" replace/>;
-  }
-  
-  if (isAuthenticated && !institution.isVerified && !institution.isPaid) { 
-    return <Navigate to="/admin/email-verify" replace/>;
-  }
-
-
-  return children;
-}
-
-const RedirectAuthenticatedStudent = ({ children }) => {
-  const { isAuthenticated } = useStudentStore();
-  
-
-  if (isAuthenticated) {
-    return <Navigate to="/student/dashboard" replace/>;
-  }
-
-  return children;
-}
-
-// protect routes that require authentication
-
-const ProtectedRouteInstitution = ({ children }) => {
-  const { isAuthenticated, institution } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
-  }
-
-
-  // If already verified, prevent access to /email-verify
-  if (institution.isVerified && window.location.pathname === "/admin/email-verify") {
-    return <Navigate to="/admin/payment-summary" replace />;
-  }
-
-  if (institution.isPaid && window.location.pathname === "/admin/payment-summary") {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-  return children;
-}
-
-const ProtectedRouteStudents = ({ children }) => {
-  const { isAuthenticated } = useStudentStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/student/login" replace />;
-  }
-  return children;
-}
-
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -156,6 +75,11 @@ function App() {
   return (
     <div>
       <Routes>
+
+      <Route path="/professor/lesson-overview" element={<Topic />} />
+
+
+
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
           <Route index element={<LandingPage />} />
@@ -207,7 +131,7 @@ function App() {
         <Route path="/professor/login" element={<ProfessorLogin />} />
         <Route path="/professor/forgot-password" element={<ProfForgotPassword />} />
         <Route path="/professor/reset-password/:token" element={<ProfNewPassword />} />
-        <Route path="/professor/success-reset" element={<ProfSuccessPassword />} />
+        <Route path="/professor/success-reset" element={<ProfVerifyEmail/>} />
 
         <Route path="admin/email-verify" element={
           <ProtectedRouteInstitution>

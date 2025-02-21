@@ -291,42 +291,7 @@ const scrollToSection = (sectionId) => {
             </CardContent>
           </Card>
         </motion.div>
-
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-medium">Upload Files</h2>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="text-gray-600">
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Assign
-              </Button>
-              <Button variant="ghost" size="sm" className="text-gray-600">
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Schedule
-              </Button>
-              <Button variant="ghost" size="sm" className="text-gray-600">
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Save draft
-              </Button>
-            </div>
-          </div>
-          
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <div className="flex justify-center mb-2">
-              <svg className="w-12 h-12 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <button className="mt-2 text-sm text-blue-500 hover:text-blue-600">+ Add New File</button>
-          </div>
-        </div>
-        </motion.div>
+      </motion.div>
 
         {/* Comments Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
