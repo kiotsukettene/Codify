@@ -34,7 +34,7 @@ export const registerInstitution = async (req, res) => {
             throw new Error("All fields are required");
         }
 
-        const institutionAlreadyExists = await Institution.findOne({ email });
+        const institutionAlreadyExists = await Institution.findOne({ institutionName });
 
         if (institutionAlreadyExists) {
             return res.status(400).json({
