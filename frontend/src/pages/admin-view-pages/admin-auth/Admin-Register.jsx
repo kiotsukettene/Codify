@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-context-menu";
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import Logo from "../../../assets/picture/logos/Logo.png";
 import { Separator } from "@/components/ui/separator";
 import { BadgeCheck, Circle, Loader, LockKeyhole } from "lucide-react";
@@ -29,7 +29,11 @@ function AdminRegisterPage() {
     phoneNumber: "",
     password: "",
   });
-  const { signup, error, isLoading } = useAuthStore();
+  const { signup, error, isLoading, clearError } = useAuthStore();
+
+  useEffect(() => {
+    clearError();
+  }, []);
 
   const validateForm = () => {
     let valid = true;

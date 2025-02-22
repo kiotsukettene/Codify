@@ -17,6 +17,7 @@ export const useAuthStore = create((set) => ({
   isLoading: false,
   isCheckingAuth: true,
   message: null,
+  clearError: () => set({ error: null }), // New function to reset error
 
   signup: async (
     email,

@@ -1,22 +1,15 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import union from "../../../assets/picture/random background/union.png";
-import pinkFlower from "@/assets/picture/random background/pink-flower.png";
-import blueFlower from "@/assets/picture/random background/blue-flower.png";
-import purpleFlower from "@/assets/picture/random background/purple-flower.png";
-import arrow from "@/assets/picture/random background/arrow.png";
-import mascot from "@/assets/picture/random background/mascot.png";
-import logo from "../../../assets/picture/logos/Logo.png";
-import { Eye, EyeOff } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Eye, EyeOff } from 'lucide-react'
+import ProfBg1 from '@/components/Auth/Prof-Bg-1' 
+import { useprofAuthStore } from '@/store/profAuthStore'
 import LoaderOne from "@/components/ui/loader-one";
 
-//
-import { useprofAuthStore } from "@/store/profAuthStore";
 
 const ProfessorLogin = () => {
   const [email, setEmail] = useState("");
@@ -37,54 +30,8 @@ const ProfessorLogin = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
-      {/* Background Images */}
-      <div>
-        <img
-          src={logo}
-          alt="Logo"
-          className="absolute top-7 left-24 lg:left-10 lg:w-28"
-        />
-        <img
-          src={pinkFlower}
-          alt="Pink Flower"
-          className="absolute top-16 lg:top-32 left-[-28px] w-16 lg:w-32 opacity-90"
-        />
-        <img
-          src={purpleFlower}
-          alt="Purple Flower"
-          className="absolute bottom-[100px] left-[-30px] w-20 lg:w-52 opacity-90"
-        />
-        <img
-          src={blueFlower}
-          alt="Blue Flower"
-          className="absolute top-[250px] right-[-30px] w-16 lg:w-56 opacity-90"
-        />
-        <img
-          src={union}
-          alt="Star"
-          className="absolute top-10 right-96 w-10 lg:w-52"
-        />
-        <img
-          src={arrow}
-          alt="Arrow"
-          className="absolute top-10 left-24 w-10 lg:w-52"
-        />
-        <img
-          src={arrow}
-          alt="Arrow"
-          className="absolute bottom-20 left-44 w-10 lg:w-52"
-        />
-        <img
-          src={arrow}
-          alt="Arrow"
-          className="absolute bottom-20 right-0 w-20 lg:w-72 rotate-180"
-        />
-        <img
-          src={mascot}
-          alt="Mascot"
-          className="absolute bottom-[-150px] right-[-100px] w-72 lg:w-96"
-        />
-      </div>
+
+    <ProfBg1 />
 
       {/* Login Card */}
 

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import Hearder from "@/components/professor-view/Header";
 import BattleCard from "@/components/professor-view/BattleCard";
 import RankingList from "@/components/professor-view/RankingList";
@@ -5,6 +6,10 @@ import GradeTask from "@/components/professor-view/GradeTask";
 import StatsCard from "@/components/professor-view/StatsCard";
 import ScheduleList from "@/components/professor-view/ScheduleList";
 import { UsersRound, BookOpenText, ChartLine } from "lucide-react";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import AppSidebar from '@/components/professor-view/Sidebar';
+import { Separator } from '@/Components/ui/separator';
+
 
 const mockStudentRankings = [
   {
@@ -95,7 +100,31 @@ const mockSchedule = [
 ];
 
 const ProfDashboard = () => {
+  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   return (
+
+     // SIDEBAR SECTION
+
+     <SidebarProvider>
+     <AppSidebar />
+       <div 
+       className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300"
+       >
+     <SidebarInset
+       className="flex-1"
+       >
+       <header 
+       className="flex h-20 shrink-0 items-center gap-2 px-4"
+       >
+     <SidebarTrigger 
+       className="-ml-1"   
+       onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+       />
+    <Separator orientation="vertical" className="mr-2 h-4" />
+       </header>
+
     <div className="w-full min-h-screen px-4 md:px-6 overflow-hidden">
       {/* Header */}
       <Hearder />
@@ -142,6 +171,9 @@ const ProfDashboard = () => {
         <GradeTask activityData={mockToGradeTasks} />
       </div>
     </div>
+     </SidebarInset>
+          </div>
+        </SidebarProvider>
   );
 };
 
