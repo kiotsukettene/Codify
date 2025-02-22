@@ -71,7 +71,7 @@ function StudentChallengesView() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* <!--================== Left Side================ --> */}
         <div className="flex-1 flex flex-col">
-          <h1 className="text-header font-semibold text-4xl">Let's warm up!</h1>
+          <h1 className="text-header font-semibold text-4xl mt-3">Let's warm up!</h1>
 
           <Tabs defaultValue="all" className="w-full mt-5 ">
             <TabsList>
