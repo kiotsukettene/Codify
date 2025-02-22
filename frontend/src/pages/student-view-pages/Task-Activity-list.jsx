@@ -9,6 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 
 function StudentTaskPage() {
   const [date, setDate] = useState(new Date());
+
   const todoTask = [
     {
       subject: "Software Engineering 1",
@@ -86,6 +87,7 @@ function StudentTaskPage() {
 
     <div className="container mx-auto">
     <div className="flex flex-col lg:flex-row gap-4 h-full">
+      
       {/* Main Content - Tasks Section */}
       <div className="flex-1 flex flex-col">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -37,6 +37,7 @@ import StudentLessonListPage from "./pages/student-view-pages/course-management/
 import StudentModulePage from "./pages/student-view-pages/course-management/student-module";
 import StudentTaskPage from "./pages/student-view-pages/Task-Activity-list";
 import StudentActivityPage from "./pages/student-view-pages/course-management/student-activity";
+import StudentChallengesView from "./pages/student-view-pages/challenges/student-challenges-view";
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -152,6 +153,7 @@ function App() {
           <Route path="module" element={<StudentModulePage/>}/>
           <Route path="activity" element={<StudentActivityPage/>}/>
           <Route path="task-list" element={<StudentTaskPage/>}/>
+          <Route path="challenges" element={<StudentChallengesView/>}/>
     </Route>
         
         <Route path="/" element={<GuestLayout />}>
