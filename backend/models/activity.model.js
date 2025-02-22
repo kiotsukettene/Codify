@@ -4,7 +4,7 @@ const ActivitySchema = new mongoose.Schema(
   {
     lessonId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Lesson",
+      ref: "Lesson", // ✅ Reference to the Lesson model
       required: true,
     },
     title: {

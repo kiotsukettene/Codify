@@ -11,7 +11,6 @@ const router = express.Router();
 
 router.post("/", createActivity);
 router.get("/lesson/:lessonId", getActivitiesByLesson);
-router.get("/:activityId", getActivityById);
 router.put("/:activityId", updateActivity);
 router.delete("/:activityId", deleteActivity);
 
