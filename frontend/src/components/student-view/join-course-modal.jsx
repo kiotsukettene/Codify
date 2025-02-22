@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle2, XCircle } from "lucide-react"
 import pinkCloud from '@/assets/picture/random background/pinkCloud.png'
 import { Badge } from "../ui/badge"
+
+
+
 const JoinCourseModal = ({ isOpen, onClose }) => {
   const [courseCode, setCourseCode] = useState("")
   const [status, setStatus] = useState("idle") 
@@ -20,7 +23,10 @@ const JoinCourseModal = ({ isOpen, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     setStatus("loading")
-    // Simulating API call
+
+
+    //=================API call=========================
+    //============Example Course Code only =============
     setTimeout(() => {
       if (courseCode === "12345") {
         setStatus("success")
@@ -30,6 +36,15 @@ const JoinCourseModal = ({ isOpen, onClose }) => {
       }
     }, 1000)
   }
+
+  useEffect(() => {
+    if (status === "success") {
+      setTimeout(() => {
+        onClose(); 
+      }, 2000);
+    }
+  }, [status]);
+  
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} className="flex items-center justify-center">
@@ -90,3 +105,4 @@ const JoinCourseModal = ({ isOpen, onClose }) => {
 
 export default JoinCourseModal
 
+  
