@@ -1,65 +1,68 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import { Button } from "@/components/ui/button";
-
-import {
-  ChevronDown,
-  Search,
-  Settings2,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { CreateEventModal } from "@/components/student-view/create-event";
-import { EventHoverCard } from "@/components/student-view/hover-card-schedule";
+import { useState, useEffect } from "react"
+import FullCalendar from "@fullcalendar/react"
+import dayGridPlugin from "@fullcalendar/daygrid"
+import timeGridPlugin from "@fullcalendar/timegrid"
+import interactionPlugin from "@fullcalendar/interaction"
+import { Button } from "@/components/ui/button"
+import { Trophy, ChevronLeft, ChevronRight } from "lucide-react"
+import { CreateEventModal } from "@/components/student-view/create-event"
+import { EventHoverCard } from "@/components/student-view/hover-card-schedule"
 
 function StudentCalendar() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  // Function to navigate months dynamically
-  const handlePrevMonth = () => {
-    setCurrentDate((prevDate) => {
-      const newDate = new Date(prevDate);
-      newDate.setMonth(prevDate.getMonth() - 1);
-      return newDate;
-    });
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDate((prevDate) => {
-      const newDate = new Date(prevDate);
-      newDate.setMonth(prevDate.getMonth() + 1);
-      return newDate;
-    });
-  };
-
-  const handleToday = () => {
-    setCurrentDate(new Date());
-  };
-
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [events, setEvents] = useState([
     {
       id: "1",
       title: "Talk to Bobby L.",
       start: "2024-07-08T17:00:00",
       end: "2024-07-08T18:00:00",
-      backgroundColor: "#e0e7ff",
-      borderColor: "#818cf8",
-      textColor: "#4f46e5",
+      backgroundColor: "#4f46e5",
+      textColor: "#ffffff",
+      extendedProps: {
+        completed: false,
+        priority: "high",
+        notes: "Discuss project timeline",
+      },
     },
-  ]);
+  ])
+  const [completedEvents, setCompletedEvents] = useState(0)
+  const [totalEvents, setTotalEvents] = useState(0)
+
+  useEffect(() => {
+    setTotalEvents(events.length)
+    setCompletedEvents(events.filter((event) => event.extendedProps?.completed).length)
+  }, [events])
+
+  const progressPercentage = totalEvents > 0 ? (completedEvents / totalEvents) * 100 : 0
+
+  // Function to navigate months dynamically
+  const handlePrevMonth = () => {
+    setCurrentDate((prevDate) => {
+      const newDate = new Date(prevDate)
+      newDate.setMonth(prevDate.getMonth() - 1)
+      return newDate
+    })
+  }
+
+  const handleNextMonth = () => {
+    setCurrentDate((prevDate) => {
+      const newDate = new Date(prevDate)
+      newDate.setMonth(prevDate.getMonth() + 1)
+      return newDate
+    })
+  }
+
+  const handleToday = () => {
+    setCurrentDate(new Date())
+  }
 
   // Function to add new event dynamically
   const addEvent = (newEvent) => {
-    setEvents((prevEvents) => [...prevEvents, newEvent]); // Add new event to the list
-  };
-
-  console.log(events);
+    setEvents((prevEvents) => [...prevEvents, newEvent])
+  }
 
   const priorities = [
     {
@@ -77,16 +80,15 @@ function StudentCalendar() {
       description: "Low-priority tasks or completed events",
       color: "#10b981",
     },
-  ];
+  ]
 
   return (
-    <div className="flex h-screen bg-white w-full">
+    <div className="flex h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
       {/* Left Sidebar */}
-      <div className="w-64 border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
+      <div className="w-64 border-r border-blue-200 flex flex-col bg-white/50 backdrop-blur-sm">
+        <div className="p-4 border-b border-blue-200">
           <Button
-            variant="outline"
-            className="w-full"
+            className="w-full bg-primary text-white"
             onClick={() => setIsCreateModalOpen(true)}
           >
             + Create Event
@@ -94,23 +96,18 @@ function StudentCalendar() {
         </div>
 
         <div className="p-4">
-          <div className="text-sm font-medium mb-4">Status</div>
+          <div className="text-sm font-medium mb-4 text-blue-800">Status</div>
           <div className="space-y-4">
             {priorities.map((priority) => (
               <div key={priority.label} className="space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: priority.color }}
-                    />
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: priority.color }} />
                     <span className="text-sm">{priority.label}</span>
                   </div>
                   <span className="text-xs text-gray-500">{priority.time}</span>
                 </div>
-                <p className="text-xs text-gray-500 pl-4">
-                  {priority.description}
-                </p>
+                <p className="text-xs text-gray-500 pl-4">{priority.description}</p>
               </div>
             ))}
           </div>
@@ -119,7 +116,7 @@ function StudentCalendar() {
 
       {/* Main Calendar Area */}
       <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-blue-200 bg-white/50 backdrop-blur-sm">
           <div className="flex items-center gap-4">
             {/* Month Navigation Buttons */}
             <div className="flex items-center gap-2">
@@ -132,7 +129,7 @@ function StudentCalendar() {
             </div>
 
             {/* Dynamic Month & Year */}
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-blue-900">
               {currentDate.toLocaleString("default", {
                 month: "long",
                 year: "numeric",
@@ -147,36 +144,35 @@ function StudentCalendar() {
             </Button>
           </div>
         </div>
-        <div className="flex-1 p-4">
-        <FullCalendar
-      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-      initialView="dayGridMonth"
-      headerToolbar={false}
-      events={events}
-      initialDate={currentDate}
-      key={currentDate}
-      height="100%"
-      dayMaxEvents={true}
-      eventDisplay="block"
-      eventContent={(arg) => <EventHoverCard event={arg} />}
-      
-      eventTimeFormat={{
-        hour: "numeric",
-        minute: "2-digit",
-        meridiem: "short",
-      }}
-    />
+
+       
+
+        <div className="flex-1 p-4 overflow-auto">
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={false}
+            events={events}
+            initialDate={currentDate}
+            key={currentDate.toISOString()}
+            height="100%"
+            dayMaxEvents={true}
+            eventDisplay="block"
+            eventContent={(arg) => <EventHoverCard event={arg} />}
+            eventTimeFormat={{
+              hour: "numeric",
+              minute: "2-digit",
+              meridiem: "short",
+            }}
+          />
         </div>
       </div>
 
       {/* Create Event Modal */}
-      <CreateEventModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-        addEvent={addEvent}
-      />
+      <CreateEventModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} addEvent={addEvent} />
     </div>
-  );
+  )
 }
 
-export default StudentCalendar;
+export default StudentCalendar
+

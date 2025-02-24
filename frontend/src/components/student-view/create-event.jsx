@@ -20,8 +20,9 @@ const priorities = [
 export function CreateEventModal({ open, onOpenChange, addEvent }) {
   const [title, setTitle] = React.useState("");
   const [date, setDate] = React.useState(new Date());
-  const [startTime, setStartTime] = React.useState("13:00");
-  const [endTime, setEndTime] = React.useState("16:00");
+  const [startTime, setStartTime] = React.useState("00:00");
+  const [backgroundColor, setBackgroundColor] = React.useState("#4f46e5")
+  const [endTime, setEndTime] = React.useState("00:00");
   const [priority, setPriority] = React.useState("low");
 
 
