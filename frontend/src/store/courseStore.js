@@ -11,11 +11,16 @@ export const useCourseStore = create((set) => ({
   error: null,
 
   // Fetch all courses by professor ID
-  fetchCoursesByProfessor: async (professorId) => {
+  fetchCoursesByProfessor: async () => {
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.get(`${API_URL}/professor/${professorId}`);
+      const professor = JSON.parse(localStorage.getItem("professor"));
+      const professorId = professor ? professor._id : null; // Get ID from local storage
+      if (!professorId)
+        throw new Error("Professor ID not found in local storage");
+
+      const response = await axios.get(`${API_URL}/${professorId}`);
       set({ courses: response.data, isLoading: false });
     } catch (error) {
       set({
