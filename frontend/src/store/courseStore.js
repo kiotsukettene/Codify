@@ -47,7 +47,7 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.post(API_URL, courseData);
+      const response = await axios.post(`${API_URL}/create`, courseData);
       set((state) => ({
         courses: [...state.courses, response.data.course],
         isLoading: false,

@@ -1,343 +1,395 @@
-import React, { useState } from 'react'
-import { Clock, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import React, { useState } from "react";
+import { Clock, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+// Import the store hook (assuming you are using Zustand or a similar state management solution)
+import { useCourseStore } from "@/store/courseStore";
 
-const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 const timeSlots = Array.from({ length: 15 }, (_, i) => {
-    const hour = i + 7 // Start from 7 AM
-    const ampm = hour >= 12 ? "PM" : "AM"
-    const hour12 = hour > 12 ? hour - 12 : hour
-    return {
-      value: `${hour.toString().padStart(2, "0")}:00`,
-      label: `${hour12}:00 ${ampm}`,
-    }
-  })
-
+  const hour = i + 7; // Start from 7 AM
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour > 12 ? hour - 12 : hour;
+  return {
+    value: `${hour.toString().padStart(2, "0")}:00`,
+    label: `${hour12}:00 ${ampm}`,
+  };
+});
 
 const CourseModal = () => {
-    const [formValues, setFormValues] = useState({
-        className: "",
-        program: "",
-        section: "",
-        programmingLanguage: "",
-        day: "",
-        time: ""
-    });
+  const [formValues, setFormValues] = useState({
+    className: "",
+    program: "",
+    section: "",
+    programmingLanguage: "",
+    day: "",
+    time: "",
+  });
 
-    const [errors, setErrors] = useState({
-        className: "",
-        program: "",
-        section: "",
-        programmingLanguage: "",
-        day: "",
-        time: ""
-    });
+  const [errors, setErrors] = useState({
+    className: "",
+    program: "",
+    section: "",
+    programmingLanguage: "",
+    day: "",
+    time: "",
+  });
 
-    const validateForm = () => {
-        let valid = true;
-        const newErrors = { ...errors };
+  // Get createCourse function from the store
+  const createCourse = useCourseStore((state) => state.createCourse);
 
-        // Class name validation - only letters, numbers, spaces and basic punctuation
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { ...errors };
+
+    // Class name validation - only letters, numbers, spaces and basic punctuation
+    const classNameRegex = /^[a-zA-Z0-9\s\-()]+$/;
+    if (!formValues.className.trim()) {
+      newErrors.className = "Class name is required.";
+      valid = false;
+    } else if (!classNameRegex.test(formValues.className)) {
+      newErrors.className = "Invalid class name format.";
+      valid = false;
+    } else {
+      newErrors.className = "";
+    }
+
+    // Program validation
+    if (!formValues.program.trim()) {
+      newErrors.program = "Program is required.";
+      valid = false;
+    } else {
+      newErrors.program = "";
+    }
+
+    // Section validation - alphanumeric
+    const sectionRegex = /^[a-zA-Z0-9\-]+$/;
+    if (!formValues.section.trim()) {
+      newErrors.section = "Section is required.";
+      valid = false;
+    } else if (!sectionRegex.test(formValues.section)) {
+      newErrors.section = "Invalid section format.";
+      valid = false;
+    } else {
+      newErrors.section = "";
+    }
+
+    // Programming Language validation
+    if (!formValues.programmingLanguage) {
+      newErrors.programmingLanguage = "Programming language is required.";
+      valid = false;
+    } else {
+      newErrors.programmingLanguage = "";
+    }
+
+    // Day validation
+    if (!formValues.day) {
+      newErrors.day = "Day is required.";
+      valid = false;
+    } else {
+      newErrors.day = "";
+    }
+
+    // Time validation
+    if (!formValues.time) {
+      newErrors.time = "Time is required.";
+      valid = false;
+    } else {
+      newErrors.time = "";
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+
+    // Validate the changed field
+    const newErrors = { ...errors };
+    switch (name) {
+      case "className": {
         const classNameRegex = /^[a-zA-Z0-9\s\-()]+$/;
-        if (!formValues.className.trim()) {
-            newErrors.className = "Class name is required.";
-            valid = false;
-        } else if (!classNameRegex.test(formValues.className)) {
-            newErrors.className = "Invalid class name format.";
-            valid = false;
+        if (!value.trim()) {
+          newErrors.className = "Class name is required.";
+        } else if (!classNameRegex.test(value)) {
+          newErrors.className = "Invalid class name format.";
         } else {
-            newErrors.className = "";
+          newErrors.className = "";
         }
-
-        // Program validation
-        if (!formValues.program.trim()) {
-            newErrors.program = "Program is required.";
-            valid = false;
+        break;
+      }
+      case "program": {
+        if (!value.trim()) {
+          newErrors.program = "Program is required.";
         } else {
-            newErrors.program = "";
+          newErrors.program = "";
         }
-
-        // Section validation - alphanumeric
+        break;
+      }
+      case "section": {
         const sectionRegex = /^[a-zA-Z0-9\-]+$/;
-        if (!formValues.section.trim()) {
-            newErrors.section = "Section is required.";
-            valid = false;
-        } else if (!sectionRegex.test(formValues.section)) {
-            newErrors.section = "Invalid section format.";
-            valid = false;
+        if (!value.trim()) {
+          newErrors.section = "Section is required.";
+        } else if (!sectionRegex.test(value)) {
+          newErrors.section = "Invalid section format.";
         } else {
-            newErrors.section = "";
+          newErrors.section = "";
         }
+        break;
+      }
+      default:
+        break;
+    }
+    setErrors(newErrors);
+  };
 
-        // Programming Language validation
-        if (!formValues.programmingLanguage) {
-            newErrors.programmingLanguage = "Programming language is required.";
-            valid = false;
-        } else {
-            newErrors.programmingLanguage = "";
-        }
+  const handleProgrammingLanguageChange = (value) => {
+    setFormValues((prev) => ({ ...prev, programmingLanguage: value }));
+    setErrors((prev) => ({
+      ...prev,
+      programmingLanguage: !value ? "Programming language is required." : "",
+    }));
+  };
 
-        // Day validation
-        if (!formValues.day) {
-            newErrors.day = "Day is required.";
-            valid = false;
-        } else {
-            newErrors.day = "";
-        }
+  const handleDayChange = (value) => {
+    setFormValues((prev) => ({ ...prev, day: value }));
+    setErrors((prev) => ({
+      ...prev,
+      day: !value ? "Day is required." : "",
+    }));
+  };
 
-        // Time validation
-        if (!formValues.time) {
-            newErrors.time = "Time is required.";
-            valid = false;
-        } else {
-            newErrors.time = "";
-        }
+  const handleTimeChange = (value) => {
+    setFormValues((prev) => ({ ...prev, time: value }));
+    setErrors((prev) => ({
+      ...prev,
+      time: !value ? "Time is required." : "",
+    }));
+  };
 
-        setErrors(newErrors);
-        return valid;
-    };
+  const isFormComplete = Object.values(formValues).every(
+    (value) => value.trim() !== ""
+  );
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormValues((prevValues) => ({
-            ...prevValues,
-            [name]: value
-        }));
-        
-        // Validate the field that just changed
-        const newErrors = { ...errors };
-        
-        switch (name) {
-            case 'className':
-                const classNameRegex = /^[a-zA-Z0-9\s\-()]+$/;
-                if (!value.trim()) {
-                    newErrors.className = "Class name is required.";
-                } else if (!classNameRegex.test(value)) {
-                    newErrors.className = "Invalid class name format.";
-                } else {
-                    newErrors.className = "";
-                }
-                break;
-            
-            case 'program':
-                if (!value.trim()) {
-                    newErrors.program = "Program is required.";
-                } else {
-                    newErrors.program = "";
-                }
-                break;
-            
-            case 'section':
-                const sectionRegex = /^[a-zA-Z0-9\-]+$/;
-                if (!value.trim()) {
-                    newErrors.section = "Section is required.";
-                } else if (!sectionRegex.test(value)) {
-                    newErrors.section = "Invalid section format.";
-                } else {
-                    newErrors.section = "";
-                }
-                break;
-        }
-        
-        setErrors(newErrors);
-    };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (validateForm()) {
+      // Fetch the professor data from localStorage and parse it to extract the professor ID
+      const storedProfessor = localStorage.getItem("professor");
+      if (!storedProfessor) {
+        console.error("Professor data not found in localStorage.");
+        return;
+      }
+      const professorData = JSON.parse(storedProfessor);
+      const professorId = professorData._id;
+      if (!professorId) {
+        console.error("Professor ID not found in stored professor data.");
+        return;
+      }
 
-    // Add handlers for select components
-    const handleProgrammingLanguageChange = (value) => {
-        setFormValues(prev => ({ ...prev, programmingLanguage: value }));
-        setErrors(prev => ({
-            ...prev,
-            programmingLanguage: !value ? "Programming language is required." : ""
-        }));
-    };
+      // Transform formValues into the expected payload structure:
+      const courseData = {
+        professorId,
+        className: formValues.className,
+        program: formValues.program,
+        section: formValues.section,
+        language: formValues.programmingLanguage,
+        schedule: {
+          day: formValues.day,
+          time: formValues.time,
+        },
+      };
 
-    const handleDayChange = (value) => {
-        setFormValues(prev => ({ ...prev, day: value }));
-        setErrors(prev => ({
-            ...prev,
-            day: !value ? "Day is required." : ""
-        }));
-    };
+      try {
+        await createCourse(courseData);
+        // Optionally, reset the form or close the modal here
+        setFormValues({
+          className: "",
+          program: "",
+          section: "",
+          programmingLanguage: "",
+          day: "",
+          time: "",
+        });
+        onClose(); // ✅ Close the modal
+        window.location.reload(); // ✅ Refresh the page
+      } catch (error) {
+        console.error("Error creating course:", error);
+      }
+    }
+  };
 
-    const handleTimeChange = (value) => {
-        setFormValues(prev => ({ ...prev, time: value }));
-        setErrors(prev => ({
-            ...prev,
-            time: !value ? "Time is required." : ""
-        }));
-    };
-
-    const isFormComplete = Object.values(formValues).every(value => value.trim() !== "");
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        if (validateForm()) {
-            console.log(formValues);
-            // Ready to send to backend
-        }
-    };
-
-    
   return (
-      <DialogContent className="max-w-[320px] sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Plus className="h-5 w-5 text-purple-500" />
-            Create Course
-          </DialogTitle>
-        </DialogHeader>
+    <DialogContent className="max-w-[320px] sm:max-w-[500px]">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+          <Plus className="h-5 w-5 text-purple-500" />
+          Create Course
+        </DialogTitle>
+      </DialogHeader>
 
-    <form onSubmit={handleSubmit} className="space-y-4">
-
-          <div className='space-y-2'>
-            <label className="block text-sm sm:text-base font-medium text-gray-700">
-              Class name
-              <span className="text-red-500">*</span>
-            </label>
-            <Input 
-            name="className" 
-            placeholder="class name" 
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <label className="block text-sm sm:text-base font-medium text-gray-700">
+            Class name <span className="text-red-500">*</span>
+          </label>
+          <Input
+            name="className"
+            placeholder="class name"
             value={formValues.className}
             onChange={handleChange}
             className="w-full"
-            />
-            {errors.className && (
-                <p className="text-red-500 text-sm">{errors.className}</p>
-              )}
-          </div>
+          />
+          {errors.className && (
+            <p className="text-red-500 text-sm">{errors.className}</p>
+          )}
+        </div>
 
-
-          <div className='space-y-2'>
-            <label className="block text-sm sm:text-base font-medium text-gray-700">
-                Program
-            </label>
-            <Input 
-            name="program" 
-            placeholder="Program" 
+        <div className="space-y-2">
+          <label className="block text-sm sm:text-base font-medium text-gray-700">
+            Program
+          </label>
+          <Input
+            name="program"
+            placeholder="Program"
             value={formValues.program}
             onChange={handleChange}
             className="w-full"
-            />
-             {errors.program && (
-                <p className="text-red-500 text-sm">{errors.program}</p>
-              )}
-            <p className="text-xs sm:text-sm text-gray-500">e.g. Bachelor of Science in Information Technology (BSIT)</p>
-          </div>
+          />
+          {errors.program && (
+            <p className="text-red-500 text-sm">{errors.program}</p>
+          )}
+          <p className="text-xs sm:text-sm text-gray-500">
+            e.g. Bachelor of Science in Information Technology (BSIT)
+          </p>
+        </div>
 
-          <div className='space-y-2'>
-            <label className="block text-sm sm:text-base font-medium text-gray-700">
-                Section
-            </label>
-            <Input 
-            name="section" 
-            placeholder="section" 
+        <div className="space-y-2">
+          <label className="block text-sm sm:text-base font-medium text-gray-700">
+            Section
+          </label>
+          <Input
+            name="section"
+            placeholder="section"
             value={formValues.section}
             onChange={handleChange}
             className="w-full"
-            />
-             {errors.section && (
-                <p className="text-red-500 text-sm">{errors.section}</p>
-              )}
-          </div>
+          />
+          {errors.section && (
+            <p className="text-red-500 text-sm">{errors.section}</p>
+          )}
+        </div>
 
-          <div className='space-y-2'>
-            <label className="block text-sm sm:text-base font-medium text-gray-700">
-              Programming Language
-            </label>
-            <Select 
-            name="programmingLanguage" 
+        <div className="space-y-2">
+          <label className="block text-sm sm:text-base font-medium text-gray-700">
+            Programming Language
+          </label>
+          <Select
+            name="programmingLanguage"
             onValueChange={handleProgrammingLanguageChange}
-            >     
-              <SelectTrigger className="w-full">
+          >
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="select an option" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="javascript">JavaScript</SelectItem>
+              <SelectItem value="python">Python</SelectItem>
+              <SelectItem value="java">Java</SelectItem>
+              <SelectItem value="cpp">C++</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.programmingLanguage && (
+            <p className="text-red-500 text-sm">{errors.programmingLanguage}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="block text-sm sm:text-base font-medium text-gray-700">
+              Day
+            </label>
+            <Select name="day" onValueChange={handleDayChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select day" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="javascript">JavaScript</SelectItem>
-                <SelectItem value="python">Python</SelectItem>
-                <SelectItem value="java">Java</SelectItem>
-                <SelectItem value="cpp">C++</SelectItem>
+                {daysOfWeek.map((day) => (
+                  <SelectItem key={day} value={day.toLowerCase()}>
+                    {day}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            {errors.programmingLanguage && (
-                <p className="text-red-500 text-sm">{errors.programmingLanguage}</p>
-              )}
+            {errors.day && <p className="text-red-500 text-sm">{errors.day}</p>}
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="block text-sm sm:text-base font-medium text-gray-700">
-                Day
-              </label>
-              <Select 
-                name="day" 
-                onValueChange={handleDayChange}
-                >                
-                <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {daysOfWeek.map((day) => (
-                    <SelectItem key={day} value={day.toLowerCase()}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.day && (
-                <p className="text-red-500 text-sm">{errors.day}</p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-                <label className="block text-sm sm:text-base font-medium text-gray-700">
-                    Time
-                </label>
-                <Select 
-                     name="time" 
-                     onValueChange={handleTimeChange}
-                        >                
-                <SelectTrigger className="w-full">
+          <div className="space-y-2">
+            <label className="block text-sm sm:text-base font-medium text-gray-700">
+              Time
+            </label>
+            <Select name="time" onValueChange={handleTimeChange}>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select time" />
-                  <Clock className="h-4 w-4 opacity-50" />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeSlots.map((slot) => (
-                    <SelectItem key={slot.value} value={slot.value}>
-                      {slot.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.time && (
-                <p className="text-red-500 text-sm">{errors.time}</p>
-              )}
-            </div>
+                <Clock className="h-4 w-4 opacity-50" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeSlots.map((slot) => (
+                  <SelectItem key={slot.value} value={slot.value}>
+                    {slot.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.time && (
+              <p className="text-red-500 text-sm">{errors.time}</p>
+            )}
           </div>
+        </div>
 
-          <div className="flex justify-end gap-3">
-            <DialogTrigger asChild>
-              <Button 
-              type="button" 
-              variant="outline" 
-              className="bg-purple-50">
-                    Cancel
-              </Button>
-            </DialogTrigger>
-
-            <Button 
-                type="submit" 
-                className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:pointer-events-none text-sm sm:text-base" 
-                disabled={!isFormComplete}>
-                Save
+        <div className="flex justify-end gap-3">
+          <DialogTrigger asChild>
+            <Button type="button" variant="outline" className="bg-purple-50">
+              Cancel
             </Button>
-          </div>
+          </DialogTrigger>
+          <Button
+            type="submit"
+            className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:pointer-events-none text-sm sm:text-base"
+            disabled={!isFormComplete}
+          >
+            Save
+          </Button>
+        </div>
+      </form>
+    </DialogContent>
+  );
+};
 
-        </form>
-      </DialogContent>
-  )
-}
-
-export default CourseModal
+export default CourseModal;
