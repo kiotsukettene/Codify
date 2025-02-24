@@ -3,14 +3,13 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
-
 const API_URL = "http://localhost:3000/api/professors";
 
 const storedProfessor = localStorage.getItem("professor");
 const parsedProfessor =
   storedProfessor && storedProfessor !== "undefined"
     ? JSON.parse(storedProfessor)
-    : null; // ✅ Handles undefined case
+    : null;
 
 export const useprofAuthStore = create((set) => ({
   professor: parsedProfessor,
@@ -20,6 +19,7 @@ export const useprofAuthStore = create((set) => ({
   isLoading: false,
   isCheckingAuth: true,
   message: null,
+
   login: async (email, password) => {
     set({ isLoading: true, error: null });
 
@@ -29,8 +29,15 @@ export const useprofAuthStore = create((set) => ({
         password,
       });
 
+      const { professor, token } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("professor", JSON.stringify(professor));
+      }
+
       set({
-        professor: response.data.professor,
+        professor,
         isAuthenticated: true,
         isLoading: false,
       });
@@ -48,7 +55,7 @@ export const useprofAuthStore = create((set) => ({
 
     let token = null;
 
-    // 🔹 First try-catch: Handle popup closure
+    // First try-catch: Handle popup closure
     try {
       const result = await signInWithPopup(auth, googleProvider);
       token = await result.user.getIdToken(); // ✅ Get Firebase token
@@ -59,10 +66,10 @@ export const useprofAuthStore = create((set) => ({
         toast.error("Google Login Failed: " + error.message);
       }
       set({ isLoading: false });
-      return; // ⛔ Exit early if popup was closed
+      return;
     }
 
-    // 🔹 Second try-catch: Handle backend token verification
+    // Second try-catch: Handle backend token verification
     try {
       const response = await axios.post(`${API_URL}/google-login`, {
         token,
@@ -118,15 +125,11 @@ export const useprofAuthStore = create((set) => ({
   AddProfessor: async (professorData) => {
     set({ isLoading: true, error: null });
 
-    console.log("Sending Professor Data:", professorData); // ✅ Debugging log
-
     try {
       const response = await axios.post(
         "http://localhost:3000/api/professors/register",
         professorData
       );
-
-      console.log("Register Response:", response.data); // ✅ Debugging log
 
       const { professor, token } = response.data;
 
@@ -148,7 +151,6 @@ export const useprofAuthStore = create((set) => ({
       await useprofAuthStore.getState().checkAuth();
       toast.success("Professor added successfully");
     } catch (error) {
-      console.error("Error in AddProfessor:", error.response?.data || error); // ✅ Debugging log
       set({
         error: error.response?.data?.message || "Error adding professor",
         isLoading: false,
@@ -212,6 +214,7 @@ export const useprofAuthStore = create((set) => ({
       });
     }
   },
+
   forgotPassword: async (email) => {
     set({
       isLoading: true,
@@ -233,6 +236,7 @@ export const useprofAuthStore = create((set) => ({
       throw error;
     }
   },
+
   resetPassword: async (token, password) => {
     set({
       isLoading: true,

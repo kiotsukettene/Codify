@@ -1,5 +1,6 @@
 import { Button } from "../ui/button";
 import SearchBar from "./searchBar";
+import books from "../../assets/picture/random background/bookprofheader.png";
 
 const Header = () => {
   return (
@@ -8,9 +9,9 @@ const Header = () => {
       <div className="flex items-center text-left gap-4 w-full md:w-auto">
         <div className="p-2 bg-white rounded-lg flex-shrink-0">
           <img
-            src="./src/assets/bookprofheader.png"
+            src={books}
             alt="Professor"
-            className="w-24 h-24 object-cover rounded-lg md:w-32 md:h-32"
+            className="w-20 h-20 object-cover rounded-lg md:w-32 md:h-32"
           />
         </div>
         <div>

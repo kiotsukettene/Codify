@@ -1,20 +1,20 @@
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Eye, EyeOff } from 'lucide-react'
-import ProfBg1 from '@/components/Auth/Prof-Bg-1' 
-import { useprofAuthStore } from '@/store/profAuthStore'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Eye, EyeOff } from "lucide-react";
+import ProfBg1 from "@/components/Auth/Prof-Bg-1";
+import { useprofAuthStore } from "@/store/profAuthStore";
 import LoaderOne from "@/components/ui/loader-one";
-
 
 const ProfessorLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const navigate = useNavigate();
 
   //
   const { login, isLoading, error, LoginWithGoogle } = useprofAuthStore();
@@ -22,16 +22,17 @@ const ProfessorLogin = () => {
   const handleProfessorLogin = async (e) => {
     e.preventDefault();
     await login(email, password);
+    navigate("/professor/dashboard");
   };
 
   const handleGoogleLogin = async () => {
     await LoginWithGoogle();
+    navigate("/professor/dashboard");
   };
 
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
-
-    <ProfBg1 />
+      <ProfBg1 />
 
       {/* Login Card */}
 

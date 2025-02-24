@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import astronaut from "../../assets/picture/random background/battleCardBg.png";
 
 const BattleCard = () => {
   return (
@@ -23,7 +24,7 @@ const BattleCard = () => {
       {/* Image Positioned to the Right */}
       <div className="relative w-full md:w-auto md:flex-shrink-0">
         <img
-          src="./src/assets/battleCardBg.png"
+          src={astronaut}
           alt="Astronaut"
           className="absolute right-0 bottom-0 w-28 sm:w-40 md:w-48 lg:w-52 object-cover hidden md:block"
         />

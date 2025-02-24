@@ -107,12 +107,6 @@ const ProfNewPassword = () => {
                   )}
                 </button> */}
               </div>
-              <div>
-                <PasswordStrengthIndicator
-                  password={password}
-                  useExternalInput={true}
-                />
-              </div>
             </div>
 
             <div className="pt-2 space-y-3">
