@@ -1,4 +1,5 @@
 import Lesson from "../models/lesson.model.js";
+import mongoose from "mongoose";
 
 export const createLesson = async (req, res) => {
   try {
@@ -26,6 +27,11 @@ export const createLesson = async (req, res) => {
 export const getLessonsByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({ message: "Invalid Course ID format" });
+    }
+
     const lessons = await Lesson.find({ courseId });
 
     res.status(200).json(lessons);

@@ -15,17 +15,29 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
+  const { courseId } = useParams();
+  const location = useLocation();
+
+  const handleCourseClick = () => {
+    if (!courseId) {
+      console.error("Error: Course ID is undefined");
+      return;
+    }
+
+    navigate(`/professor/course/${courseId}/create-lesson`, {
+      state: { courseId },
+    });
+  };
 
   return (
     <div>
       <div className="flex justify-between p-2">
         <h2 className="text-xl font-semibold mb-4">Lessons</h2>
-        <Button onClick={() => navigate("/professor/course/create-lesson")}>
-          Create Lesson
-        </Button>
+        <Button onClick={handleCourseClick}>Create Lesson</Button>
       </div>
 
       <Accordion type="single" collapsible className="space-y-2">

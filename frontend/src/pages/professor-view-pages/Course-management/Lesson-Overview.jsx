@@ -23,6 +23,8 @@ import {
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLessonStore } from "@/store/lessonStore";
+import mongoose from "mongoose"; // Import for ObjectId validation (optional)
+import { toast } from "react-hot-toast";
 
 const LessonOverview = () => {
   const { courseId } = useParams();
@@ -35,9 +37,20 @@ const LessonOverview = () => {
 
   // Fetch lessons for the given courseId when the component mounts or courseId changes
   useEffect(() => {
-    if (courseId) {
-      fetchLessonsByCourse(courseId);
+    if (!courseId) {
+      console.error("Error: Course ID is undefined");
+      toast.error("Invalid Course ID");
+      return;
     }
+
+    // Validate that courseId is a valid ObjectId before calling API
+    if (!/^[0-9a-fA-F]{24}$/.test(courseId)) {
+      console.error("Error: Invalid Course ID format", courseId);
+      toast.error("Invalid Course ID format");
+      return;
+    }
+
+    fetchLessonsByCourse(courseId);
   }, [courseId, fetchLessonsByCourse]);
 
   const studentList = [
@@ -179,6 +192,7 @@ const LessonOverview = () => {
     { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
   ];
 
+  //course data
   const location = useLocation();
   const courseData = location.state?.course || {}; // Get course details from navigation state
 
@@ -306,7 +320,10 @@ const LessonOverview = () => {
                     transition={{ duration: 0.2 }}
                   >
                     {activeTab === "overview" && (
-                      <OverviewTab lessons={lessons || []} />
+                      <OverviewTab
+                        lessons={lessons || []}
+                        course={courseData}
+                      />
                     )}
 
                     {activeTab === "activities" && (

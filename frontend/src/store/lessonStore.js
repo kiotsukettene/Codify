@@ -47,7 +47,7 @@ export const useLessonStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.post(API_URL, lessonData);
+      const response = await axios.post(`${API_URL}/create`, lessonData);
       set((state) => ({
         lessons: [...state.lessons, response.data.lesson],
         isLoading: false,
