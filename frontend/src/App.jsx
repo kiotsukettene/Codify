@@ -357,6 +357,7 @@ import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
 
 import Course from "./pages/professor-view-pages/Course";
 import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-Overview";
+import CreateLesson from "./pages/professor-view-pages/Course-management/Create-Lesson";
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
@@ -482,6 +483,14 @@ function App() {
           element={
             <ProtectedRouteProfessors>
               <LessonOverview />
+            </ProtectedRouteProfessors>
+          }
+        />
+        <Route
+          path="/professor/course/:courseId/create-lesson"
+          element={
+            <ProtectedRouteProfessors>
+              <CreateLesson />
             </ProtectedRouteProfessors>
           }
         />

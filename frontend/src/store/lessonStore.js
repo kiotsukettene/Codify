@@ -15,7 +15,7 @@ export const useLessonStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.get(`${API_URL}/course/${courseId}`);
+      const response = await axios.get(`${API_URL}/${courseId}`);
       set({ lessons: response.data, isLoading: false });
     } catch (error) {
       set({

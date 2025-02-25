@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import { Eye, FileText, Trophy, Users, Crown } from "lucide-react";
 import {
@@ -20,13 +20,25 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLessonStore } from "@/store/lessonStore";
 
 const LessonOverview = () => {
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Use lessonStore to get lessons, loading state, and the fetch function
+  const { lessons, isLoading, fetchLessonsByCourse } = useLessonStore();
+
+  // Fetch lessons for the given courseId when the component mounts or courseId changes
+  useEffect(() => {
+    if (courseId) {
+      fetchLessonsByCourse(courseId);
+    }
+  }, [courseId, fetchLessonsByCourse]);
 
   const studentList = [
     {
@@ -153,36 +165,6 @@ const LessonOverview = () => {
       incomplete: 3,
       totalScore: 1200,
       hasMedal: false,
-    },
-  ];
-
-  const lessons = [
-    {
-      id: 6,
-      title: "Quest 6: Conditionals",
-      description:
-        "Understand what programming is, how it is used to solve problems, and learn the basics of writing code.",
-      date: "Dec 20",
-      content: [
-        "What is programming?",
-        "Basic programming constructs",
-        "Variables and Data types",
-        "Mission 6: Write your first code!",
-      ],
-    },
-
-    {
-      id: 5,
-      title: "Quest 5: Error and Exception Handling",
-      description:
-        "Every language has unique syntax, typing, and execution styles, which influence how code is written and run.",
-      date: "Dec 20",
-      content: [
-        "What is programming language?",
-        "If else statements",
-        "Loops",
-        "Mission 7: Create a simple program",
-      ],
     },
   ];
 
@@ -324,7 +306,7 @@ const LessonOverview = () => {
                     transition={{ duration: 0.2 }}
                   >
                     {activeTab === "overview" && (
-                      <OverviewTab lessons={lessons} />
+                      <OverviewTab lessons={lessons || []} />
                     )}
 
                     {activeTab === "activities" && (
