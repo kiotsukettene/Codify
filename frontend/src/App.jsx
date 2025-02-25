@@ -356,6 +356,7 @@ import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
 // redirect authenticated and paid institution to dashboard page
 
 import Course from "./pages/professor-view-pages/Course";
+import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-Overview";
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
@@ -473,6 +474,14 @@ function App() {
           element={
             <ProtectedRouteProfessors>
               <Course />
+            </ProtectedRouteProfessors>
+          }
+        />
+        <Route
+          path="/professor/course/:courseId"
+          element={
+            <ProtectedRouteProfessors>
+              <LessonOverview />
             </ProtectedRouteProfessors>
           }
         />

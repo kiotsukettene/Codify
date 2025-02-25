@@ -20,9 +20,11 @@ import { Separator } from "@/Components/ui/separator";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CourseModal from "@/components/professor-view/Add-Course-Modal";
 import { useCourseStore } from "../../store/courseStore";
+import { useNavigate } from "react-router-dom";
 
 const Courses = () => {
   const { courses, fetchCoursesByProfessor, isLoading } = useCourseStore();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [selectedLanguage, setSelectedLanguage] = useState([]);
@@ -67,6 +69,11 @@ const Courses = () => {
     CSS: { bg: "bg-pink-100", text: "text-pink-700" },
     HTML: { bg: "bg-red-100", text: "text-red-700" },
     "C++": { bg: "bg-purple-100", text: "text-purple-700" },
+  };
+
+  // Navigate to course details page
+  const handleCourseClick = (course) => {
+    navigate(`/professor/course/${course._id}`, { state: { course } });
   };
 
   return (
@@ -148,9 +155,8 @@ const Courses = () => {
                 </div>
               </div>
             </div>
-
             {/* Card Courses */}
-            <div
+            {/* <div
               className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 transition-all duration-300 ${
                 isSidebarOpen
                   ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -181,8 +187,44 @@ const Courses = () => {
                   </p>
                 </div>
               )}
+            </div> */}
+            <div
+              className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 transition-all duration-300 ${
+                isSidebarOpen
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
+              }`}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center w-full min-h-[50vh]">
+                  <p className="text-gray-500 text-base text-center">
+                    Loading courses...
+                  </p>
+                </div>
+              ) : currentCourses.length > 0 ? (
+                currentCourses.map((course, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleCourseClick(course)}
+                    className="cursor-pointer hover:shadow-lg transition duration-200"
+                  >
+                    <Card
+                      lessonCount={course.lessonCount || 0}
+                      languages={course.languages || []}
+                      title={course.className}
+                      courseCode={course.courseCode}
+                      section={course.section}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center w-full min-h-[50vh]">
+                  <p className="text-gray-500 text-base text-center">
+                    No courses found.
+                  </p>
+                </div>
+              )}
             </div>
-
             {/* Pagination */}
             <div className="flex justify-center mt-8">
               <Pagination>

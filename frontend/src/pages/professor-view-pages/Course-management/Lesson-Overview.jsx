@@ -1,32 +1,33 @@
-import React, { useState } from 'react'
-import AppSidebar from '@/components/professor-view/Sidebar'
-import { Eye, FileText, Trophy, Users, Crown } from "lucide-react"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { Separator } from '@/Components/ui/separator';
-import CourseHeader from '@/components/professor-view/Course-header'
-import OverviewTab from '@/components/professor-view/Overview-Tab';
-import ActivityTab from '@/components/professor-view/Activity-Tab';
-import ScoreTab from '@/components/professor-view/Score-Tab';
-import StudentTab from '@/components/professor-view/Student-Tab';
-import { 
-  Breadcrumb, 
-  BreadcrumbList, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbSeparator, 
-  BreadcrumbPage 
+import React, { useState } from "react";
+import AppSidebar from "@/components/professor-view/Sidebar";
+import { Eye, FileText, Trophy, Users, Crown } from "lucide-react";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/Components/ui/separator";
+import CourseHeader from "@/components/professor-view/Course-header";
+import OverviewTab from "@/components/professor-view/Overview-Tab";
+import ActivityTab from "@/components/professor-view/Activity-Tab";
+import ScoreTab from "@/components/professor-view/Score-Tab";
+import StudentTab from "@/components/professor-view/Student-Tab";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from "framer-motion"
-import confetti from 'canvas-confetti'
-
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const LessonOverview = () => {
-
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
-  
+  const [activeTab, setActiveTab] = useState("overview");
+
   const studentList = [
     {
       id: 1,
@@ -64,14 +65,31 @@ const LessonOverview = () => {
       avatar: "/placeholder.svg?height=40&width=40",
       crown: "silver",
     },
-  ]
-  
-  const activities = [
-    { id: 1, title: "Conditionals", grade: 80, dueDate: "Dec 25, 2023", description: "Learn about if-else statements." },
-    { id: 2, title: "Looping", grade: 60, dueDate: "Dec 25, 2023", description: "Master different types of loops." },
-    { id: 3, title: "True or false", grade: 100, dueDate: "Dec 25, 2023", description: "Master different types of loops." },
+  ];
 
-  ]
+  const activities = [
+    {
+      id: 1,
+      title: "Conditionals",
+      grade: 80,
+      dueDate: "Dec 25, 2023",
+      description: "Learn about if-else statements.",
+    },
+    {
+      id: 2,
+      title: "Looping",
+      grade: 60,
+      dueDate: "Dec 25, 2023",
+      description: "Master different types of loops.",
+    },
+    {
+      id: 3,
+      title: "True or false",
+      grade: 100,
+      dueDate: "Dec 25, 2023",
+      description: "Master different types of loops.",
+    },
+  ];
   const metrics = [
     {
       title: "Class Performance",
@@ -93,8 +111,8 @@ const LessonOverview = () => {
       value: "6",
       subtitle: "Above 15%",
     },
-  ]
-  
+  ];
+
   const students = [
     {
       name: "Antang, Irheil Mae S.",
@@ -136,57 +154,52 @@ const LessonOverview = () => {
       totalScore: 1200,
       hasMedal: false,
     },
-  ]
-  
+  ];
+
   const lessons = [
     {
       id: 6,
       title: "Quest 6: Conditionals",
-      description: "Understand what programming is, how it is used to solve problems, and learn the basics of writing code.",
+      description:
+        "Understand what programming is, how it is used to solve problems, and learn the basics of writing code.",
       date: "Dec 20",
       content: [
         "What is programming?",
         "Basic programming constructs",
         "Variables and Data types",
-        "Mission 6: Write your first code!"
-      ]
+        "Mission 6: Write your first code!",
+      ],
     },
 
     {
       id: 5,
       title: "Quest 5: Error and Exception Handling",
-      description: "Every language has unique syntax, typing, and execution styles, which influence how code is written and run.",
+      description:
+        "Every language has unique syntax, typing, and execution styles, which influence how code is written and run.",
       date: "Dec 20",
       content: [
         "What is programming language?",
         "If else statements",
         "Loops",
-        "Mission 7: Create a simple program"
-      ]
+        "Mission 7: Create a simple program",
+      ],
     },
-   
-  ]
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: <Eye className="w-4 h-4" /> },
-    { id: 'activities', label: 'Activities', icon: <FileText className="w-4 h-4" /> },
-    { id: 'scores', label: 'Scores', icon: <Trophy className="w-4 h-4" /> },
-    { id: 'students', label: 'Students', icon: <Users className="w-4 h-4" /> },
   ];
 
-  const courseData = {
-    title: "Programming Languages",
-    description: "Programming languages are the foundation of software development.",
-    details: {
-      language: "Java",
-      students: "40 Students",
-      instructor: "un1c0d3city",
-      schedule: "Wed, 5:30pm",
-      courseCode: "CS110",
-      section: "BSCS 3B"
-    }
-  };
-  
+  const tabs = [
+    { id: "overview", label: "Overview", icon: <Eye className="w-4 h-4" /> },
+    {
+      id: "activities",
+      label: "Activities",
+      icon: <FileText className="w-4 h-4" />,
+    },
+    { id: "scores", label: "Scores", icon: <Trophy className="w-4 h-4" /> },
+    { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
+  ];
+
+  const location = useLocation();
+  const courseData = location.state?.course || {}; // Get course details from navigation state
+
   const missions = [
     {
       id: 1,
@@ -212,142 +225,156 @@ const LessonOverview = () => {
       total: 40,
       slug: "system-application",
     },
-  ];  
+  ];
 
   return (
-
     <SidebarProvider>
       <AppSidebar />
-      <motion.div 
+      <motion.div
         className="flex flex-1"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
         <SidebarInset className="flex-1 !p-0">
-            <header className="flex h-16 items-center px-4">
-                <SidebarTrigger 
-                className="-ml-1"   
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                />
-                <Separator orientation="vertical" className="mx-2 h-4" />
-             </header>
+          <header className="flex h-16 items-center px-4">
+            <SidebarTrigger
+              className="-ml-1"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+            <Separator orientation="vertical" className="mx-2 h-4" />
+          </header>
 
+          {/* MAIN CONTENT */}
 
-       {/* MAIN CONTENT */}
+          <div className="p-2 sm:p-8 pt-2 space-y-4 sm:space-y-6">
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/professor/course">Home</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Lesson</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
 
-      <div className="p-2 sm:p-8 pt-2 space-y-4 sm:space-y-6"> 
+            <CourseHeader
+              title={courseData.className}
+              description={courseData.program}
+              details={{
+                language: courseData.language,
+                students: "40 Students", // Update dynamically if available
+                instructor: courseData.professorId
+                  ? `${courseData.professorId.firstName} ${courseData.professorId.lastName}`
+                  : "Unknown Instructor", // ✅ Safely display professor's full name
+                schedule: courseData.schedule
+                  ? `${courseData.schedule.day}, ${courseData.schedule.time}`
+                  : "No schedule available",
+                courseCode: courseData.courseCode,
+                section: courseData.section,
+              }}
+            />
 
-      <Breadcrumb className="mb-4">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/professor/course">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Lesson</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-
-      <CourseHeader 
-        title={courseData.title}
-        description={courseData.description}
-        details={courseData.details}
-        />
-
-
-  <div className="w-full">
-    {/* Enhanced Tabs */}
-    <div className="border-b mb-6 overflow-x-auto">
-      <div className="flex gap-1 sm:gap-2 min-w-[600px]">
-        {tabs.map((tab) => (
-          <motion.button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors relative
-              ${activeTab === tab.id 
-                ? 'bg-violet-100 text-violet-600' 
-                : 'text-gray-500 hover:text-violet-600 hover:bg-violet-50'
+            <div className="w-full">
+              {/* Enhanced Tabs */}
+              <div className="border-b mb-6 overflow-x-auto">
+                <div className="flex gap-1 sm:gap-2 min-w-[600px]">
+                  {tabs.map((tab) => (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors relative
+              ${
+                activeTab === tab.id
+                  ? "bg-violet-100 text-violet-600"
+                  : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"
               }`}
-            whileHover={{ y: -2 }}
-            whileTap={{ y: 0 }}
-          >
-            {activeTab === tab.id && (
-              <motion.div
-                className="absolute inset-0 bg-violet-100 rounded-t-lg -z-10"
-                layoutId="activeTab"
-                transition={{ type: "spring", bounce: 0.2 }}
-              />
-            )}
-            {React.cloneElement(tab.icon, { className: "w-3 h-3 sm:w-4 sm:h-4" })}
-            {tab.label}
-            {activeTab === tab.id && (
-              <Crown className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
-            )}
-          </motion.button>
-        ))}
-      </div>
-    </div>
+                      whileHover={{ y: -2 }}
+                      whileTap={{ y: 0 }}
+                    >
+                      {activeTab === tab.id && (
+                        <motion.div
+                          className="absolute inset-0 bg-violet-100 rounded-t-lg -z-10"
+                          layoutId="activeTab"
+                          transition={{ type: "spring", bounce: 0.2 }}
+                        />
+                      )}
+                      {React.cloneElement(tab.icon, {
+                        className: "w-3 h-3 sm:w-4 sm:h-4",
+                      })}
+                      {tab.label}
+                      {activeTab === tab.id && (
+                        <Crown className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
 
-
-    <div>
-      {/* Animated Tab Content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.2 }}
-        >
-          {activeTab === 'overview' && (
-            <OverviewTab lessons={lessons} />
-          )}
-
-          {activeTab === 'activities' && (
-            <div className="grid gap-4">
-              {missions && missions.length > 0 ? (
-                missions.map((mission, index) => (
-                  <motion.div 
-                    key={mission.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ 
-                      scale: 1.02,
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                    }}
-                    className="cursor-pointer transform transition-all duration-200 hover:rotate-1"
-                    onClick={() => navigate(`/professor/course/activities`)}
+              <div>
+                {/* Animated Tab Content */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <ActivityTab mission={mission} />
+                    {activeTab === "overview" && (
+                      <OverviewTab lessons={lessons} />
+                    )}
+
+                    {activeTab === "activities" && (
+                      <div className="grid gap-4">
+                        {missions && missions.length > 0 ? (
+                          missions.map((mission, index) => (
+                            <motion.div
+                              key={mission.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              whileHover={{
+                                scale: 1.02,
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                              }}
+                              className="cursor-pointer transform transition-all duration-200 hover:rotate-1"
+                              onClick={() =>
+                                navigate(`/professor/course/activities`)
+                              }
+                            >
+                              <ActivityTab mission={mission} />
+                            </motion.div>
+                          ))
+                        ) : (
+                          <p className="text-gray-500">
+                            No activities available.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {activeTab === "scores" && (
+                      <ScoreTab metrics={metrics} students={students} />
+                    )}
+
+                    {activeTab === "students" && (
+                      <StudentTab
+                        studentList={studentList}
+                        activities={activities}
+                      />
+                    )}
                   </motion.div>
-                ))
-              ) : (
-                <p className="text-gray-500">No activities available.</p>
-              )}
+                </AnimatePresence>
+              </div>
             </div>
-          )}
-          
-          {activeTab === 'scores' && (
-            <ScoreTab metrics={metrics} students={students} />
-          )}
-
-          {activeTab === 'students' && (
-            <StudentTab studentList={studentList} activities={activities} />
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  </div>
-</div>
-
-</SidebarInset>
-</motion.div>
+          </div>
+        </SidebarInset>
+      </motion.div>
     </SidebarProvider>
-  )
-}
+  );
+};
 
-export default LessonOverview
+export default LessonOverview;
