@@ -9,7 +9,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", createActivity);
+router.post("/create", createActivity);
 router.get("/lesson/:lessonId", getActivitiesByLesson);
 router.put("/:activityId", updateActivity);
 router.delete("/:activityId", deleteActivity);

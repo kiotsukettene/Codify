@@ -15,14 +15,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
   const { courseId } = useParams();
-  const location = useLocation();
 
-  const handleCourseClick = () => {
+  const handleAddLessonClick = () => {
+    console.log("Lessons: ", lessons);
     if (!courseId) {
       console.error("Error: Course ID is undefined");
       return;
@@ -33,11 +33,20 @@ const OverviewTab = ({ lessons = [] }) => {
     });
   };
 
+  const handleLessonClick = (lesson) => {
+    if (!lesson || !lesson._id) {
+      console.error("Error: Lesson ID is undefined", lesson);
+      return;
+    }
+
+    navigate(`/professor/course/${courseId}/lesson/${lesson._id}`);
+  };
+
   return (
     <div>
       <div className="flex justify-between p-2">
         <h2 className="text-xl font-semibold mb-4">Lessons</h2>
-        <Button onClick={handleCourseClick}>Create Lesson</Button>
+        <Button onClick={handleAddLessonClick}>Create Lesson</Button>
       </div>
 
       <Accordion type="single" collapsible className="space-y-2">
@@ -46,6 +55,7 @@ const OverviewTab = ({ lessons = [] }) => {
             key={lesson.id}
             value={`lesson-${lesson.id}`}
             className="border rounded-lg bg-white transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
+            onClick={() => handleLessonClick(lesson)}
           >
             <div className="flex items-center justify-between p-4">
               <AccordionTrigger className="hover:no-underline">

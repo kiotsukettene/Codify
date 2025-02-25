@@ -36,7 +36,6 @@ export const createActivity = async (req, res) => {
   }
 };
 
-// ✅ GET ALL ACTIVITIES FOR A LESSON
 export const getActivitiesByLesson = async (req, res) => {
   try {
     const { lessonId } = req.params;
