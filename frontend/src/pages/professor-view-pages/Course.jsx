@@ -120,8 +120,8 @@ const Courses = () => {
                     </DialogTrigger>
                     <CourseModal
                       onClose={() => {
-                        setIsModalOpen(false);
-                        fetchCoursesByProfessor(); // Fetch new data after adding a course
+                        setIsModalOpen(false); // ✅ Close the modal
+                        fetchCoursesByProfessor(); // ✅ Refresh the courses list
                       }}
                     />
                   </Dialog>

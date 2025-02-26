@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// Import the store hook (assuming you are using Zustand or a similar state management solution)
+
 import { useCourseStore } from "@/store/courseStore";
 
 const daysOfWeek = [
@@ -38,7 +38,7 @@ const timeSlots = Array.from({ length: 15 }, (_, i) => {
   };
 });
 
-const CourseModal = () => {
+const CourseModal = ({ onClose }) => {
   const [formValues, setFormValues] = useState({
     className: "",
     program: "",
@@ -201,7 +201,6 @@ const CourseModal = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      // Fetch the professor data from localStorage and parse it to extract the professor ID
       const storedProfessor = localStorage.getItem("professor");
       if (!storedProfessor) {
         console.error("Professor data not found in localStorage.");
@@ -214,7 +213,6 @@ const CourseModal = () => {
         return;
       }
 
-      // Transform formValues into the expected payload structure:
       const courseData = {
         professorId,
         className: formValues.className,
@@ -229,7 +227,6 @@ const CourseModal = () => {
 
       try {
         await createCourse(courseData);
-        // Optionally, reset the form or close the modal here
         setFormValues({
           className: "",
           program: "",
@@ -238,14 +235,13 @@ const CourseModal = () => {
           day: "",
           time: "",
         });
+
         onClose(); // ✅ Close the modal
-        window.location.reload(); // ✅ Refresh the page
       } catch (error) {
         console.error("Error creating course:", error);
       }
     }
   };
-
   return (
     <DialogContent className="max-w-[320px] sm:max-w-[500px]">
       <DialogHeader>
