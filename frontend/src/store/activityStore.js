@@ -26,6 +26,24 @@ export const useActivityStore = create((set) => ({
     }
   },
 
+  // Fetch all activities by course ID
+  fetchActivitiesByCourse: async (courseId) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await axios.get(`${API_URL}/course/${courseId}`);
+      console.log("Fetched Activities by Course:", response.data); // Debugging
+      set({ activities: response.data, isLoading: false });
+    } catch (error) {
+      console.error("Error fetching activities by course:", error);
+      set({
+        error: error.response?.data?.message || "Error fetching activities",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error fetching activities");
+    }
+  },
+
   // Fetch a single activity by ID
   fetchActivityById: async (activityId) => {
     set({ isLoading: true, error: null });

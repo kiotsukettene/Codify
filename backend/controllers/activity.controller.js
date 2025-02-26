@@ -1,5 +1,6 @@
 import Activity from "../models/activity.model.js";
 import Lesson from "../models/lesson.model.js";
+import mongoose from "mongoose";
 
 export const createActivity = async (req, res) => {
   try {
@@ -56,20 +57,31 @@ export const getActivitiesByLesson = async (req, res) => {
   }
 };
 
-// ✅ GET SINGLE ACTIVITY BY ID
-export const getActivityById = async (req, res) => {
+export const getActivitiesByCourse = async (req, res) => {
   try {
-    const { activityId } = req.params;
-    const activity = await Activity.findById(activityId);
+    const { courseId } = req.params;
+    const objectIdCourseId = new mongoose.Types.ObjectId(courseId); // Convert to ObjectId
 
-    if (!activity)
-      return res.status(404).json({ message: "Activity not found" });
+    const activities = await Activity.aggregate([
+      {
+        $lookup: {
+          from: "lessons",
+          localField: "lessonId",
+          foreignField: "_id",
+          as: "lessonData",
+        },
+      },
+      { $unwind: "$lessonData" },
+      { $match: { "lessonData.courseId": objectIdCourseId } }, // ✅ Ensure ObjectId match
+      { $project: { lessonData: 0 } }, // Remove lessonData from response
+    ]);
 
-    res.status(200).json(activity);
+    res.status(200).json(activities);
   } catch (error) {
+    console.error("Error fetching activities by course:", error);
     res
       .status(500)
-      .json({ message: "Error fetching activity", error: error.message });
+      .json({ message: "Error fetching activities", error: error.message });
   }
 };
 

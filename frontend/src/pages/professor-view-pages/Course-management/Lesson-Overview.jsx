@@ -23,7 +23,7 @@ import {
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLessonStore } from "@/store/lessonStore";
-import mongoose from "mongoose"; // Import for ObjectId validation (optional)
+import { useActivityStore } from "@/store/activityStore";
 import { toast } from "react-hot-toast";
 
 const LessonOverview = () => {
@@ -52,6 +52,14 @@ const LessonOverview = () => {
 
     fetchLessonsByCourse(courseId);
   }, [courseId, fetchLessonsByCourse]);
+
+  const { activities, fetchActivitiesByCourse, error } = useActivityStore();
+
+  useEffect(() => {
+    if (courseId) {
+      fetchActivitiesByCourse(courseId);
+    }
+  }, [courseId, fetchActivitiesByCourse]);
 
   const studentList = [
     {
@@ -92,29 +100,6 @@ const LessonOverview = () => {
     },
   ];
 
-  const activities = [
-    {
-      id: 1,
-      title: "Conditionals",
-      grade: 80,
-      dueDate: "Dec 25, 2023",
-      description: "Learn about if-else statements.",
-    },
-    {
-      id: 2,
-      title: "Looping",
-      grade: 60,
-      dueDate: "Dec 25, 2023",
-      description: "Master different types of loops.",
-    },
-    {
-      id: 3,
-      title: "True or false",
-      grade: 100,
-      dueDate: "Dec 25, 2023",
-      description: "Master different types of loops.",
-    },
-  ];
   const metrics = [
     {
       title: "Class Performance",
@@ -344,7 +329,7 @@ const LessonOverview = () => {
                                 navigate(`/professor/course/activities`)
                               }
                             >
-                              <ActivityTab mission={mission} />
+                              <ActivityTab activities={activities} />
                             </motion.div>
                           ))
                         ) : (
