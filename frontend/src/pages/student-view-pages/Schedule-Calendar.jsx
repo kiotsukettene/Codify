@@ -7,7 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import { Button } from "@/components/ui/button"
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react"
-import { CreateEventModal } from "@/components/student-view/create-event"
+import { CreateEventModal } from "@/components/student-view/create-schedule"
 import { EventHoverCard } from "@/components/student-view/hover-card-schedule"
 
 function StudentCalendar() {
@@ -65,23 +65,11 @@ function StudentCalendar() {
   }
 
   const priorities = [
-    {
-      label: "High Priority",
-      description: "Urgent or high-priority tasks",
-      color: "#ef4444",
-    },
-    {
-      label: "Medium Priority",
-      description: "Medium-priority tasks",
-      color: "#f59e0b",
-    },
-    {
-      label: "Low Priority",
-      description: "Low-priority tasks or completed events",
-      color: "#10b981",
-    },
-  ]
-
+    { label: "High Priority", description: "Urgent or high-priority tasks", color: "#f87171" },  // Dark Red
+    { label: "Medium Priority", description: "Medium-priority tasks", color: "#fdba74" },  // Orange
+    { label: "Low Priority", description: "Low-priority tasks or completed events", color: "#60a5fa" },  // Blue
+  ];
+  
   return (
     <div className="flex h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
       {/* Left Sidebar */}
@@ -158,7 +146,17 @@ function StudentCalendar() {
             height="100%"
             dayMaxEvents={true}
             eventDisplay="block"
-            eventContent={(arg) => <EventHoverCard event={arg} />}
+            eventContent={(arg) => (
+              <EventHoverCard 
+                event={arg} 
+                onEventUpdate={(updatedEvent) => {
+                  setEvents(events.map(event => 
+                    event.id === updatedEvent.id ? updatedEvent : event
+                  ));
+                }
+            } 
+              />
+            )}  
             eventTimeFormat={{
               hour: "numeric",
               minute: "2-digit",

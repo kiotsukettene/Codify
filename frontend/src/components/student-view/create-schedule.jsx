@@ -10,11 +10,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import toast from "react-hot-toast";
 
 const priorities = [
-  { label: "Low Priority", value: "low", color: "#10b981" },
-  { label: "Medium Priority", value: "medium", color: "#f59e0b" },
-  { label: "High Priority", value: "high", color: "#ef4444" },
+  { label: "Low Priority", value: "low", color: "#60a5fa" },  // Blue
+  { label: "Medium Priority", value: "medium", color: "#fdba74" },  // Orange
+  { label: "High Priority", value: "high", color: "#f87171" },  // Dark Red
 ];
 
 export function CreateEventModal({ open, onOpenChange, addEvent }) {
@@ -29,19 +30,26 @@ export function CreateEventModal({ open, onOpenChange, addEvent }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!title.trim()) {
+        toast.error("Please enter a title for the event.");
+        return;
+    }
+
     const newEvent = {
-      id: Date.now().toString(), // Unique ID
+      id: Date.now().toString(),
       title,
       start: `${format(date, "yyyy-MM-dd")}T${startTime}:00`,
       end: `${format(date, "yyyy-MM-dd")}T${endTime}:00`,
-      backgroundColor: priorities.find((p) => p.value === priority).color,
-      borderColor: priorities.find((p) => p.value === priority).color,
+      backgroundColor: priorities.find((p) => p.value === priority)?.color || "#64748b", // Default Gray
+      borderColor: priorities.find((p) => p.value === priority)?.color || "#64748b",
       textColor: "#ffffff",
     };
+    
 
     addEvent(newEvent); // Send event to the main calendar
     onOpenChange(false); // Close modal
-  };
+};
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -55,7 +63,7 @@ export function CreateEventModal({ open, onOpenChange, addEvent }) {
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Software Engineering Class" />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 flex flex-col">
             <label className="text-sm font-medium mr-5 bg-blue-50 px-3 py-1 rounded-md">Date</label>
             <Popover>
               <PopoverTrigger asChild>
@@ -64,14 +72,15 @@ export function CreateEventModal({ open, onOpenChange, addEvent }) {
                   {format(date, "EEEE, dd MMMM")}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className=" p-0">
                 <Calendar mode="single" selected={date} onSelect={setDate} />
               </PopoverContent>
             </Popover>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-row gap-4">
             <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            <span className="items-center flex justify-center">-</span>
             <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
           </div>
 
