@@ -206,7 +206,7 @@ const Courses = () => {
                   <div
                     key={index}
                     onClick={() => handleCourseClick(course)}
-                    className="cursor-pointer hover:shadow-lg transition duration-200"
+                    className="cursor-pointer transition duration-200"
                   >
                     <Card
                       lessonCount={course.lessonCount || 0}
