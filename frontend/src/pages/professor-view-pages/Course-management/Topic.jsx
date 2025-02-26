@@ -18,7 +18,8 @@ import {
 import { Separator } from "@/Components/ui/separator";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import { motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useLessonStore } from "@/store/lessonStore";
 
 // Extract `courseId` and `lessonId` from the URL
 
@@ -98,8 +99,48 @@ const Topic = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTopic, setActiveTopic] = useState(topics[0].id);
   const { courseId, lessonId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
+  const {
+    fetchLessonById,
+    lesson: fetchedLesson,
+    isLoading,
+    error,
+  } = useLessonStore();
+  const [lesson, setLesson] = useState(location.state?.lesson || null);
+  console.log("🔍 Debug: useParams() ->", { courseId, lessonId });
+  console.log("🔍 Debug: location.state ->", location.state);
+  console.log("🔍 Debug: Lesson from store ->", fetchedLesson);
+  console.log("🔍 Debug: isLoading ->", isLoading, " | error ->", error);
 
+  useEffect(() => {
+    if (location.state?.lesson) {
+      console.log("✅ Using lesson from navigation state.");
+      setLesson(location.state.lesson);
+    } else {
+      console.log("📡 Fetching lesson from API...");
+      fetchLessonById(lessonId);
+    }
+  }, [lessonId, fetchLessonById, location.state]);
+
+  useEffect(() => {
+    if (fetchedLesson && fetchedLesson._id) {
+      console.log("✅ Lesson fetched successfully from API:", fetchedLesson);
+      setLesson(fetchedLesson);
+    }
+  }, [fetchedLesson]);
+
+  if (isLoading || !lesson) {
+    return (
+      <p className="text-center text-gray-500">⏳ Loading lesson details...</p>
+    );
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">❌ Error: {error}</p>;
+  }
+
+  ////
   const handleScroll = () => {
     let currentSection = topics[0].id;
 
@@ -156,17 +197,18 @@ const Topic = () => {
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                Java Conditionals
+                {lesson.title}
               </motion.h1>
 
-              {topics.map((topic) => (
-                <section key={topic.id} id={topic.id} className="mb-8">
+              {/* Loop Through Sections */}
+              {lesson.sections?.map((section, index) => (
+                <section key={index} id={`section-${index}`} className="mb-8">
                   <motion.h2
                     className="text-lg font-medium mb-2"
                     whileHover={{ x: 10 }}
                     transition={{ type: "spring", stiffness: 400 }}
                   >
-                    {topic.title}
+                    {section.subTitle}
                   </motion.h2>
                   <motion.p
                     className="text-sm text-gray-700 dark:text-gray-300 mb-4"
@@ -174,39 +216,58 @@ const Topic = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                   >
-                    {topic.content}
+                    {section.description}
                   </motion.p>
 
-                  {/* Code Block */}
-                  <motion.div
-                    className="relative bg-[#1e1e1e] rounded-lg mb-6 overflow-hidden"
-                    whileHover={{
-                      scale: 1.01,
-                      boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
-                    }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <motion.div
-                      className="absolute right-2 top-2 flex gap-2"
-                      whileHover={{ scale: 1.1 }}
-                    >
+                  {/* ✅ Code Snippets */}
+                  {section.codeSnippets?.length > 0 &&
+                    section.codeSnippets.map((snippet, idx) => (
                       <motion.div
-                        whileHover={{ scale: 1.2, rotate: 180 }}
-                        transition={{ duration: 0.3 }}
+                        key={idx}
+                        className="relative bg-[#1e1e1e] rounded-lg mb-6 overflow-hidden"
+                        whileHover={{
+                          scale: 1.01,
+                          boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                        }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 ml-2"
+                        <motion.div
+                          className="absolute right-2 top-2 flex gap-2"
+                          whileHover={{ scale: 1.1 }}
                         >
-                          <Copy className="h-4 w-4 text-white" />
-                        </Button>
+                          <motion.div
+                            whileHover={{ scale: 1.2, rotate: 180 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 ml-2"
+                              onClick={() =>
+                                navigator.clipboard.writeText(snippet)
+                              }
+                            >
+                              <Copy className="h-4 w-4 text-white" />
+                            </Button>
+                          </motion.div>
+                        </motion.div>
+                        <pre className="p-4 pt-8 font-mono text-xs text-purple-200">
+                          <code>{snippet}</code>
+                        </pre>
                       </motion.div>
-                    </motion.div>
-                    <pre className="p-4 pt-8 font-mono text-xs text-purple-200">
-                      <code>{topic.code}</code>
-                    </pre>
-                  </motion.div>
+                    ))}
+
+                  {/* ✅ Notes Section */}
+                  {section.notes?.length > 0 && (
+                    <div className="p-4 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                      <h3 className="font-semibold mb-2">Notes:</h3>
+                      <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                        {section.notes.map((note, noteIdx) => (
+                          <li key={noteIdx}>{note}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </section>
               ))}
             </motion.div>

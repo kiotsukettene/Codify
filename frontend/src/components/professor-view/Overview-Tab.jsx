@@ -16,10 +16,12 @@ import {
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { useLessonStore } from "../../store/lessonStore";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
   const { courseId } = useParams();
+  const { fetchLessonById } = useLessonStore();
 
   const handleAddLessonClick = () => {
     console.log("Lessons: ", lessons);
@@ -33,13 +35,23 @@ const OverviewTab = ({ lessons = [] }) => {
     });
   };
 
-  const handleLessonClick = (lesson) => {
+  const handleLessonClick = async (lesson) => {
     if (!lesson || !lesson._id) {
       console.error("Error: Lesson ID is undefined", lesson);
       return;
     }
 
-    navigate(`/professor/course/${courseId}/lesson/${lesson._id}`);
+    try {
+      // Fetch the lesson details
+      await fetchLessonById(lesson._id);
+
+      // Navigate with lesson details in the state
+      navigate(`/professor/course/${courseId}/lesson/${lesson._id}`, {
+        state: { lesson },
+      });
+    } catch (error) {
+      console.error("Error fetching lesson details", error);
+    }
   };
 
   return (
