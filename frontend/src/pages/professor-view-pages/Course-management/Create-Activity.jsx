@@ -179,9 +179,7 @@ const CreateActivity = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() =>
-                        navigate("/professor/course/lesson-overview")
-                      }
+                      onClick={() => navigate(-1)}
                     >
                       <ArrowLeft className="h-5 w-5" />
                     </Button>

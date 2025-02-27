@@ -20,6 +20,7 @@ import AppSidebar from "@/components/professor-view/Sidebar";
 import { motion } from "framer-motion";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
+import { ArrowLeft } from "lucide-react";
 
 // Extract `courseId` and `lessonId` from the URL
 
@@ -186,12 +187,16 @@ const Topic = () => {
 
           <div className="container mx-auto p-6 grid grid-cols-12 gap-6">
             {/* Main Content */}
+
             <motion.div
               className="col-span-8 space-y-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
               <motion.h1
                 className="text-3xl font-bold mb-6"
                 whileHover={{ scale: 1.02 }}
