@@ -1,5 +1,6 @@
 import Course from "../models/course.model.js";
 import { generateCourseCode } from "../utils/generateCourseCode.js";
+import { Professor } from "../models/professor.model.js";
 
 export const createCourse = async (req, res) => {
   try {
@@ -57,14 +58,19 @@ export const getCoursesByProfessor = async (req, res) => {
 export const getCourseById = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const course = await Course.findById(courseId)
-      .populate("professorId", "firstName lastName") // ✅ Populate professor's name
-      .exec();
+    const course = await Course.findById(courseId).populate({
+      path: "professorId",
+      select: "firstName lastName email", // ✅ Select only necessary fields
+    });
 
     if (!course) return res.status(404).json({ message: "Course not found" });
 
+    console.log("Course Data:", course); // ✅ Debugging log
+    console.log("Professor Data:", course.professorId); // ✅ Should contain firstName & lastName
+
     res.status(200).json(course);
   } catch (error) {
+    console.error("Error fetching course:", error);
     res
       .status(500)
       .json({ message: "Error fetching course", error: error.message });

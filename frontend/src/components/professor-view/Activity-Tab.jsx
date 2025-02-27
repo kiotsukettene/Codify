@@ -10,6 +10,9 @@ const ActivityTab = ({ activities }) => {
     return <p className="text-gray-500">No activities available.</p>;
   }
 
+  // Ensure activities is always treated as an array
+  const activitiesArray = Array.isArray(activities) ? activities : [activities];
+
   return (
     <div className="grid gap-4">
       {activities.map((activity) => {

@@ -345,10 +345,10 @@ const LessonOverview = () => {
 
                     {activeTab === "activities" && (
                       <div className="grid gap-4">
-                        {missions && missions.length > 0 ? (
-                          missions.map((mission, index) => (
+                        {activities && activities.length > 0 ? (
+                          activities.map((activity, index) => (
                             <motion.div
-                              key={mission.id}
+                              key={activity._id}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: index * 0.1 }}
@@ -357,11 +357,8 @@ const LessonOverview = () => {
                                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                               }}
                               className="cursor-pointer transform transition-all duration-200 hover:rotate-1"
-                              onClick={() =>
-                                navigate(`/professor/course/activities`)
-                              }
                             >
-                              <ActivityTab activities={activities} />
+                              <ActivityTab activities={[activity]} />
                             </motion.div>
                           ))
                         ) : (
