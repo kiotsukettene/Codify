@@ -32,7 +32,7 @@ export const useActivityStore = create((set) => ({
 
     try {
       const response = await axios.get(`${API_URL}/course/${courseId}`);
-      console.log("Fetched Activities by Course:", response.data); // Debugging
+
       set({ activities: response.data, isLoading: false });
     } catch (error) {
       console.error("Error fetching activities by course:", error);
@@ -65,7 +65,6 @@ export const useActivityStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      console.log("Sending Activity Data:", activityData); // 🛠 Debugging line
       const response = await axios.post(`${API_URL}/create`, activityData);
       set((state) => ({
         activities: [...state.activities, response.data.activity],

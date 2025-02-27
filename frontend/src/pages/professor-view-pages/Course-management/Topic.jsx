@@ -109,24 +109,17 @@ const Topic = () => {
     error,
   } = useLessonStore();
   const [lesson, setLesson] = useState(location.state?.lesson || null);
-  console.log("🔍 Debug: useParams() ->", { courseId, lessonId });
-  console.log("🔍 Debug: location.state ->", location.state);
-  console.log("🔍 Debug: Lesson from store ->", fetchedLesson);
-  console.log("🔍 Debug: isLoading ->", isLoading, " | error ->", error);
 
   useEffect(() => {
     if (location.state?.lesson) {
-      console.log("✅ Using lesson from navigation state.");
       setLesson(location.state.lesson);
     } else {
-      console.log("📡 Fetching lesson from API...");
       fetchLessonById(lessonId);
     }
   }, [lessonId, fetchLessonById, location.state]);
 
   useEffect(() => {
     if (fetchedLesson && fetchedLesson._id) {
-      console.log("✅ Lesson fetched successfully from API:", fetchedLesson);
       setLesson(fetchedLesson);
     }
   }, [fetchedLesson]);

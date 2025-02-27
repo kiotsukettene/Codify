@@ -32,6 +32,36 @@ const LessonOverview = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
+  const CourseDetails = ({ courseId }) => {
+    const [courseData, setCourseData] = useState(null);
+
+    useEffect(() => {
+      const fetchCourseData = async () => {
+        try {
+          const response = await fetch(`/api/courses/${courseId}`);
+          const data = await response.json();
+
+          setCourseData(data);
+        } catch (error) {
+          console.error("Error fetching course:", error);
+        }
+      };
+
+      fetchCourseData();
+    }, [courseId]);
+
+    if (!courseData) return <p>Loading course details...</p>;
+
+    return (
+      <div>
+        <h2>
+          Instructor: {courseData.professorId?.firstName}{" "}
+          {courseData.professorId?.lastName}
+        </h2>
+      </div>
+    );
+  };
+
   // Use lessonStore to get lessons, loading state, and the fetch function
   const { lessons, isLoading, fetchLessonsByCourse } = useLessonStore();
 
@@ -247,9 +277,11 @@ const LessonOverview = () => {
               details={{
                 language: courseData.language,
                 students: "40 Students", // Update dynamically if available
-                instructor: courseData.professorId
-                  ? `${courseData.professorId.firstName} ${courseData.professorId.lastName}`
-                  : "Unknown Instructor", // ✅ Safely display professor's full name
+                instructor: courseData?.professorId
+                  ? `${courseData.professorId?.firstName ?? "Unknown"} ${
+                      courseData.professorId?.lastName ?? ""
+                    }`
+                  : "Unknown Instructor",
                 schedule: courseData.schedule
                   ? `${courseData.schedule.day}, ${courseData.schedule.time}`
                   : "No schedule available",

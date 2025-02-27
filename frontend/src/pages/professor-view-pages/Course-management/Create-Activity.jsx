@@ -46,12 +46,9 @@ const CreateActivity = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const { createActivity } = useActivityStore();
   const { lessonId } = useParams();
-  console.log("lessonId from useParams():", lessonId);
 
   const handleSubmit = async () => {
     if (!lessonId || lessonId.length !== 24) {
-      console.error("Invalid or missing lessonId:", lessonId);
-      toast.error("Error: Invalid Lesson ID");
       return;
     }
 
@@ -64,10 +61,8 @@ const CreateActivity = () => {
       points: 100,
     };
 
-    console.log("Submitting Activity:", newActivity); // Debugging line
-
     await createActivity(newActivity);
-    navigate("/professor/course/lesson-overview");
+    navigate(-1);
   };
 
   const handleFormat = (value) => {
