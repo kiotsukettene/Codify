@@ -19,7 +19,7 @@ const ActivityPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
-  const { activity, isLoading, fetchActivityById } = useActivityStore(); // ✅ Use Zustand store
+  const { activity, fetchActivityById } = useActivityStore(); // ✅ Use Zustand store
 
   useEffect(() => {
     if (activityId) {

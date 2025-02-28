@@ -28,7 +28,7 @@ import {
 import { Separator } from "@/Components/ui/separator";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import confetti from "canvas-confetti";
-import { useActivityStore } from "@/store/activityStore"; // Import Zustand store
+import { useActivityStore } from "@/store/activityStore";
 import { toast } from "react-hot-toast";
 import { useParams } from "react-router-dom";
 
@@ -45,7 +45,7 @@ const CreateActivity = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const { createActivity } = useActivityStore();
-  const { lessonId } = useParams();
+  const { lessonId, courseId } = useParams();
 
   const handleSubmit = async () => {
     if (!lessonId || lessonId.length !== 24) {
@@ -61,14 +61,21 @@ const CreateActivity = () => {
       points: 100,
     };
 
-    await createActivity(newActivity);
-    navigate(-1);
-  };
+    try {
+      // ✅ Wait for the API response to get the new activity
+      const createdActivity = await createActivity(newActivity);
 
-  const handleFormat = (value) => {
-    setTextFormat((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
+      if (createdActivity && createdActivity._id) {
+        // ✅ Navigate to the new activity's page using its ID
+        navigate(
+          `/professor/course/${courseId}/lesson/${lessonId}/activity/${createdActivity._id}`
+        );
+      } else {
+        console.error("Activity creation failed or _id is missing");
+      }
+    } catch (error) {
+      console.error("Error creating activity:", error);
+    }
   };
 
   React.useEffect(() => {

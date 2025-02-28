@@ -71,17 +71,26 @@ export const useActivityStore = create((set) => ({
 
     try {
       const response = await axios.post(`${API_URL}/create`, activityData);
+
+      const newActivity = response.data.activity; // ✅ Extract the newly created activity
+
       set((state) => ({
-        activities: [...state.activities, response.data.activity],
+        activities: [...state.activities, newActivity],
         isLoading: false,
       }));
+
       toast.success("Activity created successfully!");
+
+      return newActivity; // ✅ Return the created activity so we can use it later
     } catch (error) {
-      set({
-        error: error.response?.data?.message || "Error creating activity",
-        isLoading: false,
-      });
-      toast.error(error.response?.data?.message || "Error creating activity");
+      const errorMessage =
+        error.response?.data?.message || "Error creating activity";
+
+      set({ error: errorMessage, isLoading: false });
+
+      toast.error(errorMessage);
+
+      return null; // ✅ Return null in case of an error
     }
   },
 

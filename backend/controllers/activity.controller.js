@@ -7,13 +7,13 @@ export const createActivity = async (req, res) => {
     const { lessonId, title, subTitle, instructions, dueDate, points } =
       req.body;
 
-    // Check if lesson exists
+    // ✅ Check if lesson exists before creating activity
     const lessonExists = await Lesson.findById(lessonId);
     if (!lessonExists) {
       return res.status(404).json({ message: "Lesson not found" });
     }
 
-    // Create activity
+    // ✅ Create a new activity
     const activity = new Activity({
       lessonId,
       title,
@@ -23,17 +23,20 @@ export const createActivity = async (req, res) => {
       points,
     });
 
-    await activity.save();
+    // ✅ Save the activity to the database
+    const savedActivity = await activity.save();
 
-    res.status(201).json({
+    // ✅ Return the created activity with _id
+    return res.status(201).json({
       message: "Activity created successfully!",
-      activity,
+      activity: savedActivity, // Ensure the saved object is returned
     });
   } catch (error) {
     console.error("Error in createActivity:", error);
-    res
-      .status(500)
-      .json({ message: "Error creating activity", error: error.message });
+    return res.status(500).json({
+      message: "Error creating activity",
+      error: error.message,
+    });
   }
 };
 
