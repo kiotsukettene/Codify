@@ -53,6 +53,7 @@ export const useActivityStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
+      console.log(`Fetching activity with ID: ${activityId}`);
       const response = await axios.get(`${API_URL}/${activityId}`);
       set({ activity: response.data, isLoading: false });
     } catch (error) {
