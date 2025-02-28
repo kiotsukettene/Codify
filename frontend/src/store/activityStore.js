@@ -34,6 +34,8 @@ export const useActivityStore = create((set) => ({
       const response = await axios.get(`${API_URL}/course/${courseId}`);
 
       set({ activities: response.data, isLoading: false });
+
+      return response.data; // ✅ Return fetched activities for debugging
     } catch (error) {
       console.error("Error fetching activities by course:", error);
       set({
@@ -41,6 +43,8 @@ export const useActivityStore = create((set) => ({
         isLoading: false,
       });
       toast.error(error.response?.data?.message || "Error fetching activities");
+
+      return []; // ✅ Return empty array instead of undefined
     }
   },
 

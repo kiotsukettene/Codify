@@ -360,6 +360,7 @@ import LessonOverview from "./pages/professor-view-pages/Course-management/Lesso
 import CreateLesson from "./pages/professor-view-pages/Course-management/Create-Lesson";
 import Topic from "./pages/professor-view-pages/Course-management/Topic";
 import CreateActivity from "./pages/professor-view-pages/Course-management/Create-Activity";
+import ActivityPage from "./pages/professor-view-pages/Course-management/Activity-Page";
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
   const { isAuthenticated, institution } = useAuthStore();
@@ -509,6 +510,14 @@ function App() {
           element={
             <ProtectedRouteProfessors>
               <CreateActivity />
+            </ProtectedRouteProfessors>
+          }
+        />
+        <Route
+          path="/professor/course/:courseId/lesson/:lessonId/activity/:activityId"
+          element={
+            <ProtectedRouteProfessors>
+              <ActivityPage />
             </ProtectedRouteProfessors>
           }
         />

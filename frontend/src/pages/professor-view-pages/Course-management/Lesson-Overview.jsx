@@ -31,6 +31,10 @@ const LessonOverview = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const { lessons, isLoading, fetchLessonsByCourse } = useLessonStore(); // Use lessonStore to get lessons, loading state, and the fetch function
+  const { activities, fetchActivitiesByCourse, error } = useActivityStore(); // Use activityStore to get activities, loading state, and the fetch function
+  const location = useLocation();
+  const courseData = location.state?.course || {}; // Get course details from navigation state
 
   const CourseDetails = ({ courseId }) => {
     const [courseData, setCourseData] = useState(null);
@@ -62,9 +66,6 @@ const LessonOverview = () => {
     );
   };
 
-  // Use lessonStore to get lessons, loading state, and the fetch function
-  const { lessons, isLoading, fetchLessonsByCourse } = useLessonStore();
-
   // Fetch lessons for the given courseId when the component mounts or courseId changes
   useEffect(() => {
     if (!courseId) {
@@ -83,11 +84,11 @@ const LessonOverview = () => {
     fetchLessonsByCourse(courseId);
   }, [courseId, fetchLessonsByCourse]);
 
-  const { activities, fetchActivitiesByCourse, error } = useActivityStore();
+  //fetch activities for the given courseId when the component mounts or courseId changes
 
   useEffect(() => {
     if (courseId) {
-      fetchActivitiesByCourse(courseId);
+      fetchActivitiesByCourse(courseId).then((data) => {});
     }
   }, [courseId, fetchActivitiesByCourse]);
 
@@ -206,10 +207,6 @@ const LessonOverview = () => {
     { id: "scores", label: "Scores", icon: <Trophy className="w-4 h-4" /> },
     { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
   ];
-
-  //course data
-  const location = useLocation();
-  const courseData = location.state?.course || {}; // Get course details from navigation state
 
   const missions = [
     {
