@@ -89,8 +89,6 @@ export const getActivityById = async (req, res) => {
   try {
     const { activityId } = req.params;
 
-    console.log(`Received request for activity ID: ${activityId}`); // ✅ Debugging
-
     // Find the activity by ID
     const activity = await Activity.findById(activityId);
 
