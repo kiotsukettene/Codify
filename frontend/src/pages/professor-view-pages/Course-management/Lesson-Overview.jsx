@@ -209,33 +209,6 @@ const LessonOverview = () => {
     { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
   ];
 
-  const missions = [
-    {
-      id: 1,
-      title: "Symantics",
-      dueDate: "December 25, 2023",
-      submitted: 20,
-      total: 40,
-      slug: "symantics",
-    },
-    {
-      id: 2,
-      title: "Software Application",
-      dueDate: "December 25, 2023",
-      submitted: 20,
-      total: 40,
-      slug: "software-application",
-    },
-    {
-      id: 3,
-      title: "System Application",
-      dueDate: "December 25, 2023",
-      submitted: 20,
-      total: 40,
-      slug: "system-application",
-    },
-  ];
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -346,21 +319,22 @@ const LessonOverview = () => {
                         {activities && activities.length > 0 ? (
                           activities.map((activity, index) => (
                             <motion.div
-                              key={activity._id}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              whileHover={{
-                                scale: 1.02,
-                                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                              }}
-                              className="cursor-pointer transform transition-all duration-200 hover:rotate-1"
+                              transition={{ duration: 0.2 }}
+                              className="grid gap-4"
                             >
-                              <ActivityTab
-                                activities={activities || []}
-                                courseId={courseId}
-                                lessonId={lessonId}
-                              />
+                              {activities && activities.length > 0 ? (
+                                <ActivityTab
+                                  activities={activities}
+                                  courseId={courseId}
+                                  lessonId={lessonId}
+                                />
+                              ) : (
+                                <p className="text-gray-500">
+                                  No activities available.
+                                </p>
+                              )}
                             </motion.div>
                           ))
                         ) : (
