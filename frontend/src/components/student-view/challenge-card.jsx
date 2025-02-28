@@ -2,16 +2,25 @@ import { Card, CardContent, CardFooter } from "../ui/card";
 import wave from "@/assets/picture/random background/wave.png";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { useNavigate } from "react-router-dom";
 
-const StudentChallengeCard = ({ title, lessons, index, description, tags=[], status = 'pending' }) => {
+const StudentChallengeCard = ({ id, title, description, tags = [], status = 'pending' }) => {
+  
+  const navigate = useNavigate();
+
   const badgeColors = {
     easy: "bg-green-200 text-green-800",
     medium: "bg-orange-200 text-orange-800",
     hard: "bg-red-200 text-red-800",
   };
+
   const buttonStatus = {
     completed: "bg-emerald-100 text-emerald-700 hover:bg-emerald-200",
     pending: "bg-violet-100 text-violet-700 hover:bg-violet-200",
+  }
+
+  const handleStartChallenge = () => {
+    navigate(`/student/challenges/${id}`)
   }
 
   return (
@@ -44,7 +53,7 @@ const StudentChallengeCard = ({ title, lessons, index, description, tags=[], sta
       </CardContent>
 
       <CardFooter className="p-0 mt-3 justify-end">
-        <Button variant="secondary" className={`${buttonStatus[status]} transition-colors`}>
+        <Button variant="secondary" className={`${buttonStatus[status]} transition-colors`} onClick={handleStartChallenge}>
           {status === "completed" ? "Completed" : "Start Practice"}
         </Button>
       </CardFooter>

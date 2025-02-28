@@ -155,7 +155,7 @@ function App() {
           <Route path="activity" element={<StudentActivityPage/>}/>
           <Route path="task-list" element={<StudentTaskPage/>}/>
           <Route path="challenges" element={<StudentChallengesView/>}/>
-          <Route path="practice" element={<StudentPracticePage/>}/>
+          <Route path="challenges/:id" element={<StudentPracticePage/>}/>
     </Route>
         
         <Route path="/" element={<GuestLayout />}>
