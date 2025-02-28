@@ -40,6 +40,7 @@ import StudentActivityPage from "./pages/student-view-pages/course-management/st
 import StudentChallengesView from "./pages/student-view-pages/challenges/student-challenges-view";
 import StudentPracticePage from "./pages/student-view-pages/challenges/student-practice-page";
 import StudentCalendarPage from "./pages/student-view-pages/Schedule-Calendar";
+import VideoConference from "./pages/student-view-pages/Video-Conference";
 // redirect authenticated and paid institution to dashboard page 
 
 const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -159,6 +160,8 @@ function App() {
           <Route path="practice" element={<StudentPracticePage/>}/>
           <Route path="schedules" element={<StudentCalendarPage/>}/>
     </Route>
+    
+    <Route path="/video-conference" element={<VideoConference/>}/>
         
         <Route path="/" element={<GuestLayout />}>
           <Route
