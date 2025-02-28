@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -9,34 +9,25 @@ import AppSidebar from "@/components/professor-view/Sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
+import { useActivityStore } from "@/store/activityStore";
 
 const ActivityPage = () => {
+  const { activityId } = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
+  const { activity, isLoading, fetchActivityById } = useActivityStore(); // ✅ Use Zustand store
 
-  const sampleActivity = {
-    title: "Activity 1: Semantics",
-    dueDate: "October 3, 2024 | 11:59 PM",
-    points: 100,
-    instructions: [
-      "Create a Class: Create a class named BankAccount with balance and accountNumber attributes.",
-      "Create Methods: Implement checkBalance(), deposit(amount), and withdraw(amount).",
-      "Main Program: Prompt user for input and allow deposit, withdraw, and balance check.",
-      "Requirements: Handle invalid inputs like withdrawing more than balance.",
-    ],
-    exampleOutput: `Enter account number: 123456789
-      Welcome to your banking account!
-      1. Check Balance
-      2. Deposit Money
-      3. Withdraw Money
-      4. Exit
-      Enter your choice: 1
-      Your account balance is: $500.00`,
-  };
+  useEffect(() => {
+    if (activityId) {
+      fetchActivityById(activityId);
+    } else {
+      console.error("activityId is undefined or null");
+    }
+  }, [activityId, fetchActivityById]);
 
   const students = [
     { id: "1", name: "All students", score: 0 },
@@ -73,7 +64,7 @@ const ActivityPage = () => {
               <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-xl font-semibold">{sampleActivity.title}</h1>
+              <h1 className="text-xl font-semibold">{activity?.title}</h1>
             </div>
 
             {/* Tabs */}
@@ -102,10 +93,17 @@ const ActivityPage = () => {
             {/* Render the correct tab content */}
             {activeTab === "overview" ? (
               <ActivityOverview
-                dueDate={sampleActivity.dueDate}
-                points={sampleActivity.points}
-                instructions={sampleActivity.instructions}
-                exampleOutput={sampleActivity.exampleOutput}
+                dueDate={
+                  activity?.dueDate
+                    ? new Date(activity.dueDate).toLocaleString()
+                    : "No due date"
+                }
+                points={activity?.points || 0}
+                instructions={
+                  Array.isArray(activity?.instructions)
+                    ? activity.instructions
+                    : [activity?.instructions || "No instructions available"]
+                }
               />
             ) : (
               <div>
