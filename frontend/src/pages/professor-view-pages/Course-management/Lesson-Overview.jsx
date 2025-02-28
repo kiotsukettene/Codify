@@ -314,36 +314,22 @@ const LessonOverview = () => {
                       />
                     )}
 
-                    {activeTab === "activities" && (
-                      <div className="grid gap-4">
-                        {activities && activities.length > 0 ? (
-                          activities.map((activity, index) => (
-                            <motion.div
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="grid gap-4"
-                            >
-                              {activities && activities.length > 0 ? (
-                                <ActivityTab
-                                  activities={activities}
-                                  courseId={courseId}
-                                  lessonId={lessonId}
-                                />
-                              ) : (
-                                <p className="text-gray-500">
-                                  No activities available.
-                                </p>
-                              )}
-                            </motion.div>
-                          ))
-                        ) : (
-                          <p className="text-gray-500">
-                            No activities available.
-                          </p>
-                        )}
-                      </div>
-                    )}
+                    {activities.map((activity, index) => (
+                      <motion.div
+                        key={activity._id || index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="grid gap-4"
+                      >
+                        <ActivityTab
+                          index={index + 1}
+                          activity={activity} // ✅ Pass only a single activity, not the entire array
+                          courseId={courseId}
+                          lessonId={lessonId} // ✅ Use activity's lessonId instead of global lessonId
+                        />
+                      </motion.div>
+                    ))}
 
                     {activeTab === "scores" && (
                       <ScoreTab metrics={metrics} students={students} />
