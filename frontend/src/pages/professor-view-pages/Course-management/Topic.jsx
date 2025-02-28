@@ -349,24 +349,25 @@ const Topic = () => {
                 </motion.h2>
 
                 <nav className="space-y-2">
-                  {topics.map((topic) => (
+                  {lesson.sections.map((section) => (
                     <motion.a
-                      key={topic.id}
-                      onClick={() => scrollToSection(topic.id)}
+                      key={section._id}
+                      onClick={() => scrollToSection(section._id)}
                       className="flex items-center group cursor-pointer"
                       whileHover={{ x: 5, color: "#9333EA" }}
                       transition={{ type: "spring", stiffness: 400 }}
                     >
                       <motion.span
                         className={`inline-block w-1.5 h-1.5 ${
-                          activeTopic === topic.id
+                          activeTopic === section._id
                             ? "bg-purple-600"
                             : "border border-gray-400"
                         } transform rotate-45 mr-3`}
                         animate={{
-                          y: activeTopic === topic.id ? [0, 4, 0] : 0,
-                          rotate: activeTopic === topic.id ? [45, 225, 45] : 45,
-                          scale: activeTopic === topic.id ? [1, 1.2, 1] : 1,
+                          y: activeTopic === section._id ? [0, 4, 0] : 0,
+                          rotate:
+                            activeTopic === section._id ? [45, 225, 45] : 45,
+                          scale: activeTopic === section._id ? [1, 1.2, 1] : 1,
                         }}
                         transition={{
                           duration: 3,
@@ -376,12 +377,12 @@ const Topic = () => {
                       />
                       <span
                         className={`text-xs transition-colors duration-200 ${
-                          activeTopic === topic.id
+                          activeTopic === section._id
                             ? "text-purple-600"
                             : "group-hover:text-purple-600"
                         }`}
                       >
-                        {topic.title}
+                        {section.subTitle}
                       </span>
                     </motion.a>
                   ))}
