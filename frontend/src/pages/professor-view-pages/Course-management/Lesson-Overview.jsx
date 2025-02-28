@@ -35,6 +35,7 @@ const LessonOverview = () => {
   const { activities, fetchActivitiesByCourse, error } = useActivityStore(); // Use activityStore to get activities, loading state, and the fetch function
   const location = useLocation();
   const courseData = location.state?.course || {}; // Get course details from navigation state
+  const lessonId = activities.length > 0 ? activities[0].lessonId : null;
 
   const CourseDetails = ({ courseId }) => {
     const [courseData, setCourseData] = useState(null);
@@ -355,7 +356,11 @@ const LessonOverview = () => {
                               }}
                               className="cursor-pointer transform transition-all duration-200 hover:rotate-1"
                             >
-                              <ActivityTab activities={[activity]} />
+                              <ActivityTab
+                                activities={activities || []}
+                                courseId={courseId}
+                                lessonId={lessonId}
+                              />
                             </motion.div>
                           ))
                         ) : (
