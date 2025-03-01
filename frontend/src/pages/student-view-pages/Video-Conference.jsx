@@ -1,7 +1,6 @@
 import * as React from "react";
 import { VideoResolution, ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
-// import plugin
-// import { ZegoSuperBoardManager } from "zego-superboard-web";
+
 
 
 import Logo from '@/assets/picture/logos/logo.png';
@@ -34,16 +33,12 @@ export default function VideoConference() {
       appID,
       serverSecret,
       roomID,
-     
       randomID(5),
       randomID(5)
     );
 
     // Create instance object from Kit Token.
     const zp = ZegoUIKitPrebuilt.create(kitToken);
-    // const superBoardManager = await ZegoSuperBoardManager.getInstance();
-
-    // zp.addPlugins({ ZegoSuperBoardManager: superBoardManager });
 
     
     // start the call
