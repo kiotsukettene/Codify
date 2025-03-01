@@ -2,33 +2,33 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Swords } from "lucide-react";
-import { CODING_CHALLENGES } from "@/constants"; // Import challenges
+import challenges from "@/constants/challenges";
 import StudentChallengeCard from "@/components/student-view/challenge-card";
 import challengesImg from "@/assets/picture/random background/challenges.png";
 import wave from "@/assets/picture/random background/wave.png";
 
 function StudentChallengesView() {
-  const [challenges, setChallenges] = useState(CODING_CHALLENGES); // Load from constants.js
+  const [challengeList, setChallengeList] = useState(challenges); // Renamed for clarity
 
   const filterChallenges = (difficulty) => {
-    if (difficulty === "all") return challenges;
-    return challenges.filter((challenge) => challenge.difficulty.toLowerCase() === difficulty);
+    if (difficulty === "all") return challengeList;
+    return challengeList.filter((challenge) => challenge.difficulty.toLowerCase() === difficulty);
   };
 
   const completedChallenges = useMemo(() => {
-    return challenges.filter((challenge) => challenge.status === "completed").length;
-  }, [challenges]);
+    return challengeList.filter((challenge) => challenge.status === "completed").length;
+  }, [challengeList]);
 
   const ChallengeCard = ({ challenges }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
       {challenges.map((challenge) => (
         <div key={challenge.id} className="w-full">
           <StudentChallengeCard
-            id={challenge.id} // Pass ID for navigation
+            id={challenge.id} // Now a string
             title={challenge.title}
             description={challenge.description}
             tags={[challenge.difficulty]}
-            status={challenge.status || "pending"} // Default to pending if missing
+            status={challenge.status || "pending"}
           />
         </div>
       ))}
@@ -38,10 +38,8 @@ function StudentChallengesView() {
   return (
     <div className="container mx-auto">
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left Side */}
         <div className="flex-1 flex flex-col">
           <h1 className="text-header font-semibold text-4xl mt-3">Let's warm up!</h1>
-
           <Tabs defaultValue="all" className="w-full mt-5">
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
@@ -49,7 +47,6 @@ function StudentChallengesView() {
               <TabsTrigger value="medium">Medium</TabsTrigger>
               <TabsTrigger value="hard">Hard</TabsTrigger>
             </TabsList>
-
             <TabsContent value="all">
               <ChallengeCard challenges={filterChallenges("all")} />
             </TabsContent>
@@ -64,21 +61,17 @@ function StudentChallengesView() {
             </TabsContent>
           </Tabs>
         </div>
-
-        {/* Right Side (Summary & Calendar) */}
         <div className="w-full lg:w-80 flex-shrink-0 flex flex-col justify-between h-full bg-white p-4 rounded-xl">
           <div className="space-y-4">
             <div className="w-full aspect-square rounded-2xl bg-[#5315BB] overflow-hidden">
               <img src={challengesImg} alt="Space Computer" className="w-full h-full object-cover" />
             </div>
-
             <h1 className="text-center text-header font-semibold text-2xl">
               Crack the Code, Level Up Your Skills
             </h1>
             <h4 className="text-center text-neutral-600 text-md">
               Select a challenge and show your coding prowess
             </h4>
-
             <Card className="p-3 border-none shadow-none bg-purple-100">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-violet-200 rounded-lg">
@@ -91,7 +84,6 @@ function StudentChallengesView() {
               </div>
             </Card>
           </div>
-
           <div className="w-full aspect-square rounded-2xl overflow-hidden mt-4">
             <img src={wave || "/placeholder.svg"} alt="Wave decoration" className="w-full h-full object-cover" />
           </div>

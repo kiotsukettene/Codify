@@ -1,4 +1,4 @@
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
 
 const TestCases = ({ testCases }) => {
@@ -10,9 +10,7 @@ const TestCases = ({ testCases }) => {
           {testCases.map((test) => (
             <div
               key={test.id}
-              className={`rounded-lg p-4 relative ${
-                test.output === null ? "bg-gray-50" : test.passed ? "bg-green-50" : "bg-red-50"
-              }`}
+              className={`rounded-lg p-4 relative ${test.output === null ? "bg-gray-50" : test.passed ? "bg-green-50" : "bg-red-50"}`}
             >
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
@@ -20,30 +18,12 @@ const TestCases = ({ testCases }) => {
                     Test Case #{test.id}
                   </h3>
                   <div className="space-y-1">
-                    <p className="text-neutral-700">
-                      <span className="font-medium">Input:</span>{" "}
-                      {Array.isArray(test.input.nums)
-                        ? `nums = [${test.input.nums.join(",")}], target = ${test.input.target || ""}`
-                        : `s = "${test.input.nums}"`}
-                    </p>
-                    <p className="text-neutral-700">
-                      <span className="font-medium">Expected:</span>{" "}
-                      {Array.isArray(test.expected) ? `[${test.expected.join(",")}]` : `"${test.expected}"`}
-                    </p>
-                    <p className="text-neutral-700">
-                      <span className="font-medium">Output:</span>{" "}
-                      {test.output !== null
-                        ? Array.isArray(test.output)
-                          ? `[${test.output.join(",")}]`
-                          : `"${test.output}"`
-                        : "Not Run"}
-                    </p>
+                    <p className="text-neutral-700"><span className="font-medium">Input:</span> {test.input}</p>
+                    <p className="text-neutral-700"><span className="font-medium">Expected:</span> {test.expected}</p>
                     {test.explanation && <p className="text-neutral-600 text-sm mt-2">{test.explanation}</p>}
                   </div>
                 </div>
-                {test.output !== null && (
-                  test.passed ? <Check className="text-green-500 h-5 w-5" /> : <X className="text-red-500 h-5 w-5" />
-                )}
+                {test.output !== null && (test.passed ? <Check className="text-green-500 h-5 w-5" /> : <X className="text-red-500 h-5 w-5" />)}
               </div>
             </div>
           ))}
