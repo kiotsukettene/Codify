@@ -43,7 +43,6 @@ function StudentPracticePage() {
         },
         { withCredentials: false }
       );
-      const endTime = performance.now();
       return { output: response.data.run.output.trim(), stderr: response.data.run.stderr };
     } catch (error) {
       console.error("Execution failed:", error);
@@ -52,43 +51,60 @@ function StudentPracticePage() {
   };
 
   const handleRunCode = async () => {
-  if (!challenge) return;
+    if (!challenge) return;
 
-  setRunStatus("loading");
-  const results = [];
+    setRunStatus("loading");
+    const testCodeSnippets = challenge.runCode(language, value, challenge.testCases);
+    let results = [];
 
-  for (const testCase of challenge.testCases) {
-    const executionCode = challenge.runCode(language, value, testCase.input);
-    const { output, stderr } = await executeCode(executionCode);
-    const parsedOutput = challenge.parseOutput(output);
-    const expected = JSON.stringify(JSON.parse(testCase.expected)); // Ensure expected is correctly formatted
-    const actualOutput = JSON.stringify(parsedOutput); // Convert actual output to standardized JSON format
+    for (let index = 0; index < testCodeSnippets.length; index++) {
+      const executionCode = testCodeSnippets[index];
+      const testCase = {
+        nums: challenge.testCases.nums[index],
+        target: challenge.testCases.targets[index],
+        expected: challenge.testCases.answers[index],
+      };
 
+      try {
+        const { output, stderr } = await executeCode(executionCode);
+        const parsedOutput = challenge.parseOutput(output);
+        const expectedStr = JSON.stringify(testCase.expected);
+        const actualOutputStr = JSON.stringify(parsedOutput);
 
-    let errorLine = null;
-    if (stderr && stderr.includes("line")) {
-      const lineMatch = stderr.match(/line (\d+)/);
-      errorLine = lineMatch ? parseInt(lineMatch[1]) : null;
+        results.push({
+          id: index + 1,
+          input: `nums = [${testCase.nums.join(",")}], target = ${testCase.target}`,
+          expected: expectedStr,
+          output: actualOutputStr,
+          passed: actualOutputStr === expectedStr,
+          errorLine: stderr?.match(/line (\d+)/) ? parseInt(stderr.match(/line (\d+)/)[1]) : null,
+          errorMessage: stderr || (parsedOutput.includes("Error") ? parsedOutput : null),
+        });
+
+        // Add delay to prevent API rate limit issues
+        if (index < testCodeSnippets.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 250)); // 250ms delay
+        }
+      } catch (error) {
+        results.push({
+          id: index + 1,
+          input: `nums = [${testCase.nums.join(",")}], target = ${testCase.target}`,
+          expected: JSON.stringify(testCase.expected),
+          output: "Error",
+          passed: false,
+          errorMessage: `Error running test case: ${error.message}`,
+        });
+      }
     }
 
-    results.push({
-      id: challenge.testCases.indexOf(testCase) + 1,
-      input: testCase.input,
-      expected: expected,
-      output: actualOutput,
-      passed: actualOutput === expected, // Now comparing properly formatted JSON
-      errorLine: errorLine,
-      errorMessage: stderr || (parsedOutput.includes("Error") ? parsedOutput : null),
-    });
-  }
+    setTestResults(results);
+    setRunStatus("success");
 
-  setTestResults(results);
-  setRunStatus("success");
-  toast({
-    title: "✅ Code Executed!",
-    description: `${results.filter((r) => r.passed).length}/${results.length} test cases passed.`,
-  });
-};
+    toast({
+      title: "✅ Code Executed!",
+      description: `${results.filter((r) => r.passed).length}/${results.length} test cases passed.`,
+    });
+  };
 
   const handleSubmit = async () => {
     setSubmissionStatus("loading");
@@ -170,25 +186,25 @@ function StudentPracticePage() {
           className="mt-3"
         />
         <div className="flex justify-between items-center mt-2">
-  <div className="flex gap-2">
-    <Button onClick={handleRunCode} disabled={runStatus === "loading"}>
-      <Play className="mr-2 h-4 w-4" /> Run Code
-    </Button>
-    {getSubmitButton()}
-  </div>
-  <Select value={language} onValueChange={setLanguage}>
-    <SelectTrigger className="w-[180px]">
-      <SelectValue placeholder="Select Language" />
-    </SelectTrigger>
-    <SelectContent>
-      {Object.keys(LANGUAGE_VERSIONS).map((lang) => (
-        <SelectItem key={lang} value={lang}>
-          {lang.charAt(0).toUpperCase() + lang.slice(1)}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div>
+          <div className="flex gap-2">
+            <Button onClick={handleRunCode} disabled={runStatus === "loading"}>
+              <Play className="mr-2 h-4 w-4" /> Run Code
+            </Button>
+            {getSubmitButton()}
+          </div>
+          <Select value={language} onValueChange={setLanguage}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select Language" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(LANGUAGE_VERSIONS).map((lang) => (
+                <SelectItem key={lang} value={lang}>
+                  {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Card className="rounded-md mt-4 p-4 text-neutral-900 bg-indigo-50 border-none shadow-none">
           <CardContent>
             <h1 className="font-medium mb-3">Problem Guidelines</h1>
@@ -225,17 +241,13 @@ function StudentPracticePage() {
             </TabsList>
             <TabsContent value="test-cases">
               <TestCases
-                testCases={
-                  testResults.length > 0
-                    ? testResults
-                    : challenge.testCases.map((tc, idx) => ({
-                        id: idx + 1,
-                        input: tc.input,
-                        expected: tc.expected.replace(/"/g, ""),
-                        output: null,
-                        explanation: idx === 0 ? challenge.examples[0].explanation : null,
-                      }))
-                }
+                testCases={challenge.examples.map((example, idx) => ({
+                  id: idx + 1,
+                  input: example.input,
+                  expected: example.output.replace(/"/g, ""),
+                  output: null,
+                  explanation: example.explanation || null,
+                }))}
               />
             </TabsContent>
             <TabsContent value="test-results">
@@ -258,7 +270,7 @@ function StudentPracticePage() {
                         </h3>
                         <p className="text-neutral-700"><span className="font-medium">Input:</span> {result.input}</p>
                         <p className="text-neutral-700"><span className="font-medium">Expected:</span> {result.expected}</p>
-                        <p className="text-neutral-700"><span className="font-medium">Output:</span> {result.output} </p>
+                        <p className="text-neutral-700"><span className="font-medium">Output:</span> {result.output}</p>
                         {result.errorLine && (
                           <p className="text-red-600">
                             <span className="font-medium">Error Line:</span> {result.errorLine}
