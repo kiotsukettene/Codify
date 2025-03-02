@@ -20,6 +20,7 @@ import AppSidebar from "@/components/professor-view/Sidebar";
 import { motion } from "framer-motion";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
+import { useActivityStore } from "@/store/activityStore";
 import { ArrowLeft } from "lucide-react";
 
 const comments = [
@@ -62,6 +63,11 @@ const Topic = () => {
     error,
   } = useLessonStore();
   const [lesson, setLesson] = useState(location.state?.lesson || null);
+  const {
+    fetchActivitiesByLesson,
+    activities,
+    isLoading: isActivityLoading,
+  } = useActivityStore();
 
   const topics = lesson?.sections || [];
   const [activeTopic, setActiveTopic] = useState(topics[0].id); // ❌ topics is not yet declared
@@ -115,6 +121,31 @@ const Topic = () => {
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
       setActiveTopic(sectionId);
+    }
+  };
+
+  // Check if there's an activity connected to the lesson
+  useEffect(() => {
+    if (lessonId) {
+      fetchActivitiesByLesson(lessonId).then(() => {
+        setHasActivity(activities.length > 0);
+      });
+    }
+  }, [lessonId, fetchActivitiesByLesson, activities.length]);
+
+  const handleNavigateToActivity = async () => {
+    await fetchActivitiesByLesson(lessonId);
+
+    if (activities.length > 0) {
+      // Navigate to existing activity
+      navigate(
+        `/professor/course/${courseId}/lesson/${lessonId}/activity/${activities[0]._id}`
+      );
+    } else {
+      // Navigate to create a new activity
+      navigate(
+        `/professor/course/${courseId}/lesson/${lessonId}/create-activity`
+      );
     }
   };
 
@@ -234,11 +265,7 @@ const Topic = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400 }}
-                onClick={() =>
-                  navigate(
-                    `/professor/course/${courseId}/lesson/${lessonId}/create-activity`
-                  )
-                }
+                onClick={handleNavigateToActivity}
                 className="cursor-pointer"
               >
                 <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
