@@ -25,6 +25,123 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
 import { toast } from "react-hot-toast";
+import { useprofAuthStore } from "@/store/profAuthStore";
+
+const studentList = [
+  {
+    id: 1,
+    name: "Antang, Irheil Mae S.",
+    avatar: "/placeholder.svg?height=40&width=40",
+    crown: "gold",
+    studentNo: "20221183-N",
+    email: "ayrelmay@gmail.com",
+    grade: 100,
+  },
+  {
+    id: 2,
+    name: "Bae, Cathy C.",
+    avatar: "/placeholder.svg?height=40&width=40",
+  },
+  {
+    id: 3,
+    name: "Canada, Nana S.",
+    avatar: "/placeholder.svg?height=40&width=40",
+  },
+  {
+    id: 4,
+    name: "Elton, Monica D.",
+    avatar: "/placeholder.svg?height=40&width=40",
+    crown: "gold",
+  },
+  {
+    id: 5,
+    name: "Faranas, Paul O.",
+    avatar: "/placeholder.svg?height=40&width=40",
+  },
+  {
+    id: 6,
+    name: "Gulo, Monica S.",
+    avatar: "/placeholder.svg?height=40&width=40",
+    crown: "silver",
+  },
+];
+
+const metrics = [
+  {
+    title: "Class Performance",
+    value: "90%",
+    subtitle: "Average Score",
+  },
+  {
+    title: "Completion Rate",
+    value: "80%",
+    subtitle: "Activities Completed",
+  },
+  {
+    title: "Active Students",
+    value: "38/40",
+    subtitle: "Currently Active",
+  },
+  {
+    title: "Top Performers",
+    value: "6",
+    subtitle: "Above 15%",
+  },
+];
+
+const students = [
+  {
+    name: "Antang, Irheil Mae S.",
+    avatar: "/placeholder.svg?height=40&width=40",
+    initials: "IA",
+    rank: 1,
+    activities: 15,
+    incomplete: 0,
+    totalScore: 1500,
+    hasMedal: true,
+  },
+  {
+    name: "Antang, Paul Cyrus S.",
+    avatar: "/placeholder.svg?height=40&width=40",
+    initials: "PA",
+    rank: 2,
+    activities: 15,
+    incomplete: 1,
+    totalScore: 1400,
+    hasMedal: true,
+  },
+  {
+    name: "Sison, Razel Mae",
+    avatar: "/placeholder.svg?height=40&width=40",
+    initials: "SR",
+    rank: 3,
+    activities: 15,
+    incomplete: 2,
+    totalScore: 1300,
+    hasMedal: true,
+  },
+  {
+    name: "Abelong, Eugene",
+    avatar: "/placeholder.svg?height=40&width=40",
+    initials: "AE",
+    rank: 4,
+    activities: 15,
+    incomplete: 3,
+    totalScore: 1200,
+    hasMedal: false,
+  },
+];
+
+const tabs = [
+  { id: "overview", label: "Overview", icon: <Eye className="w-4 h-4" /> },
+  {
+    id: "activities",
+    label: "Activities",
+    icon: <FileText className="w-4 h-4" />,
+  },
+  { id: "scores", label: "Scores", icon: <Trophy className="w-4 h-4" /> },
+  { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
+];
 
 const LessonOverview = () => {
   const { courseId } = useParams();
@@ -36,6 +153,7 @@ const LessonOverview = () => {
   const location = useLocation();
   const courseData = location.state?.course || {}; // Get course details from navigation state
   const lessonId = activities.length > 0 ? activities[0].lessonId : null;
+  const { professor } = useprofAuthStore();
 
   const CourseDetails = ({ courseId }) => {
     const [courseData, setCourseData] = useState(null);
@@ -92,122 +210,6 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchActivitiesByCourse]);
 
-  const studentList = [
-    {
-      id: 1,
-      name: "Antang, Irheil Mae S.",
-      avatar: "/placeholder.svg?height=40&width=40",
-      crown: "gold",
-      studentNo: "20221183-N",
-      email: "ayrelmay@gmail.com",
-      grade: 100,
-    },
-    {
-      id: 2,
-      name: "Bae, Cathy C.",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 3,
-      name: "Canada, Nana S.",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 4,
-      name: "Elton, Monica D.",
-      avatar: "/placeholder.svg?height=40&width=40",
-      crown: "gold",
-    },
-    {
-      id: 5,
-      name: "Faranas, Paul O.",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 6,
-      name: "Gulo, Monica S.",
-      avatar: "/placeholder.svg?height=40&width=40",
-      crown: "silver",
-    },
-  ];
-
-  const metrics = [
-    {
-      title: "Class Performance",
-      value: "90%",
-      subtitle: "Average Score",
-    },
-    {
-      title: "Completion Rate",
-      value: "80%",
-      subtitle: "Activities Completed",
-    },
-    {
-      title: "Active Students",
-      value: "38/40",
-      subtitle: "Currently Active",
-    },
-    {
-      title: "Top Performers",
-      value: "6",
-      subtitle: "Above 15%",
-    },
-  ];
-
-  const students = [
-    {
-      name: "Antang, Irheil Mae S.",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "IA",
-      rank: 1,
-      activities: 15,
-      incomplete: 0,
-      totalScore: 1500,
-      hasMedal: true,
-    },
-    {
-      name: "Antang, Paul Cyrus S.",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "PA",
-      rank: 2,
-      activities: 15,
-      incomplete: 1,
-      totalScore: 1400,
-      hasMedal: true,
-    },
-    {
-      name: "Sison, Razel Mae",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "SR",
-      rank: 3,
-      activities: 15,
-      incomplete: 2,
-      totalScore: 1300,
-      hasMedal: true,
-    },
-    {
-      name: "Abelong, Eugene",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "AE",
-      rank: 4,
-      activities: 15,
-      incomplete: 3,
-      totalScore: 1200,
-      hasMedal: false,
-    },
-  ];
-
-  const tabs = [
-    { id: "overview", label: "Overview", icon: <Eye className="w-4 h-4" /> },
-    {
-      id: "activities",
-      label: "Activities",
-      icon: <FileText className="w-4 h-4" />,
-    },
-    { id: "scores", label: "Scores", icon: <Trophy className="w-4 h-4" /> },
-    { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
-  ];
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -247,11 +249,14 @@ const LessonOverview = () => {
               details={{
                 language: courseData.language,
                 students: courseData.studentEnrolled, // Update dynamically if available
-                instructor: courseData?.professorId
-                  ? `${courseData.professorId?.firstName ?? ""} ${
-                      courseData.professorId?.lastName ?? ""
-                    }`
-                  : "Unknown Instructor",
+                instructor: professor
+                  ? `${professor.firstName} ${professor.lastName}`
+                  : "Unknown Instructor", // Fetch from local storage
+                schedule: courseData.schedule
+                  ? `${courseData.schedule.day}, ${courseData.schedule.time}`
+                  : "No schedule available",
+                courseCode: courseData.courseCode,
+                section: courseData.section,
                 schedule: courseData.schedule
                   ? `${courseData.schedule.day}, ${courseData.schedule.time}`
                   : "No schedule available",
