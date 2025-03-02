@@ -62,18 +62,24 @@ const Card = ({ lessonCount, languages, title, courseCode, section }) => {
           <div className="flex justify-between items-start">
             {/* Language tags */}
             <div className="flex gap-2">
-              {languages.map((lang, index) => (
-                <span
-                  key={index}
-                  className={`px-2 py-1 rounded-full text-xs ${
-                    lang.toLowerCase() === "javascript"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-blue-200 text-blue-800"
-                  }`}
-                >
-                  {lang}
+              {Array.isArray(languages) ? (
+                languages.map((lang, index) => (
+                  <span
+                    key={index}
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      lang.toLowerCase() === "javascript"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-blue-200 text-blue-800"
+                    }`}
+                  >
+                    {lang}
+                  </span>
+                ))
+              ) : (
+                <span className="px-2 py-1 rounded-full text-xs bg-gray-200 text-gray-800">
+                  {languages || "No Language"}
                 </span>
-              ))}
+              )}
             </div>
 
             {/* Options */}

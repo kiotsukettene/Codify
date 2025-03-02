@@ -247,9 +247,9 @@ const LessonOverview = () => {
               description={courseData.program}
               details={{
                 language: courseData.language,
-                students: "40 Students", // Update dynamically if available
+                students: courseData.studentEnrolled, // Update dynamically if available
                 instructor: courseData?.professorId
-                  ? `${courseData.professorId?.firstName ?? "Unknown"} ${
+                  ? `${courseData.professorId?.firstName ?? ""} ${
                       courseData.professorId?.lastName ?? ""
                     }`
                   : "Unknown Instructor",

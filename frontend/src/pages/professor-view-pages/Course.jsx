@@ -39,8 +39,8 @@ const Courses = () => {
   // Filter courses by selected languages
   const filteredCourses =
     selectedLanguage.length > 0
-      ? courses.filter((course) =>
-          course.languages.some((lang) => selectedLanguage.includes(lang))
+      ? courses.filter(
+          (course) => selectedLanguage.includes(course.language) // ✅ Check directly without `.some()`
         )
       : courses;
 
@@ -179,10 +179,11 @@ const Courses = () => {
                   >
                     <Card
                       lessonCount={course.lessonCount || 0}
-                      languages={course.languages || []}
+                      languages={course.language}
                       title={course.className}
                       courseCode={course.courseCode}
                       section={course.section}
+                      students={course.studentsEnrolled.length}
                     />
                   </div>
                 ))
