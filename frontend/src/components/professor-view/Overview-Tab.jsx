@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import {
   Accordion,
   AccordionContent,
@@ -14,107 +13,101 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useLessonStore } from "../../store/lessonStore";
 import { formatDate } from "../../utils/formatDate";
 import DeleteDialog from "../Dialog/DeleteDialog";
+import { useActivityStore } from "../../store/activityStore";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
   const { courseId } = useParams();
   const { fetchLessonById, deleteLesson } = useLessonStore();
+  const { fetchActivitiesByLesson, activities } = useActivityStore();
+  const [openLesson, setOpenLesson] = useState(null); // ✅ Track open lesson ID
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
 
-  const handleAddLessonClick = () => {
-    console.log("Lessons: ", lessons);
-    if (!courseId) {
-      console.error("Error: Course ID is undefined");
-      return;
-    }
-
-    navigate(`/professor/course/${courseId}/create-lesson`, {
-      state: { courseId },
-    });
+  const handleToggleLesson = (lessonId) => {
+    setOpenLesson(openLesson === lessonId ? null : lessonId); // ✅ Open one at a time
   };
 
-  const handleLessonClick = async (lesson) => {
-    // if (!lesson || !lesson._id) {
-    //   console.error("Error: Lesson ID is undefined", lesson);
-    //   return;
-    // }
-    // try {
-    //   // Fetch the lesson details
-    //   await fetchLessonById(lesson._id);
-    //   // Navigate with lesson details in the state
-    //   navigate(`/professor/course/${courseId}/lesson/${lesson._id}`, {
-    //     state: { lesson },
-    //   });
-    // } catch (error) {
-    //   console.error("Error fetching lesson details", error);
-    // }
-  };
   const handleDeleteClick = (lesson) => {
-    console.log("Opening delete dialog for:", lesson);
     setSelectedLesson(lesson);
     setShowDeleteDialog(true);
-
-    // ✅ Debug log to confirm state change
-    setTimeout(
-      () => console.log("showDeleteDialog state:", showDeleteDialog),
-      100
-    );
   };
 
   const handleConfirmDelete = async () => {
     if (!selectedLesson) return;
-
-    console.log("Deleting lesson:", selectedLesson._id);
-
     try {
-      await deleteLesson(selectedLesson._id); // ✅ Call deleteLesson from the store
-      console.log("Lesson deleted successfully!");
+      await deleteLesson(selectedLesson._id);
     } catch (error) {
       console.error("Error deleting lesson:", error);
     }
-
     setShowDeleteDialog(false);
     setSelectedLesson(null);
+  };
+
+  const handleLessonClick = async (lesson) => {
+    if (!lesson || !lesson._id) {
+      console.error("Error: Lesson ID is undefined", lesson);
+      return;
+    }
+
+    try {
+      // Fetch the lesson details
+      await fetchLessonById(lesson._id);
+
+      // Navigate with lesson details in the state
+      navigate(`/professor/course/${courseId}/lesson/${lesson._id}`, {
+        state: { lesson },
+      });
+    } catch (error) {
+      console.error("Error fetching lesson details", error);
+    }
   };
 
   return (
     <div>
       <div className="flex justify-between p-2">
         <h2 className="text-xl font-semibold mb-4">Lessons</h2>
-        <Button onClick={handleAddLessonClick}>Create Lesson</Button>
+        <Button
+          onClick={() =>
+            navigate(`/professor/course/${courseId}/create-lesson`)
+          }
+        >
+          Create Lesson
+        </Button>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      {showDeleteDialog && (
-        <DeleteDialog
-          title="Delete Lesson"
-          description="Are you sure you want to delete this lesson? This action cannot be undone."
-          onConfirm={handleConfirmDelete}
-          onCancel={() => {
-            console.log("Cancel clicked!"); // ✅ Ensure cancel works
-            setShowDeleteDialog(false);
-          }}
-          isOpen={showDeleteDialog}
-        />
-      )}
+      <DeleteDialog
+        title="Delete Lesson"
+        description="Are you sure you want to delete this lesson? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+        isOpen={showDeleteDialog}
+      />
 
-      <Accordion type="single" collapsible className="space-y-2">
-        {lessons.map((lesson) => (
+      {/* ✅ Control Accordion with openLesson state */}
+      <Accordion
+        type="single"
+        collapsible
+        value={openLesson}
+        onValueChange={setOpenLesson}
+        className="space-y-2"
+      >
+        {lessons.map((lesson, index) => (
           <AccordionItem
-            key={lesson.id}
-            value={`lesson-${lesson.id}`}
+            key={lesson._id}
+            value={lesson._id}
             className="border rounded-lg bg-white transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
-            onClick={() => handleLessonClick(lesson)}
           >
             <div className="flex items-center justify-between p-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-4 transition-transform duration-300">
+              <AccordionTrigger
+                onClick={() => handleToggleLesson(lesson._id)}
+                className="hover:no-underline"
+              >
+                <div className="flex items-center gap-4">
                   <div className="bg-violet-100 p-2 rounded transform transition-all duration-200 hover:rotate-12 hover:scale-110">
                     <Rocket
                       className="text-violet-600 animate-pulse"
@@ -122,7 +115,10 @@ const OverviewTab = ({ lessons = [] }) => {
                     />
                   </div>
                   <div className="text-left">
-                    <h3 className="font-medium">{lesson.title}</h3>
+                    <h3 className="font-medium">
+                      Quest {index + 1} : {lesson.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">hehe</p>
                   </div>
                 </div>
               </AccordionTrigger>
@@ -132,15 +128,12 @@ const OverviewTab = ({ lessons = [] }) => {
                 </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="transition-transform duration-200 hover:scale-110">
-                    <MoreVertical className="h-5 w-5 text-gray-500" />
+                    <MoreVertical className="h-5 w-5 text-grey-500" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="py-1 text-red-600 animate-in slide-in-from-top-2 duration-200">
+                  <DropdownMenuContent className="py-1 text-red-600">
                     <DropdownMenuItem
-                      className="transition-colors duration-200 hover:bg-red-50"
-                      onClick={() => {
-                        console.log("Delete clicked!"); // ✅ Check if this logs in console
-                        handleDeleteClick(lesson);
-                      }}
+                      className="hover:bg-red-50"
+                      onClick={() => handleDeleteClick(lesson)}
                     >
                       Delete
                     </DropdownMenuItem>
@@ -149,36 +142,67 @@ const OverviewTab = ({ lessons = [] }) => {
               </div>
             </div>
 
-            <AccordionContent className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
+            {/* <AccordionContent className="px-4 pb-4">
               <div className="space-y-2">
-                {lesson.content?.map((item, index) => {
-                  // const lessonSlug = item.toLowerCase().replace(/\s+/g, "-");
-                  const isMission = item.startsWith("Mission");
+                {lesson.sections?.map((section, index) => (
+                  <div
+                    key={`${lesson._id}-${section._id}`}
+                    className="flex items-center gap-2"
+                  >
+                    <ScrollText className="h-4 w-4 text-violet-600" />
+                    <span className="font-medium">
+                      {section.subTitle || "Untitled Section"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent> */}
+            <AccordionContent className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
+              <div
+                className="space-y-2"
+                onClick={() => handleLessonClick(lesson)}
+              >
+                {/* ✅ Loop through sections (Standard content) */}
+                {lesson.sections?.map((section, index) => {
+                  const isMission = section.subTitle.startsWith("Mission");
 
                   return (
-                    <Link
-                      key={`${lesson.id}-${index}`} // Use a composite ke
-                      to="/professor/course/topic"
+                    <div
+                      key={index}
                       className={`group flex items-center gap-2 font-medium cursor-pointer transition-all duration-200 
-                          ${
-                            isMission
-                              ? "text-violet-600"
-                              : "text-gray-600 hover:text-violet-600"
-                          }
-                          transform hover:translate-x-1 hover:scale-[1.02]
-                        `}
+            ${
+              isMission
+                ? "text-violet-600"
+                : "text-gray-600 hover:text-violet-600"
+            }
+            transform hover:translate-x-1 hover:scale-[1.02]`}
                     >
                       {isMission ? (
                         <ScrollText className="h-4 w-4 text-violet-600 transition-all duration-200 group-hover:scale-110" />
                       ) : (
-                        <Star
-                          className={`h-4 w-4 transition-all duration-200 text-gray-400 group-hover:text-violet-600 group-hover:rotate-12`}
-                        />
+                        <Star className="h-4 w-4 transition-all duration-200 text-gray-400 group-hover:text-violet-600 group-hover:rotate-12" />
                       )}
-                      <span>{item}</span>
-                    </Link>
+                      <span>{section.subTitle || "Untitled Section"}</span>
+                    </div>
                   );
                 })}
+
+                {/* ✅ Loop through activities (Missions) */}
+                {activities?.length > 0 && (
+                  <div className="mt-2">
+                    {activities.map((activity, index) => (
+                      <div
+                        key={index}
+                        className="group flex items-center gap-2 text-violet-600 hover:underline hover:text-violet-700 transition-all duration-200"
+                      >
+                        <ScrollText className="h-4 w-4 text-violet-600 transition-all duration-200 group-hover:scale-110" />
+                        <span className="font-medium">
+                          {activity.title || "Unnamed Activity"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
