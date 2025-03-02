@@ -314,22 +314,34 @@ const LessonOverview = () => {
                       />
                     )}
 
-                    {activities.map((activity, index) => (
-                      <motion.div
-                        key={activity._id || index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="grid gap-4"
-                      >
-                        <ActivityTab
-                          index={index + 1}
-                          activity={activity} // ✅ Pass only a single activity, not the entire array
-                          courseId={courseId}
-                          lessonId={lessonId} // ✅ Use activity's lessonId instead of global lessonId
-                        />
-                      </motion.div>
-                    ))}
+                    {activeTab === "activities" && (
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key="activities"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {activities.map((activity, index) => (
+                            <motion.div
+                              key={activity._id || index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="grid gap-4"
+                            >
+                              <ActivityTab
+                                index={index + 1}
+                                activity={activity}
+                                courseId={courseId}
+                                lessonId={lessonId}
+                              />
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      </AnimatePresence>
+                    )}
 
                     {activeTab === "scores" && (
                       <ScoreTab metrics={metrics} students={students} />
