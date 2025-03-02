@@ -27,17 +27,22 @@ const NavBar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navbarBg = location.pathname === "/login" ? "bg-[#F5EBFF]" : isScrolled ? "bg-white" : "bg-transparent text-white";
+  const isLoginPage = location.pathname.includes("/admin/login") || 
+                      location.pathname.includes("/student/login") || 
+                      location.pathname.includes("/professor/login");
 
 
   return (
 <div className="fixed top-0 left-0 right-0 flex justify-center p-4 z-50 bg-transparent">
-<nav className={`flex items-center justify-between transition-all duration-300 ease-in-out ${
-        isScrolled
-          ? "w-[90%] md:w-[80%] bg-white rounded-full shadow-xs px-6 py-3"
-          : "w-full bg-transparent text-white px-4 py-4"
-      }`}
-    >
+<nav
+  className={`flex items-center justify-between transition-all duration-300 ease-in-out ${
+    isScrolled
+      ? "w-[90%] md:w-[80%] bg-white rounded-full shadow-xs px-6 py-3 text-gray-900"
+      : isLoginPage
+      ? "w-full  text-gray-900 px-4 py-4" // Ensures dark text on light background
+      : "w-full bg-transparent text-white px-4 py-4"
+  }`}
+>
       {/* Logo */}
       <Link to="/" className="font-semibold">
         <img src={Logo} alt="Logo" />
@@ -49,11 +54,14 @@ const NavBar = () => {
           <Link
             key={to}
             to={to}
-            className={`text-md px-2 py-2 hover:bg-gray-100/15 rounded-full transition-colors ${
+            className={`text-md px-2 py-2 rounded-full transition-colors ${
               isScrolled
-                ? "w-[90%] md:w-[80%] bg-transparent hover:bg-primary px-4 hover:text-white rounded-full shadow-xs"
-                : "w-full rounded-full px-4 py-2 hover:bg-white/20 text-white"
+                ? "w-[90%] md:w-[80%] bg-transparent hover:bg-primary hover:text-white px-4 rounded-full shadow-xs"
+                : isLoginPage
+                ? "w-full rounded-full px-4 py-2 text-gray-900 hover:bg-primary hover:text-white"
+                : "w-full rounded-full px-4 py-2 hover:bg-primary text-white"
             }`}
+            
           >
             {label}
           </Link>
@@ -75,11 +83,14 @@ const NavBar = () => {
         
         <Button
         onClick={() => navigate('/login')}
-          className={`${
-            isScrolled
-              ? "w-[90%] md:w-[80%] bg-primary rounded-full shadow-xs px-6 py-3"
-              : "w-full bg-gray-100/15 rounded-full hover:bg-white/50 hover:text-neutral-900 text-white px-4 py-4"
-          }`}
+        className={`${
+          isLoginPage
+            ? "w-[90%] md:w-[80%] bg-primary rounded-full shadow-xs px-6 py-3 text-white" 
+            : isScrolled
+            ? "w-[90%] md:w-[80%] bg-primary rounded-full shadow-xs px-6 py-3"
+            : "w-full bg-gray-100/15 rounded-full hover:bg-white/50 hover:text-neutral-900 text-white px-4 py-4"
+        }`}
+        
         >
           Login
         </Button>
