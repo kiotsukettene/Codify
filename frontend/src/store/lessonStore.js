@@ -89,7 +89,7 @@ export const useLessonStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      await axios.delete(`${API_URL}/${lessonId}`);
+      await axios.delete(`${API_URL}/delete/${lessonId}`);
       set((state) => ({
         lessons: state.lessons.filter((lesson) => lesson._id !== lessonId),
         isLoading: false,

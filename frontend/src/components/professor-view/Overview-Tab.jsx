@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Accordion,
@@ -18,11 +18,14 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useLessonStore } from "../../store/lessonStore";
 import { formatDate } from "../../utils/formatDate";
+import DeleteDialog from "../Dialog/DeleteDialog";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
   const { courseId } = useParams();
-  const { fetchLessonById } = useLessonStore();
+  const { fetchLessonById, deleteLesson } = useLessonStore();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState(null);
 
   const handleAddLessonClick = () => {
     console.log("Lessons: ", lessons);
@@ -52,6 +55,33 @@ const OverviewTab = ({ lessons = [] }) => {
     //   console.error("Error fetching lesson details", error);
     // }
   };
+  const handleDeleteClick = (lesson) => {
+    console.log("Opening delete dialog for:", lesson);
+    setSelectedLesson(lesson);
+    setShowDeleteDialog(true);
+
+    // ✅ Debug log to confirm state change
+    setTimeout(
+      () => console.log("showDeleteDialog state:", showDeleteDialog),
+      100
+    );
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedLesson) return;
+
+    console.log("Deleting lesson:", selectedLesson._id);
+
+    try {
+      await deleteLesson(selectedLesson._id); // ✅ Call deleteLesson from the store
+      console.log("Lesson deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting lesson:", error);
+    }
+
+    setShowDeleteDialog(false);
+    setSelectedLesson(null);
+  };
 
   return (
     <div>
@@ -59,6 +89,20 @@ const OverviewTab = ({ lessons = [] }) => {
         <h2 className="text-xl font-semibold mb-4">Lessons</h2>
         <Button onClick={handleAddLessonClick}>Create Lesson</Button>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <DeleteDialog
+          title="Delete Lesson"
+          description="Are you sure you want to delete this lesson? This action cannot be undone."
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            console.log("Cancel clicked!"); // ✅ Ensure cancel works
+            setShowDeleteDialog(false);
+          }}
+          isOpen={showDeleteDialog}
+        />
+      )}
 
       <Accordion type="single" collapsible className="space-y-2">
         {lessons.map((lesson) => (
@@ -91,7 +135,13 @@ const OverviewTab = ({ lessons = [] }) => {
                     <MoreVertical className="h-5 w-5 text-gray-500" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="py-1 text-red-600 animate-in slide-in-from-top-2 duration-200">
-                    <DropdownMenuItem className="transition-colors duration-200 hover:bg-red-50">
+                    <DropdownMenuItem
+                      className="transition-colors duration-200 hover:bg-red-50"
+                      onClick={() => {
+                        console.log("Delete clicked!"); // ✅ Check if this logs in console
+                        handleDeleteClick(lesson);
+                      }}
+                    >
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -110,13 +160,13 @@ const OverviewTab = ({ lessons = [] }) => {
                       key={`${lesson.id}-${index}`} // Use a composite ke
                       to="/professor/course/topic"
                       className={`group flex items-center gap-2 font-medium cursor-pointer transition-all duration-200 
-                        ${
-                          isMission
-                            ? "text-violet-600"
-                            : "text-gray-600 hover:text-violet-600"
-                        }
-                        transform hover:translate-x-1 hover:scale-[1.02]
-                      `}
+                          ${
+                            isMission
+                              ? "text-violet-600"
+                              : "text-gray-600 hover:text-violet-600"
+                          }
+                          transform hover:translate-x-1 hover:scale-[1.02]
+                        `}
                     >
                       {isMission ? (
                         <ScrollText className="h-4 w-4 text-violet-600 transition-all duration-200 group-hover:scale-110" />
