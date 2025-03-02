@@ -17,6 +17,7 @@ import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useLessonStore } from "../../store/lessonStore";
+import { formatDate } from "../../utils/formatDate";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
@@ -36,22 +37,20 @@ const OverviewTab = ({ lessons = [] }) => {
   };
 
   const handleLessonClick = async (lesson) => {
-    if (!lesson || !lesson._id) {
-      console.error("Error: Lesson ID is undefined", lesson);
-      return;
-    }
-
-    try {
-      // Fetch the lesson details
-      await fetchLessonById(lesson._id);
-
-      // Navigate with lesson details in the state
-      navigate(`/professor/course/${courseId}/lesson/${lesson._id}`, {
-        state: { lesson },
-      });
-    } catch (error) {
-      console.error("Error fetching lesson details", error);
-    }
+    // if (!lesson || !lesson._id) {
+    //   console.error("Error: Lesson ID is undefined", lesson);
+    //   return;
+    // }
+    // try {
+    //   // Fetch the lesson details
+    //   await fetchLessonById(lesson._id);
+    //   // Navigate with lesson details in the state
+    //   navigate(`/professor/course/${courseId}/lesson/${lesson._id}`, {
+    //     state: { lesson },
+    //   });
+    // } catch (error) {
+    //   console.error("Error fetching lesson details", error);
+    // }
   };
 
   return (
@@ -80,14 +79,13 @@ const OverviewTab = ({ lessons = [] }) => {
                   </div>
                   <div className="text-left">
                     <h3 className="font-medium">{lesson.title}</h3>
-                    <p className="text-sm text-gray-500">
-                      {lesson.description}
-                    </p>
                   </div>
                 </div>
               </AccordionTrigger>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">{lesson.date}</span>
+                <span className="text-sm text-gray-500">
+                  {formatDate(lesson.createdAt)}
+                </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="transition-transform duration-200 hover:scale-110">
                     <MoreVertical className="h-5 w-5 text-gray-500" />
