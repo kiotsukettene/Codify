@@ -22,8 +22,6 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
 import { ArrowLeft } from "lucide-react";
 
-// Extract `courseId` and `lessonId` from the URL
-
 const comments = [
   {
     id: 1,
@@ -51,54 +49,9 @@ const comments = [
   },
 ];
 
-const topics = [
-  {
-    id: "1",
-    title: "Conditionals in Java",
-    content:
-      "Used to make decisions in code based on whether a particular condition is true or false. The most common type of conditional statement is the if statement.",
-    code: `int y = 3;
-if (y > 5) {
-    System.out.println("y is greater than 5");
-} else if (y == 5) {
-    System.out.println("y equals 5");
-}`,
-  },
-  {
-    id: "2",
-    title: "Handling Multiple Conditions",
-    content:
-      "Java allows you to define alternate execution paths using else and else if statements. If the if condition evaluates to false, the else block will execute, or you can add an additional condition with else if.",
-    code: `int y = 3;
-if (y > 5) {
-    System.out.println("y is greater than 5");
-} else if (y == 5) {
-    System.out.println("y equals 5");
-} else {
-    System.out.println("y is less than 5");
-}`,
-  },
-
-  {
-    id: "3",
-    title: "Switch Statements",
-    content:
-      "Switch statements are used to execute different code blocks based on different conditions. It is often used as an alternative to long if-else chains.",
-    code: `int y = 3;
-if (y > 5) {
-    System.out.println("y is greater than 5");
-} else if (y == 5) {
-    System.out.println("y equals 5");
-} else {
-    System.out.println("y is less than 5");
-}`,
-  },
-];
-
 const Topic = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeTopic, setActiveTopic] = useState(topics[0].id);
   const { courseId, lessonId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -110,13 +63,14 @@ const Topic = () => {
   } = useLessonStore();
   const [lesson, setLesson] = useState(location.state?.lesson || null);
 
+  const topics = lesson?.sections || [];
+  const [activeTopic, setActiveTopic] = useState(topics[0].id); // ❌ topics is not yet declared
+
   useEffect(() => {
-    if (location.state?.lesson) {
-      setLesson(location.state.lesson);
-    } else {
-      fetchLessonById(lessonId);
+    if (fetchedLesson && fetchedLesson._id) {
+      setLesson(fetchedLesson);
     }
-  }, [lessonId, fetchLessonById, location.state]);
+  }, [fetchedLesson]);
 
   useEffect(() => {
     if (fetchedLesson && fetchedLesson._id) {
@@ -134,7 +88,6 @@ const Topic = () => {
     return <p className="text-center text-red-500">❌ Error: {error}</p>;
   }
 
-  ////
   const handleScroll = () => {
     let currentSection = topics[0].id;
 
