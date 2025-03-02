@@ -28,8 +28,13 @@ const OverviewTab = ({ lessons = [] }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
 
-  const handleToggleLesson = (lessonId) => {
-    setOpenLesson(openLesson === lessonId ? null : lessonId); // ✅ Open one at a time
+  const handleToggleLesson = async (lessonId) => {
+    if (openLesson === lessonId) {
+      setOpenLesson(null);
+    } else {
+      await fetchActivitiesByLesson(lessonId); // ✅ Fetch only related activities
+      setOpenLesson(lessonId);
+    }
   };
 
   const handleDeleteClick = (lesson) => {
@@ -64,6 +69,28 @@ const OverviewTab = ({ lessons = [] }) => {
       });
     } catch (error) {
       console.error("Error fetching lesson details", error);
+    }
+  };
+
+  const handleActivityClick = async (activity) => {
+    if (!activity || !activity._id || !activity.lessonId) {
+      console.error("Error: Activity or Lesson ID is undefined", activity);
+      return;
+    }
+
+    try {
+      // Fetch activities related to the lesson using Zustand store function
+      await fetchActivitiesByLesson(activity.lessonId);
+
+      // Navigate with activity details in the state
+      navigate(
+        `/professor/course/${courseId}/lesson/${activity.lessonId}/activity/${activity._id}`,
+        {
+          state: { activity },
+        }
+      );
+    } catch (error) {
+      console.error("Error fetching activity details", error);
     }
   };
 
@@ -142,32 +169,15 @@ const OverviewTab = ({ lessons = [] }) => {
               </div>
             </div>
 
-            {/* <AccordionContent className="px-4 pb-4">
-              <div className="space-y-2">
-                {lesson.sections?.map((section, index) => (
-                  <div
-                    key={`${lesson._id}-${section._id}`}
-                    className="flex items-center gap-2"
-                  >
-                    <ScrollText className="h-4 w-4 text-violet-600" />
-                    <span className="font-medium">
-                      {section.subTitle || "Untitled Section"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent> */}
             <AccordionContent className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-              <div
-                className="space-y-2"
-                onClick={() => handleLessonClick(lesson)}
-              >
+              <div className="space-y-2">
                 {/* ✅ Loop through sections (Standard content) */}
                 {lesson.sections?.map((section, index) => {
                   const isMission = section.subTitle.startsWith("Mission");
 
                   return (
                     <div
+                      onClick={() => handleLessonClick(lesson)}
                       key={index}
                       className={`group flex items-center gap-2 font-medium cursor-pointer transition-all duration-200 
             ${
@@ -188,21 +198,21 @@ const OverviewTab = ({ lessons = [] }) => {
                 })}
 
                 {/* ✅ Loop through activities (Missions) */}
-                {activities?.length > 0 && (
-                  <div className="mt-2">
-                    {activities.map((activity, index) => (
-                      <div
-                        key={index}
-                        className="group flex items-center gap-2 text-violet-600 hover:underline hover:text-violet-700 transition-all duration-200"
-                      >
-                        <ScrollText className="h-4 w-4 text-violet-600 transition-all duration-200 group-hover:scale-110" />
-                        <span className="font-medium">
-                          {activity.title || "Unnamed Activity"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* ✅ Display only activities linked to the lesson */}
+                {activities
+                  ?.filter((activity) => activity.lessonId === lesson._id)
+                  .map((activity, index) => (
+                    <div
+                      key={index}
+                      className="group flex items-center gap-2 text-violet-600 hover:underline hover:text-violet-700 transition-all duration-200"
+                      onClick={() => handleActivityClick(activity)}
+                    >
+                      <ScrollText className="h-4 w-4 text-violet-600 transition-all duration-200 group-hover:scale-110" />
+                      <span className="font-medium">
+                        {activity.title || "Unnamed Activity"}
+                      </span>
+                    </div>
+                  ))}
               </div>
             </AccordionContent>
           </AccordionItem>
