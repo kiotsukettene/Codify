@@ -1,37 +1,74 @@
-import React, { useEffect } from 'react';
-import { Button } from '../ui/button';
-import { Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Confetti } from '../ui/confetti';
+import { Check, Loader2 } from 'lucide-react'; // Import Loader2
 
 function PaymentSuccess() {
   const navigate = useNavigate();
-  const { institution, setInstitution } = useAuthStore();
+  const { institution, setInstitution, isLoading } = useAuthStore();
+  const [hasRun, setHasRun] = useState(false); // Flag to prevent multiple runs
 
   useEffect(() => {
+    console.log('PaymentSuccess useEffect triggered'); // Debug log
+
     const updatePaymentStatus = async () => {
+      if (!institution) {
+        console.log('No institution found');
+        toast.error('No institution found. Please log in and try again.');
+        navigate('/admin/payment-summary');
+        return;
+      }
+
+      if (hasRun) {
+        console.log('Already ran, skipping');
+        return;
+      }
+
       try {
+        console.log('Making POST request to mark-as-paid');
         const response = await axios.post('http://localhost:3000/api/auth/mark-as-paid', {
           institutionId: institution._id,
         });
 
         if (response.data.success) {
+          console.log('Payment marked as successful');
           toast.success('Payment confirmed! Subscription activated.');
-          setInstitution({ ...institution, isPaid: true });
+          if (typeof setInstitution === 'function') {
+            setInstitution({ ...institution, isPaid: true });
+          } else {
+            console.error('setInstitution is not a function');
+          }
+          setHasRun(true); // Mark as executed
+
+          // Automatically redirect to /admin/dashboard after 3 seconds
+          setTimeout(() => {
+            console.log('Redirecting to /admin/dashboard');
+            navigate('/admin/dashboard');
+          }, 3000); // 3000ms = 3 seconds
         } else {
+          console.log('Payment verification failed:', response.data.message);
           toast.error('Payment verification failed.');
+          navigate('/admin/payment-summary');
         }
       } catch (error) {
         console.error('Error updating payment status:', error);
+        toast.error('Error confirming payment.');
+        navigate('/admin/payment-summary');
       }
     };
 
     updatePaymentStatus();
-  }, [institution, setInstitution]);
+  }, []); // Empty dependency array: runs once on mount
 
+  if (!institution || !institution.isPaid) {
+    console.log('Rendering null due to no institution or not paid');
+    return null; // Or a loading spinner
+  }
+
+  console.log('Rendering PaymentSuccess UI');
   return (
     <div className="flex items-center min-h-screen p-6">
       <div className="relative mx-auto max-w-md">
@@ -52,6 +89,7 @@ function PaymentSuccess() {
               <span className="absolute -right-12 top-2 text-2xl">💫</span>
             </h1>
             <p className="text-lg font-medium text-gray-900">Payment Successful!</p>
+            <p className="text-sm text-gray-500 mt-2">Redirecting to dashboard in 3 seconds...</p>
           </div>
 
           {/* What's Next Section */}
@@ -81,14 +119,23 @@ function PaymentSuccess() {
             </div>
           </div>
 
-          {/* Action Button */}
-          <button 
-            onClick={() => navigate('/admin/dashboard')} 
-            className="group relative w-full overflow-hidden rounded-xl bg-primary px-6 py-3 text-white transition-all hover:shadow-lg hover:shadow-violet-200"
+          {/* Action Button with Loading Spinner */}
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className="group relative w-full overflow-hidden rounded-xl bg-primary px-6 py-3 text-white transition-all hover:shadow-lg hover:shadow-violet-200 disabled:opacity-50"
+            disabled={isLoading}
           >
             <span className="relative z-10 flex items-center justify-center font-medium">
-              Start Using Codify 
-              <span className="ml-2">→</span>
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                  Redirecting...
+                </>
+              ) : (
+                <>
+                  Redirecting you to dashboard... <span className="ml-2">→</span>
+                </>
+              )}
             </span>
             <div className="absolute inset-0 -translate-x-full bg-white/10 transition-transform group-hover:translate-x-0" />
           </button>

@@ -9,6 +9,7 @@ import {
     sendPasswordResetEmail,
     sendResetSuccessEmail
 } from "../mailtrap/emails.js";
+import axios from 'axios';
 
 
 
@@ -326,38 +327,7 @@ export const checkAuth = async (req, res) => {
     })
 }
 
-export const markAsPaid = async (req, res) => {
-    try {
-        const { institutionId } = req.body;
 
-        const institution = await Institution.findById(institutionId);
-
-        if (!institution) {
-            return res.status(404).json({ success: false, message: "Institution not found" });
-        }
-
-        // Extend billingExpiration to one year from NOW
-        const newExpiration = new Date();
-        newExpiration.setFullYear(newExpiration.getFullYear() + 1);
-
-        institution.isPaid = true;
-        institution.billingExpiration = newExpiration;
-
-        await sendWelcomeEmail(institution.email, institution.name);
-        console.log("Welcome Email Sent")  
-        await institution.save();
-
-        res.status(200).json({
-            success: true,
-            message: "Payment successful! Subscription activated.",
-            institution
-        });
-
-    } catch (error) {
-        console.error("Error updating payment status:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
-    }
-};
 
 export const logoutInstitution = async (req, res) => {
     res.clearCookie("token")
@@ -390,3 +360,105 @@ export const googleLogin = async (req, res) => {
         res.status(401).json({ success: false, message: "Invalid Google token" });
     }
 };
+
+const PAYMONGO_API_URL = 'https://api.paymongo.com/v1/checkout_sessions';
+const PAYMONGO_AUTH = Buffer.from(`${process.env.PAYMONGO_SECRET_KEY}:`).toString('base64');
+
+export const initiatePayment = async (req, res) => {
+  const { institutionId } = req.body;
+
+  try {
+    const institution = await Institution.findById(institutionId);
+    if (!institution) {
+      return res.status(404).json({ success: false, message: "Institution not found" });
+    }
+
+    const totalAmount = Math.max(institution.amount * 100, 10000); // Convert to cents
+
+    const checkoutData = {
+      data: {
+        attributes: {
+          line_items: [
+            {
+              currency: "PHP",
+              amount: totalAmount,
+              name: `Subscription for ${institution.institutionName}`,
+              quantity: 1,
+            },
+          ],
+          payment_method_types: ["card"],
+          success_url: `${process.env.CLIENT_URL}/admin/payment-success`, // No token
+          cancel_url: `${process.env.CLIENT_URL}/admin/payment-summary`,
+          description: `Subscription payment for ${institution.institutionName}`,
+        },
+      },
+    };
+
+    const response = await axios.post(PAYMONGO_API_URL, checkoutData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Basic ${PAYMONGO_AUTH}`,
+      },
+    });
+
+    institution.checkoutSessionId = response.data.data.id; // Still useful for reference
+    await institution.save();
+
+    console.log('Checkout URL:', response.data.data.attributes.checkout_url);
+    res.status(200).json({
+      success: true,
+      checkoutUrl: response.data.data.attributes.checkout_url,
+    });
+  } catch (error) {
+    console.error('Error creating checkout session:', error.response?.data || error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Checkout session creation failed',
+      error: error.message,
+    });
+  }
+};
+
+export const markAsPaid = async (req, res) => {
+  const { institutionId } = req.body; // No successToken
+  console.log('Mark as paid called with institutionId:', institutionId);
+
+  try {
+    const institution = await Institution.findById(institutionId);
+    if (!institution) {
+      console.log('Institution not found');
+      return res.status(404).json({ success: false, message: "Institution not found" });
+    }
+
+    // No token validation anymore
+    console.log('Marking institution as paid:', institutionId);
+
+    institution.isPaid = true;
+    institution.billingExpiration = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year
+    institution.checkoutSessionId = undefined; // Clear optional field
+    await institution.save();
+
+    console.log('Payment marked as successful for institution:', institutionId);
+
+    try {
+      await sendWelcomeEmail(institution.email, institution.name);
+    } catch (emailError) {
+      console.error('Error sending welcome email:', emailError.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Payment successful! Subscription activated.",
+      institution,
+    });
+  } catch (error) {
+    console.error('Error marking as paid:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error marking as paid',
+      error: error.message,
+    });
+  }
+};
+
