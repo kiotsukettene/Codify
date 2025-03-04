@@ -9,6 +9,10 @@ import { useId, useMemo, useState } from "react";
 function PasswordStrengthIndicator({password, setPassword}) {
   const id = useId();
   const [isVisible, toggleVisibility] = useToggleVisibility();
+  const [showGuide, setShowGuide] = useState(false); 
+
+  
+  
 
 
   const checkStrength = (pass) => {
@@ -58,7 +62,11 @@ function PasswordStrengthIndicator({password, setPassword}) {
             placeholder="Password"
             type={isVisible ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setShowGuide(e.target.value.length > 0); // ✅ Show guide only when typing
+            }}
+            onBlur={() => setShowGuide(false)} 
             aria-invalid={strengthScore < 4}
             aria-describedby={`${id}-description`}
           />
@@ -93,27 +101,31 @@ function PasswordStrengthIndicator({password, setPassword}) {
         ></div>
       </div>
 
-      <p id={`${id}-description`} className="mb-2 text-sm text-left font-medium text-foreground">
-        {getStrengthText(strengthScore)}. Must contain:
-      </p>
+      {showGuide && (
+        <div className="transition-opacity duration-300">
+          <p id={`${id}-description`} className="mb-2 text-sm text-left font-medium text-foreground">
+            {getStrengthText(strengthScore)}. Must contain:
+          </p>
+          <ul className="space-y-1.5" aria-label="Password requirements">
+            {strength.map((req, index) => (
+              <li key={index} className="flex items-center gap-2">
+                {req.met ? (
+                  <Check size={16} className="text-emerald-500" aria-hidden="true" />
+                ) : (
+                  <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
+                )}
+                <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  {req.text}
+                  <span className="sr-only">
+                    {req.met ? " - Requirement met" : " - Requirement not met"}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-      <ul className="space-y-1.5" aria-label="Password requirements">
-        {strength.map((req, index) => (
-          <li key={index} className="flex items-center gap-2">
-            {req.met ? (
-              <Check size={16} className="text-emerald-500" aria-hidden="true" />
-            ) : (
-              <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
-            )}
-            <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
-              {req.text}
-              <span className="sr-only">
-                {req.met ? " - Requirement met" : " - Requirement not met"}
-              </span>
-            </span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

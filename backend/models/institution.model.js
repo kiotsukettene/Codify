@@ -66,7 +66,14 @@ const institutionSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-
+    paymentSourceId: {
+        type: String,
+        default: null
+    },
+    checkoutSessionId: {
+        type: String,
+        default: null
+    },
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
     verificationToken: String,

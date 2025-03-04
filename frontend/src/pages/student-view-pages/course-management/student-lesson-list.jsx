@@ -49,7 +49,7 @@ function StudentLessonListPage() {
   return (
     <div className="flex flex-col mx-6">
       <div className="flex flex-col lg:flex-row gap-3">
-        <div className="w-full lg:w-2/3 p-4 bg-white rounded-lg h-screen overflow-hidden">
+        <div className="w-full lg:w-2/3 p-4 rounded-lg h-screen overflow-hidden">
           <div className="flex-row">
             {/* Lesson Overview Card */}
             <Card className="bg-[#F5F5FF] shadow-none border-none rounded-sm py-4 px-6">
@@ -212,7 +212,7 @@ function StudentLessonListPage() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Card className="bg-white shadow-none border-none rounded-lg mb-5 overflow-hidden relative transition-all duration-300 ">
+                      <Card className="bg-white shadow-none border-sm rounded-lg mb-5 overflow-hidden relative transition-all duration-300 ">
                         
                         {/*==================== tag/badge for first lesson only ====================*/}
                         {index === 0 && (

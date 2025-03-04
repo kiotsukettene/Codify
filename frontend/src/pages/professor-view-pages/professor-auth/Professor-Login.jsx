@@ -39,11 +39,7 @@ const ProfessorLogin = () => {
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
       {/* Background Images */}
       <div>
-        <img
-          src={logo}
-          alt="Logo"
-          className="absolute top-7 left-24 lg:left-10 lg:w-28"
-        />
+        
         <img
           src={pinkFlower}
           alt="Pink Flower"
