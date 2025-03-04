@@ -25,12 +25,19 @@ import AdminNewPasswordPage from "./pages/admin-view-pages/admin-auth/Admin-New-
 import AdminSuccessResetPage from "./pages/admin-view-pages/admin-auth/Admin-Success-Reset";
 import PaymentSummary from "./components/admin-view/payment-summary";
 import PaymentSuccess from "./components/admin-view/payment-success";
+import AdminDashboard from "./pages/admin-view-pages/Main-Dashboard";
+import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
+import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
+import StudentList from "./pages/admin-view-pages/admin-student/Student";
+import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
+
 
 // Professor Pages
 import ProfessorLogin from "./pages/professor-view-pages/professor-auth/Professor-Login";
 import ProfForgotPassword from "./pages/professor-view-pages/professor-auth/Professor-Forgot-Password";
 import ProfNewPassword from "./pages/professor-view-pages/professor-auth/Professor-New-Password";
 import ProfSuccessPassword from "./pages/professor-view-pages/professor-auth/Professor-Success-Password";
+
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -40,26 +47,16 @@ import StudentDashboard from "./pages/student-view-pages/Dashboard";
 import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
 import StudentChallengesView from "./pages/student-view-pages/challenges/student-challenges-view";
 import StudentLessonListPage from "./pages/student-view-pages/course-management/student-lesson-list";
-import StudentLessonContent from "./components/student-view/student-lesson-content";
+import StudentTaskPage from "./pages/student-view-pages/Task-Activity-list";
 import StudentModulePage from "./pages/student-view-pages/course-management/student-module";
 import StudentActivityPage from "./pages/student-view-pages/course-management/student-activity";
+import StudentPracticePage from "./pages/student-view-pages/challenges/student-practice-page";
+import StudentCalendarPage from "./pages/student-view-pages/Schedule-Calendar";
 
-// General Pages
-import LandingPage from "./pages/Guest-view-pages/Landing-page";
-import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
-import MainLogin from "./pages/Guest-view-pages/Login";
-
-// Admin Management Pages
-import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
-import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
-import StudentList from "./pages/admin-view-pages/admin-student/Student";
-import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
-
-// Editor
 import CodeEditor from "./components/CodeEditor";
-import AdminDashboard from "./pages/admin-view-pages/Main-Dashboard";
-import StudentTaskPage from "./pages/student-view-pages/Task-Activity-list";
-
+import LandingPage from "./pages/Guest-view-pages/Landing-page";
+import MainLogin from "./pages/Guest-view-pages/Login";
+import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -165,21 +162,9 @@ function App() {
           <Route path="module" element={<StudentModulePage />} />
           <Route path="activity" element={<StudentActivityPage />} />
           <Route path="task-list" element={<StudentTaskPage />} />
+          <Route path="schedules" element={<StudentCalendarPage />} />
         </Route>
-{/* <Route
-  path="/student/*"
-  element={
-    <ProtectedRouteStudents>
-      <StudentLayout>
-        <Routes>
-          <Route path="dashboard" element={<StudentDashboard />} />
-          <Route path="course-list" element={<StudentCourseListPage />} />
-          <Route path="challenges" element={<StudentChallengesView/>} />
-        </Routes>
-      </StudentLayout>
-    </ProtectedRouteStudents>
-  }
-        /> */}
+
         
 
         {/* Additional Routes */}
