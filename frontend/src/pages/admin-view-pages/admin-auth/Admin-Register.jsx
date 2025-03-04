@@ -303,7 +303,7 @@ function AdminRegisterPage() {
 
                   <div>
                     <Label className="text-xl font-semibold ">
-                      Starter Plan
+                    Standard Codify Plan
                     </Label>
                     <div className="mt-3 w-full ">
                       <button
@@ -330,7 +330,7 @@ function AdminRegisterPage() {
                             </div>
                             <div className="flex flex-col items-start">
                               <h3 className="font-semibold text-gray-900">
-                                Standard Codify Subscription
+                              Full Institution Access
                               </h3>
                               <p className="text-gray-500">₱ 70,000</p>
                             </div>
