@@ -30,6 +30,7 @@ const ActivityPage = () => {
   const { activity, fetchActivityById } = useActivityStore();
 
   useEffect(() => {
+    console.log("activityId from useParams:", activityId);
     if (activityId) {
       fetchActivityById(activityId);
     } else {
@@ -51,6 +52,9 @@ const ActivityPage = () => {
     { id: "4", name: "Dela Cruz, Momo W.", score: 0, avatar: Bear },
     { id: "5", name: "Caps, Elle B.", score: 0, avatar: Bear },
   ];
+  if (!activity) {
+    return <p>Loading activity...</p>;
+  }
 
   return (
     <SidebarProvider>
@@ -118,6 +122,7 @@ const ActivityPage = () => {
             {/* Render the correct tab content */}
             {activeTab === "overview" ? (
               <ActivityOverview
+                activityId={activity._id}
                 dueDate={
                   activity?.dueDate
                     ? new Date(activity.dueDate).toLocaleString()

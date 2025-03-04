@@ -57,7 +57,6 @@ const comments = [
 const Topic = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [hasActivity, setHasActivity] = useState(false);
   const [activeSection, setActiveSection] = useState(null); // ✅ Move it up before any return
   const [activeTopic, setActiveTopic] = useState(null);
 
