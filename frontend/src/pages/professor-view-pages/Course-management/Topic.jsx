@@ -76,17 +76,14 @@ const Topic = () => {
 
   useEffect(() => {
     if (lesson?.sections) {
-      setSections(lesson.sections);
+      setSections(
+        lesson.sections.map((section) => ({
+          ...section,
+          id: section._id, // ✅ Ensures sections have an `id` field
+        }))
+      );
     }
   }, [lesson]);
-
-  useEffect(() => {
-    if (activities.length > 0) {
-      setHasActivity(true);
-    } else {
-      setHasActivity(false);
-    }
-  }, [activities]);
 
   useEffect(() => {
     if (lesson?.sections?.length > 0 && !activeSection) {
@@ -96,18 +93,16 @@ const Topic = () => {
 
   //scroll
   const handleScroll = () => {
-    let currentSection = sections.length > 0 ? sections[0].id : null;
-
-    sections.forEach((section) => {
-      const sectionElement = document.getElementById(section.id);
-      if (sectionElement) {
-        const rect = sectionElement.getBoundingClientRect();
+    let currentSection = topics[0].id;
+    lesson.forEach((topic) => {
+      const section = document.getElementById(lesson.id);
+      if (section) {
+        const rect = section.getBoundingClientRect();
         if (rect.top >= 0 && rect.top <= window.innerHeight / 3) {
-          currentSection = section.id;
+          currentSection = topic.id;
         }
       }
     });
-
     setActiveTopic(currentSection);
   };
 
@@ -116,12 +111,12 @@ const Topic = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [sections]); // Depend on sections so it updates when they change
+  }, []);
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      element.scrollIntoView({ behavior: "smooth" });
       setActiveTopic(sectionId);
     }
   };
@@ -182,7 +177,11 @@ const Topic = () => {
                 {lesson.subTitle}
               </p>
               {sections.map((section, index) => (
-                <section key={index} id={section.id} className="mb-8">
+                <section
+                  key={index}
+                  id={section.id || section._id}
+                  className="mb-8"
+                >
                   <h2 className="text-lg font-medium mb-2">
                     {section.subTitle}
                   </h2>
