@@ -38,6 +38,11 @@ import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-F
 import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
 import StudentDashboard from "./pages/student-view-pages/Dashboard";
 import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
+import StudentChallengesView from "./pages/student-view-pages/challenges/student-challenges-view";
+import StudentLessonListPage from "./pages/student-view-pages/course-management/student-lesson-list";
+import StudentLessonContent from "./components/student-view/student-lesson-content";
+import StudentModulePage from "./pages/student-view-pages/course-management/student-module";
+import StudentActivityPage from "./pages/student-view-pages/course-management/student-activity";
 
 // General Pages
 import LandingPage from "./pages/Guest-view-pages/Landing-page";
@@ -53,6 +58,8 @@ import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
 // Editor
 import CodeEditor from "./components/CodeEditor";
 import AdminDashboard from "./pages/admin-view-pages/Main-Dashboard";
+import StudentTaskPage from "./pages/student-view-pages/Task-Activity-list";
+
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -147,7 +154,19 @@ function App() {
           <Route path="addStudent" element={<ProtectedRouteInstitution><AddStudent /></ProtectedRouteInstitution>} />
         </Route>
 
-<Route
+
+        {/* Student Routes */}
+        <Route path="/student/" element={<StudentLayout />}>
+          <Route path="dashboard" element={<ProtectedRouteStudents><StudentDashboard /></ProtectedRouteStudents>} />
+          <Route path="course-list" element={<ProtectedRouteStudents><StudentCourseListPage /></ProtectedRouteStudents>} />
+          <Route path="challenges" element={<ProtectedRouteStudents><StudentChallengesView /></ProtectedRouteStudents>} />
+          <Route path="challenges/:id" element={<ProtectedRouteStudents><StudentChallengesView /></ProtectedRouteStudents>} />
+          <Route path="lessons-list" element={<StudentLessonListPage />} />
+          <Route path="module" element={<StudentModulePage />} />
+          <Route path="activity" element={<StudentActivityPage />} />
+          <Route path="task-list" element={<StudentTaskPage />} />
+        </Route>
+{/* <Route
   path="/student/*"
   element={
     <ProtectedRouteStudents>
@@ -155,11 +174,13 @@ function App() {
         <Routes>
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="course-list" element={<StudentCourseListPage />} />
+          <Route path="challenges" element={<StudentChallengesView/>} />
         </Routes>
       </StudentLayout>
     </ProtectedRouteStudents>
   }
-/>
+        /> */}
+        
 
         {/* Additional Routes */}
         <Route path="/code-editor" element={<CodeEditor />} />

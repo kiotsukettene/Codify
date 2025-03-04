@@ -4,15 +4,21 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import React from "react";
+import React, { useState } from "react";
 import header from "@/assets/picture/courses/course-header.png";
 import { Separator } from "@/components/ui/separator";
 import { BookOpenCheck, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchForm from "@/components/student-view/SearchForm";
 import { Input } from "@/components/ui/input";
+import card1 from "../../../assets/picture/courses/card1.png";
+import StudentCourseCard from "@/components/student-view/student-course-card";
+import { useNavigate } from "react-router-dom";
+import JoinCourseModal from "@/components/student-view/join-course-modal";
 
 function StudentCourseListPage() {
+  const navigate = useNavigate();
+  const [joinCourse, setJoinCourse] = useState(false);
 
   const courses = [
     {
@@ -20,7 +26,8 @@ function StudentCourseListPage() {
       title: "Networks and Communication",
       professor: "Prof. Dave Benjamin Cruz",
       lessons: 18,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
+      image:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
       tags: ["Networking"],
     },
     {
@@ -28,8 +35,9 @@ function StudentCourseListPage() {
       title: "Creating Awesome Mobile Apps",
       professor: "Prof. Joemen D. Barrios",
       lessons: 2,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
-      tags: ["Profitable", "AI"],
+      image:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
+      tags: ["OOP", "AI"],
     },
     // Duplicate the second course 6 more times to fill the grid
     ...Array(6).fill({
@@ -37,10 +45,11 @@ function StudentCourseListPage() {
       title: "Creating Awesome Mobile Apps",
       professor: "Prof. Joemen D. Barrios",
       lessons: 2,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
-      tags: ["Profitable", "AI"],
+      image:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
+      tags: ["OOP", "AI"],
     }),
-  ]
+  ];
 
   return (
     <div className="mx-6 w-full">
@@ -56,17 +65,24 @@ function StudentCourseListPage() {
 
           <CardContent className="flex gap-4 mt-4 text-header font-medium">
             <BookOpenCheck />
-            <h4>20 Lessons</h4>
+            <h4>2 Lessons</h4>
             <Separator orientation="vertical" />
             <Users />
             <h4>Prof. Dave Benjamin Cruz</h4>
           </CardContent>
           <CardFooter>
-            <Button>Start Learning 🚀</Button>
+            <Button onClick={() => setJoinCourse(true)}>Join Course 🚀</Button>
           </CardFooter>
+
+          {/* ==============================================
+            ============MODAL FOR JOIN COURSE CODE ===========
+            ==================================================*/}
+          <JoinCourseModal
+            isOpen={joinCourse}
+            onClose={() => setJoinCourse(false)}
+          />
         </div>
 
-        {/* Right Content - Image Wrapper */}
         <div className="relative w-[50%] h-full ml-auto">
           <img
             src={header}
@@ -76,13 +92,26 @@ function StudentCourseListPage() {
         </div>
       </Card>
 
-
       <div className="flex px-8 text-center justify-between items-center">
-        <h1 className="text-header font-semibold text-2xl">My Courses</h1>
-        <SearchForm/>
+        <h1 className="text-header font-semibold text-4xl">My Courses</h1>
+        <SearchForm />
       </div>
-    </div>
 
+      <form onClick={() => navigate("/student/lesson-list")}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
+          {courses.map((course, index) => (
+            <StudentCourseCard
+              key={index}
+              lessons={course.lessons}
+              image={card1}
+              title={course.title}
+              professor={course.professor}
+              tags={course.tags || []}
+            />
+          ))}
+        </div>
+      </form>
+    </div>
   );
 }
 
