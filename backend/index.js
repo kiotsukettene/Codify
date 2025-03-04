@@ -53,6 +53,7 @@ app.use("/api/professors", professorRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/activities", activityRoutes);
+app.use("/uploads", express.static("uploads")); // ✅ Serve uploaded files
 
 app.listen(PORT, () => {
   connectDB();

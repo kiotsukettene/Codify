@@ -6,6 +6,7 @@ export const createActivity = async (req, res) => {
   try {
     const { lessonId, title, subTitle, instructions, dueDate, points } =
       req.body;
+    const file = req.file ? req.file.path : null; // ✅ Get uploaded file path
 
     // ✅ Check if lesson exists before creating activity
     const lessonExists = await Lesson.findById(lessonId);
@@ -21,6 +22,7 @@ export const createActivity = async (req, res) => {
       instructions,
       dueDate,
       points,
+      file,
     });
 
     // ✅ Save the activity to the database

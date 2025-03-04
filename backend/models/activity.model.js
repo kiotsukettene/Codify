@@ -25,6 +25,9 @@ const ActivitySchema = new mongoose.Schema(
       type: Number,
       default: 100,
     },
+    file: {
+      type: String, // ✅ Store the file path
+    },
   },
   { timestamps: true }
 );
