@@ -22,7 +22,11 @@ function AdminEmailVerificationPage() {
   const [resendCode, setResendCode] = useState(false);
   const [resendCodeTimer, setResendCodeTimer] = useState(60);
 
-  const { error, verifyEmail, isLoading, resendVerificationCode, institution } = useAuthStore();
+  const { error, verifyEmail, isLoading, resendVerificationCode, institution, clearError } = useAuthStore();
+
+  useEffect(() => {
+    clearError();
+  }, []);
 
   const handleChange = (index, value) => {
 		const newCode = [...code];

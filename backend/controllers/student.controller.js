@@ -92,10 +92,20 @@ export const registerStudent = async (req, res) => {
 
 export const getStudents = async (req, res) => {
   try {
-    const students = await Student.find().populate(
+    // Ensure institutionId is available from authentication middleware
+    if (!req.institutionId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized access. Institution ID missing.",
+      });
+    }
+
+    // Fetch students that belong to the authenticated institution
+    const students = await Student.find({ institution: req.institutionId }).populate(
       "institution",
       "institutionName"
     );
+
     res.status(200).json({
       success: true,
       students,
