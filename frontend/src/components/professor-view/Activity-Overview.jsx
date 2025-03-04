@@ -139,7 +139,7 @@ const ActivityOverview = ({
   points,
   instructions,
   exampleOutput,
-  fileName = "No file uploaded",
+  fileName,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dueDate, setDueDate] = useState(initialDueDate || "No due date");
@@ -209,7 +209,7 @@ const ActivityOverview = ({
       </div>
 
       {/* File Preview Section */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -240,7 +240,62 @@ const ActivityOverview = ({
             {fileName}
           </span>
         </div>
-      </motion.div>
+      </motion.div> */}
+      {/* File Display Section */}
+      {fileName && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="border rounded-lg p-4 bg-gray-50"
+        >
+          <h2 className="font-medium mb-4">Uploaded File:</h2>
+          <div className="flex items-center p-2 bg-white border rounded-lg shadow-sm">
+            <svg
+              className="w-6 h-6 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+
+            <a
+              href={fileName}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-3 text-blue-600 hover:underline truncate"
+            >
+              {decodeURIComponent(fileName.split("/").pop())}
+            </a>
+
+            <a
+              href={fileName}
+              download
+              className="ml-auto text-gray-700 hover:text-gray-900"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v12m0 0l-3-3m3 3l3-3m-3 3V4m6 12a9 9 0 01-18 0H3"
+                />
+              </svg>
+            </a>
+          </div>
+        </motion.div>
+      )}
 
       {/* Instructions */}
       <motion.div

@@ -117,21 +117,45 @@ export const getActivitiesByCourse = async (req, res) => {
 export const getActivityById = async (req, res) => {
   try {
     const { activityId } = req.params;
-
-    // Find the activity by ID
     const activity = await Activity.findById(activityId);
 
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
 
-    res.status(200).json(activity);
+    // ✅ Ensure correct file path format
+    let fileUrl = null;
+    if (activity.file) {
+      const fileName = activity.file.replace(/^uploads[\\/]/, ""); // Remove leading 'uploads/' if present
+      fileUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
+    }
+
+    res.status(200).json({ ...activity._doc, file: fileUrl });
   } catch (error) {
     res
       .status(500)
       .json({ message: "Error fetching activity", error: error.message });
   }
 };
+
+// export const getActivityById = async (req, res) => {
+//   try {
+//     const { activityId } = req.params;
+
+//     // Find the activity by ID
+//     const activity = await Activity.findById(activityId);
+
+//     if (!activity) {
+//       return res.status(404).json({ message: "Activity not found" });
+//     }
+
+//     res.status(200).json(activity);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error fetching activity", error: error.message });
+//   }
+// };
 
 // ✅ UPDATE ACTIVITY
 export const updateActivity = async (req, res) => {

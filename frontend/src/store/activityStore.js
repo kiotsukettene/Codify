@@ -128,8 +128,8 @@ export const useActivityStore = create((set) => ({
 
       return newActivity;
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Error creating activity";
+      const errorMessage = a;
+      error.response?.data?.message || "Error creating activity";
 
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);

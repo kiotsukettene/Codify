@@ -17,7 +17,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
 import Bear from "@/assets/picture/Avatar/bear.png";
 import { useActivityStore } from "@/store/activityStore";
 
@@ -121,6 +120,7 @@ const ActivityPage = () => {
             {/* Render the correct tab content */}
             {activeTab === "overview" ? (
               <ActivityOverview
+                fileName={activity?.file}
                 activityId={activity._id}
                 dueDate={
                   activity?.dueDate
