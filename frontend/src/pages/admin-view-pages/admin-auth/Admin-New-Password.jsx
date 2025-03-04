@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 
@@ -24,7 +24,11 @@ function AdminNewPasswordPage() {
   
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const { resetPassword, error, isLoading, message } = useAuthStore()
+  const { resetPassword, error, isLoading, clearError } = useAuthStore()
+
+  useEffect(() => {
+    clearError();
+  }, []);
 
   const { token } = useParams()
 

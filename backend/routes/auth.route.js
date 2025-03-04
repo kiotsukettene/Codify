@@ -9,7 +9,8 @@ import {
      checkAuth,
      markAsPaid,
      resendVerificationCode,
-     googleLogin
+     googleLogin,
+     initiatePayment,
 
 } from '../controllers/auth.controller.js';
 
@@ -30,6 +31,7 @@ router.post("/logout", logoutInstitution)
 router.post("/verify-email", verifyEmail)
 router.post("/resend-verification", resendVerificationCode)
 router.post("/mark-as-paid", markAsPaid)
+router.post("/initiate-payment", verifyToken, initiatePayment); // New route
 router.post("/forgot-password", forgotPassword)
 router.post("/reset-password/:token", resetPassword)
 

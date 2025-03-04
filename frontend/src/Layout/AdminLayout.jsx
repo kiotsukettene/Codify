@@ -22,7 +22,7 @@ function AdminLayout() {
             </header>
 
             {/* Page Content - Ensures Full Width & Height */}
-            <div className="flex flex-1 w-full overflow-hidden bg-neutral-50">
+            <div className="flex flex-1 w-full overflow-hidden bg-white">
               <Outlet />
             </div>
           </SidebarInset>
