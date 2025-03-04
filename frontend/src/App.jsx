@@ -17,7 +17,6 @@ import AdminLayout from "./Layout/AdminLayout";
 import StudentLayout from "./Layout/StudentLayout";
 
 // Admin Pages
-import AdminDashboard from "./pages/admin-view-pages/Dashboard";
 import AdminLogin from "./pages/admin-view-pages/admin-auth/Admin-Login";
 import AdminRegisterPage from "./pages/admin-view-pages/admin-auth/Admin-Register";
 import AdminEmailVerificationPage from "./pages/admin-view-pages/admin-auth/Admin-Email-Verification-Page";
@@ -53,6 +52,7 @@ import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
 
 // Editor
 import CodeEditor from "./components/CodeEditor";
+import AdminDashboard from "./pages/admin-view-pages/Main-Dashboard";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -94,7 +94,7 @@ function App() {
             </RedirectAuthenticatedInstitution>
           } />
           <Route path="/admin/success-reset" element={<AdminSuccessResetPage />} />
-        </Route>
+        
 
         {/* Student Authentication */}
         <Route path="/student/login" element={
@@ -136,6 +136,7 @@ function App() {
             <PaymentSuccess />
           </ProtectedRouteInstitution>
         } />
+        </Route>
 
         {/* Admin Routes */}
         <Route path="/admin/" element={<AdminLayout />}>

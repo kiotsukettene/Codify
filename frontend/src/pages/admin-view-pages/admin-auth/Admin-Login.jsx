@@ -64,13 +64,13 @@ function AdminLoginPage() {
   return (
     <div className="relative h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
        {/* Background Images */}
-                <Link to="/">
+                {/* <Link to="/">
                   <img 
                    src={logo}
                    alt="Logo" 
                    className="absolute top-7 left-24 lg:left-10 lg:w-28" 
                    />
-                </Link>
+                </Link> */}
                 <img 
                   src={pinkFlower}
                   alt="Pink Flower" 
