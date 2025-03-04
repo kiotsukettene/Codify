@@ -75,29 +75,6 @@ const studentList = [
   },
 ];
 
-const activities = [
-  {
-    id: 1,
-    title: "Conditionals",
-    grade: 80,
-    dueDate: "Dec 25, 2023",
-    description: "Learn about if-else statements.",
-  },
-  {
-    id: 2,
-    title: "Looping",
-    grade: 60,
-    dueDate: "Dec 25, 2023",
-    description: "Master different types of loops.",
-  },
-  {
-    id: 3,
-    title: "True or false",
-    grade: 100,
-    dueDate: "Dec 25, 2023",
-    description: "Master different types of loops.",
-  },
-];
 const metrics = [
   {
     title: "Class Performance",
@@ -175,26 +152,12 @@ const tabs = [
   { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
 ];
 
-const courseData = {
-  title: "Programming Languages",
-  description:
-    "Programming languages are the foundation of software development.",
-  details: {
-    language: "Java",
-    students: "40 Students",
-    instructor: "un1c0d3city",
-    schedule: "Wed, 5:30pm",
-    courseCode: "CS110",
-    section: "BSCS 3B",
-  },
-};
-
 const LessonOverview = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const { lessons, isLoading, fetchLessonsByCourse } = useLessonStore(); // Use lessonStore to get lessons, loading state, and the fetch function
+  const { lessons, fetchLessonsByCourse } = useLessonStore(); // Use lessonStore to get lessons, loading state, and the fetch function
   const { activities, fetchActivitiesByCourse, error } = useActivityStore(); // Use activityStore to get activities, loading state, and the fetch function
   const location = useLocation();
   const courseData = location.state?.course || {}; // Get course details from navigation state
@@ -202,7 +165,11 @@ const LessonOverview = () => {
   const { professor } = useprofAuthStore();
 
   const CourseDetails = ({ courseId }) => {
-    const [courseData, setCourseData] = useState(null);
+    const [courseData, setCourseData] = useState(() => {
+      // ✅ Load from sessionStorage if available
+      const storedData = sessionStorage.getItem(`course_${courseId}`);
+      return storedData ? JSON.parse(storedData) : null;
+    });
 
     useEffect(() => {
       const fetchCourseData = async () => {
@@ -210,25 +177,20 @@ const LessonOverview = () => {
           const response = await fetch(`/api/courses/${courseId}`);
           const data = await response.json();
 
+          // ✅ Store data in sessionStorage to persist it when navigating back
+          sessionStorage.setItem(`course_${courseId}`, JSON.stringify(data));
+
           setCourseData(data);
         } catch (error) {
           console.error("Error fetching course:", error);
         }
       };
 
-      fetchCourseData();
-    }, [courseId]);
-
-    if (!courseData) return <p>Loading course details...</p>;
-
-    return (
-      <div>
-        <h2>
-          Instructor: {courseData.professorId?.firstName}{" "}
-          {courseData.professorId?.lastName}
-        </h2>
-      </div>
-    );
+      // ✅ Fetch only if not already stored
+      if (!courseData) {
+        fetchCourseData();
+      }
+    }, [courseId, courseData]);
   };
 
   // Fetch lessons for the given courseId when the component mounts or courseId changes
