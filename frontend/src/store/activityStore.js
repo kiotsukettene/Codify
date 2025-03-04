@@ -66,13 +66,58 @@ export const useActivityStore = create((set) => ({
   },
 
   // Create a new activity
-  createActivity: async (activityData) => {
+  // createActivity: async (activityData) => {
+  //   set({ isLoading: true, error: null });
+
+  //   try {
+  //     const response = await axios.post(`${API_URL}/create`, activityData);
+
+  //     const newActivity = response.data.activity; // ✅ Extract the newly created activity
+
+  //     set((state) => ({
+  //       activities: [...state.activities, newActivity],
+  //       isLoading: false,
+  //     }));
+
+  //     toast.success("Activity created successfully!");
+
+  //     return newActivity; // ✅ Return the created activity so we can use it later
+  //   } catch (error) {
+  //     const errorMessage =
+  //       error.response?.data?.message || "Error creating activity";
+
+  //     set({ error: errorMessage, isLoading: false });
+
+  //     toast.error(errorMessage);
+
+  //     return null; // ✅ Return null in case of an error
+  //   }
+  // },
+
+  createActivity: async (activityData, files) => {
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.post(`${API_URL}/create`, activityData);
+      const formData = new FormData();
+      formData.append("lessonId", activityData.lessonId);
+      formData.append("title", activityData.title);
+      formData.append("subTitle", activityData.subTitle);
+      formData.append("instructions", activityData.instructions);
+      formData.append("dueDate", activityData.dueDate);
+      formData.append("points", activityData.points);
 
-      const newActivity = response.data.activity; // ✅ Extract the newly created activity
+      // ✅ Append files
+      files.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      const response = await axios.post(`${API_URL}/create`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const newActivity = response.data.activity;
 
       set((state) => ({
         activities: [...state.activities, newActivity],
@@ -81,16 +126,15 @@ export const useActivityStore = create((set) => ({
 
       toast.success("Activity created successfully!");
 
-      return newActivity; // ✅ Return the created activity so we can use it later
+      return newActivity;
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error creating activity";
 
       set({ error: errorMessage, isLoading: false });
-
       toast.error(errorMessage);
 
-      return null; // ✅ Return null in case of an error
+      return null;
     }
   },
 

@@ -68,27 +68,34 @@ const CreateActivity = () => {
       : null;
 
   // const handleSubmit = async () => {
+  //   console.log("Raw Date:", date);
+  //   console.log("Raw Time:", time);
+  //   console.log("Final Due Date before submission:", dueDateTime);
+
   //   if (!lessonId || lessonId.length !== 24) {
   //     console.error("Invalid lessonId:", lessonId);
+  //     toast.error("Invalid lessonId");
   //     return;
   //   }
-  //   console.log("Lesson ID before submission:", lessonId);
 
   //   const newActivity = {
   //     lessonId,
   //     title,
   //     subTitle: subtitle,
   //     instructions: instruction,
-  //     dueDate: dueDateTime,
+  //     dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null, // ✅ Ensure ISO string
   //     points: 100,
   //   };
 
   //   try {
   //     console.log("Sending activity data:", newActivity); // ✅ Debugging
+
   //     const createdActivity = await createActivity(newActivity);
   //     console.log("Created Activity Response:", createdActivity); // ✅ Debugging
 
   //     if (createdActivity && createdActivity._id) {
+  //       toast.success("Activity created successfully! 🎉");
+
   //       navigate(
   //         `/professor/course/${courseId}/lesson/${lessonId}/activity/${createdActivity._id}`
   //       );
@@ -97,9 +104,11 @@ const CreateActivity = () => {
   //         "Activity creation failed or _id is missing",
   //         createdActivity
   //       );
+  //       toast.error("Failed to create activity. Check server logs.");
   //     }
   //   } catch (error) {
   //     console.error("Error creating activity:", error);
+  //     toast.error("Error creating activity. Check console logs.");
   //   }
   // };
 
@@ -124,14 +133,15 @@ const CreateActivity = () => {
     };
 
     try {
-      console.log("Sending activity data:", newActivity); // ✅ Debugging
+      console.log("Sending activity data:", newActivity);
 
-      const createdActivity = await createActivity(newActivity);
-      console.log("Created Activity Response:", createdActivity); // ✅ Debugging
+      // ✅ Pass files as the second argument
+      const createdActivity = await createActivity(newActivity, files);
+
+      console.log("Created Activity Response:", createdActivity);
 
       if (createdActivity && createdActivity._id) {
         toast.success("Activity created successfully! 🎉");
-
         navigate(
           `/professor/course/${courseId}/lesson/${lessonId}/activity/${createdActivity._id}`
         );
