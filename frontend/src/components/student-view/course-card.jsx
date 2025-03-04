@@ -4,7 +4,7 @@ function StudentCourseCard() {
   return (
     <div>
       
-    </div>
+    </div>c
   )
 }
 

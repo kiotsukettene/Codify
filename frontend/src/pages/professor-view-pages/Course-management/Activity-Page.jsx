@@ -16,7 +16,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import Bear from "@/assets/picture/Avatar/bear.png";

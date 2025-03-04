@@ -60,15 +60,12 @@ const CreateActivity = () => {
   const { createActivity } = useActivityStore();
   const { lessonId, courseId } = useParams();
 
-  console.log(useParams());
-
   const dueDateTime =
     date && time
-      ? `${format(date, "yyyy-MM-dd")}T${format(
-          new Date(`1970-01-01 ${time}`),
-          "HH:mm"
-        )}:00Z`
-      : new Date().toISOString();
+      ? `${format(date, "yyyy-MM-dd")}T${
+          /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
+        }:00.000Z`
+      : null;
 
   // const handleSubmit = async () => {
   //   if (!lessonId || lessonId.length !== 24) {
@@ -107,8 +104,9 @@ const CreateActivity = () => {
   // };
 
   const handleSubmit = async () => {
-    console.log("Lesson ID before submission:", lessonId);
-    console.log("Due Date before submission:", dueDateTime);
+    console.log("Raw Date:", date);
+    console.log("Raw Time:", time);
+    console.log("Final Due Date before submission:", dueDateTime);
 
     if (!lessonId || lessonId.length !== 24) {
       console.error("Invalid lessonId:", lessonId);
@@ -121,7 +119,7 @@ const CreateActivity = () => {
       title,
       subTitle: subtitle,
       instructions: instruction,
-      dueDate: dueDateTime,
+      dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null, // ✅ Ensure ISO string
       points: 100,
     };
 
