@@ -18,6 +18,7 @@ export const useAuthStore = create((set) => ({
   isCheckingAuth: true,
   message: null,
   clearError: () => set({ error: null }), // New function to reset error
+  setInstitution: (institution) => set({ institution }),
 
   signup: async (
     email,

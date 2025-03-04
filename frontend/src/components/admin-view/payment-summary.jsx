@@ -1,28 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Particles } from "@/components/ui/particles";
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 function PaymentSummary() {
   const navigate = useNavigate();
   const { institution, logout } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const [paymongoReady, setPaymongoReady] = useState(false);
 
-  const LEMON_CHECKOUT_URL = "https://codifyproduct.lemonsqueezy.com/buy/ae6446ba-0b46-48a5-91f1-9c64e2424699";
-
+  useEffect(() => {
+  const checkPaymongo = () => {
+    if (window.Paymongo) {
+      setPaymongoReady(true);
+      console.log('Paymongo SDK loaded');
+    } else {
+      console.log('Paymongo SDK not loaded yet');
+      setTimeout(checkPaymongo, 100);
+    }
+  };
+  checkPaymongo();
+  }, []);
+  
   const handleLogout = () => {
     logout();
     navigate('/admin/login');
-  }
-
-  const handlePayment = () => {
-    setLoading(true);
-    window.location.href = LEMON_CHECKOUT_URL;
   };
 
+  const handlePayment = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.post('http://localhost:3000/api/auth/initiate-payment', {
+      institutionId: institution._id,
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Checkout initiation failed');
+    }
+
+    // Redirect to the PayMongo Checkout page
+    window.location.href = response.data.checkoutUrl;
+  } catch (error) {
+    toast.error('Checkout initiation failed: ' + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+  
   return (
     <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full  min-h-screen flex items-center justify-center py-12">
       {/* Background Particles */}
