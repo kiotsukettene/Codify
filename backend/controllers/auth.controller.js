@@ -35,15 +35,25 @@ export const registerInstitution = async (req, res) => {
             throw new Error("All fields are required");
         }
 
-        const institutionAlreadyExists = await Institution.findOne({ institutionName });
-
-        if (institutionAlreadyExists) {
-            return res.status(400).json({
-                success: false,
-                message: "Institution already exists"
-            });
+        // Check for duplicate email
+        const emailAlreadyExists = await Institution.findOne({ email });
+        if (emailAlreadyExists) {
+        return res.status(400).json({
+            success: false,
+            message: "An institution with this email already exists",
+        });
         }
 
+        // Check for duplicate institution name
+        const institutionNameExists = await Institution.findOne({ institutionName });
+        if (institutionNameExists) {
+        return res.status(400).json({
+            success: false,
+            message: "An institution with this name already exists",
+        });
+        }
+
+        
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -172,7 +182,6 @@ export const resendVerificationCode = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error resending verification code",
-            debugToken: newVerificationToken // ✅ Temporary Debugging
         })
     }
 }
