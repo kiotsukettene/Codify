@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import AppSidebar from "@/components/professor-view/Sidebar";
-import { Eye, FileText, Trophy, Users, Crown } from "lucide-react";
+import {
+  Eye,
+  FileText,
+  Trophy,
+  Users,
+  Crown,
+  Ship,
+  Rocket,
+} from "lucide-react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -26,6 +34,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
 import { toast } from "react-hot-toast";
 import { useprofAuthStore } from "@/store/profAuthStore";
+import confetti from "canvas-confetti";
 
 const studentList = [
   {
@@ -66,6 +75,29 @@ const studentList = [
   },
 ];
 
+const activities = [
+  {
+    id: 1,
+    title: "Conditionals",
+    grade: 80,
+    dueDate: "Dec 25, 2023",
+    description: "Learn about if-else statements.",
+  },
+  {
+    id: 2,
+    title: "Looping",
+    grade: 60,
+    dueDate: "Dec 25, 2023",
+    description: "Master different types of loops.",
+  },
+  {
+    id: 3,
+    title: "True or false",
+    grade: 100,
+    dueDate: "Dec 25, 2023",
+    description: "Master different types of loops.",
+  },
+];
 const metrics = [
   {
     title: "Class Performance",
@@ -142,6 +174,20 @@ const tabs = [
   { id: "scores", label: "Scores", icon: <Trophy className="w-4 h-4" /> },
   { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
 ];
+
+const courseData = {
+  title: "Programming Languages",
+  description:
+    "Programming languages are the foundation of software development.",
+  details: {
+    language: "Java",
+    students: "40 Students",
+    instructor: "un1c0d3city",
+    schedule: "Wed, 5:30pm",
+    courseCode: "CS110",
+    section: "BSCS 3B",
+  },
+};
 
 const LessonOverview = () => {
   const { courseId } = useParams();
@@ -294,7 +340,7 @@ const LessonOverview = () => {
                       })}
                       {tab.label}
                       {activeTab === tab.id && (
-                        <Crown className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
+                        <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
                       )}
                     </motion.button>
                   ))}

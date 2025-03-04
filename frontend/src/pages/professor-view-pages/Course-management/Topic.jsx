@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Activity, ChevronRight, MessageSquare, Copy } from "lucide-react";
+import {
+  Activity,
+  ChevronRight,
+  MessageSquare,
+  Copy,
+  ArrowLeft,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,11 +24,9 @@ import {
 import { Separator } from "@/Components/ui/separator";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import { motion } from "framer-motion";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
-import { ArrowLeft } from "lucide-react";
-
 const comments = [
   {
     id: 1,
@@ -53,37 +57,76 @@ const comments = [
 const Topic = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [hasActivity, setHasActivity] = useState(false);
+  const [activeSection, setActiveSection] = useState(null); // ✅ Move it up before any return
+  const [activeTopic, setActiveTopic] = useState(null);
+
   const { courseId, lessonId } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
-  const {
-    fetchLessonById,
-    lesson: fetchedLesson,
-    isLoading,
-    error,
-  } = useLessonStore();
-  const [lesson, setLesson] = useState(location.state?.lesson || null);
-  const {
-    fetchActivitiesByLesson,
-    activities,
-    isLoading: isActivityLoading,
-  } = useActivityStore();
-
-  const topics = lesson?.sections || [];
-  const [activeTopic, setActiveTopic] = useState(topics[0].id); // ❌ topics is not yet declared
+  const { fetchLessonById, lesson, isLoading, error } = useLessonStore();
+  const { fetchActivitiesByLesson, activities } = useActivityStore();
+  const [sections, setSections] = useState([]);
 
   useEffect(() => {
-    if (fetchedLesson && fetchedLesson._id) {
-      setLesson(fetchedLesson);
+    if (lessonId) {
+      fetchLessonById(lessonId);
+      fetchActivitiesByLesson(lessonId);
     }
-  }, [fetchedLesson]);
+  }, [lessonId, fetchLessonById, fetchActivitiesByLesson]);
 
   useEffect(() => {
-    if (fetchedLesson && fetchedLesson._id) {
-      setLesson(fetchedLesson);
+    if (lesson?.sections) {
+      setSections(lesson.sections);
     }
-  }, [fetchedLesson]);
+  }, [lesson]);
 
+  useEffect(() => {
+    if (activities.length > 0) {
+      setHasActivity(true);
+    } else {
+      setHasActivity(false);
+    }
+  }, [activities]);
+
+  useEffect(() => {
+    if (lesson?.sections?.length > 0 && !activeSection) {
+      setActiveSection(lesson.sections[0].id);
+    }
+  }, [lesson, activeSection]);
+
+  //scroll
+  const handleScroll = () => {
+    let currentSection = sections.length > 0 ? sections[0].id : null;
+
+    sections.forEach((section) => {
+      const sectionElement = document.getElementById(section.id);
+      if (sectionElement) {
+        const rect = sectionElement.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= window.innerHeight / 3) {
+          currentSection = section.id;
+        }
+      }
+    });
+
+    setActiveTopic(currentSection);
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [sections]); // Depend on sections so it updates when they change
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveTopic(sectionId);
+    }
+  };
+
+  // ✅ Ensure hooks always execute before any return statement
   if (isLoading || !lesson) {
     return (
       <p className="text-center text-gray-500">⏳ Loading lesson details...</p>
@@ -94,55 +137,14 @@ const Topic = () => {
     return <p className="text-center text-red-500">❌ Error: {error}</p>;
   }
 
-  const handleScroll = () => {
-    let currentSection = topics[0].id;
-
-    topics.forEach((topic) => {
-      const section = document.getElementById(topic.id);
-      if (section) {
-        const rect = section.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top <= window.innerHeight / 3) {
-          currentSection = topic.id;
-        }
-      }
-    });
-    setActiveTopic(currentSection);
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setActiveTopic(sectionId);
-    }
-  };
-
-  // Check if there's an activity connected to the lesson
-  useEffect(() => {
-    if (lessonId) {
-      fetchActivitiesByLesson(lessonId).then(() => {
-        setHasActivity(activities.length > 0);
-      });
-    }
-  }, [lessonId, fetchActivitiesByLesson, activities.length]);
-
   const handleNavigateToActivity = async () => {
     await fetchActivitiesByLesson(lessonId);
 
     if (activities.length > 0) {
-      // Navigate to existing activity
       navigate(
         `/professor/course/${courseId}/lesson/${lessonId}/activity/${activities[0]._id}`
       );
     } else {
-      // Navigate to create a new activity
       navigate(
         `/professor/course/${courseId}/lesson/${lessonId}/create-activity`
       );
@@ -164,115 +166,61 @@ const Topic = () => {
 
           <div className="container mx-auto p-6 grid grid-cols-12 gap-6">
             {/* Main Content */}
+            <div className="col-span-12 lg:col-span-8 space-y-4">
+              <div className="flex items-center gap-x-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(-1)}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <h1 className="text-3xl font-bold">{lesson.title} </h1>
+              </div>
 
-            <motion.div
-              className="col-span-8 space-y-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <motion.h1
-                className="text-3xl font-bold mb-6"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                {lesson.title}
-              </motion.h1>
-
-              {/* Loop Through Sections */}
-              {lesson.sections?.map((section, index) => (
-                <section key={index} id={`section-${index}`} className="mb-8">
-                  <motion.h2
-                    className="text-lg font-medium mb-2"
-                    whileHover={{ x: 10 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                  >
+              <p className="text-base text-gray-700 dark:text-gray-300">
+                {lesson.subTitle}
+              </p>
+              {sections.map((section, index) => (
+                <section key={index} id={section.id} className="mb-8">
+                  <h2 className="text-lg font-medium mb-2">
                     {section.subTitle}
-                  </motion.h2>
-                  <motion.p
-                    className="text-sm text-gray-700 dark:text-gray-300 mb-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
+                  </h2>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
                     {section.description}
-                  </motion.p>
+                  </p>
 
-                  {/* ✅ Code Snippets */}
-                  {section.codeSnippets?.length > 0 &&
-                    section.codeSnippets.map((snippet, idx) => (
-                      <motion.div
-                        key={idx}
-                        className="relative bg-[#1e1e1e] rounded-lg mb-6 overflow-hidden"
-                        whileHover={{
-                          scale: 1.01,
-                          boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
-                        }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <motion.div
-                          className="absolute right-2 top-2 flex gap-2"
-                          whileHover={{ scale: 1.1 }}
-                        >
-                          <motion.div
-                            whileHover={{ scale: 1.2, rotate: 180 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 ml-2"
-                              onClick={() =>
-                                navigator.clipboard.writeText(snippet)
-                              }
-                            >
-                              <Copy className="h-4 w-4 text-white" />
-                            </Button>
-                          </motion.div>
-                        </motion.div>
-                        <pre className="p-4 pt-8 font-mono text-xs text-purple-200">
-                          <code>{snippet}</code>
-                        </pre>
-                      </motion.div>
-                    ))}
+                  {section.codeSnippets.length > 0 && (
+                    <div className="relative bg-[#1e1e1e] rounded-lg mb-6 overflow-hidden">
+                      <pre className="p-4 pt-8 font-mono text-xs text-purple-200">
+                        <code>{section.codeSnippets.join("\n")}</code>
+                      </pre>
+                    </div>
+                  )}
 
-                  {/* ✅ Notes Section */}
-                  {section.notes?.length > 0 && (
-                    <div className="p-4 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                      <h3 className="font-semibold mb-2">Notes:</h3>
-                      <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
-                        {section.notes.map((note, noteIdx) => (
-                          <li key={noteIdx}>{note}</li>
+                  {section.notes.length > 0 && (
+                    <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                      <h3 className="font-semibold text-sm mb-2">Notes:</h3>
+                      <ul className="list-disc list-inside text-xs text-gray-600 dark:text-gray-300">
+                        {section.notes.map((note, i) => (
+                          <li key={i}>{note}</li>
                         ))}
                       </ul>
                     </div>
                   )}
                 </section>
               ))}
-            </motion.div>
+            </div>
 
-            <motion.div
-              className="col-span-4 space-y-6"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
+            <div className="col-span-12 lg:col-span-4 space-y-6">
               {/* Activity Card with enhanced animations */}
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400 }}
-                onClick={handleNavigateToActivity}
-                className="cursor-pointer"
-              >
-                <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="grid grid-cols-1 gap-4">
+                <Card className="transition-shadow duration-300">
                   <CardContent className="p-6">
                     <motion.div
                       className="flex items-center justify-between mb-6"
                       whileHover={{ y: -2 }}
+                      onClick={handleNavigateToActivity}
                     >
                       <div className="flex items-center gap-2">
                         <motion.div
@@ -285,7 +233,9 @@ const Topic = () => {
                         >
                           <Activity className="h-5 w-5 text-purple-600" />
                         </motion.div>
-                        <span className="font-semibold text-sm">Activity</span>
+                        <span className="font-semibold text-sm">
+                          Create Activity
+                        </span>
                       </div>
                       <Button variant="ghost" size="icon" className="h-6 w-6">
                         <ChevronRight className="h-4 w-4" />
@@ -293,89 +243,75 @@ const Topic = () => {
                     </motion.div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <motion.div
-                        whileHover={{ y: -4 }}
-                        transition={{ type: "spring" }}
-                      >
+                      <div>
                         <Card className="p-4 bg-purple-100/50 dark:bg-purple-900/20 border-0">
                           <div className="text-3xl font-bold mb-1">0</div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
                             Turned in
                           </div>
                         </Card>
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ y: -4 }}
-                        transition={{ type: "spring" }}
-                      >
+                      </div>
+                      <div>
                         <Card className="p-4 bg-purple-600 text-white border-0">
                           <div className="text-3xl font-bold mb-1">0</div>
                           <div className="text-xs opacity-90">Assigned</div>
                         </Card>
-                      </motion.div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
 
               {/* On this page section */}
-              <div className="sticky top-4 space-y-4">
-                <motion.h2
-                  className="text-base font-semibold"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  On this page
-                </motion.h2>
+              <div className="hidden lg:block sticky top-4 space-y-4">
+                <h2 className="text-base font-semibold">On this page</h2>
 
                 <nav className="space-y-2">
-                  {lesson.sections.map((section) => (
-                    <motion.a
-                      key={section._id}
-                      onClick={() => scrollToSection(section._id)}
-                      className="flex items-center group cursor-pointer"
-                      whileHover={{ x: 5, color: "#9333EA" }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                    >
-                      <motion.span
-                        className={`inline-block w-1.5 h-1.5 ${
-                          activeTopic === section._id
-                            ? "bg-purple-600"
-                            : "border border-gray-400"
-                        } transform rotate-45 mr-3`}
-                        animate={{
-                          y: activeTopic === section._id ? [0, 4, 0] : 0,
-                          rotate:
-                            activeTopic === section._id ? [45, 225, 45] : 45,
-                          scale: activeTopic === section._id ? [1, 1.2, 1] : 1,
-                        }}
-                        transition={{
-                          duration: 3,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      />
-                      <span
-                        className={`text-xs transition-colors duration-200 ${
-                          activeTopic === section._id
-                            ? "text-purple-600"
-                            : "group-hover:text-purple-600"
-                        }`}
+                  {sections.map((section) => {
+                    const isActive = activeTopic === section.id;
+
+                    return (
+                      <motion.a
+                        key={section.id}
+                        onClick={() => scrollToSection(section.id)}
+                        className="flex items-center group cursor-pointer"
+                        transition={{ type: "spring", stiffness: 400 }}
                       >
-                        {section.subTitle}
-                      </span>
-                    </motion.a>
-                  ))}
+                        <motion.span
+                          className={`inline-block w-1.5 h-1.5 transform rotate-45 mr-3 ${
+                            isActive
+                              ? "bg-purple-600"
+                              : "border border-gray-400"
+                          }`}
+                          animate={{
+                            y: isActive ? [0, 4, 0] : 0,
+                            rotate: isActive ? [45, 225, 45] : 45,
+                            scale: isActive ? [1, 1.2, 1] : 1,
+                          }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                        />
+                        <span
+                          className={`text-xs transition-colors duration-200 ${
+                            isActive
+                              ? "text-purple-600"
+                              : "group-hover:text-purple-600"
+                          }`}
+                        >
+                          {section.subTitle} {/* Display section title */}
+                        </span>
+                      </motion.a>
+                    );
+                  })}
                 </nav>
               </div>
 
               {/* Enhanced Comments section */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="w-full">
+                <Card className="shadow-sm hover:shadow-md transition-shadow duration-300">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2 text-purple-600">
@@ -413,8 +349,8 @@ const Topic = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
 
             {/* Comments Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

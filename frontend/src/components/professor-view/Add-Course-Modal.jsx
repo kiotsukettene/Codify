@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Clock, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,8 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { useCourseStore } from "@/store/courseStore";
 
 const daysOfWeek = [
   "Monday",
@@ -37,6 +35,8 @@ const timeSlots = Array.from({ length: 15 }, (_, i) => {
     label: `${hour12}:00 ${ampm}`,
   };
 });
+import { useCourseStore } from "@/store/courseStore";
+import { TimeField } from "../../components/professor-view/Time-field";
 
 const CourseModal = ({ onClose }) => {
   const [formValues, setFormValues] = useState({
@@ -170,6 +170,7 @@ const CourseModal = ({ onClose }) => {
     setErrors(newErrors);
   };
 
+  // Add handlers for select components
   const handleProgrammingLanguageChange = (value) => {
     setFormValues((prev) => ({ ...prev, programmingLanguage: value }));
     setErrors((prev) => ({
@@ -242,6 +243,15 @@ const CourseModal = ({ onClose }) => {
       }
     }
   };
+
+  const handleProgramChange = (value) => {
+    setFormValues((prev) => ({ ...prev, program: value }));
+    setErrors((prev) => ({
+      ...prev,
+      program: !value ? "Program is required." : "",
+    }));
+  };
+
   return (
     <DialogContent className="max-w-[320px] sm:max-w-[500px]">
       <DialogHeader>
@@ -272,19 +282,33 @@ const CourseModal = ({ onClose }) => {
           <label className="block text-sm sm:text-base font-medium text-gray-700">
             Program
           </label>
-          <Input
+          <Select
             name="program"
-            placeholder="Program"
             value={formValues.program}
-            onChange={handleChange}
-            className="w-full"
-          />
+            onValueChange={handleProgramChange}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose a program" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="BSCS">
+                Bachelor of Science in Computer Science (BSCS)
+              </SelectItem>
+              <SelectItem value="BSIT">
+                Bachelor of Science in Information Technology (BSIT)
+              </SelectItem>
+              <SelectItem value="BSEMC">
+                Bachelor of Science in Entertainment and Multimedia Computing
+                (BSEMC){" "}
+              </SelectItem>
+              <SelectItem value="BSIS">
+                Bachelor of Science in Information System (BSIS){" "}
+              </SelectItem>
+            </SelectContent>
+          </Select>
           {errors.program && (
             <p className="text-red-500 text-sm">{errors.program}</p>
           )}
-          <p className="text-xs sm:text-sm text-gray-500">
-            e.g. Bachelor of Science in Information Technology (BSIT)
-          </p>
         </div>
 
         <div className="space-y-2">
@@ -350,19 +374,12 @@ const CourseModal = ({ onClose }) => {
             <label className="block text-sm sm:text-base font-medium text-gray-700">
               Time
             </label>
-            <Select name="time" onValueChange={handleTimeChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select time" />
-                <Clock className="h-4 w-4 opacity-50" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeSlots.map((slot) => (
-                  <SelectItem key={slot.value} value={slot.value}>
-                    {slot.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <TimeField
+              name="time"
+              value={formValues.time}
+              onChange={handleTimeChange}
+            />
+
             {errors.time && (
               <p className="text-red-500 text-sm">{errors.time}</p>
             )}
@@ -375,6 +392,7 @@ const CourseModal = ({ onClose }) => {
               Cancel
             </Button>
           </DialogTrigger>
+
           <Button
             type="submit"
             className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:pointer-events-none text-sm sm:text-base"

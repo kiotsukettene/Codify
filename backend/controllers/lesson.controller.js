@@ -3,11 +3,12 @@ import mongoose from "mongoose";
 
 export const createLesson = async (req, res) => {
   try {
-    const { courseId, title, sections } = req.body;
+    const { courseId, title, subTitle, sections } = req.body;
 
     const lesson = new Lesson({
       courseId,
       title,
+      subTitle,
       sections, // sections contain subTitle, description, codeSnippets, notes
     });
 

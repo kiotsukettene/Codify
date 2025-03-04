@@ -242,7 +242,7 @@ const ActivityOutput = ({ students }) => {
                                   disabled={submittingComment === student.id}
                                 >
                                   <Send className={`h-4 w-4 ${
-                                    submittingComment === student.id ? 'animate-spin' : ''
+                                    submittingComment === student.id ? 'animate-pulse' : ''
                                   }`} />
                                 </Button>
                               </div>

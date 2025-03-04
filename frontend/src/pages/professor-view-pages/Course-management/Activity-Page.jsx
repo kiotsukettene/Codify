@@ -12,6 +12,14 @@ import { cn } from "@/lib/utils";
 import { useNavigate, useParams } from "react-router-dom";
 import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
+import Bear from "@/assets/picture/Avatar/bear.png";
 import { useActivityStore } from "@/store/activityStore";
 
 const ActivityPage = () => {
@@ -19,7 +27,7 @@ const ActivityPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
-  const { activity, fetchActivityById } = useActivityStore(); // ✅ Use Zustand store
+  const { activity, fetchActivityById } = useActivityStore();
 
   useEffect(() => {
     if (activityId) {
@@ -31,18 +39,17 @@ const ActivityPage = () => {
 
   const students = [
     { id: "1", name: "All students", score: 0 },
-    { id: "2", name: "Dela Cruz, Momo W.", score: 0 },
+    { id: "2", name: "Dela Cruz, Momo W.", score: 0, avatar: Bear },
     {
       id: "3",
       name: "Antang, JunMar H.",
       score: 100,
       submitted: "11:58 PM",
-      avatar:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-y4ovkVGe39fEOtC8ZBKyd642efEBEx.png",
+      avatar: Bear,
       comment: "Ma'am sorry, namail ng pasa po kanina",
     },
-    { id: "4", name: "Dela Cruz, Momo W.", score: 0 },
-    { id: "5", name: "Caps, Elle B.", score: 0 },
+    { id: "4", name: "Dela Cruz, Momo W.", score: 0, avatar: Bear },
+    { id: "5", name: "Caps, Elle B.", score: 0, avatar: Bear },
   ];
 
   return (
@@ -60,11 +67,29 @@ const ActivityPage = () => {
 
           <div className="w-full px-10">
             {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-xl font-semibold">{activity?.title}</h1>
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(-1)}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+
+                <h1 className="text-xl font-semibold">{activity?.title}</h1>
+              </div>
+              {/* Right Section: Dropdown Menu */}
+              <DropdownMenu>
+                <DropdownMenuContent align="end" className="py-1 text-red-600">
+                  <DropdownMenuItem className="hover:bg-gray-100 transition-colors duration-200">
+                    Delete
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-gray-100 transition-colors duration-200">
+                    Edit
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Tabs */}

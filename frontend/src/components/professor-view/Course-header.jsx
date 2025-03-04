@@ -1,6 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Users, Rocket, Crown, Swords, Video, Shield, Flag, Zap, Clock, ShieldAlert, ShieldIcon} from "lucide-react"
+import { Users, Rocket, Crown, Swords, Video, Shield, Flag, Zap, Clock, ShieldAlert, ShieldIcon, BookOpen} from "lucide-react"
 import { motion } from "framer-motion"
 
 const CourseHeader = ({ title, description, details }) => {
@@ -46,7 +45,7 @@ return(
 </motion.div>
 
 <div className="relative z-10 p-4 sm:p-8">
-  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-0">
+  <div className="flex flex-col lg:flex-row justify-between items-start gap-6 lg:gap-0">
     <div className="space-y-4 flex-1">
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -64,23 +63,23 @@ return(
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
-            className="h-1 bg-purple-400/30 mt-1"
+            className="h-0.5 bg-purple-400/30 mt-1"
             transition={{ delay: 0.5, duration: 0.8 }}
           />
         </div>
       </motion.div>
 
-      <motion.p
+      {/* <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="text-base"
       >
         {description}
-      </motion.p>
+      </motion.p> */}
 
       {/* Card details */}
       <motion.div 
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-2"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mt-2 flex-1 lg:w-3/4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -91,18 +90,17 @@ return(
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
             whileHover={{ scale: 1.05, rotate: 2 }}
-            className="col-span-1 px-3 py-2 bg-white/20 rounded-lg backdrop-blur-sm border border-white/20"
+            className="col-span-1 flex px-3 py-2 bg-white/20 rounded-lg backdrop-blur-sm border border-white/20"
           >
             <p className="text-xs capitalize flex items-center gap-2">
-              {key === 'language' && <Zap className="w-4 h-4" />}
+              {key === 'language' && <Zap className="w-4 h-4 flex" />}
               {key === 'students' && <Users className="w-4 h-4" />}
-              {key === 'instructor' && <Crown className="w-4 h-4" />}
+              {key === 'program' && <BookOpen className="w-4 h-4" />}
               {key === 'schedule' && <Clock className="w-4 h-4" />}
-              {key === 'courseCode' && <ShieldAlert className="w-4 h-4" />}
+              {key === 'code' && <ShieldAlert className="w-4 h-4" />}
               {key === 'section' && <Flag className="w-4 h-4" />}
-              {key}
+            {`${key} : ${value}`} {/* Space after colon */}
             </p>
-            <p className="text-xs mt-1">{value}</p>
           </motion.div>
         ))}
       </motion.div>

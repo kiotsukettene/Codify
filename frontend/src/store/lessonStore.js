@@ -31,14 +31,18 @@ export const useLessonStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.get(`${API_URL}/${lessonId}`);
-      set({ lesson: response.data, isLoading: false });
+      console.log(`Fetching lesson with ID: ${lessonId}`); // ✅ Debugging log
+
+      const response = await axios.get(`${API_URL}/lesson/${lessonId}`);
+      console.log("Lesson API Response:", response.data); // ✅ Debugging log
+
+      set({ lesson: response.data, isLoading: false }); // ✅ Ensure state updates
     } catch (error) {
+      console.error("Error fetching lesson:", error);
       set({
         error: error.response?.data?.message || "Error fetching lesson",
         isLoading: false,
       });
-      toast.error(error.response?.data?.message || "Error fetching lesson");
     }
   },
 

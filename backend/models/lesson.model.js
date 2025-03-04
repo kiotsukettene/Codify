@@ -8,6 +8,7 @@ const LessonSchema = new mongoose.Schema(
       required: true,
     },
     title: { type: String, required: true },
+    subTitle: { type: String },
     sections: [
       {
         subTitle: { type: String, required: true },

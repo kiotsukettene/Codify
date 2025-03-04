@@ -40,6 +40,30 @@ export const createActivity = async (req, res) => {
   }
 };
 
+// export const createActivity = async (activityData) => {
+//   try {
+//     const response = await fetch("/api/activities", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(activityData),
+//     });
+
+//     const data = await response.json();
+//     console.log("API Response:", data); // ✅ Debugging
+
+//     if (!data || !data._id) {
+//       throw new Error("Activity creation failed: Missing _id");
+//     }
+
+//     return data;
+//   } catch (error) {
+//     console.error("Error creating activity:", error);
+//     return null;
+//   }
+// };
+
 export const getActivitiesByLesson = async (req, res) => {
   try {
     const { lessonId } = req.params;
