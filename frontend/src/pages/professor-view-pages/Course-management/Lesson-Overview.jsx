@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AppSidebar from "@/components/professor-view/Sidebar";
-import {
-  Eye,
-  FileText,
-  Trophy,
-  Users,
-  Crown,
-  Ship,
-  Rocket,
-} from "lucide-react";
+import { Eye, FileText, Trophy, Users, Rocket } from "lucide-react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -34,7 +26,6 @@ import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
 import { toast } from "react-hot-toast";
 import { useprofAuthStore } from "@/store/profAuthStore";
-import confetti from "canvas-confetti";
 
 const studentList = [
   {

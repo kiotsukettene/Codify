@@ -178,6 +178,8 @@ const Courses = () => {
                     className="cursor-pointer transition duration-200"
                   >
                     <Card
+                      key={course._id}
+                      courseId={course._id} // ✅ Pass courseId here
                       lessonCount={course.lessonCount || 0}
                       languages={course.language}
                       title={course.className}

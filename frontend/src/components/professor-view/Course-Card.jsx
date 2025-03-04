@@ -1,21 +1,42 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Monitor } from "lucide-react";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { useCourseStore } from "@/store/courseStore";
+import { toast } from "react-hot-toast";
+import DeleteDialog from "../Dialog/DeleteDialog"; // ✅ Import DeleteDialog
 
-const Card = ({ lessonCount, languages, title, courseCode, section }) => {
+const Card = ({
+  lessonCount,
+  languages,
+  title,
+  courseCode,
+  section,
+  courseId,
+}) => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    navigate(`/course/${courseCode}`); // ✅ Navigates to the course details page
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // ✅ Manage dialog state
+
+  const handleDeleteCourse = async () => {
+    if (!courseId) {
+      toast.error("Invalid course ID");
+      return;
+    }
+
+    try {
+      await useCourseStore.getState().deleteCourse(courseId);
+      toast.success("Course deleted successfully!");
+      setIsDeleteDialogOpen(false); // ✅ Close dialog after deletion
+    } catch (error) {
+      console.error("Error deleting course:", error);
+      toast.error("Failed to delete course");
+    }
   };
 
   return (
-    <div
-      className="w-[230px] sm:w-[240px] h-[320px] transform hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
-      onClick={handleClick}
-    >
+    <div className="w-[230px] sm:w-[240px] h-[320px] transform hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
       <div
         className="relative w-full h-full shadow-md hover:shadow-none"
         style={{
@@ -83,7 +104,10 @@ const Card = ({ lessonCount, languages, title, courseCode, section }) => {
             </div>
 
             {/* Options */}
-            <button className="p-2 hover:bg-gray-100 rounded-full">
+            <button
+              className="p-2 hover:bg-gray-100 rounded-full"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
               <svg
                 viewBox="0 0 24 24"
                 className="w-5 h-5 text-gray-400"
@@ -115,11 +139,20 @@ const Card = ({ lessonCount, languages, title, courseCode, section }) => {
           }}
         />
       </div>
+      {/* Delete Dialog */}
+      <DeleteDialog
+        title="Delete Course"
+        description={`Are you sure you want to delete the course "${title}"? This action cannot be undone.`}
+        isOpen={isDeleteDialogOpen} // ✅ Pass dialog state
+        onConfirm={handleDeleteCourse} // ✅ Handle delete
+        onCancel={() => setIsDeleteDialogOpen(false)} // ✅ Close dialog
+      />
     </div>
   );
 };
 
 Card.propTypes = {
+  courseId: PropTypes.string.isRequired, // ✅ Ensure courseId is a prop
   lessonCount: PropTypes.number.isRequired,
   languages: PropTypes.array.isRequired,
   title: PropTypes.string.isRequired,
