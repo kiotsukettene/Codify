@@ -47,7 +47,7 @@ import StudentDashboard from "./pages/student-view-pages/Dashboard";
 import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
 import StudentChallengesView from "./pages/student-view-pages/challenges/student-challenges-view";
 import StudentLessonListPage from "./pages/student-view-pages/course-management/student-lesson-list";
-import StudentPracticePage from "./pages/student-view-pages/challenges/student-practice-page";
+import StudentTaskPage from "./pages/student-view-pages/Task-Activity-list";
 import StudentModulePage from "./pages/student-view-pages/course-management/student-module";
 import StudentActivityPage from "./pages/student-view-pages/course-management/student-activity";
 import StudentPracticePage from "./pages/student-view-pages/challenges/student-practice-page";
@@ -152,6 +152,20 @@ function App() {
         </Route>
 
 
+        {/* Student Routes */}
+        <Route path="/student/" element={<StudentLayout />}>
+          <Route path="dashboard" element={<ProtectedRouteStudents><StudentDashboard /></ProtectedRouteStudents>} />
+          <Route path="course-list" element={<ProtectedRouteStudents><StudentCourseListPage /></ProtectedRouteStudents>} />
+          <Route path="challenges" element={<ProtectedRouteStudents><StudentChallengesView /></ProtectedRouteStudents>} />
+          <Route path="challenges/:id" element={<ProtectedRouteStudents><StudentPracticePage /></ProtectedRouteStudents>} />
+          <Route path="lesson-list" element={<StudentLessonListPage />} />
+          <Route path="module" element={<StudentModulePage />} />
+          <Route path="activity" element={<StudentActivityPage />} />
+          <Route path="task-list" element={<StudentTaskPage />} />
+          <Route path="schedules" element={<StudentCalendarPage />} />
+        </Route>
+
+        
 
         {/* Additional Routes */}
         <Route path="/code-editor" element={<CodeEditor />} />
