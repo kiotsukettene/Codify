@@ -261,11 +261,6 @@ const LessonOverview = () => {
                   : "No schedule available",
                 courseCode: courseData.courseCode,
                 section: courseData.section,
-                schedule: courseData.schedule
-                  ? `${courseData.schedule.day}, ${courseData.schedule.time}`
-                  : "No schedule available",
-                courseCode: courseData.courseCode,
-                section: courseData.section,
               }}
             />
 

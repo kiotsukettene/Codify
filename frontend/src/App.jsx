@@ -62,77 +62,12 @@ import StudentModulePage from "./pages/student-view-pages/course-management/stud
 import StudentActivityPage from "./pages/student-view-pages/course-management/student-activity";
 import StudentPracticePage from "./pages/student-view-pages/challenges/student-practice-page";
 import StudentCalendarPage from "./pages/student-view-pages/Schedule-Calendar";
-<<<<<<< HEAD
-=======
-import VideoConference from "./pages/student-view-pages/Video-Conference";
-// redirect authenticated and paid institution to dashboard page 
-
-const RedirectAuthenticatedInstitution = ({ children }) => {
-  const { isAuthenticated, institution } = useAuthStore();
-  
-
-  if (isAuthenticated && institution.isVerified && institution.isPaid) {
-    return <Navigate to="/admin/dashboard" replace/>;
-  }
-
-  if (isAuthenticated && institution.isVerified && !institution.isPaid) {
-    return <Navigate to="/admin/payment-summary" replace/>;
-  }
-  
-  if (isAuthenticated && !institution.isVerified && !institution.isPaid) { 
-    return <Navigate to="/admin/email-verify" replace/>;
-  }
-
-
-  return children;
-}
-
-const RedirectAuthenticatedStudent = ({ children }) => {
-  const { isAuthenticated } = useStudentStore();
-  
-
-  if (isAuthenticated) {
-    return <Navigate to="/student/dashboard" replace/>;
-  }
-
-  return children;
-}
-
-// protect routes that require authentication
-
-const ProtectedRouteInstitution = ({ children }) => {
-  const { isAuthenticated, institution } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
-  }
-
-
-  // If already verified, prevent access to /email-verify
-  if (institution.isVerified && window.location.pathname === "/admin/email-verify") {
-    return <Navigate to="/admin/payment-summary" replace />;
-  }
-
-  if (institution.isPaid && window.location.pathname === "/admin/payment-summary") {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-  return children;
-}
-
-const ProtectedRouteStudents = ({ children }) => {
-  const { isAuthenticated } = useStudentStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/student/login" replace />;
-  }
-  return children;
-}
->>>>>>> feature/FE-video-conference
 
 import CodeEditor from "./components/CodeEditor";
 import LandingPage from "./pages/Guest-view-pages/Landing-page";
 import MainLogin from "./pages/Guest-view-pages/Login";
 import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
+import VideoConference from "./pages/student-view-pages/Video-Conference";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -147,51 +82,9 @@ function App() {
     <div>
       <Routes>
         <Route path="/professor/courses" element={<LessonOverview />} />
+        <Route path="/video-conference" element={<VideoConference/>}/>
 
-<<<<<<< HEAD
         {/* Public Routes */}
-=======
-     
-
-        <Route path="/student/login" element={
-          <RedirectAuthenticatedStudent>
-            <StudentLoginPage/>
-          </RedirectAuthenticatedStudent>
-        } />
-
-        <Route path="/student/forgot-password" element={
-          <RedirectAuthenticatedStudent>
-            <StudentForgotPasswordPage/>
-          </RedirectAuthenticatedStudent>
-        } />
-        
-        <Route path="/student/reset-password/:token" element={<RedirectAuthenticatedStudent><StudentNewPasswordPage /></RedirectAuthenticatedStudent>} />
-
-       <Route path="/student" element={<StudentLayout />}>
-          <Route path="dashboard" element={
-            <ProtectedRouteStudents>
-            <StudentDashboard />
-            </ProtectedRouteStudents>
-            } />
-          {/* <Route path="course-list" element={
-            <ProtectedRouteStudents>
-               <StudentCourseListPage />
-            </ProtectedRouteStudents>  
-          } /> */}
-
-          <Route path="course-list" element={<StudentCourseListPage/>}/>
-          <Route path="lesson-list" element={<StudentLessonListPage/>}/>
-          <Route path="module" element={<StudentModulePage/>}/>
-          <Route path="activity" element={<StudentActivityPage/>}/>
-          <Route path="task-list" element={<StudentTaskPage/>}/>
-          <Route path="challenges" element={<StudentChallengesView/>}/>
-          <Route path="practice" element={<StudentPracticePage/>}/>
-          <Route path="schedules" element={<StudentCalendarPage/>}/>
-    </Route>
-    
-    <Route path="/video-conference" element={<VideoConference/>}/>
-        
->>>>>>> feature/FE-video-conference
         <Route path="/" element={<GuestLayout />}>
           <Route index element={<LandingPage />} />
           <Route path="/login" element={<MainLogin />} />
