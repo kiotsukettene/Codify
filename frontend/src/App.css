@@ -41,3 +41,61 @@
   color: #888;
 }
 
+button[class^="VsTVUAD89KWleD0YRVsD"] {
+  background-color: #6C3AC2 !important; /* Custom Gold Color */
+  color: #FFFFFF !important; /* Dark Text */
+  border-radius: 8px !important;
+  padding: 10px 16px !important;
+}
+
+
+.myCallContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  box-shadow: none;
+}
+
+.zzHlKp_IVmgXBPV3Jv58 {
+  color: #FFFFFF !important; /* Dark Text */
+  border-radius: 8px !important;
+  padding: 10px 16px !important;
+  box-shadow: none;
+
+}
+.D9WLyEQaARfWqCTyVrpU{
+  box-shadow: none;
+}
+
+.rQfcdxdAd98I2u3wR_Xv{
+  background-color: #f8f2ff !important; /*  This is the Div for Join room text and button, input fieldr */
+  color: #FFFFFF !important; 
+  border-radius: 8px !important;
+  padding: 20px 20px !important;
+  box-shadow: none;
+}
+.dQDNvqxeCXpZG5yOs9Ou{
+  background-color: #e6eaff !important; /* This is the Div for share link, copy link*/
+  color: #FFFFFF !important; 
+  border-radius: 8px !important;
+  padding: 20px 20px !important;
+  box-shadow: none;
+}
+
+.TYiiRFB3EhYJGVPE4k4q{ /* This is the input field */
+  border-color: #6C3AC2 !important;
+  color: #868686 !important;
+  font-weight: lighter;
+}
+
+
+.D9WLyEQaARfWqCTyVrpU{ /* for the main container  */
+
+}
+.sJcgXLqA2Va2eqymgksg{ /* for the video/camera preview  */
+
+}
+.gWzRvax8CjHIpjuL09nE{  /* div for all the buttons inside the preview such as mic, video  */
+
+}

@@ -89,9 +89,14 @@ function StudentLessonListPage() {
                 >
                   <Video /> Arena
                 </Button>
+
+                {/*=================================
+                ==========Video Meet Button ========
+                ===================================== */}
                 <Button
                   variant="outline"
-                  className="border-primary text-primary"
+                  className="border-primary text-primary" 
+                  onClick={() => navigate("/video-conference")}
                 >
                   <Blend />
                 </Button>
