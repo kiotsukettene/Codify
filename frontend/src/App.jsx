@@ -86,61 +86,20 @@ function App() {
           <Route index element={<LandingPage />} />
           <Route path="/login" element={<MainLogin />} />
           <Route path="*" element={<PageNotFoundPage />} />
-
           {/* Admin Registration & Authentication */}
-          <Route path="/admin/register" element={
-            <RedirectAuthenticatedInstitution>
-              <AdminRegisterPage />
-            </RedirectAuthenticatedInstitution>
-          } />
-          <Route path="/admin/login" element={
-            <RedirectAuthenticatedInstitution>
-              <AdminLogin />
-            </RedirectAuthenticatedInstitution>
-          } />
-          <Route path="/admin/forgot-password" element={
-            <RedirectAuthenticatedInstitution>
-              <AdminForgotPasswordPage />
-            </RedirectAuthenticatedInstitution>
-          } />
-          <Route path="/admin/reset-password/:token" element={
-            <RedirectAuthenticatedInstitution>
-              <AdminNewPasswordPage />
-            </RedirectAuthenticatedInstitution>
-          } />
+          <Route path="/admin/register" element={<RedirectAuthenticatedInstitution><AdminRegisterPage /></RedirectAuthenticatedInstitution>} />
+          <Route path="/admin/login" element={<RedirectAuthenticatedInstitution><AdminLogin /></RedirectAuthenticatedInstitution>} />
+          <Route path="/admin/forgot-password" element={<RedirectAuthenticatedInstitution><AdminForgotPasswordPage /></RedirectAuthenticatedInstitution>} />
+          <Route path="/admin/reset-password/:token" element={<RedirectAuthenticatedInstitution><AdminNewPasswordPage /></RedirectAuthenticatedInstitution>} />
           <Route path="/admin/success-reset" element={<AdminSuccessResetPage />} />
-        
-
-        {/* Student Authentication */}
-        <Route
-          path="/student/login"
-          element={
-            <RedirectAuthenticatedStudent>
-              <StudentLoginPage />
-            </RedirectAuthenticatedStudent>
-          }
-        />
-        <Route
-          path="/student/forgot-password"
-          element={
-            <RedirectAuthenticatedStudent>
-              <StudentForgotPasswordPage />
-            </RedirectAuthenticatedStudent>
-          }
-        />
-        <Route
-          path="/student/reset-password/:token"
-          element={
-            <RedirectAuthenticatedStudent>
-              <StudentNewPasswordPage />
-            </RedirectAuthenticatedStudent>
-          }
-        />
+           {/* Student Authentication */}
+          <Route path="/student/login" element={<RedirectAuthenticatedStudent><StudentLoginPage /></RedirectAuthenticatedStudent>}/>
+          <Route path="/student/forgot-password" element={<RedirectAuthenticatedStudent><StudentForgotPasswordPage /></RedirectAuthenticatedStudent>}/>
+          <Route path="/student/reset-password/:token" element={<RedirectAuthenticatedStudent><StudentNewPasswordPage /></RedirectAuthenticatedStudent>}/>
+        </Route>
 
         {/* Professor Authentication */}
-
-        <Route path="/professor/" 
-        >
+        <Route path="/professor/" >
           <Route path="login" element={<RedirectAuthenticatedProfessor><ProfessorLogin /></RedirectAuthenticatedProfessor>} />
           <Route path="forgot-password" element={<RedirectAuthenticatedProfessor><ProfForgotPassword /></RedirectAuthenticatedProfessor>} />
           <Route path="dashboard" element={<ProtectedRouteProfessors><ProfDashboard /></ProtectedRouteProfessors>} />
@@ -151,69 +110,19 @@ function App() {
           <Route path="course/:courseId/lesson/:lessonId/create-activity" element={<ProtectedRouteProfessors><CreateActivity /></ProtectedRouteProfessors>} />
           <Route path="course/:courseId/lesson/:lessonId/activity/:activityId" element={<ProtectedRouteProfessors><ActivityPage /></ProtectedRouteProfessors>} />
           <Route path="reset-password/:token" element={<RedirectAuthenticatedProfessor><ProfNewPassword /></RedirectAuthenticatedProfessor>} />
-
-        </Route>
-        
-
-        <Route
-          path="admin/payment-summary"
-          element={
-            <ProtectedRouteInstitution>
-              <PaymentSummary />
-            </ProtectedRouteInstitution>
-          }
-        />
-
-        <Route path="admin/payment-success" element={
-          <ProtectedRouteInstitution>
-            <PaymentSuccess />
-          </ProtectedRouteInstitution>
-        } />
         </Route>
 
-        {/* Admin Routes */}
+        {/* Authenticated Admin Routes */}
         <Route path="/admin/" element={<AdminLayout />}>
-          <Route
-            path="dashboard"
-            element={
-              <ProtectedRouteInstitution>
-                <AdminDashboard />
-              </ProtectedRouteInstitution>
-            }
-          />
-          <Route
-            path="professors"
-            element={
-              <ProtectedRouteInstitution>
-                <ProfessorList />
-              </ProtectedRouteInstitution>
-            }
-          />
-          <Route
-            path="addProfessor"
-            element={
-              <ProtectedRouteInstitution>
-                <AddProfessor />
-              </ProtectedRouteInstitution>
-            }
-          />
-          <Route
-            path="students"
-            element={
-              <ProtectedRouteInstitution>
-                <StudentList />
-              </ProtectedRouteInstitution>
-            }
-          />
-          <Route
-            path="addStudent"
-            element={
-              <ProtectedRouteInstitution>
-                <AddStudent />
-              </ProtectedRouteInstitution>
-            }
-          />
+          <Route path="dashboard" element={<ProtectedRouteInstitution><AdminDashboard /></ProtectedRouteInstitution>}/>
+          <Route path="professors" element={<ProtectedRouteInstitution><ProfessorList /></ProtectedRouteInstitution>}/>
+          <Route path="addProfessor" element={<ProtectedRouteInstitution><AddProfessor /></ProtectedRouteInstitution>}/>
+          <Route path="students" element={<ProtectedRouteInstitution><StudentList /></ProtectedRouteInstitution>}/>
+          <Route path="addStudent" element={<ProtectedRouteInstitution><AddStudent /></ProtectedRouteInstitution>} />
         </Route>
+
+        <Route path="payment-summary" element={<ProtectedRouteInstitution><PaymentSummary /></ProtectedRouteInstitution>} />
+        <Route path="payment-success" element={<ProtectedRouteInstitution><PaymentSuccess /></ProtectedRouteInstitution>} />
 
 
         {/* Student Routes */}
@@ -228,8 +137,6 @@ function App() {
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
         </Route>
-
-        
 
         {/* Additional Routes */}
         <Route path="/code-editor" element={<CodeEditor />} />
