@@ -4,7 +4,7 @@ import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 
-function StudentCourseCard({ lessons, image, title, professor, category, tags=[] }) {
+function StudentCourseCard({ lessons, image, title, professor, category, tags = [], onClick }) {
   const badgeColors = {
     Networking: "bg-blue-200 text-blue-800",
     AI: "bg-purple-200 text-purple-800",
@@ -14,7 +14,10 @@ function StudentCourseCard({ lessons, image, title, professor, category, tags=[]
   };
 
   return (
-    <Card className="w-[355px] h-[390px] max-w-sm mx-auto bg-white rounded-xl shadow-sm border-none overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5">
+    <Card
+      className="w-[355px] h-[390px] max-w-sm mx-auto bg-white rounded-xl shadow-sm border-none overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5 cursor-pointer"
+      onClick={onClick} // Add onClick to the Card
+    >
       {/* Image Section */}
       <div className="relative">
         <img
@@ -34,19 +37,18 @@ function StudentCourseCard({ lessons, image, title, professor, category, tags=[]
       </CardContent>
 
       {/* Category Badge */}
-      <div className="mt-auto pt-12 flex gap-2 flex-wrap ">
-  {tags.map((tag, index) => (
-    <Badge
-      key={index}
-      className={`text-xs font-medium px-3 py-1 rounded-full ${
-        badgeColors[tag] || badgeColors.Default
-      }`}
-    >
-      {tag}
-    </Badge>
-  ))}
-</div>
-
+      <div className="mt-auto pt-12 flex gap-2 flex-wrap">
+        {tags.map((tag, index) => (
+          <Badge
+            key={index}
+            className={`text-xs font-medium px-3 py-1 rounded-full ${
+              badgeColors[tag] || badgeColors.Default
+            }`}
+          >
+            {tag}
+          </Badge>
+        ))}
+      </div>
     </Card>
   );
 }

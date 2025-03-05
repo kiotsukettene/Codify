@@ -21,8 +21,9 @@ import { useStudentStore } from "@/store/studentStore";
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
-  const { enrolledCourses, fetchEnrolledCourses, isLoading } = useStudentCourseStore();
+  const { enrolledCourses, fetchEnrolledCourses, isLoading} = useStudentCourseStore();
   const { student } = useStudentStore();
+
 
   useEffect(() => {
     fetchEnrolledCourses();

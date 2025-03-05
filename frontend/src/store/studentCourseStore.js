@@ -58,12 +58,31 @@ const useStudentCourseStore = create((set) => ({
 
     // Fetch lessons for a course
     fetchLessonsForCourse: async (courseId) => {
-    set({ loading: true, error: null });
+    set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(`/student/course/lessons/${courseId}`);
-      set({ lessons: response.data, loading: false });
+      const response = await axios.get(`${API_URL}/lessons/${courseId}`);
+      // Ensure lessons is an array, even if response.data is unexpected
+      const lessonsData = Array.isArray(response.data) ? response.data : [];
+      set({ lessons: lessonsData, isLoading: false });
     } catch (error) {
-      set({ error: error.response?.data?.message || "Error fetching lessons", loading: false });
+      const errorMsg = error.response?.data?.message || "Error fetching lessons";
+      set({ lessons: [], error: errorMsg, isLoading: false }); // Reset to empty array on error
+      toast.error(errorMsg);
+    }
+    },
+    
+    // New action to fetch a specific course by ID
+    fetchCourseById: async (courseId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/course/${courseId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      set({ currentCourse: response.data, isLoading: false });
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || "Error fetching course";
+      set({ error: errorMsg, isLoading: false });
+      toast.error(errorMsg);
     }
   },
 

@@ -136,8 +136,8 @@ function App() {
           <Route path="course-list" element={<ProtectedRouteStudents><StudentCourseListPage /></ProtectedRouteStudents>} />
           <Route path="challenges" element={<ProtectedRouteStudents><StudentChallengesView /></ProtectedRouteStudents>} />
           <Route path="challenges/:id" element={<ProtectedRouteStudents><StudentPracticePage /></ProtectedRouteStudents>} />
-          <Route path="lesson-list" element={<StudentLessonListPage />} />
-          <Route path="module" element={<StudentModulePage />} />
+          <Route path="lesson-list/:courseId" element={<ProtectedRouteStudents><StudentLessonListPage /></ProtectedRouteStudents>} />
+          <Route path="module/:lessonId" element={<StudentModulePage />} />
           <Route path="activity" element={<StudentActivityPage />} />
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />

@@ -104,3 +104,27 @@ export const getLessonsForCourse = async (req, res) => {
         })
     }
 }
+
+export const getCourseById = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const studentId = req.studentId;
+
+    const course = await Course.findById(courseId).populate({
+      path: "professorId",
+      select: "firstName lastName",
+    });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    if (!course.studentsEnrolled.includes(studentId)) {
+      return res.status(403).json({ message: "You are not enrolled in this course" });
+    }
+
+    res.status(200).json(course);
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    res.status(500).json({ message: "Error fetching course", error: error.message });
+  }
+};
