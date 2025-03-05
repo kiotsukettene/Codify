@@ -39,7 +39,8 @@ import { useprofAuthStore } from "@/store/profAuthStore";
 import ProfessorLogin from "./pages/professor-view-pages/professor-auth/Professor-Login";
 import ProfForgotPassword from "./pages/professor-view-pages/professor-auth/Professor-Forgot-Password";
 import ProfNewPassword from "./pages/professor-view-pages/professor-auth/Professor-New-Password";
-import ProfVerifyEmail from "./pages/professor-view-pages/professor-auth/Professor-Verify-Email";
+
+
 import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-Overview";
 import Courses from "./pages/professor-view-pages/Course-management/Course";
 import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
@@ -95,13 +96,17 @@ function App() {
            {/* Student Authentication */}
           <Route path="/student/login" element={<RedirectAuthenticatedStudent><StudentLoginPage /></RedirectAuthenticatedStudent>}/>
           <Route path="/student/forgot-password" element={<RedirectAuthenticatedStudent><StudentForgotPasswordPage /></RedirectAuthenticatedStudent>}/>
-          <Route path="/student/reset-password/:token" element={<RedirectAuthenticatedStudent><StudentNewPasswordPage /></RedirectAuthenticatedStudent>}/>
+          <Route path="/student/reset-password/:token" element={<RedirectAuthenticatedStudent><StudentNewPasswordPage /></RedirectAuthenticatedStudent>} />
+          
+          <Route path="/professor/login" element={<RedirectAuthenticatedProfessor><ProfessorLogin /></RedirectAuthenticatedProfessor>} />
+          <Route path="/professor/forgot-password" element={<RedirectAuthenticatedProfessor><ProfForgotPassword /></RedirectAuthenticatedProfessor>} />
+          <Route path="/professor/reset-password/:token" element={<RedirectAuthenticatedProfessor><ProfNewPassword /></RedirectAuthenticatedProfessor>} />
+
         </Route>
 
         {/* Professor Authentication */}
         <Route path="/professor/" >
-          <Route path="login" element={<RedirectAuthenticatedProfessor><ProfessorLogin /></RedirectAuthenticatedProfessor>} />
-          <Route path="forgot-password" element={<RedirectAuthenticatedProfessor><ProfForgotPassword /></RedirectAuthenticatedProfessor>} />
+          
           <Route path="dashboard" element={<ProtectedRouteProfessors><ProfDashboard /></ProtectedRouteProfessors>} />
           <Route path="course" element={<ProtectedRouteProfessors><Courses /></ProtectedRouteProfessors>} />
           <Route path="course/:courseId" element={<ProtectedRouteProfessors><LessonOverview /></ProtectedRouteProfessors>} />
@@ -109,7 +114,7 @@ function App() {
           <Route path="course/:courseId/lesson/:lessonId" element={<ProtectedRouteProfessors><Topic /></ProtectedRouteProfessors>} />
           <Route path="course/:courseId/lesson/:lessonId/create-activity" element={<ProtectedRouteProfessors><CreateActivity /></ProtectedRouteProfessors>} />
           <Route path="course/:courseId/lesson/:lessonId/activity/:activityId" element={<ProtectedRouteProfessors><ActivityPage /></ProtectedRouteProfessors>} />
-          <Route path="reset-password/:token" element={<RedirectAuthenticatedProfessor><ProfNewPassword /></RedirectAuthenticatedProfessor>} />
+    
         </Route>
 
         {/* Authenticated Admin Routes */}
