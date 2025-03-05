@@ -247,7 +247,12 @@ const LessonOverview = () => {
               description={courseData.program}
               details={{
                 language: courseData.language,
-                students: courseData.studentEnrolled, // Update dynamically if available
+                //
+                students: courseData.studentEnrolled
+                  ? `${courseData.studentEnrolled.length} student${
+                      courseData.studentEnrolled.length === 1 ? "" : "s"
+                    }`
+                  : "0 students",
                 instructor: professor
                   ? `${professor.firstName} ${professor.lastName}`
                   : "Unknown Instructor", // Fetch from local storage
