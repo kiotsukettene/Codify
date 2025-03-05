@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Calendar, Gamepad2, Layers, Sword, Video } from "lucide-react";
 import { CircleCheckBig, LayoutDashboard } from "lucide-react";
 import sidebarImage from "../../assets/picture/random background/sidebar-image.png";
@@ -22,17 +22,17 @@ const studentMenu = [
   { to: "/student/schedules", icon: Calendar, label: "Schedules" },
   { to: "/student/challenges", icon: Gamepad2, label: "Challenges" },
   { to: "/student/code-battles", icon: Sword, label: "Code Battles" },
-  { to: "/student/task", icon: CircleCheckBig, label: "Task" },
+  { to: "/student/task-list", icon: CircleCheckBig, label: "Task" },
 ];
 
 function StudentSidebar() {
   return (
-    <Sidebar className="w-64 h-screen border-r flex flex-col">
+    <Sidebar className="w-72 h-screen border-r flex flex-col">
       {/* Sidebar Header */}
-     <SidebarHeader className="border-b border-gray-200 pl-6">
-            <div>
-              <img src={Logo} className="w-26 h-auto" alt="Logo" />
-            </div>
+     <SidebarHeader className="border-b border-gray-200 pl-6 mt-2">
+           <Link to="/student/dashboard">
+           <img src={Logo} className="w-26 h-auto" alt="Logo" />
+           </Link>
           </SidebarHeader>
 
       {/* Sidebar Menu */}

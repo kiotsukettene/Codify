@@ -19,7 +19,6 @@ import AdminLayout from "./Layout/AdminLayout";
 import StudentLayout from "./Layout/StudentLayout";
 
 // Admin Pages
-import AdminDashboard from "./pages/admin-view-pages/Dashboard";
 import AdminLogin from "./pages/admin-view-pages/admin-auth/Admin-Login";
 import AdminRegisterPage from "./pages/admin-view-pages/admin-auth/Admin-Register";
 import AdminEmailVerificationPage from "./pages/admin-view-pages/admin-auth/Admin-Email-Verification-Page";
@@ -28,6 +27,12 @@ import AdminNewPasswordPage from "./pages/admin-view-pages/admin-auth/Admin-New-
 import AdminSuccessResetPage from "./pages/admin-view-pages/admin-auth/Admin-Success-Reset";
 import PaymentSummary from "./components/admin-view/payment-summary";
 import PaymentSuccess from "./components/admin-view/payment-success";
+import AdminDashboard from "./pages/admin-view-pages/Main-Dashboard";
+import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
+import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
+import StudentList from "./pages/admin-view-pages/admin-student/Student";
+import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
+
 
 // Professor Pages
 import { useprofAuthStore } from "@/store/profAuthStore";
@@ -49,22 +54,18 @@ import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-F
 import StudentNewPasswordPage from "./pages/student-view-pages/auth/Student-New-Password";
 import StudentDashboard from "./pages/student-view-pages/Dashboard";
 import StudentCourseListPage from "./pages/student-view-pages/course-management/student-course-list";
+import StudentChallengesView from "./pages/student-view-pages/challenges/student-challenges-view";
+import StudentLessonListPage from "./pages/student-view-pages/course-management/student-lesson-list";
+import StudentTaskPage from "./pages/student-view-pages/Task-Activity-list";
+import StudentModulePage from "./pages/student-view-pages/course-management/student-module";
+import StudentActivityPage from "./pages/student-view-pages/course-management/student-activity";
+import StudentPracticePage from "./pages/student-view-pages/challenges/student-practice-page";
+import StudentCalendarPage from "./pages/student-view-pages/Schedule-Calendar";
 
-// General Pages
-import LandingPage from "./pages/Guest-view-pages/Landing-page";
-import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
-import MainLogin from "./pages/Guest-view-pages/Login";
-
-// Admin Management Pages
-import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
-import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
-import StudentList from "./pages/admin-view-pages/admin-student/Student";
-import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
-
-// Editor
 import CodeEditor from "./components/CodeEditor";
-
-// redirect authenticated and paid institution to dashboard page
+import LandingPage from "./pages/Guest-view-pages/Landing-page";
+import MainLogin from "./pages/Guest-view-pages/Login";
+import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -87,43 +88,28 @@ function App() {
           <Route path="*" element={<PageNotFoundPage />} />
 
           {/* Admin Registration & Authentication */}
-          <Route
-            path="/admin/register"
-            element={
-              <RedirectAuthenticatedInstitution>
-                <AdminRegisterPage />
-              </RedirectAuthenticatedInstitution>
-            }
-          />
-          <Route
-            path="/admin/login"
-            element={
-              <RedirectAuthenticatedInstitution>
-                <AdminLogin />
-              </RedirectAuthenticatedInstitution>
-            }
-          />
-          <Route
-            path="/admin/forgot-password"
-            element={
-              <RedirectAuthenticatedInstitution>
-                <AdminForgotPasswordPage />
-              </RedirectAuthenticatedInstitution>
-            }
-          />
-          <Route
-            path="/admin/reset-password/:token"
-            element={
-              <RedirectAuthenticatedInstitution>
-                <AdminNewPasswordPage />
-              </RedirectAuthenticatedInstitution>
-            }
-          />
-          <Route
-            path="/admin/success-reset"
-            element={<AdminSuccessResetPage />}
-          />
-        </Route>
+          <Route path="/admin/register" element={
+            <RedirectAuthenticatedInstitution>
+              <AdminRegisterPage />
+            </RedirectAuthenticatedInstitution>
+          } />
+          <Route path="/admin/login" element={
+            <RedirectAuthenticatedInstitution>
+              <AdminLogin />
+            </RedirectAuthenticatedInstitution>
+          } />
+          <Route path="/admin/forgot-password" element={
+            <RedirectAuthenticatedInstitution>
+              <AdminForgotPasswordPage />
+            </RedirectAuthenticatedInstitution>
+          } />
+          <Route path="/admin/reset-password/:token" element={
+            <RedirectAuthenticatedInstitution>
+              <AdminNewPasswordPage />
+            </RedirectAuthenticatedInstitution>
+          } />
+          <Route path="/admin/success-reset" element={<AdminSuccessResetPage />} />
+        
 
         {/* Student Authentication */}
         <Route
@@ -178,14 +164,12 @@ function App() {
           }
         />
 
-        <Route
-          path="admin/payment-success"
-          element={
-            <ProtectedRouteInstitution>
-              <PaymentSuccess />
-            </ProtectedRouteInstitution>
-          }
-        />
+        <Route path="admin/payment-success" element={
+          <ProtectedRouteInstitution>
+            <PaymentSuccess />
+          </ProtectedRouteInstitution>
+        } />
+        </Route>
 
         {/* Admin Routes */}
         <Route path="/admin/" element={<AdminLayout />}>
@@ -231,22 +215,21 @@ function App() {
           />
         </Route>
 
-        <Route
-          path="/student/*"
-          element={
-            <ProtectedRouteStudents>
-              <StudentLayout>
-                <Routes>
-                  <Route path="dashboard" element={<StudentDashboard />} />
-                  <Route
-                    path="course-list"
-                    element={<StudentCourseListPage />}
-                  />
-                </Routes>
-              </StudentLayout>
-            </ProtectedRouteStudents>
-          }
-        />
+
+        {/* Student Routes */}
+        <Route path="/student/" element={<StudentLayout />}>
+          <Route path="dashboard" element={<ProtectedRouteStudents><StudentDashboard /></ProtectedRouteStudents>} />
+          <Route path="course-list" element={<ProtectedRouteStudents><StudentCourseListPage /></ProtectedRouteStudents>} />
+          <Route path="challenges" element={<ProtectedRouteStudents><StudentChallengesView /></ProtectedRouteStudents>} />
+          <Route path="challenges/:id" element={<ProtectedRouteStudents><StudentPracticePage /></ProtectedRouteStudents>} />
+          <Route path="lesson-list" element={<StudentLessonListPage />} />
+          <Route path="module" element={<StudentModulePage />} />
+          <Route path="activity" element={<StudentActivityPage />} />
+          <Route path="task-list" element={<StudentTaskPage />} />
+          <Route path="schedules" element={<StudentCalendarPage />} />
+        </Route>
+
+        
 
         {/* Additional Routes */}
         <Route path="/code-editor" element={<CodeEditor />} />

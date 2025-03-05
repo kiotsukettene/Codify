@@ -48,7 +48,7 @@ return {
     });
 
     try {
-      console.log("API URL:", API_URL); // Debugging API URL
+      
 
       const response = await axios.post(`${API_URL}/register`, {
         ...studentData,

@@ -78,7 +78,8 @@ const GalaxyButton = ({ children, onClick, className = "" }) => {
       onClick={onClick}
     >
       {/* Background with gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#7760ca] to-[#3d0dec]" />
+      <div className="absolute inset-0 bg-purple-400 text-neutral-900 px-6 py-3 rounded-full font-semibold text-lg transition-all duration-300 
+hover:bg-purple-700 hover:shadow-purple-500/80 hover:scale-105 shadow-lg shadow-purple-500/50" />
 
       {/* Particle canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />

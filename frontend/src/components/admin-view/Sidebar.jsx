@@ -64,9 +64,9 @@ function AppSidebar() {
   return (
     <Sidebar className="w-64 h-screen border-r mt-2  flex flex-col">
       <SidebarHeader className="border-b border-gray-200 pl-6">
-        <div>
-          <img src={Logo} className="w-26 h-auto" alt="Logo" />
-        </div>
+      <Link to="/admin/dashboard">
+           <img src={Logo} className="w-26 h-auto" alt="Logo" />
+      </Link>
       </SidebarHeader>
 
       <SidebarMenu className="mt-4">

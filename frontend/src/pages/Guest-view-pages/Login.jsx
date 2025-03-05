@@ -30,7 +30,7 @@ const roles = [
     textColor: "text-[#6B21A8]",
     hoverBg: "hover:bg-[#F5F3FF]",
     iconBg: "bg-[#6B21A8]",
-    to: "/professor-login",
+    to: "/professor/login",
   },
   {
     title: "Student",

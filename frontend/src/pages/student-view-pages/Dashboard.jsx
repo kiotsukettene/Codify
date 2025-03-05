@@ -7,8 +7,10 @@ import dashboardImage from "../../assets/picture/random background/dashboard-img
 import StudentHeader from '@/components/student-view/Header'
 import spaceShip from "../../assets/picture/random background/dashboard-spaceShip.png";
 import { useStudentStore } from '@/store/studentStore';
+import { useNavigate } from 'react-router-dom';
 
 function StudentDashboard() {
+  const navigate = useNavigate()
   const { student } = useStudentStore(); 
   const studentName = student ? student.firstName : "Student";
   const classes = [
@@ -127,7 +129,7 @@ function StudentDashboard() {
           <div className="col-span-1 md:col-span-2 h-72 w-full rounded-xl bg-violet-200 p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
             <div>
               <h1 className="text-4xl font-semibold text-gray-900">Check up your current and upcoming task here</h1>
-              <Button className="bg-primary rounded-full px-20 py-6 mt-5 text-white">View Task</Button>
+              <Button className="bg-primary rounded-full px-20 py-6 mt-5 text-white" onClick={() => navigate('/student/task-list')}>View Task</Button>
             </div>
             <img src={dashboardImage} className="hidden lg:block w-80 h-80" alt="Task Illustration" />
           </div>
@@ -137,7 +139,7 @@ function StudentDashboard() {
         <div className="pt-8">
           <div className="flex justify-between w-full">
             <h1 className="text-3xl font-semibold text-gray-900">My Courses</h1>
-            <Button variant='link' className='text-primary font-medium'>View All</Button>
+            <Button variant='link' onClick={() => navigate('/student/course-list')} className='text-primary font-medium'>View All</Button>
           </div>
   
           <div className="grid grid-cols-1 gap-4 pt-2">
@@ -220,7 +222,7 @@ function StudentDashboard() {
             <div className="p-4">
               <h1 className="text-2xl font-semibold text-gray-900">Ready to take off?</h1>
               <p className="text-sm text-gray-600">Explore the galaxy of coding and take your skills to the next level</p>
-              <Button className="bg-primary rounded-full px-5 py-2 mt-3 text-white">Get Started</Button>
+              <Button className="bg-primary rounded-full px-5 py-2 mt-3 text-white" onClick={() => navigate('/student/challenges')}>Get Started</Button>
             </div>
           </div>
         </div>
