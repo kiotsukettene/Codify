@@ -12,6 +12,7 @@ import sidebarImage from "../../assets/picture/random background/sidebar-image.p
 import Logo from "../../assets/picture/logos/Logo.png";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 import {
   Sidebar,

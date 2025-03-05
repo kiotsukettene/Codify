@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useStudentStore } from "@/store/studentStore";
 import { useprofAuthStore } from "@/store/profAuthStore";
+import { useNavigate } from "react-router-dom";
 
 // ✅ Prevents authenticated admins from accessing student login & vice versa
 export const RedirectAuthenticatedInstitution = ({ children }) => {
@@ -99,13 +100,15 @@ export const ProtectedRouteInstitution = ({ children }) => {
 
 // ✅ Fix: Prevent infinite re-renders in ProtectedRouteStudents
 export const ProtectedRouteStudents = ({ children }) => {
-  const { isAuthenticated: isStudentAuthenticated } = useStudentStore();
+  const { isAuthenticated, checkStudentAuth } = useStudentStore();
+  const navigate = useNavigate();
 
-  return isStudentAuthenticated ? (
-    children
-  ) : (
-    <Navigate to="/student/login" replace />
-  );
+  useEffect(() => {
+    checkStudentAuth();
+    if (!isAuthenticated) navigate("/student/login");
+  }, [isAuthenticated, checkStudentAuth, navigate]);
+
+  return isAuthenticated ? children : null;
 };
 
 export const ProtectedRouteProfessors = ({ children }) => {

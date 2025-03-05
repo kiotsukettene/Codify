@@ -4,7 +4,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import header from "@/assets/picture/courses/course-header.png";
 import { Separator } from "@/components/ui/separator";
 import { BookOpenCheck, Search, Users } from "lucide-react";
@@ -15,41 +15,19 @@ import card1 from "../../../assets/picture/courses/card1.png";
 import StudentCourseCard from "@/components/student-view/student-course-card";
 import { useNavigate } from "react-router-dom";
 import JoinCourseModal from "@/components/student-view/join-course-modal";
+import useStudentCourseStore from "@/store/studentCourseStore";
+import { useStudentStore } from "@/store/studentStore";
 
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
+  const { enrolledCourses, fetchEnrolledCourses, isLoading } = useStudentCourseStore();
+  const { student } = useStudentStore();
 
-  const courses = [
-    {
-      id: 1,
-      title: "Networks and Communication",
-      professor: "Prof. Dave Benjamin Cruz",
-      lessons: 18,
-      image:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
-      tags: ["Networking"],
-    },
-    {
-      id: 2,
-      title: "Creating Awesome Mobile Apps",
-      professor: "Prof. Joemen D. Barrios",
-      lessons: 2,
-      image:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
-      tags: ["OOP", "AI"],
-    },
-    // Duplicate the second course 6 more times to fill the grid
-    ...Array(6).fill({
-      id: Math.random(),
-      title: "Creating Awesome Mobile Apps",
-      professor: "Prof. Joemen D. Barrios",
-      lessons: 2,
-      image:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-QEcFyafQUxR28nGJ9GvBdRdoMYgThs.png",
-      tags: ["OOP", "AI"],
-    }),
-  ];
+  useEffect(() => {
+    fetchEnrolledCourses();
+  }, [fetchEnrolledCourses])
+
 
   return (
     <div className="mx-6 w-full">
@@ -57,7 +35,7 @@ function StudentCourseListPage() {
         {/* Left Content */}
         <div className="z-10 p-8">
           <CardHeader className="text-header text-3xl font-semibold">
-            Hi, Momo Ready to Learn?
+            Hi, {student.firstName} Ready to Learn?
             <span className="text-base font-normal mt-1">
               Continue your learning journey. Let’s go!
             </span>
@@ -65,10 +43,10 @@ function StudentCourseListPage() {
 
           <CardContent className="flex gap-4 mt-4 text-header font-medium">
             <BookOpenCheck />
-            <h4>2 Lessons</h4>
+            <h4>{enrolledCourses.length} Courses</h4>
             <Separator orientation="vertical" />
             <Users />
-            <h4>Prof. Dave Benjamin Cruz</h4>
+            <h4>Multiple Professors</h4>
           </CardContent>
           <CardFooter>
             <Button onClick={() => setJoinCourse(true)}>Join Course 🚀</Button>
@@ -77,10 +55,7 @@ function StudentCourseListPage() {
           {/* ==============================================
             ============MODAL FOR JOIN COURSE CODE ===========
             ==================================================*/}
-          <JoinCourseModal
-            isOpen={joinCourse}
-            onClose={() => setJoinCourse(false)}
-          />
+          <JoinCourseModal isOpen={joinCourse} onClose={() => setJoinCourse(false)} />
         </div>
 
         <div className="relative w-[50%] h-full ml-auto">
@@ -97,20 +72,23 @@ function StudentCourseListPage() {
         <SearchForm />
       </div>
 
-      <form onClick={() => navigate("/student/lesson-list")}>
+      {isLoading ? (
+        <p>Loading courses...</p>
+      ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
-          {courses.map((course, index) => (
+          {enrolledCourses.map((course) => (
             <StudentCourseCard
-              key={index}
-              lessons={course.lessons}
-              image={card1}
-              title={course.title}
-              professor={course.professor}
-              tags={course.tags || []}
+              key={course._id}
+              lessons={course.lessons?.length || 0} // Adjust if lessons are fetched separately
+              image={course.image || "https://via.placeholder.com/150"}
+              title={course.className}
+              professor={`${course.professorId?.firstName} ${course.professorId?.lastName}`}
+              tags={[course.program, course.language]}
+              onClick={() => navigate(`/student/lesson-list/${course._id}`)}
             />
           ))}
         </div>
-      </form>
+      )}
     </div>
   );
 }

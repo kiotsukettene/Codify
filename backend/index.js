@@ -8,6 +8,8 @@ import professorRoutes from "./routes/professor.route.js";
 import courseRoutes from "./routes/course.route.js";
 import lessonRoutes from "./routes/lesson.route.js";
 import activityRoutes from "./routes/activity.route.js";
+import studentCourseRoutes from "./routes/studentCourse.route.js";
+
 import cors from "cors";
 import session from "express-session";
 import passport from "passport";
@@ -54,6 +56,8 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/uploads", express.static("uploads")); // ✅ Serve uploaded files
+
+app.use("/api/students/courses", studentCourseRoutes);
 
 app.listen(PORT, () => {
   connectDB();

@@ -30,7 +30,7 @@ function StudentCourseCard({ lessons, image, title, professor, category, tags=[]
       {/* Course Details */}
       <CardContent className="mt-6 space-y-2 p-0 flex-grow">
         <h3 className="text-lg font-medium text-gray-800">{title}</h3>
-        <p className="text-sm text-purple-700 font-medium">{professor}</p>
+        <p className="text-sm text-purple-700 font-medium">Prof. {professor}</p>
       </CardContent>
 
       {/* Category Badge */}
