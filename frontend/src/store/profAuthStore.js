@@ -30,6 +30,9 @@ export const useprofAuthStore = create((set) => ({
         email,
         password,
       });
+
+      const professor = response.data.professor; // Get the professor object
+      localStorage.setItem("professor", JSON.stringify(professor)); // Store in localStorage
       set({
         professor: response.data.professor,
         isAuthenticated: true,
