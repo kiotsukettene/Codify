@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import generateActivitySlug from "../utils/sluggifyActivity.js";
 
 const ActivitySchema = new mongoose.Schema(
   {
@@ -28,10 +29,13 @@ const ActivitySchema = new mongoose.Schema(
     file: {
       type: String, // ✅ Store the file path
     },
+    slug: { type: String, unique: true },
   },
   { timestamps: true }
 );
 
 const Activity = mongoose.model("Activity", ActivitySchema);
+
+ActivitySchema.pre("save", generateActivitySlug); // Generate slug on save
 
 export default Activity;
