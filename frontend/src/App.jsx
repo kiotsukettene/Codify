@@ -85,7 +85,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path="/professor/courses" element={<LessonOverview />} />
+        {/* <Route path="/professor/courses" element={<LessonOverview />} /> */}
 
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
@@ -194,7 +194,7 @@ function App() {
             }
           />
           <Route
-            path="course/:courseId"
+            path="course/:slug"
             element={
               <ProtectedRouteProfessors>
                 <LessonOverview />

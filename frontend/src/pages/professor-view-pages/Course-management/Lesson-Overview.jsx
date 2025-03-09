@@ -147,31 +147,42 @@ const tabs = [
 const LessonOverview = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const { lessons, fetchLessonsByCourse } = useLessonStore(); // Use lessonStore to get lessons, loading state, and the fetch function
-  const { activities, fetchActivitiesByCourse, error } = useActivityStore(); // Use activityStore to get activities, loading state, and the fetch function
-  const location = useLocation();
-  const { course, fetchCourseById } = useCourseStore();
 
-  const lessonId = activities.length > 0 ? activities[0].lessonId : null;
+  //BE
+  const { slug } = useParams();
+
+  const { courses, course, fetchCourseById, fetchCoursesByProfessor } =
+    useCourseStore();
+  const { activities, fetchActivitiesByCourse } = useActivityStore();
+  const { lessons, fetchLessonsByCourse } = useLessonStore();
   const { professor } = useprofAuthStore();
 
-  const [courseId, setCourseId] = useState(null);
-  // Fetch course on mount if not available
+  // Fetch courses if not already loaded
   useEffect(() => {
-    if (!course) {
-      const storedCourseId = localStorage.getItem("currentCourseId"); // Optional: Persist course ID
-      if (storedCourseId) {
-        fetchCourseById(storedCourseId);
-      }
+    if (courses.length === 0) {
+      fetchCoursesByProfessor();
     }
-  }, [course, fetchCourseById]);
+  }, [courses, fetchCoursesByProfessor]);
 
-  // Set courseId once course is fetched
+  // Log courses and currentCourse for debugging
   useEffect(() => {
-    if (course) {
-      setCourseId(course._id);
+    console.log("Courses from store:", courses);
+  }, [courses]);
+
+  const currentCourse = courses.find((course) => course.slug === slug);
+  const courseId = currentCourse?._id;
+
+  useEffect(() => {
+    console.log("Current course matching slug:", currentCourse);
+  }, [currentCourse]);
+
+  // Fetch course details when courseId is available
+  useEffect(() => {
+    if (courseId) {
+      console.log("Fetching course details for courseId:", courseId);
+      fetchCourseById(courseId);
     }
-  }, [course]);
+  }, [courseId, fetchCourseById]);
 
   // Fetch lessons once courseId is available
   useEffect(() => {
@@ -180,54 +191,12 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchLessonsByCourse]);
 
-  const [courseData, setCourseData] = useState(() => {
-    const storedData = sessionStorage.getItem(`course_${courseId}`);
-    return storedData ? JSON.parse(storedData) : location.state?.course || {};
-  });
-
-  useEffect(() => {
-    const fetchCourseData = async () => {
-      try {
-        const response = await fetch(`/api/courses/${courseId}`);
-        const data = await response.json();
-
-        // ✅ Store in sessionStorage to persist across navigation
-        sessionStorage.setItem(`course_${courseId}`, JSON.stringify(data));
-        setCourseData(data);
-      } catch (error) {
-        console.error("Error fetching course:", error);
-      }
-    };
-
-    if (!courseData || Object.keys(courseData).length === 0) {
-      fetchCourseData();
-    }
-  }, [courseId]);
-
-  // Fetch lessons for the given courseId when the component mounts or courseId changes
-  useEffect(() => {
-    if (!courseId) {
-      console.error("Error: Course ID is undefined");
-      toast.error("Invalid Course ID");
-      return;
-    }
-
-    // Validate that courseId is a valid ObjectId before calling API
-    if (!/^[0-9a-fA-F]{24}$/.test(courseId)) {
-      console.error("Error: Invalid Course ID format", courseId);
-      toast.error("Invalid Course ID format");
-      return;
-    }
-
-    fetchLessonsByCourse(courseId);
-  }, [courseId, fetchLessonsByCourse]);
-
-  //fetch activities for the given courseId when the component mounts or courseId changes
-  useEffect(() => {
-    if (courseId) {
-      fetchActivitiesByCourse(courseId).then((data) => {});
-    }
-  }, [courseId, fetchActivitiesByCourse]);
+  // //fetch activities for the given courseId when the component mounts or courseId changes
+  // useEffect(() => {
+  //   if (courseId) {
+  //     fetchActivitiesByCourse(courseId).then((data) => {});
+  //   }
+  // }, [courseId, fetchActivitiesByCourse]);
 
   return (
     <SidebarProvider>
@@ -263,29 +232,29 @@ const LessonOverview = () => {
             </Breadcrumb>
 
             <CourseHeader
-              title={courseData.className}
-              description={courseData.program}
+              title={currentCourse?.className || "Loading..."}
+              description={currentCourse?.program}
               details={{
-                language: courseData.language,
+                language: currentCourse?.language,
                 //
-                students: courseData.studentEnrolled
-                  ? `${courseData.studentEnrolled.length} student${
-                      courseData.studentEnrolled.length === 1 ? "" : "s"
+                students: currentCourse?.studentEnrolled
+                  ? `${currentCourse?.studentEnrolled.length} student${
+                      currentCourse?.studentEnrolled.length === 1 ? "" : "s"
                     }`
                   : "0 students",
                 instructor: professor
                   ? `${professor.firstName} ${professor.lastName}`
                   : "Unknown Instructor", // Fetch from local storage
-                schedule: courseData.schedule
-                  ? `${courseData.schedule.day}, ${courseData.schedule.time}`
+                schedule: currentCourse?.schedule
+                  ? `${currentCourse?.schedule.day}, ${currentCourse?.schedule.time}`
                   : "No schedule available",
-                courseCode: courseData.courseCode,
-                section: courseData.section,
-                schedule: courseData.schedule
-                  ? `${courseData.schedule.day}, ${courseData.schedule.time}`
+                courseCode: currentCourse?.courseCode,
+                section: currentCourse?.section,
+                schedule: currentCourse?.schedule
+                  ? `${currentCourse?.schedule.day}, ${currentCourse?.schedule.time}`
                   : "No schedule available",
-                courseCode: courseData.courseCode,
-                section: courseData.section,
+                courseCode: currentCourse?.courseCode,
+                section: currentCourse?.section,
               }}
             />
 
@@ -336,10 +305,7 @@ const LessonOverview = () => {
                     transition={{ duration: 0.2 }}
                   >
                     {activeTab === "overview" && (
-                      <OverviewTab
-                        lessons={lessons || []}
-                        course={courseData}
-                      />
+                      <OverviewTab lessons={lessons || []} course={course} />
                     )}
 
                     {activeTab === "activities" && (
