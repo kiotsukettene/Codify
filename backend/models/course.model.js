@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { generateCourseCode } from "../utils/generateCourseCode.js";
+import generateCourseSlug from "../utils/sluggifyCourse.js";
 
 const CourseSchema = new mongoose.Schema(
   {
@@ -21,11 +22,14 @@ const CourseSchema = new mongoose.Schema(
       unique: true,
       default: generateCourseCode, // Generate course code on creation
     },
+    slug: { type: String, unique: true },
     studentsEnrolled: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
     ],
   },
   { timestamps: true }
 );
+
+CourseSchema.pre("save", generateCourseSlug); // Generate slug on save
 
 export default mongoose.model("Course", CourseSchema);
