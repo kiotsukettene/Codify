@@ -18,7 +18,7 @@ const LessonSchema = new mongoose.Schema(
         notes: [{ type: String }],
       },
     ],
-    slug: { type: String, unique: true },
+    slug: { type: String, unique: true, required: true },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }

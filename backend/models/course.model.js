@@ -22,7 +22,7 @@ const CourseSchema = new mongoose.Schema(
       unique: true,
       default: generateCourseCode, // Generate course code on creation
     },
-    slug: { type: String, unique: true },
+    slug: { type: String, unique: true, required: true },
     studentsEnrolled: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
     ],

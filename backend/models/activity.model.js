@@ -29,7 +29,7 @@ const ActivitySchema = new mongoose.Schema(
     file: {
       type: String, // ✅ Store the file path
     },
-    slug: { type: String, unique: true },
+    slug: { type: String, unique: true, required: true },
   },
   { timestamps: true }
 );
