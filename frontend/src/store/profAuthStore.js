@@ -7,14 +7,8 @@ const API_URL = "http://localhost:3000/api/professors";
 
 axios.defaults.withCredentials = true;
 
-const storedProfessor = localStorage.getItem("professor");
-const parsedProfessor =
-  storedProfessor && storedProfessor !== "undefined"
-    ? JSON.parse(storedProfessor)
-    : null;
-
 export const useprofAuthStore = create((set) => ({
-  professor: parsedProfessor,
+  professor: null,
   isAuthenticated: false,
   professors: [],
   error: null,
@@ -32,7 +26,7 @@ export const useprofAuthStore = create((set) => ({
       });
 
       const professor = response.data.professor; // Get the professor object
-      localStorage.setItem("professor", JSON.stringify(professor)); // Store in localStorage
+
       set({
         professor: response.data.professor,
         isAuthenticated: true,
