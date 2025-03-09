@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { Play, Send, Sparkles, Loader2, Check, AlertCircle } from "lucide-react";
@@ -22,6 +22,7 @@ function StudentPracticePage() {
   const [submissionStatus, setSubmissionStatus] = useState("idle");
   const [testResults, setTestResults] = useState([]);
   const [runStatus, setRunStatus] = useState("idle");
+  const [activeTab, setActiveTab] = useState("test-cases");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -31,6 +32,29 @@ function StudentPracticePage() {
       setValue(selectedChallenge.starterCode[language].trim());
     }
   }, [id, language]);
+
+  const parseError = (errorString) => {
+    if (!errorString) return { message: "Unknown error", line: null };
+
+    // Split the error into lines
+    const lines = errorString.split("\n");
+
+    // Look for line number in the format "file0.code:5"
+    let lineNumber = null;
+    const lineMatch = errorString.match(/file\d+\.code:(\d+)/);
+    if (lineMatch) {
+      lineNumber = parseInt(lineMatch[1], 10);
+    }
+
+    // Extract the core error message (e.g., "SyntaxError: Unexpected end of input")
+    let errorMessage = lines.find((line) => line.includes("Error") || line.includes("error")) || lines[0];
+    if (!errorMessage) errorMessage = "Unknown error";
+
+    // Clean up the message (remove file paths, stack traces, etc.)
+    errorMessage = errorMessage.replace(/\/piston\/jobs\/[^:]+\/file\d+\.code:\d+\s*/, "").trim();
+
+    return { message: errorMessage, line: lineNumber };
+  };
 
   const executeCode = async (code) => {
     try {
@@ -43,10 +67,35 @@ function StudentPracticePage() {
         },
         { withCredentials: false }
       );
-      return { output: response.data.run.output.trim(), stderr: response.data.run.stderr };
+      const data = response.data;
+
+      // Handle API-level errors
+      if (data.message) {
+        const { message, line } = parseError(data.message);
+        return { output: "", error: message, errorLine: line };
+      }
+
+      // Handle compilation errors
+      if (data.compile && data.compile.code !== 0) {
+        const error = data.compile.stderr || data.compile.output || "Compilation failed";
+        const { message, line } = parseError(error);
+        return { output: "", error: message, errorLine: line };
+      }
+
+      // Handle runtime errors
+      if (data.run && data.run.code !== 0) {
+        const error = data.run.stderr || data.run.output || "Runtime error";
+        const { message, line } = parseError(error);
+        return { output: "", error: message, errorLine: line };
+      }
+
+      // Successful execution
+      const output = data.run.output;
+      return { output: output.trim(), error: null, errorLine: null };
     } catch (error) {
       console.error("Execution failed:", error);
-      return { output: `Error executing code: ${error.message}`, stderr: error.message };
+      const { message, line } = parseError(error.message);
+      return { output: "", error: `Error executing code: ${message}`, errorLine: line };
     }
   };
 
@@ -56,49 +105,131 @@ function StudentPracticePage() {
     setRunStatus("loading");
     const testCodeSnippets = challenge.runCode(language, value, challenge.testCases);
     let results = [];
+    let hasError = false;
+    const inputKeys = Object.keys(challenge.testCases).filter((key) => key !== "answers");
 
-    for (let index = 0; index < testCodeSnippets.length; index++) {
+    // Run only the first test case to check for errors
+    for (let index = 0; index < Math.min(1, testCodeSnippets.length); index++) {
       const executionCode = testCodeSnippets[index];
-      const testCase = {
-        nums: challenge.testCases.nums[index],
-        target: challenge.testCases.targets[index],
-        expected: challenge.testCases.answers[index],
-      };
+      const testCase = {};
+      inputKeys.forEach((key) => {
+        testCase[key] = challenge.testCases[key][index];
+      });
+      testCase.expected = challenge.testCases.answers[index];
+
+      const inputStr = inputKeys
+        .map((key) => {
+          const value = testCase[key];
+          return `${key} = ${Array.isArray(value) ? `[${value.join(",")}]` : value}`;
+        })
+        .join(", ");
 
       try {
-        const { output, stderr } = await executeCode(executionCode);
-        const parsedOutput = challenge.parseOutput(output);
+        const { output, error, errorLine } = await executeCode(executionCode);
+        const parsedOutput = error ? "Error" : challenge.parseOutput(output);
         const expectedStr = JSON.stringify(testCase.expected);
-        const actualOutputStr = JSON.stringify(parsedOutput);
+        const actualOutputStr = error ? "Error" : JSON.stringify(parsedOutput);
 
-        results.push({
-          id: index + 1,
-          input: `nums = [${testCase.nums.join(",")}], target = ${testCase.target}`,
-          expected: expectedStr,
-          output: actualOutputStr,
-          passed: actualOutputStr === expectedStr,
-          errorLine: stderr?.match(/line (\d+)/) ? parseInt(stderr.match(/line (\d+)/)[1]) : null,
-          errorMessage: stderr || (parsedOutput.includes("Error") ? parsedOutput : null),
-        });
-
-        // Add delay to prevent API rate limit issues
-        if (index < testCodeSnippets.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, 250)); // 250ms delay
+        if (error) {
+          hasError = true;
+          results.push({
+            id: 1,
+            input: inputStr,
+            expected: expectedStr,
+            output: actualOutputStr,
+            passed: false,
+            errorMessage: error,
+            errorLine,
+          });
+          break;
+        } else {
+          results.push({
+            id: index + 1,
+            input: inputStr,
+            expected: expectedStr,
+            output: actualOutputStr,
+            passed: actualOutputStr === expectedStr,
+            errorMessage: null,
+            errorLine: null,
+          });
         }
       } catch (error) {
+        hasError = true;
+        const { message, line } = parseError(error.message);
         results.push({
-          id: index + 1,
-          input: `nums = [${testCase.nums.join(",")}], target = ${testCase.target}`,
+          id: 1,
+          input: inputStr,
           expected: JSON.stringify(testCase.expected),
           output: "Error",
           passed: false,
-          errorMessage: `Error running test case: ${error.message}`,
+          errorMessage: `Error running test case: ${message}`,
+          errorLine: line,
         });
+        break;
+      }
+    }
+
+    // If no error in the first case, run all test cases
+    if (!hasError && testCodeSnippets.length > 1) {
+      for (let index = 1; index < testCodeSnippets.length; index++) {
+        const executionCode = testCodeSnippets[index];
+        const testCase = {};
+        inputKeys.forEach((key) => {
+          testCase[key] = challenge.testCases[key][index];
+        });
+        testCase.expected = challenge.testCases.answers[index];
+
+        const inputStr = inputKeys
+          .map((key) => {
+            const value = testCase[key];
+            return `${key} = ${Array.isArray(value) ? `[${value.join(",")}]` : value}`;
+          })
+          .join(", ");
+
+        try {
+          const { output, error, errorLine } = await executeCode(executionCode);
+          const parsedOutput = error ? "Error" : challenge.parseOutput(output);
+          const expectedStr = JSON.stringify(testCase.expected);
+          const actualOutputStr = error ? "Error" : JSON.stringify(parsedOutput);
+
+          results.push({
+            id: index + 1,
+            input: inputStr,
+            expected: expectedStr,
+            output: actualOutputStr,
+            passed: actualOutputStr === expectedStr,
+            errorMessage: error,
+            errorLine,
+          });
+
+          if (error) {
+            hasError = true;
+            break;
+          }
+        } catch (error) {
+          hasError = true;
+          const { message, line } = parseError(error.message);
+          results.push({
+            id: index + 1,
+            input: inputStr,
+            expected: JSON.stringify(testCase.expected),
+            output: "Error",
+            passed: false,
+            errorMessage: `Error running test case: ${message}`,
+            errorLine: line,
+          });
+          break;
+        }
+
+        if (index < testCodeSnippets.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
       }
     }
 
     setTestResults(results);
     setRunStatus("success");
+    setActiveTab("test-results");
 
     toast({
       title: "✅ Code Executed!",
@@ -188,7 +319,17 @@ function StudentPracticePage() {
         <div className="flex justify-between items-center mt-2">
           <div className="flex gap-2">
             <Button onClick={handleRunCode} disabled={runStatus === "loading"}>
-              <Play className="mr-2 h-4 w-4" /> Run Code
+              {runStatus === "loading" ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Running...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Run Code
+                </>
+              )}
             </Button>
             {getSubmitButton()}
           </div>
@@ -208,10 +349,12 @@ function StudentPracticePage() {
         <Card className="rounded-md mt-4 p-4 text-neutral-900 bg-indigo-50 border-none shadow-none">
           <CardContent>
             <h1 className="font-medium mb-3">Problem Guidelines</h1>
-            <li>1</li>
-            <li>1</li>
-            <li>1</li>
-            <li>1</li>
+            <ul>
+              <li>For Java, implement the method logic—don’t hardcode output in main.</li>
+              <li>Imports are included as needed.</li>
+              <li>Test all cases before submitting.</li>
+              <li>Contact support if stuck!</li>
+            </ul>
           </CardContent>
         </Card>
       </div>
@@ -234,7 +377,7 @@ function StudentPracticePage() {
           </CardContent>
         </Card>
         <div className="mt-5">
-          <Tabs defaultValue="test-cases">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="test-cases">Test Cases</TabsTrigger>
               <TabsTrigger value="test-results">Test Results</TabsTrigger>
@@ -258,28 +401,51 @@ function StudentPracticePage() {
                     <div
                       key={result.id}
                       className={`rounded-lg p-4 border ${
-                        result.passed ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"
+                        result.output === "Error"
+                          ? "border-red-500 bg-red-50"
+                          : result.passed
+                          ? "border-green-500 bg-green-50"
+                          : "border-red-500 bg-red-50"
                       }`}
                     >
                       <div className="space-y-2">
                         <h3 className="font-medium">
                           Test Case #{result.id} -{" "}
-                          <span className={result.passed ? "text-green-600" : "text-red-600"}>
-                            {result.passed ? "Accepted" : "Failed"}
+                          <span
+                            className={
+                              result.output === "Error"
+                                ? "text-red-600"
+                                : result.passed
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }
+                          >
+                            {result.output === "Error" ? "Error" : result.passed ? "Accepted" : "Failed"}
                           </span>
                         </h3>
-                        <p className="text-neutral-700"><span className="font-medium">Input:</span> {result.input}</p>
-                        <p className="text-neutral-700"><span className="font-medium">Expected:</span> {result.expected}</p>
-                        <p className="text-neutral-700"><span className="font-medium">Output:</span> {result.output}</p>
-                        {result.errorLine && (
-                          <p className="text-red-600">
-                            <span className="font-medium">Error Line:</span> {result.errorLine}
-                          </p>
-                        )}
-                        {result.errorMessage && (
-                          <p className="text-red-600">
-                            <span className="font-medium">Error:</span> {result.errorMessage}
-                          </p>
+                        {result.output === "Error" ? (
+                          <>
+                            <p className="text-red-600">
+                              <span className="font-medium">Error:</span> {result.errorMessage}
+                            </p>
+                            {result.errorLine && (
+                              <p className="text-red-600">
+                                <span className="font-medium">Line:</span> {result.errorLine}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-neutral-700">
+                              <span className="font-medium">Input:</span> {result.input}
+                            </p>
+                            <p className="text-neutral-700">
+                              <span className="font-medium">Expected:</span> {result.expected}
+                            </p>
+                            <p className="text-neutral-700">
+                              <span className="font-medium">Output:</span> {result.output}
+                            </p>
+                          </>
                         )}
                       </div>
                     </div>

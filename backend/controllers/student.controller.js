@@ -48,7 +48,7 @@ export const registerStudent = async (req, res) => {
     }
 
     // Set lastName as the default password
-    const plainPassword = lastName.trim();
+    const plainPassword = lastName.trim().toUpperCase();
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
     const newStudent = await Student.create({
