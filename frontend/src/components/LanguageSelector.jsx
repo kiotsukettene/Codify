@@ -12,12 +12,12 @@ const languages = Object.entries(LANGUAGE_VERSIONS)
 
 const LanguageSelector = ({ language, onSelect }) => {
   return (
-    <div className = "ml-2 mb-4">
-    <Select value={language} onValueChange={onSelect}>
+    <div className = "ml-2">
+    <Select value={language} onValueChange={onSelect }>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="" />
       </SelectTrigger>
-      <SelectContent islazy>
+      <SelectContent islazy className='bg-neutral-200'>
         <SelectGroup>
             {languages.map(([lang]) => (
                 <SelectItem 
@@ -28,6 +28,7 @@ const LanguageSelector = ({ language, onSelect }) => {
                 }
                 >
                 {lang}
+              
                 </SelectItem>
             ))}
         </SelectGroup>
