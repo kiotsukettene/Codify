@@ -36,7 +36,7 @@ function StudentChallengesView() {
   );
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto py-4">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="flex-1 flex flex-col">
           <h1 className="text-header font-semibold text-4xl mt-3">Let's warm up!</h1>

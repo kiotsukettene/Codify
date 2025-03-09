@@ -52,7 +52,7 @@ function StudentCourseListPage() {
   ];
 
   return (
-    <div className="mx-6 w-full">
+    <div className="mx-6 w-full py-4">
       <Card className="h-[272px] w-full bg-[#ededff]  shadow-none border-none flex justify-between relative overflow-hidden rounded-xl">
         {/* Left Content */}
         <div className="z-10 p-8">

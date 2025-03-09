@@ -57,6 +57,7 @@ import CodeEditor from "./components/CodeEditor";
 import LandingPage from "./pages/Guest-view-pages/Landing-page";
 import MainLogin from "./pages/Guest-view-pages/Login";
 import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
+import StudentAccountSettings from "./pages/student-view-pages/Student-Account-Setting";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -163,6 +164,7 @@ function App() {
           <Route path="activity" element={<StudentActivityPage />} />
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
+          <Route path="account-settings" element={<StudentAccountSettings/>}/>
         </Route>
 
         

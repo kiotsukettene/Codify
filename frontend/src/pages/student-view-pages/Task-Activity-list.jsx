@@ -85,7 +85,7 @@ function StudentTaskPage() {
   return (
    
 
-    <div className="container mx-auto">
+    <div className="container mx-auto py-4">
     <div className="flex flex-col lg:flex-row gap-4 h-full">
       
       {/* Main Content - Tasks Section */}
