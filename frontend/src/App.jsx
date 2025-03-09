@@ -194,7 +194,7 @@ function App() {
             }
           />
           <Route
-            path="course/:slug"
+            path="course/:courseSlug"
             element={
               <ProtectedRouteProfessors>
                 <LessonOverview />
@@ -202,7 +202,7 @@ function App() {
             }
           />
           <Route
-            path="course/:courseId/create-lesson"
+            path="course/:courseSlug/create-lesson"
             element={
               <ProtectedRouteProfessors>
                 <CreateLesson />
@@ -210,7 +210,7 @@ function App() {
             }
           />
           <Route
-            path="course/:courseId/lesson/:lessonId"
+            path="course/:courseSlug/lesson/:lessonSlug"
             element={
               <ProtectedRouteProfessors>
                 <Topic />
@@ -226,7 +226,7 @@ function App() {
             }
           />
           <Route
-            path="course/:courseId/lesson/:lessonId/activity/:activityId"
+            path="course/:courseId/lesson/:lessonId/activity/:activitySlug"
             element={
               <ProtectedRouteProfessors>
                 <ActivityPage />

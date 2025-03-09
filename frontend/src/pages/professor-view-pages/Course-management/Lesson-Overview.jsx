@@ -149,7 +149,7 @@ const LessonOverview = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
   //BE
-  const { slug } = useParams();
+  const { courseSlug } = useParams();
 
   const { courses, course, fetchCourseById, fetchCoursesByProfessor } =
     useCourseStore();
@@ -164,7 +164,7 @@ const LessonOverview = () => {
     }
   }, [courses, fetchCoursesByProfessor]);
 
-  const currentCourse = courses.find((course) => course.slug === slug);
+  const currentCourse = courses.find((course) => course.slug === courseSlug);
   const courseId = currentCourse?._id;
 
   useEffect(() => {

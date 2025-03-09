@@ -21,7 +21,7 @@ import { useActivityStore } from "../../store/activityStore";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
-  const { courseId } = useParams();
+  const { courseSlug } = useParams();
   const { fetchLessonById, deleteLesson } = useLessonStore();
   const { fetchActivitiesByLesson, activities } = useActivityStore();
   const [openLesson, setOpenLesson] = useState(null); // ✅ Track open lesson ID
@@ -54,17 +54,17 @@ const OverviewTab = ({ lessons = [] }) => {
   };
 
   const handleLessonClick = async (lesson) => {
-    if (!lesson || !lesson._id) {
-      console.error("Error: Lesson ID is undefined", lesson);
+    if (!lesson || !lesson.slug) {
+      console.error("Error: Lesson slug is undefined", lesson);
       return;
     }
 
     try {
-      // Fetch the lesson details
-      await fetchLessonById(lesson._id);
+      // Optionally fetch lesson details by ID if needed:
+      // await fetchLessonById(lesson._id);
 
-      // Navigate with lesson details in the state
-      navigate(`/professor/course/${courseId}/lesson/${lesson._id}`, {
+      // Navigate using the courseSlug from useParams
+      navigate(`/professor/course/${courseSlug}/lesson/${lesson.slug}`, {
         state: { lesson },
       });
     } catch (error) {

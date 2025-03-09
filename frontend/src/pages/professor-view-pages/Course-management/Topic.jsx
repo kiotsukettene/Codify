@@ -59,19 +59,27 @@ const Topic = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeSection, setActiveSection] = useState(null); // ✅ Move it up before any return
   const [activeTopic, setActiveTopic] = useState(null);
-
-  const { courseId, lessonId } = useParams();
-  const navigate = useNavigate();
-  const { fetchLessonById, lesson, isLoading, error } = useLessonStore();
-  const { fetchActivitiesByLesson, activities } = useActivityStore();
   const [sections, setSections] = useState([]);
 
+  const { courseSlug, lessonSlug } = useParams();
+  const navigate = useNavigate();
+  const { lessons, lesson, fetchLessonById, isLoading, error } =
+    useLessonStore();
+  const { fetchActivitiesByLesson, activities } = useActivityStore();
+
   useEffect(() => {
-    if (lessonId) {
-      fetchLessonById(lessonId);
-      fetchActivitiesByLesson(lessonId);
+    if (lessonSlug && lessons.length > 0) {
+      const matchedLesson = lessons.find((l) => l.slug === lessonSlug);
+
+      if (matchedLesson) {
+        // 3. Fetch by ID instead of slug
+        fetchLessonById(matchedLesson._id);
+        fetchActivitiesByLesson(matchedLesson._id);
+      } else {
+        console.error("No lesson found for slug:", lessonSlug);
+      }
     }
-  }, [lessonId, fetchLessonById, fetchActivitiesByLesson]);
+  }, [lessonSlug, lessons, fetchLessonById, fetchActivitiesByLesson]);
 
   useEffect(() => {
     if (lesson?.sections) {
@@ -132,15 +140,22 @@ const Topic = () => {
   }
 
   const handleNavigateToActivity = async () => {
+    // Use the lesson's _id from the fetched lesson
+    const lessonId = lesson?._id;
+    if (!lessonId) {
+      console.error("Lesson ID is not available");
+      return;
+    }
+
     await fetchActivitiesByLesson(lessonId);
 
     if (activities.length > 0) {
       navigate(
-        `/professor/course/${courseId}/lesson/${lessonId}/activity/${activities[0]._id}`
+        `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activities[0].slug}`
       );
     } else {
       navigate(
-        `/professor/course/${courseId}/lesson/${lessonId}/create-activity`
+        `/professor/course/${courseSlug}/lesson/${lessonSlug}/create-activity`
       );
     }
   };
