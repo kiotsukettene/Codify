@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Maximize2, Minimize2, Play } from "lucide-react"
 import Input from "./Input"
 import { executeCode } from "@/api"
-
+import Logo from '@/assets/picture/logos/Logo.png'
 const CodeEditor = () => {
   const editorRef = useRef()
   const [value, setValue] = useState("")
@@ -52,7 +52,10 @@ const CodeEditor = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e]">
-      <div className="flex items-center p-2 bg-[#2d2d2d] border-b border-gray-800">
+      <div className="flex items-center justify-between p-2  bg-[#2d2d2d] border-b border-gray-800">
+        <div>
+            <img src={Logo} className="w-28 h-auto" alt="" />
+        </div>
         <div className="flex items-center pt-4 gap-4">
           <LanguageSelector language={language} onSelect={handleSelect} />
           <Button className="bg-primary text-white gap-2" onClick={runCode}>
