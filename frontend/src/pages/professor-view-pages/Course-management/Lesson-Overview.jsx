@@ -164,25 +164,12 @@ const LessonOverview = () => {
     }
   }, [courses, fetchCoursesByProfessor]);
 
-  // Log courses and currentCourse for debugging
-  useEffect(() => {
-    console.log("Courses from store:", courses);
-  }, [courses]);
-
   const currentCourse = courses.find((course) => course.slug === slug);
   const courseId = currentCourse?._id;
 
   useEffect(() => {
     console.log("Current course matching slug:", currentCourse);
   }, [currentCourse]);
-
-  // Fetch course details when courseId is available
-  useEffect(() => {
-    if (courseId) {
-      console.log("Fetching course details for courseId:", courseId);
-      fetchCourseById(courseId);
-    }
-  }, [courseId, fetchCourseById]);
 
   // Fetch lessons once courseId is available
   useEffect(() => {
