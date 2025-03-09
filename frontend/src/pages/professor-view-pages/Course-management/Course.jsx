@@ -76,7 +76,7 @@ const Courses = () => {
     // ✅ Store course details in sessionStorage before navigating
     sessionStorage.setItem(`course_${course._id}`, JSON.stringify(course));
 
-    navigate(`/professor/course/${course._id}`, { state: { course } });
+    navigate(`/professor/course/${course.slug}`, { state: { course } });
   };
 
   return (
