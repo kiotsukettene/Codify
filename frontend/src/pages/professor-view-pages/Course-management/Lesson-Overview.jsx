@@ -151,38 +151,33 @@ const LessonOverview = () => {
   const { lessons, fetchLessonsByCourse } = useLessonStore(); // Use lessonStore to get lessons, loading state, and the fetch function
   const { activities, fetchActivitiesByCourse, error } = useActivityStore(); // Use activityStore to get activities, loading state, and the fetch function
   const location = useLocation();
-  const courseData = location.state?.course || {}; // Get course details from navigation state
+
   const lessonId = activities.length > 0 ? activities[0].lessonId : null;
   const { professor } = useprofAuthStore();
 
-  const CourseDetails = ({ courseId }) => {
-    const [courseData, setCourseData] = useState(() => {
-      // ✅ Load from sessionStorage if available
-      const storedData = sessionStorage.getItem(`course_${courseId}`);
-      return storedData ? JSON.parse(storedData) : null;
-    });
+  const [courseData, setCourseData] = useState(() => {
+    const storedData = sessionStorage.getItem(`course_${courseId}`);
+    return storedData ? JSON.parse(storedData) : location.state?.course || {};
+  });
 
-    useEffect(() => {
-      const fetchCourseData = async () => {
-        try {
-          const response = await fetch(`/api/courses/${courseId}`);
-          const data = await response.json();
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      try {
+        const response = await fetch(`/api/courses/${courseId}`);
+        const data = await response.json();
 
-          // ✅ Store data in sessionStorage to persist it when navigating back
-          sessionStorage.setItem(`course_${courseId}`, JSON.stringify(data));
-
-          setCourseData(data);
-        } catch (error) {
-          console.error("Error fetching course:", error);
-        }
-      };
-
-      // ✅ Fetch only if not already stored
-      if (!courseData) {
-        fetchCourseData();
+        // ✅ Store in sessionStorage to persist across navigation
+        sessionStorage.setItem(`course_${courseId}`, JSON.stringify(data));
+        setCourseData(data);
+      } catch (error) {
+        console.error("Error fetching course:", error);
       }
-    }, [courseId, courseData]);
-  };
+    };
+
+    if (!courseData || Object.keys(courseData).length === 0) {
+      fetchCourseData();
+    }
+  }, [courseId]);
 
   // Fetch lessons for the given courseId when the component mounts or courseId changes
   useEffect(() => {

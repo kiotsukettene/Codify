@@ -73,6 +73,9 @@ const Courses = () => {
 
   // Navigate to course details page
   const handleCourseClick = (course) => {
+    // ✅ Store course details in sessionStorage before navigating
+    sessionStorage.setItem(`course_${course._id}`, JSON.stringify(course));
+
     navigate(`/professor/course/${course._id}`, { state: { course } });
   };
 
