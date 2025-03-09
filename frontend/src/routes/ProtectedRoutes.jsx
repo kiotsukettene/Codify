@@ -100,15 +100,12 @@ export const ProtectedRouteInstitution = ({ children }) => {
 
 // ✅ Fix: Prevent infinite re-renders in ProtectedRouteStudents
 export const ProtectedRouteStudents = ({ children }) => {
-  const { isAuthenticated, checkStudentAuth } = useStudentStore();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useStudentStore();
 
-  useEffect(() => {
-    checkStudentAuth();
-    if (!isAuthenticated) navigate("/student/login");
-  }, [isAuthenticated, checkStudentAuth, navigate]);
-
-  return isAuthenticated ? children : null;
+  if (!isAuthenticated) {
+    return <Navigate to="/student/login" replace />;
+  }
+  return children;
 };
 
 export const ProtectedRouteProfessors = ({ children }) => {

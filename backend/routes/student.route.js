@@ -19,7 +19,7 @@ import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-router.get("/student-check-auth", StudentVerifyToken, studentCheckAuth);
+
 router.post("/register", verifyToken, registerStudent);
 router.get("/list", verifyToken, getStudents);
 router.get("/list/:id", verifyToken, getStudentById);
@@ -31,6 +31,7 @@ router.post("/loginStudent", loginStudent);
 router.post("/student-forgot-password", studentForgotPassword);
 router.post("/student-reset-password/:token", studentRestPassword);
 router.post("/student-google-login", googleLogin);
+router.get("/student-check-auth", StudentVerifyToken, studentCheckAuth);
 
 
 

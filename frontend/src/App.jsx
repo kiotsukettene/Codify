@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
@@ -67,16 +67,18 @@ import CodeEditor from "./components/CodeEditor";
 import LandingPage from "./pages/Guest-view-pages/Landing-page";
 import MainLogin from "./pages/Guest-view-pages/Login";
 import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
+import { useStudentStore }  from "@/store/studentStore";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
+  const { checkStudentAuth, isCheckingStudentAuth } = useStudentStore();
 
   useEffect(() => {
     checkAuth();
+    checkStudentAuth();
   }, []);
 
-  if (isCheckingAuth) return <LoadingSpinner />;
-
+  if (isCheckingAuth || isCheckingStudentAuth) return <LoadingSpinner />;
   return (
     <div>
       <Routes>

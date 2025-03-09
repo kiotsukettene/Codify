@@ -16,7 +16,7 @@ return {
     students: [],
     error: null,
     isLoading: false,
-    isCheckingAuth: true,
+    isCheckingStudentAuth: true,
     message: null,
 
   // Fetch all students
@@ -115,7 +115,7 @@ return {
 
  // ✅ Check if student is authenticated (Used in Protected Routes)
  checkStudentAuth: async () => {
-    set({ isCheckingAuth: true, error: null });
+    set({ isCheckingStudentAuth: true, error: null });
 
     try {
       const response = await axios.get(`${API_URL}/student-check-auth`);
@@ -123,11 +123,11 @@ return {
       set({
         student: response.data.student,
         isAuthenticated: true,
-        isCheckingAuth: false,
+        isCheckingStudentAuth: false,
       });
     } catch (error) {
       set({
-        isCheckingAuth: false,
+        isCheckingStudentAuth: false,
         error: null,
         isAuthenticated: false,
       });
