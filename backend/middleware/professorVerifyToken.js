@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 
 export const profVerifyToken = (req, res, next) => {
-  console.log("Cookies received:", req.cookies); // ✅ Debugging
-  const token = req.cookies.token; // ✅ Get token from cookies
+  console.log("Cookies received:", req.cookies);
+  const token = req.cookies.token;
 
   if (!token) {
     return res.status(401).json({
@@ -13,8 +13,8 @@ export const profVerifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded Token:", decoded); // ✅ Debugging
-    req.professorId = decoded.professorId; // Attach professor ID to request
+    console.log("Decoded Token:", decoded);
+    req.professorId = decoded.professorId;
     next();
   } catch (error) {
     console.error("Error verifying professor token", error);

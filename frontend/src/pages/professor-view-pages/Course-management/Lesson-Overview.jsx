@@ -26,6 +26,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
 import { toast } from "react-hot-toast";
 import { useprofAuthStore } from "@/store/profAuthStore";
+import { useCourseStore } from "@/store/courseStore";
 
 const studentList = [
   {
@@ -144,16 +145,40 @@ const tabs = [
 ];
 
 const LessonOverview = () => {
-  const { courseId } = useParams();
-  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const { lessons, fetchLessonsByCourse } = useLessonStore(); // Use lessonStore to get lessons, loading state, and the fetch function
   const { activities, fetchActivitiesByCourse, error } = useActivityStore(); // Use activityStore to get activities, loading state, and the fetch function
   const location = useLocation();
+  const { course, fetchCourseById } = useCourseStore();
 
   const lessonId = activities.length > 0 ? activities[0].lessonId : null;
   const { professor } = useprofAuthStore();
+
+  const [courseId, setCourseId] = useState(null);
+  // Fetch course on mount if not available
+  useEffect(() => {
+    if (!course) {
+      const storedCourseId = localStorage.getItem("currentCourseId"); // Optional: Persist course ID
+      if (storedCourseId) {
+        fetchCourseById(storedCourseId);
+      }
+    }
+  }, [course, fetchCourseById]);
+
+  // Set courseId once course is fetched
+  useEffect(() => {
+    if (course) {
+      setCourseId(course._id);
+    }
+  }, [course]);
+
+  // Fetch lessons once courseId is available
+  useEffect(() => {
+    if (courseId) {
+      fetchLessonsByCourse(courseId);
+    }
+  }, [courseId, fetchLessonsByCourse]);
 
   const [courseData, setCourseData] = useState(() => {
     const storedData = sessionStorage.getItem(`course_${courseId}`);
