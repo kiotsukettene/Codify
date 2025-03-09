@@ -5,6 +5,8 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
 const API_URL = "http://localhost:3000/api/professors";
 
+axios.defaults.withCredentials = true;
+
 const storedProfessor = localStorage.getItem("professor");
 const parsedProfessor =
   storedProfessor && storedProfessor !== "undefined"
@@ -13,7 +15,7 @@ const parsedProfessor =
 
 export const useprofAuthStore = create((set) => ({
   professor: parsedProfessor,
-  isAuthenticated: !!parsedProfessor,
+  isAuthenticated: false,
   professors: [],
   error: null,
   isLoading: false,
@@ -28,18 +30,10 @@ export const useprofAuthStore = create((set) => ({
         email,
         password,
       });
-
-      const { professor, token } = response.data;
-
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("professor", JSON.stringify(professor));
-      }
-
       set({
-        professor,
+        professor: response.data.professor,
         isAuthenticated: true,
-        isLoading: false,
+        loading: false,
       });
     } catch (error) {
       set({
@@ -93,16 +87,10 @@ export const useprofAuthStore = create((set) => ({
   checkAuth: async () => {
     set({ isCheckingAuth: true, error: null });
 
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      set({ isCheckingAuth: false, isAuthenticated: false });
-      return;
-    }
-
     try {
+      // ✅ No need to manually get token, browser sends it automatically
       const response = await axios.get(`${API_URL}/check-auth`, {
-        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true, // ✅ Ensures cookies are sent
       });
 
       set({
@@ -111,9 +99,6 @@ export const useprofAuthStore = create((set) => ({
         isCheckingAuth: false,
       });
     } catch (error) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("professor");
-
       set({
         isCheckingAuth: false,
         isAuthenticated: false,
@@ -121,6 +106,38 @@ export const useprofAuthStore = create((set) => ({
       });
     }
   },
+
+  // checkAuth: async () => {
+  //   set({ isCheckingAuth: true, error: null });
+
+  //   const token = Cookies.getItem("token");
+
+  //   if (!token) {
+  //     set({ isCheckingAuth: false, isAuthenticated: false });
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await axios.get(`${API_URL}/check-auth`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     set({
+  //       professor: response.data.professor,
+  //       isAuthenticated: true,
+  //       isCheckingAuth: false,
+  //     });
+  //   } catch (error) {
+  //     localStorage.removeItem("token");
+  //     localStorage.removeItem("professor");
+
+  //     set({
+  //       isCheckingAuth: false,
+  //       isAuthenticated: false,
+  //       error: error.response?.data?.message || "Authentication failed",
+  //     });
+  //   }
+  // },
 
   AddProfessor: async (professorData) => {
     set({ isLoading: true, error: null });

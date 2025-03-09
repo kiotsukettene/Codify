@@ -1,5 +1,4 @@
 import { Professor } from "../models/professor.model.js";
-import { Institution } from "../models/institution.model.js";
 import bcrypt from "bcryptjs";
 import { profTokenAndCookie } from "../utils/profTokenAndCookie.js";
 import crypto from "crypto";
@@ -52,7 +51,7 @@ export const loginProfessor = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    const token = profTokenAndCookie(res, professor._id);
+    profTokenAndCookie(res, professor._id);
 
     professor.lastLogin = new Date();
     await professor.save();
@@ -60,7 +59,6 @@ export const loginProfessor = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
-      token,
       professor: {
         ...professor._doc,
         password: undefined, // Hide password from response
@@ -93,33 +91,74 @@ export const logoutProfessor = async (req, res) => {
 };
 
 //checkAuth
+// export const checkAuthProfessor = async (req, res) => {
+//   console.log("Decoded Token Data:", req.user); // ✅ Debugging log
+
+//   try {
+//     if (!req.user || !req.user.id) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Unauthorized: No professor ID found",
+//       });
+//     }
+
+//     const professor = await Professor.findById(req.user.id).select("-password");
+
+//     if (!professor) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Professor not found",
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       professor,
+//     });
+//   } catch (error) {
+//     console.error("Error in checkAuthProfessor:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 export const checkAuthProfessor = async (req, res) => {
-  console.log("Decoded Token Data:", req.user); // ✅ Debugging log
+  console.log("🔍 Checking authentication..."); // ✅ Debugging
+
+  const token = req.cookies.token; // ✅ Uses Cookie instead
+  console.log(
+    "📌 Token received:",
+    token ? "✅ Token exists" : "❌ No token found"
+  );
+
+  if (!token) {
+    console.warn("🚨 Unauthorized access attempt - No token provided.");
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
 
   try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized: No professor ID found",
-      });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("✅ Decoded Token:", decoded); // ✅ Log decoded token
 
-    const professor = await Professor.findById(req.user.id).select("-password");
+    const professor = await Professor.findById(decoded.professorId).select(
+      "-password"
+    );
+    console.log(
+      "📌 Professor lookup:",
+      professor ? "✅ Found" : "❌ Not Found"
+    );
 
     if (!professor) {
-      return res.status(404).json({
-        success: false,
-        message: "Professor not found",
-      });
+      console.warn("🚨 Professor not found for ID:", decoded.professorId);
+      return res
+        .status(404)
+        .json({ success: false, message: "Professor not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      professor,
-    });
+    console.log("✅ Authentication successful for professor:", professor.email);
+    res.status(200).json({ success: true, professor });
   } catch (error) {
-    console.error("Error in checkAuthProfessor:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("❌ Error verifying token:", error.message);
+    res.status(401).json({ success: false, message: "Unauthorized" });
   }
 };
 
@@ -402,10 +441,9 @@ export const getProfessors = async (req, res) => {
     }
 
     // Fetch students that belong to the authenticated institution
-    const professors = await Professor.find({ institution: req.institutionId }).populate(
-      "institution",
-      "institutionName"
-    );
+    const professors = await Professor.find({
+      institution: req.institutionId,
+    }).populate("institution", "institutionName");
 
     res.status(200).json({
       success: true,

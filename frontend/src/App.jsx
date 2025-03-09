@@ -67,13 +67,20 @@ import CodeEditor from "./components/CodeEditor";
 // redirect authenticated and paid institution to dashboard page
 
 function App() {
-  const { isCheckingAuth, checkAuth } = useAuthStore();
+  const { isCheckingAuth: isCheckingUserAuth, checkAuth: checkUserAuth } =
+    useAuthStore();
+  const { isCheckingAuth: isCheckingProfAuth, checkAuth: checkProfAuth } =
+    useprofAuthStore();
 
   useEffect(() => {
-    checkAuth();
+    const checkBothAuth = async () => {
+      await Promise.all([checkUserAuth?.(), checkProfAuth?.()]);
+    };
+
+    checkBothAuth();
   }, []);
 
-  if (isCheckingAuth) return <LoadingSpinner />;
+  if (isCheckingUserAuth || isCheckingProfAuth) return <LoadingSpinner />;
 
   return (
     <div>
@@ -153,21 +160,88 @@ function App() {
 
         {/* Professor Authentication */}
 
-        <Route path="/professor/" 
-        >
-          <Route path="login" element={<RedirectAuthenticatedProfessor><ProfessorLogin /></RedirectAuthenticatedProfessor>} />
-          <Route path="forgot-password" element={<RedirectAuthenticatedProfessor><ProfForgotPassword /></RedirectAuthenticatedProfessor>} />
-          <Route path="dashboard" element={<ProtectedRouteProfessors><ProfDashboard /></ProtectedRouteProfessors>} />
-          <Route path="course" element={<ProtectedRouteProfessors><Courses /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId" element={<ProtectedRouteProfessors><LessonOverview /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/create-lesson" element={<ProtectedRouteProfessors><CreateLesson /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/lesson/:lessonId" element={<ProtectedRouteProfessors><Topic /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/lesson/:lessonId/create-activity" element={<ProtectedRouteProfessors><CreateActivity /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/lesson/:lessonId/activity/:activityId" element={<ProtectedRouteProfessors><ActivityPage /></ProtectedRouteProfessors>} />
-          <Route path="reset-password/:token" element={<RedirectAuthenticatedProfessor><ProfNewPassword /></RedirectAuthenticatedProfessor>} />
-
+        <Route path="/professor/">
+          <Route
+            path="login"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfessorLogin />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
+          <Route
+            path="forgot-password"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfForgotPassword />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRouteProfessors>
+                <ProfDashboard />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course"
+            element={
+              <ProtectedRouteProfessors>
+                <Courses />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseId"
+            element={
+              <ProtectedRouteProfessors>
+                <LessonOverview />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseId/create-lesson"
+            element={
+              <ProtectedRouteProfessors>
+                <CreateLesson />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseId/lesson/:lessonId"
+            element={
+              <ProtectedRouteProfessors>
+                <Topic />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseId/lesson/:lessonId/create-activity"
+            element={
+              <ProtectedRouteProfessors>
+                <CreateActivity />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseId/lesson/:lessonId/activity/:activityId"
+            element={
+              <ProtectedRouteProfessors>
+                <ActivityPage />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="reset-password/:token"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfNewPassword />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
         </Route>
-        
 
         <Route
           path="admin/payment-summary"
