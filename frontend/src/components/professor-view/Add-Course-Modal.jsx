@@ -202,20 +202,7 @@ const CourseModal = ({ onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      const storedProfessor = localStorage.getItem("professor");
-      if (!storedProfessor) {
-        console.error("Professor data not found in localStorage.");
-        return;
-      }
-      const professorData = JSON.parse(storedProfessor);
-      const professorId = professorData._id;
-      if (!professorId) {
-        console.error("Professor ID not found in stored professor data.");
-        return;
-      }
-
       const courseData = {
-        professorId,
         className: formValues.className,
         program: formValues.program,
         section: formValues.section,
@@ -236,8 +223,7 @@ const CourseModal = ({ onClose }) => {
           day: "",
           time: "",
         });
-
-        onClose(); // ✅ Close the modal
+        onClose(); // Close the modal
       } catch (error) {
         console.error("Error creating course:", error);
       }

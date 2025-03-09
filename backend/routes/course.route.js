@@ -10,7 +10,7 @@ import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 
 const router = express.Router();
 
-router.post("/create", createCourse);
+router.post("/create", profVerifyToken, createCourse);
 router.get("/courses", profVerifyToken, getCoursesByProfessor);
 router.get("/course/:courseId", getCourseById);
 router.put("/update/:courseId", updateCourse);

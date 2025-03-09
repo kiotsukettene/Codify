@@ -4,22 +4,24 @@ import slugify from "slugify";
 
 export const createCourse = async (req, res) => {
   try {
-    const { professorId, className, program, section, language, schedule } =
-      req.body;
+    // Destructure only the course data from the request body
+    const { className, program, section, language, schedule } = req.body;
+
+    // Get professorId from the token attached by the middleware
+    const professorId = req.professorId;
 
     // Generate a unique course code
     let courseCode;
     let isUnique = false;
-
-    // Ensure courseCode is unique in the database
     while (!isUnique) {
       courseCode = generateCourseCode();
       const existingCourse = await Course.findOne({ courseCode });
-      if (!existingCourse) isUnique = true; // Only break loop if the code is unique
+      if (!existingCourse) isUnique = true;
     }
 
     const slug = slugify(className, { lower: true, strict: true });
 
+    // Create new course with professorId from the token
     const course = new Course({
       professorId,
       className,
@@ -35,13 +37,14 @@ export const createCourse = async (req, res) => {
 
     res.status(201).json({
       message: "Course created successfully!",
-      courseCode: course.courseCode, // Send generated course code
+      courseCode: course.courseCode,
       course,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating course", error: error.message });
+    res.status(500).json({
+      message: "Error creating course",
+      error: error.message,
+    });
   }
 };
 
