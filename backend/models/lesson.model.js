@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import generateLessonSlug from "../utils/sluggifyLesson.js";
 
 const LessonSchema = new mongoose.Schema(
   {
@@ -17,9 +18,12 @@ const LessonSchema = new mongoose.Schema(
         notes: [{ type: String }],
       },
     ],
+    slug: { type: String, unique: true },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
+
+LessonSchema.pre("save", generateLessonSlug);
 
 export default mongoose.model("Lesson", LessonSchema);
