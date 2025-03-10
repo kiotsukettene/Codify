@@ -132,27 +132,21 @@ const Courses = () => {
                 {/* Filter Tags */}
                 <div className="flex items-center justify-between w-full flex-wrap gap-2">
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      "C#",
-                      "AI",
-                      "CSS",
-                      "Javascript",
-                      "Python",
-                      "HTML",
-                      "C++",
-                    ].map((tag, index) => (
-                      <Button
-                        key={index}
-                        className={`${
-                          selectedLanguage.includes(tag)
-                            ? `${languageColors[tag]?.bg} ${languageColors[tag]?.text} border border-purple-700`
-                            : `${languageColors[tag]?.bg} ${languageColors[tag]?.text} hover:text-white`
-                        } px-2 sm:px-3 py-1 text-xs whitespace-nowrap rounded-full`}
-                        onClick={() => toggleLanguage(tag)}
-                      >
-                        {tag}
-                      </Button>
-                    ))}
+                    {["JavaScript", "python", "Java", "C++"].map(
+                      (tag, index) => (
+                        <Button
+                          key={index}
+                          className={`${
+                            selectedLanguage.includes(tag)
+                              ? `${languageColors[tag]?.bg} ${languageColors[tag]?.text} border border-purple-700`
+                              : `${languageColors[tag]?.bg} ${languageColors[tag]?.text} hover:text-white`
+                          } px-2 sm:px-3 py-1 text-xs whitespace-nowrap rounded-full`}
+                          onClick={() => toggleLanguage(tag)}
+                        >
+                          {tag}
+                        </Button>
+                      )
+                    )}
                   </div>
                 </div>
               </div>

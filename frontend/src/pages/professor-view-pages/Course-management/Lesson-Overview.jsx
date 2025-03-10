@@ -270,7 +270,7 @@ const LessonOverview = () => {
                       whileTap={{ y: 0 }}
                     >
                       {activeTab === tab.id && (
-                        <motion.div
+                        <motion.divc
                           className="absolute inset-0 bg-violet-100 rounded-t-lg -z-10"
                           layoutId="activeTab"
                           transition={{ type: "spring", bounce: 0.2 }}
