@@ -154,7 +154,6 @@ const OverviewTab = ({ lessons = [] }) => {
                     <h3 className="font-medium">
                       Quest {index + 1} : {lesson.title}
                     </h3>
-                    <p className="text-sm text-gray-500">{lesson.subTitle}</p>
                   </div>
                 </div>
               </AccordionTrigger>

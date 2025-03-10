@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-const ActivityTab = ({ activity, courseId, lessonId, index }) => {
+const ActivityTab = ({ activity, courseSlug, lessonSlug, index }) => {
   // ✅ Ensure a single activity is passed
   if (!activity) {
     return <p className="text-gray-500">No activity available.</p>;
@@ -15,7 +15,7 @@ const ActivityTab = ({ activity, courseId, lessonId, index }) => {
 
   const handleActivityClick = () => {
     navigate(
-      `/professor/course/${courseId}/lesson/${lessonId}/activity/${activity._id}`,
+      `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activity.slug}`,
       { state: { activity } }
     );
   };

@@ -149,13 +149,14 @@ const LessonOverview = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
   //BE
-  const { courseSlug } = useParams();
+  const { courseSlug, lessonSlug } = useParams();
 
   const { courses, course, fetchCourseById, fetchCoursesByProfessor } =
     useCourseStore();
   const { activities, fetchActivitiesByCourse } = useActivityStore();
   const { lessons, fetchLessonsByCourse } = useLessonStore();
-  const lessonId = lessons.map((lesson) => lesson._id);
+  const lessonIds = lessons.map((lesson) => lesson._id);
+
   const { professor } = useprofAuthStore();
 
   // Fetch courses if not already loaded
@@ -178,6 +179,11 @@ const LessonOverview = () => {
       fetchLessonsByCourse(courseId);
     }
   }, [courseId, fetchLessonsByCourse]);
+
+  // In the parent component (LessonOverview), before mapping:
+  const filteredActivities = activities.filter((activity) =>
+    lessonIds.includes(activity.lessonId)
+  );
 
   //fetch activities for the given courseId when the component mounts or courseId changes
   useEffect(() => {
@@ -316,8 +322,8 @@ const LessonOverview = () => {
                               <ActivityTab
                                 index={index + 1}
                                 activity={activity}
-                                courseId={courseId}
-                                lessonId={lessonId}
+                                courseId={courseSlug}
+                                lessonIds={lessonSlug}
                               />
                             </motion.div>
                           ))}
