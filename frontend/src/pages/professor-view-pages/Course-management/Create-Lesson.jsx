@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bold,
   Code2,
@@ -42,10 +42,12 @@ import {
 import { useLessonStore } from "@/store/lessonStore"; // Import lesson store
 import { useParams, useNavigate } from "react-router-dom"; // For getting courseId & navigation
 import toast from "react-hot-toast"; // For notifications
+import { useCourseStore } from "@/store/courseStore"; // Import course store
 
 const CreateLesson = () => {
-  const { createLesson, isLoading } = useLessonStore(); // Get function from store
-  const { courseId } = useParams(); // Get courseId from URL
+  const { createLesson } = useLessonStore(); // Get function from store
+  const { courses, fetchCoursesByProfessor } = useCourseStore(); // Get courses from store
+  const { courseSlug } = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -149,25 +151,39 @@ const CreateLesson = () => {
   //     toast.error("Error creating lesson!");
   //   }
   // };
+  useEffect(() => {
+    if (courses.length === 0) {
+      fetchCoursesByProfessor(); // or whatever fetch function you have
+    }
+  }, [courses, fetchCoursesByProfessor]);
+  const getCourseIdFromSlug = (slug) => {
+    if (!courses || courses.length === 0) return null;
+    console.log("Courses array in store:", courses);
+
+    const matchedCourse = courses.find((c) => c.slug === slug);
+    return matchedCourse ? matchedCourse._id : null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("submit");
-
-    if (!courseId || !title) {
-      toast.error("Course ID and Title are required!");
+    console.log("Courses array in store:", courses);
+    // Convert courseSlug to courseId
+    const courseId = getCourseIdFromSlug(courseSlug);
+    if (!courseId) {
+      toast.error("No course found for that slug!");
+      return;
+    }
+    if (!title) {
+      toast.error("Title is required!");
       return;
     }
 
-    // Properly group sections based on their subTitle
+    // Group sections (your existing grouping logic)
     const groupedSections = sections.reduce((acc, section) => {
-      // Find an existing section with the same subTitle
       let existingSection = acc.find(
         (s) => s.subTitle === (section.subheader || "Untitled Section")
       );
-
       if (!existingSection) {
-        // If no existing section found, create a new one
         existingSection = {
           subTitle: section.subheader || "Untitled Section",
           description: "",
@@ -176,8 +192,6 @@ const CreateLesson = () => {
         };
         acc.push(existingSection);
       }
-
-      // Assign content to the correct fields
       if (section.type === "description") {
         existingSection.description = section.content;
       } else if (section.type === "code") {
@@ -185,23 +199,26 @@ const CreateLesson = () => {
       } else if (section.type === "note") {
         existingSection.notes.push(section.content);
       }
-
       return acc;
     }, []);
 
+    // Prepare lessonData. If you're generating slug client-side, ensure you assign it here.
     const lessonData = {
       courseId,
       title,
-      subTitle: subtitle || "", // Store the lesson-wide subtitle
+      subTitle: subtitle || "",
       sections: groupedSections,
     };
 
-    console.log("Saving lesson:", JSON.stringify(lessonData, null, 2));
-
     try {
-      await createLesson(lessonData);
-      toast.success("Lesson created successfully!");
-      navigate(`/professor/course/${courseId}`); // Redirect to lessons page
+      // Capture the newly created lesson returned from the store
+      const newLesson = await createLesson(lessonData);
+      if (newLesson && newLesson.slug) {
+        toast.success("Lesson created successfully!");
+        navigate(`/professor/course/${courseSlug}/lesson/${newLesson.slug}`);
+      } else {
+        toast.error("Lesson creation failed: no slug returned.");
+      }
     } catch (error) {
       console.error("Error creating lesson:", error);
       toast.error("Error creating lesson!");

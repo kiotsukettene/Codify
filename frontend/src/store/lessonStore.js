@@ -57,6 +57,7 @@ export const useLessonStore = create((set) => ({
         isLoading: false,
       }));
       toast.success("Lesson created successfully!");
+      return response.data.lesson; // Return the created lesson
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error creating lesson",

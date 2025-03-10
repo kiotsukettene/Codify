@@ -109,7 +109,7 @@ const OverviewTab = ({ lessons = [] }) => {
         <h2 className="text-xl font-semibold mb-4">Lessons</h2>
         <Button
           onClick={() =>
-            navigate(`/professor/course/${courseId}/create-lesson`)
+            navigate(`/professor/course/${courseSlug}/create-lesson`)
           }
         >
           Create Lesson
