@@ -5,67 +5,18 @@ import VariableFontHoverByRandomLetter from "@/fancy/components/text/variable-fo
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { Compare } from "@/components/ui/compare";
 import BrandsComponent from "@/components/ui/brands";
-import { BentoCard, BentoGrid } from "@/components/ui/bento-grid";
-import {
-  BellIcon,
-  CalendarIcon,
-  FileInputIcon,
-  FileTextIcon,
-  GlobeIcon,
-} from "lucide-react";
 
-import codeEditor from '../../assets/picture/banners/code-editor.png'
 
-const features = [
-  {
-    Icon: FileTextIcon,
-    name: "Gamified Learning ",
-    description: "We automatically save your files as you type.",
-    href: "/",
-    cta: "Learn more",
-    background: <img className="absolute -right-20 -top-20 opacity-60" />,
-    className: "lg:row-start-1 lg:row-end-4 lg:col-start-2 lg:col-end-3",
-  },
-  {
-    Icon: FileInputIcon,
-    name: "Built-in Coding Environment",
-    description: "Practice real-time.",
-    href: "/",
-    cta: "Learn more",
-    background: <img src={codeEditor} className="absolute opacity-100 p-4" />,
-    className: "lg:col-start-1 lg:col-end-2 lg:row-start-1 lg:row-end-3",
-  },
-  {
-    Icon: GlobeIcon,
-    name: "Live Video Sessions ",
-    description: "Collaborate with others.",
-    href: "/",
-    cta: "Learn more",
-    background: <img className="absolute -right-20 -top-20 opacity-60" />,
-    className: "lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:row-end-4",
-  },
-  {
-    Icon: CalendarIcon,
-    name: " Code Battles & Challenge",
-    description: "Compete and improve.",
-    href: "/",
-    cta: "Learn more",
-    background: <img className="absolute -right-20 -top-20 opacity-60" />,
-    className: "lg:col-start-3 lg:col-end-3 lg:row-start-1 lg:row-end-2",
-  },
-  {
-    Icon: BellIcon,
-    name: "Personalized Learning Paths",
-    description:
-      "Tailored courses.",
-    href: "/",
-    cta: "Learn more",
-    background: <img className="absolute -right-20 -top-20 opacity-60" />,
-    className: "lg:col-start-3 lg:col-end-3 lg:row-start-2 lg:row-end-4",
-  },
-];
+
+import { BentoGrid, CodeBattlesCard, CodingEnvironmentCard, GamifiedLearningCard, PersonalizedLearningCard,  VideoSessionsCard } from "@/components/ui/bento-grid";
+import { PricingCard } from "@/components/pricing-card";
+import { useNavigate } from "react-router-dom";
+
+
+
 
 function LandingPage() {
+  const navigate = useNavigate()
   const Statistic = ({ number, title, description }) => {
     return (
       <div className="flex flex-col items-start">
@@ -173,17 +124,60 @@ function LandingPage() {
         </div>
       </section>
 
-      <section className="max-w-fit w-full min-h-screen mx-auto py-2 px-6 bg-neutral-50">
-        <BentoGrid className="lg:grid-rows-3">
-          {features.map((feature) => (
-            <BentoCard key={feature.name} {...feature} />
-          ))}
-        </BentoGrid>
+      <section className="max-w-7xl w-full min-h-screen mx-auto py-2 px-6 bg-neutral-50">
+      
+      <BentoGrid className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto">
+        <GamifiedLearningCard className="md:col-span-1 lg:col-span-1" />
+        <CodingEnvironmentCard className="md:col-span-1 lg:col-span-1" />
+        <VideoSessionsCard className="md:col-span-1 lg:col-span-1" />
+        <CodeBattlesCard className="md:col-span-1 lg:col-span-1" />
+        <PersonalizedLearningCard className="md:col-span-2 lg:col-span-2" />
+      </BentoGrid>
       </section>
+
+
+
+
+      {/* ==============================PRICING CARD================================== */}
+     <section className="w-full items-center justify-center flex">
+     <PricingCard
+      title="Ultimate Plan"
+      description="Access everything you need to grow your business."
+      price={70000}
+      originalPrice={90000}
+      features={[
+        {
+          title: "Features",
+          items: [
+            "Interactive Learning Paths",
+            "Real-time Code Editor",
+            "Live Video Sessions",
+            "Code Battles",
+            "Code Challenges",
+            
+          ],
+        },
+        {
+          title: "Perks",
+          items: [
+            "24/7 Support",
+            "Customizable Avatars & Profiles ",
+            "Personalized Learning Experience",
+          
+          ],
+        },
+      ]}
+      buttonText="Get Started"
+      onButtonClick={() => navigate('/admin/register')}
+    />
+     </section>
 
   
 
-      <section className="min-h-screen bg-neutral-50 py-8 flex justify-center items-center">
+
+
+      {/* ============================code compiler compare component ================================ */}
+      {/* <section className="min-h-screen bg-neutral-50 py-8 flex justify-center items-center">
         <div className="p-4 flex justify-center items-center border rounded-3xl dark:bg-neutral-900 bg-neutral-100 border-neutral-200 dark:border-neutral-800 px-4 max-w-4xl mx-auto">
           <Compare
             firstImage="https://assets.aceternity.com/code-problem.png"
@@ -194,7 +188,7 @@ function LandingPage() {
             slideMode="hover"
           />
         </div>
-      </section>
+      </section> */}
 
 
 
