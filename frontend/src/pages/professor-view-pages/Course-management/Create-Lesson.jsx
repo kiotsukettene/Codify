@@ -164,9 +164,51 @@ const CreateLesson = () => {
     return matchedCourse ? matchedCourse._id : null;
   };
 
+  function groupSections(sections = []) {
+    const groupedSections = [];
+    let currentSection = null;
+
+    sections.forEach((item) => {
+      // If there's a new subheader, start a new section.
+      if (item.subheader) {
+        currentSection = {
+          subTitle: item.subheader,
+          description: "",
+          codeSnippets: [],
+          notes: [],
+        };
+        groupedSections.push(currentSection);
+      }
+
+      // If no subheader is provided and we have not created a section yet,
+      // do nothing (or handle however you prefer).
+      if (!currentSection) {
+        return;
+      }
+
+      // Add content to the current (last) section.
+      switch (item.type) {
+        case "description":
+          currentSection.description = item.content;
+          break;
+        case "code":
+          currentSection.codeSnippets.push(item.content);
+          break;
+        case "note":
+          currentSection.notes.push(item.content);
+          break;
+        default:
+          break;
+      }
+    });
+
+    return groupedSections;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Courses array in store:", courses);
+
     // Convert courseSlug to courseId
     const courseId = getCourseIdFromSlug(courseSlug);
     if (!courseId) {
@@ -178,47 +220,23 @@ const CreateLesson = () => {
       return;
     }
 
-    // Group sections (your existing grouping logic)
-    const groupedSections = sections.reduce((acc, section) => {
-      let existingSection = acc.find(
-        (s) => s.subTitle === (section.subheader || "Untitled Section")
-      );
-      if (!existingSection) {
-        existingSection = {
-          subTitle: section.subheader || "Untitled Section",
-          description: "",
-          codeSnippets: [],
-          notes: [],
-        };
-        acc.push(existingSection);
-      }
-      if (section.type === "description") {
-        existingSection.description = section.content;
-      } else if (section.type === "code") {
-        existingSection.codeSnippets.push(section.content);
-      } else if (section.type === "note") {
-        existingSection.notes.push(section.content);
-      }
-      return acc;
-    }, []);
+    // Group sections based on subheader
+    const groupedSections = groupSections(sections);
 
-    // Prepare lessonData. If you're generating slug client-side, ensure you assign it here.
+    // Build your lesson payload (adjust the field names as per your Lesson schema)
     const lessonData = {
       courseId,
       title,
-      subTitle: subtitle || "",
+      subTitle: subtitle, // optional, if you have a subtitle for the lesson
       sections: groupedSections,
     };
 
+    console.log("Saving lesson:", JSON.stringify(lessonData, null, 2));
+
     try {
-      // Capture the newly created lesson returned from the store
-      const newLesson = await createLesson(lessonData);
-      if (newLesson && newLesson.slug) {
-        toast.success("Lesson created successfully!");
-        navigate(`/professor/course/${courseSlug}/lesson/${newLesson.slug}`);
-      } else {
-        toast.error("Lesson creation failed: no slug returned.");
-      }
+      await createLesson(lessonData);
+      toast.success("Lesson created successfully!");
+      navigate(`/professor/course/${courseSlug}`); // Redirect to the lessons page for the course
     } catch (error) {
       console.error("Error creating lesson:", error);
       toast.error("Error creating lesson!");

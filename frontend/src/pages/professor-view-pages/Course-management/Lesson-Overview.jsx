@@ -178,12 +178,12 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchLessonsByCourse]);
 
-  // //fetch activities for the given courseId when the component mounts or courseId changes
-  // useEffect(() => {
-  //   if (courseId) {
-  //     fetchActivitiesByCourse(courseId).then((data) => {});
-  //   }
-  // }, [courseId, fetchActivitiesByCourse]);
+  //fetch activities for the given courseId when the component mounts or courseId changes
+  useEffect(() => {
+    if (courseId) {
+      fetchActivitiesByCourse(courseId).then((data) => {});
+    }
+  }, [courseId, fetchActivitiesByCourse]);
 
   return (
     <SidebarProvider>
