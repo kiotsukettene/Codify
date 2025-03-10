@@ -180,7 +180,7 @@ const Topic = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate(`/professor/course/${courseSlug}`)}
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>

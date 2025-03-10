@@ -36,6 +36,7 @@ const students = [
 ];
 
 const ActivityPage = () => {
+  const { courseSlug, lessonSlug } = useParams();
   const { activities, activity, fetchActivityById } = useActivityStore();
   const { activitySlug } = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -82,7 +83,11 @@ const ActivityPage = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate(-1)}
+                  onClick={() =>
+                    navigate(
+                      `/professor/course/${courseSlug}/lesson/${lessonSlug}/`
+                    )
+                  }
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
