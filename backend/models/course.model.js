@@ -30,6 +30,16 @@ const CourseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Define a virtual field to count lessons related to this course
+CourseSchema.virtual("lessonCount", {
+  ref: "Lesson", // The model to use
+  localField: "_id", // Find courses where `_id`
+  foreignField: "courseId", // is equal to the Lesson's `courseId`
+  count: true, // And only return the count of documents
+});
+
 CourseSchema.pre("save", generateCourseSlug); // Generate slug on save
+CourseSchema.set("toObject", { virtuals: true });
+CourseSchema.set("toJSON", { virtuals: true });
 
 export default mongoose.model("Course", CourseSchema);

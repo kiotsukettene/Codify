@@ -65,7 +65,8 @@ export const getCoursesByProfessor = async (req, res) => {
   try {
     // Use professorId from the token (attached to req by profVerifyToken middleware)
     const professorId = req.professorId;
-    const courses = await Course.find({ professorId });
+    const courses = await Course.find({ professorId }).populate("lessonCount");
+
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({
@@ -76,6 +77,7 @@ export const getCoursesByProfessor = async (req, res) => {
 };
 
 export const getCourseById = async (req, res) => {
+  c;
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId).populate({
