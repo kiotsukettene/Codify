@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback, useState } from "react";
-import { useParams } from "react-router-dom";
 import { Card, CardTitle } from "@/components/ui/card";
 import StudentLessonContent from "@/components/student-view/student-lesson-content";
 import totalXpImg from "@/assets/picture/courses/totalXp.png";
@@ -19,7 +18,6 @@ import XPChallengeCard from "@/components/student-view/XPChallengeCard";
 
 function StudentModulePage() {
   const navigate = useNavigate();
-  const { lessonSlug } = useParams();
   const { fetchLessonById, lesson, isLoading, error } = useLessonStore();
   const [showModal, setShowModal] = useState(false);
   const topicRefs = useRef({});
@@ -37,6 +35,8 @@ function StudentModulePage() {
       id: index + 1,
       title: section.subTitle || `Section ${index + 1}`, // Fallback title
       content: section.description || "No content available", // Fallback content
+      codeSnippets: section.codeSnippets || [],
+      notes: section.notes || [], // Fallback note
       icon: CheckCircle,
     })) || [];
 
@@ -128,6 +128,8 @@ function StudentModulePage() {
                 <StudentLessonContent
                   title={topic.title}
                   content={topic.content}
+                  codeSnippets={topic.codeSnippets}
+                  notes={topic.notes}
                 />
                 {topic.id !== topics.length && (
                   <hr className="my-8 border-t-2 border-gray-100" />
