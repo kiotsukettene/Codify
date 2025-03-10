@@ -4,7 +4,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Sidebar from "@/components/professor-view/Sidebar";
-import StudentHeader from "@/components/student-view/Header";
+import ProfessorHeader from "@/components/professor-view/ProfessorHeader";
 import { Outlet } from "react-router-dom";
 
 function ProfessorLayout() {
@@ -20,7 +20,7 @@ function ProfessorLayout() {
             {/* ✅ Header */}
             <header className="flex h-20 items-center gap-2 px-4 border-b">
               <SidebarTrigger className="-ml-1" />
-              <StudentHeader />
+              <ProfessorHeader />
             </header>
 
             {/* ✅ Page Content */}

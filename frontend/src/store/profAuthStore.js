@@ -25,8 +25,6 @@ export const useprofAuthStore = create((set) => ({
         password,
       });
 
-      const professor = response.data.professor; // Get the professor object
-
       set({
         professor: response.data.professor,
         isAuthenticated: true,
