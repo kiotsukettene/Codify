@@ -199,7 +199,7 @@ const StudentAccountSettings= () => {
           {/* Academic Information Section */}
           <div className="bg-white rounded-xl p-6  border border-purple-100">
             <h2 className="text-xl font-bold mb-4 flex items-center text-primary">
-              <BookOpen className="mr-2" /> Academic Stats
+              <BookOpen className="mr-2" /> Academic Status
             </h2>
 
             <div className="space-y-4">
