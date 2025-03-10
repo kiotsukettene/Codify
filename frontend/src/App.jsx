@@ -218,7 +218,7 @@ function App() {
             }
           />
           <Route
-            path="course/:courseId/lesson/:lessonId/create-activity"
+            path="course/:courseSlug/lesson/:lessonSlug/create-activity"
             element={
               <ProtectedRouteProfessors>
                 <CreateActivity />
@@ -226,7 +226,7 @@ function App() {
             }
           />
           <Route
-            path="course/:courseId/lesson/:lessonSlug/activity/:activitySlug"
+            path="course/:courseSlug/lesson/:lessonSlug/activity/:activitySlug"
             element={
               <ProtectedRouteProfessors>
                 <ActivityPage />

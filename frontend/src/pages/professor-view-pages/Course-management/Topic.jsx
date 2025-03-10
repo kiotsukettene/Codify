@@ -57,7 +57,7 @@ const comments = [
 const Topic = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeSection, setActiveSection] = useState(null); // ✅ Move it up before any return
+  const [activeSection, setActiveSection] = useState(null);
   const [activeTopic, setActiveTopic] = useState(null);
   const [sections, setSections] = useState([]);
 
@@ -86,7 +86,7 @@ const Topic = () => {
       setSections(
         lesson.sections.map((section) => ({
           ...section,
-          id: section._id, // ✅ Ensures sections have an `id` field
+          id: section._id,
         }))
       );
     }
@@ -100,13 +100,13 @@ const Topic = () => {
 
   //scroll
   const handleScroll = () => {
-    let currentSection = topics[0].id;
-    lesson.forEach((topic) => {
+    let currentSection = lesson[0].id;
+    lesson.forEach((lesson) => {
       const section = document.getElementById(lesson.id);
       if (section) {
         const rect = section.getBoundingClientRect();
         if (rect.top >= 0 && rect.top <= window.innerHeight / 3) {
-          currentSection = topic.id;
+          currentSection = lesson.id;
         }
       }
     });
@@ -120,13 +120,13 @@ const Topic = () => {
     };
   }, []);
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setActiveTopic(sectionId);
-    }
-  };
+  // const scrollToSection = (sectionId) => {
+  //   const element = document.getElementById(sectionId);
+  //   if (element) {
+  //     element.scrollIntoView({ behavior: "smooth" });
+  //     setActiveTopic(sectionId);
+  //   }
+  // };
 
   // ✅ Ensure hooks always execute before any return statement
   if (isLoading || !lesson) {

@@ -5,7 +5,7 @@ const ActivitySchema = new mongoose.Schema(
   {
     lessonId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Lesson", // ✅ Reference to the Lesson model
+      ref: "Lesson",
       required: true,
     },
     title: {
@@ -27,15 +27,20 @@ const ActivitySchema = new mongoose.Schema(
       default: 100,
     },
     file: {
-      type: String, // ✅ Store the file path
+      type: String,
     },
-    slug: { type: String, unique: true, required: true },
+    slug: {
+      type: String,
+      unique: true,
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
+// 1) Attach the hook before creating the model
+ActivitySchema.pre("save", generateActivitySlug);
+
+// 2) Create and export the model
 const Activity = mongoose.model("Activity", ActivitySchema);
-
-ActivitySchema.pre("save", generateActivitySlug); // Generate slug on save
-
 export default Activity;

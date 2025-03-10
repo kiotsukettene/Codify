@@ -106,7 +106,7 @@ export const useActivityStore = create((set) => ({
       formData.append("dueDate", activityData.dueDate);
       formData.append("points", activityData.points);
 
-      // ✅ Append files
+      // Append files
       files.forEach((file) => {
         formData.append("file", file);
       });
@@ -128,12 +128,10 @@ export const useActivityStore = create((set) => ({
 
       return newActivity;
     } catch (error) {
-      const errorMessage = a;
-      error.response?.data?.message || "Error creating activity";
-
+      const errorMessage =
+        error.response?.data?.message || "Error creating activity";
       set({ error: errorMessage, isLoading: false });
       toast.error(errorMessage);
-
       return null;
     }
   },
