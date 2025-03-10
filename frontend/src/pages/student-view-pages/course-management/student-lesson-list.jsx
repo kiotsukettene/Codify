@@ -37,18 +37,35 @@ import { useStudentStore } from "@/store/studentStore";
 import lessonData from "@/mock/lesson-list";
 import lessonOverview from "@/mock/lesson-overview";
 
+//cours slug convert
+const CourseID = (courseSlug, courses) => {
+  if (!courses || courses.length === 0) return null;
+  const matchedCourse = courses.find((course) => course.slug === courseSlug);
+  return matchedCourse ? matchedCourse._id : null;
+};
+
 function StudentLessonListPage() {
   const navigate = useNavigate();
-  const { courseId } = useParams();
-  const { lessons, fetchLessonsForCourse, isLoading, error, fetchCourseById, currentCourse } = useStudentCourseStore();
+  const {
+    lessons,
+    fetchLessonsForCourse,
+    isLoading,
+    error,
+    fetchCourseById,
+    currentCourse,
+  } = useStudentCourseStore();
   const { student } = useStudentStore();
   const [showGuide, setShowGuide] = useState(false);
 
   console.log("Lessons:", lessons);
   console.log("Current Course:", currentCourse);
 
+  const courseId = currentCourse?._id;
+
   useEffect(() => {
     if (courseId) {
+      console.log("Course ID:", courseId);
+
       fetchLessonsForCourse(courseId);
       fetchCourseById(courseId); // Fetch course details
     }
@@ -74,9 +91,7 @@ function StudentLessonListPage() {
                 <CardTitle className="text-4xl text-neutral-900">
                   {currentCourse?.className}
                 </CardTitle>
-                <CardDescription className="font-normal mt-2 text-base text-justify">
-  
-                </CardDescription>
+                <CardDescription className="font-normal mt-2 text-base text-justify"></CardDescription>
               </CardHeader>
 
               <CardFooter className="flex w-full mx-auto gap-3 mt-4">
@@ -108,9 +123,15 @@ function StudentLessonListPage() {
                         <AvatarFallback />
                       </Avatar>
                       <div className="flex flex-col space-y-2 ml-3">
-                        <Label>Professor {currentCourse?.professorId?.firstName} {currentCourse?.professorId?.lastName || lessonOverview.professor.name}</Label>
+                        <Label>
+                          Professor {currentCourse?.professorId?.firstName}{" "}
+                          {currentCourse?.professorId?.lastName ||
+                            lessonOverview.professor.name}
+                        </Label>
                         <Label className="font-light">
-                          Class Code: {currentCourse?.courseCode || lessonOverview.professor.courseCode}
+                          Class Code:{" "}
+                          {currentCourse?.courseCode ||
+                            lessonOverview.professor.courseCode}
                         </Label>
                       </div>
                       <div className="flex ml-auto items-center text-center justify-center gap-2">
@@ -118,7 +139,9 @@ function StudentLessonListPage() {
                           variant="outline"
                           className="font-medium gap-2 bg-gray-100 text-gray-700 py-1"
                         >
-                          <Star size={16} /> {lessonList.length || lessonOverview.stats.totalLessons}{" "}
+                          <Star size={16} />{" "}
+                          {lessonList.length ||
+                            lessonOverview.stats.totalLessons}{" "}
                           Lessons
                         </Badge>
                         <Badge
@@ -126,7 +149,9 @@ function StudentLessonListPage() {
                           className="font-medium gap-2 bg-gray-100 text-gray-700 py-1"
                         >
                           <GraduationCap size={16} />
-                          {currentCourse?.studentsEnrolled?.length || lessonOverview.stats.totalStudents} Students
+                          {currentCourse?.studentsEnrolled?.length ||
+                            lessonOverview.stats.totalStudents}{" "}
+                          Students
                         </Badge>
                       </div>
                     </div>
@@ -223,8 +248,7 @@ function StudentLessonListPage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Card className="bg-white shadow-none border-sm rounded-lg mb-5 overflow-hidden relative transition-all duration-300 ">
-                          {/*==================== tag/badge for first lesson only ====================*/
-                          }
+                          {/*==================== tag/badge for first lesson only ====================*/}
                           {index === 0 && (
                             <div className="absolute top-3 right-3 bg-purple-100 text-purple-600 text-xs font-semibold px-3 py-1 rounded-full">
                               Recommended First Lesson
@@ -257,7 +281,9 @@ function StudentLessonListPage() {
                               whileTap={{ scale: 0.95 }}
                             >
                               <Button
-                                onClick={() => navigate(`/student/module/${lesson._id}`)}
+                                onClick={() =>
+                                  navigate(`/student/module/${lesson.slug}`)
+                                }
                                 variant="secondary"
                                 className="border-primary bg-purple-200 text-purple-800 hover:bg-purple-100 transition-colors duration-300"
                               >

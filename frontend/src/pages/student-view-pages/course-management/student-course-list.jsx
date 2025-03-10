@@ -21,14 +21,13 @@ import { useStudentStore } from "@/store/studentStore";
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
-  const { enrolledCourses, fetchEnrolledCourses, isLoading} = useStudentCourseStore();
+  const { enrolledCourses, fetchEnrolledCourses, isLoading } =
+    useStudentCourseStore();
   const { student } = useStudentStore();
-
 
   useEffect(() => {
     fetchEnrolledCourses();
-  }, [fetchEnrolledCourses])
-
+  }, [fetchEnrolledCourses]);
 
   return (
     <div className="mx-6 w-full">
@@ -56,7 +55,10 @@ function StudentCourseListPage() {
           {/* ==============================================
             ============MODAL FOR JOIN COURSE CODE ===========
             ==================================================*/}
-          <JoinCourseModal isOpen={joinCourse} onClose={() => setJoinCourse(false)} />
+          <JoinCourseModal
+            isOpen={joinCourse}
+            onClose={() => setJoinCourse(false)}
+          />
         </div>
 
         <div className="relative w-[50%] h-full ml-auto">
@@ -80,12 +82,12 @@ function StudentCourseListPage() {
           {enrolledCourses.map((course) => (
             <StudentCourseCard
               key={course._id}
-              lessons={course.lessons?.length || 0} // Adjust if lessons are fetched separately
+              lessons={course.lessonCount || 0} // Adjust if lessons are fetched separately
               image={course.image || "https://via.placeholder.com/150"}
               title={course.className}
               professor={`${course.professorId?.firstName} ${course.professorId?.lastName}`}
               tags={[course.program, course.language]}
-              onClick={() => navigate(`/student/lesson-list/${course._id}`)}
+              onClick={() => navigate(`/student/lesson-list/${course.slug}`)}
             />
           ))}
         </div>

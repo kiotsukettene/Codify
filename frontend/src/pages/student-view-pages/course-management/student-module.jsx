@@ -3,7 +3,12 @@ import { useParams } from "react-router-dom";
 import { Card, CardTitle } from "@/components/ui/card";
 import StudentLessonContent from "@/components/student-view/student-lesson-content";
 import totalXpImg from "@/assets/picture/courses/totalXp.png";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { BadgeCheck, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -14,23 +19,26 @@ import XPChallengeCard from "@/components/student-view/XPChallengeCard";
 
 function StudentModulePage() {
   const navigate = useNavigate();
-  const { lessonId } = useParams();
+  const { lessonSlug } = useParams();
   const { fetchLessonById, lesson, isLoading, error } = useLessonStore();
   const [showModal, setShowModal] = useState(false);
   const topicRefs = useRef({});
   const [activeTopicId, setActiveTopicId] = useState(1);
+
+  const lessonId = lesson?._id;
 
   // Debug the fetched lesson data
   console.log("Fetched Lesson:", lesson);
   console.log("Lesson ID:", lessonId);
 
   // Dynamically generate topics from fetched lesson sections
-  const topics = lesson?.sections.map((section, index) => ({
-    id: index + 1,
-    title: section.subTitle || `Section ${index + 1}`, // Fallback title
-    content: section.description || "No content available", // Fallback content
-    icon: CheckCircle,
-  })) || [];
+  const topics =
+    lesson?.sections.map((section, index) => ({
+      id: index + 1,
+      title: section.subTitle || `Section ${index + 1}`, // Fallback title
+      content: section.description || "No content available", // Fallback content
+      icon: CheckCircle,
+    })) || [];
 
   useEffect(() => {
     if (lessonId) fetchLessonById(lessonId);
@@ -54,9 +62,14 @@ function StudentModulePage() {
             boundingClientRect: entry.boundingClientRect,
             rootBounds: entry.rootBounds,
           });
-          if (entry.isIntersecting && entry.intersectionRatio > highestIntersection) {
+          if (
+            entry.isIntersecting &&
+            entry.intersectionRatio > highestIntersection
+          ) {
             highestIntersection = entry.intersectionRatio;
-            targetId = Number.parseInt(entry.target.getAttribute("data-topic-id"));
+            targetId = Number.parseInt(
+              entry.target.getAttribute("data-topic-id")
+            );
           }
         });
 
@@ -67,7 +80,11 @@ function StudentModulePage() {
         // Fallback: Check if we're at the bottom and set the last topic
         const lastTopicId = topics.length;
         const lastRef = topicRefs.current[lastTopicId];
-        if (lastRef && window.innerHeight + window.scrollY >= lastRef.getBoundingClientRect().bottom) {
+        if (
+          lastRef &&
+          window.innerHeight + window.scrollY >=
+            lastRef.getBoundingClientRect().bottom
+        ) {
           setActiveTopicId(lastTopicId);
         }
       },
@@ -76,7 +93,8 @@ function StudentModulePage() {
 
     console.log("Observing topics:", topicRefs.current);
     topics.forEach((topic) => {
-      if (topicRefs.current[topic.id]) observer.observe(topicRefs.current[topic.id]);
+      if (topicRefs.current[topic.id])
+        observer.observe(topicRefs.current[topic.id]);
     });
 
     return () => observer.disconnect();
@@ -85,7 +103,7 @@ function StudentModulePage() {
   const handleComplete = () => setShowModal(true);
   const handleNavigate = () => {
     setShowModal(false);
-    navigate(`/student/lesson-list/`)
+    navigate(`/student/lesson-list/`);
   };
 
   if (isLoading) return <p>Loading lesson...</p>;
@@ -107,7 +125,10 @@ function StudentModulePage() {
                 data-topic-id={topic.id}
                 className="mb-8"
               >
-                <StudentLessonContent title={topic.title} content={topic.content} />
+                <StudentLessonContent
+                  title={topic.title}
+                  content={topic.content}
+                />
                 {topic.id !== topics.length && (
                   <hr className="my-8 border-t-2 border-gray-100" />
                 )}
@@ -116,7 +137,10 @@ function StudentModulePage() {
           </div>
 
           <div className="mt-6 border-t pt-4 flex justify-end">
-            <Button onClick={handleComplete} className="bg-primary text-white hover:bg-purple-700 px-6 py-2 rounded-md">
+            <Button
+              onClick={handleComplete}
+              className="bg-primary text-white hover:bg-purple-700 px-6 py-2 rounded-md"
+            >
               🚀 Complete Module
             </Button>
             <CongratulationsModal
@@ -133,12 +157,17 @@ function StudentModulePage() {
         <Card
           className="relative flex items-center justify-between mb-5 p-4 md:p-6 border-none shadow-none h-16 md:h-20 rounded-3xl max-w-[200px] md:max-w-md"
           style={{
-            background: "linear-gradient(90deg, rgb(243, 232, 255) 0%, rgb(224, 242, 254) 100%)",
+            background:
+              "linear-gradient(90deg, rgb(243, 232, 255) 0%, rgb(224, 242, 254) 100%)",
           }}
         >
           <div className="z-10">
-            <CardTitle className="text-xs md:text-sm lg:text-lg text-[#8268AE] font-medium">Total XP Earned</CardTitle>
-            <h2 className="text-lg md:text-2xl lg:text-3xl text-[#7548C1] font-bold">40 XP</h2>
+            <CardTitle className="text-xs md:text-sm lg:text-lg text-[#8268AE] font-medium">
+              Total XP Earned
+            </CardTitle>
+            <h2 className="text-lg md:text-2xl lg:text-3xl text-[#7548C1] font-bold">
+              40 XP
+            </h2>
           </div>
           <div className="hidden md:block absolute right-0 bottom-0 w-20 md:w-24 lg:w-28">
             <img
@@ -158,7 +187,9 @@ function StudentModulePage() {
           <AccordionItem value="topics">
             <AccordionTrigger className="flex justify-between items-center p-4 hover:bg-gray-50">
               <div className="flex flex-col items-start">
-                <h2 className="text-xl font-semibold text-gray-900">Topics Covered</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Topics Covered
+                </h2>
                 <span className="text-sm font-normal text-left mt-1 text-gray-400">
                   🔥 Complete lessons to unlock new knowledge.
                 </span>
@@ -180,7 +211,9 @@ function StudentModulePage() {
                     }`}
                   >
                     <div className="pl-4">
-                      <h3 className="font-medium text-gray-900">{topic.id}: {topic.title}</h3>
+                      <h3 className="font-medium text-gray-900">
+                        {topic.id}: {topic.title}
+                      </h3>
                     </div>
                     <BadgeCheck className="h-5 w-5 text-gray-500" />
                   </motion.div>

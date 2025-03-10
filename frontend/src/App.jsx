@@ -68,21 +68,13 @@ import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
 import { useStudentStore } from "@/store/studentStore";
 
 function App() {
-  const { isCheckingAuth: isCheckingUserAuth, checkAuth: checkUserAuth } =
-    useAuthStore();
-  const { isCheckingAuth: isCheckingProfAuth, checkAuth: checkProfAuth } =
-    useprofAuthStore();
+  const { isCheckingAuth, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    const checkBothAuth = async () => {
-      await Promise.all([checkUserAuth?.(), checkProfAuth?.()]);
-    };
-
-    checkBothAuth();
+    checkAuth();
   }, []);
 
-  if (isCheckingUserAuth || isCheckingProfAuth) return <LoadingSpinner />;
-
+  if (isCheckingAuth) return <LoadingSpinner />;
   return (
     <div>
       <Routes>
@@ -381,14 +373,14 @@ function App() {
             }
           />
           <Route
-            path="lesson-list/:courseId"
+            path="lesson-list/:courseSlug"
             element={
               <ProtectedRouteStudents>
                 <StudentLessonListPage />
               </ProtectedRouteStudents>
             }
           />
-          <Route path="module/:lessonId" element={<StudentModulePage />} />
+          <Route path="module/:lessonSlug" element={<StudentModulePage />} />
           <Route path="activity" element={<StudentActivityPage />} />
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
