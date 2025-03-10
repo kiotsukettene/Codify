@@ -1,58 +1,40 @@
 import { create } from "zustand";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const API_URL = "http://localhost:3000/api/students";
 
 axios.defaults.withCredentials = true;
 
-export const useStudentStore = create((set) => {
-    const storedStudent = JSON.parse(localStorage.getItem("student"));
-
-return {
-
-    student: storedStudent || null,
-    isAuthenticated: !!storedStudent, // ✅ Set authentication state based on stored student
-    students: [],
-    error: null,
-    isLoading: false,
-    isCheckingStudentAuth: true,
-    message: null,
+export const useStudentStore = create((set) => ({
+  student: null, // No need to initialize from localStorage
+  isAuthenticated: false, // Authentication state based on cookies
+  students: [],
+  error: null,
+  isLoading: false,
+  isCheckingStudentAuth: true, // Used to check authentication status on page load
+  message: null,
 
   // Fetch all students
   fetchStudents: async () => {
-    set({
-      isLoading: true,
-      error: null,
-    });
+    set({ isLoading: true, error: null });
 
     try {
       const response = await axios.get(`${API_URL}/list`);
-      set({
-        students: response.data.students,
-        isLoading: false,
-      });
+      set({ students: response.data.students, isLoading: false });
     } catch (error) {
-      set({
-        error: error.response?.data?.message || "Error fetching students",
-        isLoading: false,
-      });
+      set({ error: error.response?.data?.message || "Error fetching students", isLoading: false });
     }
   },
 
   // Register a new student
   addStudent: async (studentData) => {
-    set({
-      isLoading: true,
-      error: null,
-    });
+    set({ isLoading: true, error: null });
 
     try {
-      
-
       const response = await axios.post(`${API_URL}/register`, {
         ...studentData,
-        password: studentData.lastName,
+        password: studentData.lastName, // Default password logic
       });
 
       set((state) => ({
@@ -60,19 +42,13 @@ return {
         students: [...state.students, response.data.student],
       }));
     } catch (error) {
-      set({
-        error: error.response?.data?.message || "Error adding student",
-        isLoading: false,
-      });
+      set({ error: error.response?.data?.message || "Error adding student", isLoading: false });
     }
   },
 
   // Delete a student
   deleteStudent: async (id) => {
-    set({
-      isLoading: true,
-      error: null,
-    });
+    set({ isLoading: true, error: null });
 
     try {
       await axios.delete(`${API_URL}/list/delete/${id}`);
@@ -81,56 +57,32 @@ return {
         isLoading: false,
       }));
     } catch (error) {
-      set({
-        error: error.response?.data?.message || "Error deleting student",
-        isLoading: false,
-      });
+      set({ error: error.response?.data?.message || "Error deleting student", isLoading: false });
     }
   },
 
   // Login student
   login: async (email, password) => {
-    set({
-      isLoading: true,
-      error: null,
-    });
+    set({ isLoading: true, error: null });
+
     try {
-      const response = await axios.post(`${API_URL}/loginStudent`, {
-        email,
-        password,
-      });
-      set({
-        student: response.data.student,
-        isAuthenticated: true,
-        isLoading: false,
-      });
+      const response = await axios.post(`${API_URL}/loginStudent`, { email, password });
+      set({ student: response.data.student, isAuthenticated: true, isLoading: false });
     } catch (error) {
-      set({
-        error: error.response.data.message || "Error logging in",
-        isLoading: false,
-      });
+      set({ error: error.response?.data?.message || "Error logging in", isLoading: false });
       throw error;
     }
   },
 
- // ✅ Check if student is authenticated (Used in Protected Routes)
- checkStudentAuth: async () => {
+  // Check if student is authenticated (used in protected routes)
+  checkStudentAuth: async () => {
     set({ isCheckingStudentAuth: true, error: null });
 
     try {
       const response = await axios.get(`${API_URL}/student-check-auth`);
-
-      set({
-        student: response.data.student,
-        isAuthenticated: true,
-        isCheckingStudentAuth: false,
-      });
+      set({ student: response.data.student, isAuthenticated: true, isCheckingStudentAuth: false });
     } catch (error) {
-      set({
-        isCheckingStudentAuth: false,
-        error: null,
-        isAuthenticated: false,
-      });
+      set({ isCheckingStudentAuth: false, error: null, isAuthenticated: false });
     }
   },
 
@@ -139,78 +91,39 @@ return {
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.post(`${API_URL}/student-forgot-password`, {
-        email,
-      });
+      const response = await axios.post(`${API_URL}/student-forgot-password`, { email });
       set({ isLoading: false, message: response.data.message });
     } catch (error) {
-      set({
-        isLoading: false,
-        error: error.response?.data?.message || "Failed to send reset email",
-      });
+      set({ isLoading: false, error: error.response?.data?.message || "Failed to send reset email" });
     }
   },
 
   // Student reset password
   studentResetPassword: async (token, password) => {
-    set({
-      isLoading: true,
-      error: null,
-      message: null,
-    });
+    set({ isLoading: true, error: null, message: null });
 
     try {
-      const response = await axios.post(
-        `${API_URL}/student-reset-password/${token}`,
-        { password }
-      );
-      set({
-        message: response.data.message,
-        isLoading: false,
-      });
+      const response = await axios.post(`${API_URL}/student-reset-password/${token}`, { password });
+      set({ message: response.data.message, isLoading: false });
     } catch (error) {
-      set({
-        isLoading: false,
-        error: error.response.data.message || "Error resetting password",
-      });
+      set({ isLoading: false, error: error.response?.data?.message || "Error resetting password" });
       throw error;
     }
   },
 
-  // ✅ Function to store student authentication
-  setStudent: (studentData) => {
-    set({
-      student: studentData,
-      isAuthenticated: true,
-    });
-    localStorage.setItem("student", JSON.stringify(studentData)); // ✅ Store student in LocalStorage
-  },
-
-  // ✅ Logout student
+  // Logout student
   logout: async () => {
     set({ isLoading: true, error: null });
 
     try {
-        await axios.post(`${API_URL}/logoutStudent`, {}, { withCredentials: true });
-
-        // ✅ Remove student from local storage and update state
-        localStorage.removeItem("student");
-        set({
-            student: null,
-            isAuthenticated: false,
-            isLoading: false,
-        });
-
-        // ✅ Force page reload to apply changes
-        window.location.href = "/student/login";
-
+      await axios.post(`${API_URL}/logoutStudent`, {}, { withCredentials: true });
+      set({ student: null, isAuthenticated: false, isLoading: false });
+      window.location.href = "/student/login"; // Redirect to login page
     } catch (error) {
-        set({
-            error: "Error logging out",
-            isLoading: false,
-        });
+      set({ error: "Error logging out", isLoading: false });
     }
-},
+  },
 
-}
-});
+  // Clear error
+  clearError: () => set({ error: null }),
+}));

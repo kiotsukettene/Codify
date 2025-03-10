@@ -1,34 +1,64 @@
-import { useState, useMemo } from "react";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Swords } from "lucide-react";
-import challenges from "@/constants/challenges";
-import StudentChallengeCard from "@/components/student-view/challenge-card";
-import challengesImg from "@/assets/picture/random background/challenges.png";
-import wave from "@/assets/picture/random background/wave.png";
+// frontend/src/components/student-view/StudentChallengesView.jsx
+import { useState, useMemo, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Swords } from 'lucide-react';
+import challenges from '@/constants/challenges';
+import StudentChallengeCard from '@/components/student-view/challenge-card';
+import challengesImg from '@/assets/picture/random background/challenges.png';
+import wave from '@/assets/picture/random background/wave.png';
+import { useStudentStore } from '@/store/studentStore';
+import { useChallengeStore } from '@/store/challengeStore';
 
 function StudentChallengesView() {
-  const [challengeList, setChallengeList] = useState(challenges); // Renamed for clarity
+  const [challengeList, setChallengeList] = useState(challenges);
+  const { student } = useStudentStore();
+  const { solvedChallenges, fetchSolvedChallenges } = useChallengeStore();
+
+  
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        if (student?._id) {
+          await fetchSolvedChallenges(student._id);
+        }
+      } catch (error) {
+        console.error('Error fetching solved challenges:', error);
+      }
+    };
+    fetchChallenges();
+  }, [student?._id, fetchSolvedChallenges]);
+
+  useEffect(() => {
+    const updatedChallenges = challenges.map((challenge) => {
+      const isSolved = solvedChallenges.some((solved) => solved.id === challenge.id);
+      return {
+        ...challenge,
+        status: isSolved ? 'completed' : 'pending',
+      };
+    });
+    setChallengeList(updatedChallenges);
+  }, [solvedChallenges]);
 
   const filterChallenges = (difficulty) => {
-    if (difficulty === "all") return challengeList;
+    if (difficulty === 'all') return challengeList;
     return challengeList.filter((challenge) => challenge.difficulty.toLowerCase() === difficulty);
   };
 
   const completedChallenges = useMemo(() => {
-    return challengeList.filter((challenge) => challenge.status === "completed").length;
-  }, [challengeList]);
+    return solvedChallenges.length; // Use solvedChallenges directly from store
+  }, [solvedChallenges]);
 
   const ChallengeCard = ({ challenges }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
       {challenges.map((challenge) => (
         <div key={challenge.id} className="w-full">
           <StudentChallengeCard
-            id={challenge.id} // Now a string
+            id={challenge.id}
             title={challenge.title}
             description={challenge.description}
             tags={[challenge.difficulty]}
-            status={challenge.status || "pending"}
+            status={challenge.status}
           />
         </div>
       ))}
@@ -48,16 +78,16 @@ function StudentChallengesView() {
               <TabsTrigger value="hard">Hard</TabsTrigger>
             </TabsList>
             <TabsContent value="all">
-              <ChallengeCard challenges={filterChallenges("all")} />
+              <ChallengeCard challenges={filterChallenges('all')} />
             </TabsContent>
             <TabsContent value="easy">
-              <ChallengeCard challenges={filterChallenges("easy")} />
+              <ChallengeCard challenges={filterChallenges('easy')} />
             </TabsContent>
             <TabsContent value="medium">
-              <ChallengeCard challenges={filterChallenges("medium")} />
+              <ChallengeCard challenges={filterChallenges('medium')} />
             </TabsContent>
             <TabsContent value="hard">
-              <ChallengeCard challenges={filterChallenges("hard")} />
+              <ChallengeCard challenges={filterChallenges('hard')} />
             </TabsContent>
           </Tabs>
         </div>
@@ -85,7 +115,7 @@ function StudentChallengesView() {
             </Card>
           </div>
           <div className="w-full aspect-square rounded-2xl overflow-hidden mt-4">
-            <img src={wave || "/placeholder.svg"} alt="Wave decoration" className="w-full h-full object-cover" />
+            <img src={wave || '/placeholder.svg'} alt="Wave decoration" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>

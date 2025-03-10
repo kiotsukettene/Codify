@@ -9,6 +9,7 @@ import courseRoutes from "./routes/course.route.js";
 import lessonRoutes from "./routes/lesson.route.js";
 import activityRoutes from "./routes/activity.route.js";
 import studentCourseRoutes from "./routes/studentCourse.route.js";
+import challengeRoutes from "./routes/challenge.route.js";
 
 import cors from "cors";
 import session from "express-session";
@@ -58,6 +59,7 @@ app.use("/api/activities", activityRoutes);
 app.use("/uploads", express.static("uploads")); // ✅ Serve uploaded files
 
 app.use("/api/students/courses", studentCourseRoutes);
+app.use("/api/students/challenges", challengeRoutes);
 
 app.listen(PORT, () => {
   connectDB();

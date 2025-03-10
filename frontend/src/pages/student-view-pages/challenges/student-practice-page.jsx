@@ -13,6 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import challenges, { LANGUAGE_VERSIONS } from "@/constants/challenges";
 import axios from "axios";
+import { useChallengeStore } from "@/store/challengeStore";
+import { useStudentStore } from "@/store/studentStore";
+import toast from "react-hot-toast";
 
 function StudentPracticePage() {
   const { id } = useParams();
@@ -24,6 +27,9 @@ function StudentPracticePage() {
   const [runStatus, setRunStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState("test-cases");
   const { toast } = useToast();
+  const { updateSolvedChallenges } = useChallengeStore();
+  const { student } = useStudentStore();
+  console.log(student)
 
   useEffect(() => {
     const selectedChallenge = challenges.find((c) => c.id === id);
@@ -36,23 +42,17 @@ function StudentPracticePage() {
   const parseError = (errorString) => {
     if (!errorString) return { message: "Unknown error", line: null };
 
-    // Split the error into lines
     const lines = errorString.split("\n");
-
-    // Look for line number in the format "file0.code:5"
     let lineNumber = null;
     const lineMatch = errorString.match(/file\d+\.code:(\d+)/);
     if (lineMatch) {
       lineNumber = parseInt(lineMatch[1], 10);
     }
 
-    // Extract the core error message (e.g., "SyntaxError: Unexpected end of input")
     let errorMessage = lines.find((line) => line.includes("Error") || line.includes("error")) || lines[0];
     if (!errorMessage) errorMessage = "Unknown error";
 
-    // Clean up the message (remove file paths, stack traces, etc.)
     errorMessage = errorMessage.replace(/\/piston\/jobs\/[^:]+\/file\d+\.code:\d+\s*/, "").trim();
-
     return { message: errorMessage, line: lineNumber };
   };
 
@@ -69,27 +69,23 @@ function StudentPracticePage() {
       );
       const data = response.data;
 
-      // Handle API-level errors
       if (data.message) {
         const { message, line } = parseError(data.message);
         return { output: "", error: message, errorLine: line };
       }
 
-      // Handle compilation errors
       if (data.compile && data.compile.code !== 0) {
         const error = data.compile.stderr || data.compile.output || "Compilation failed";
         const { message, line } = parseError(error);
         return { output: "", error: message, errorLine: line };
       }
 
-      // Handle runtime errors
       if (data.run && data.run.code !== 0) {
         const error = data.run.stderr || data.run.output || "Runtime error";
         const { message, line } = parseError(error);
         return { output: "", error: message, errorLine: line };
       }
 
-      // Successful execution
       const output = data.run.output;
       return { output: output.trim(), error: null, errorLine: null };
     } catch (error) {
@@ -108,7 +104,6 @@ function StudentPracticePage() {
     let hasError = false;
     const inputKeys = Object.keys(challenge.testCases).filter((key) => key !== "answers");
 
-    // Run only the first test case to check for errors
     for (let index = 0; index < Math.min(1, testCodeSnippets.length); index++) {
       const executionCode = testCodeSnippets[index];
       const testCase = {};
@@ -169,7 +164,6 @@ function StudentPracticePage() {
       }
     }
 
-    // If no error in the first case, run all test cases
     if (!hasError && testCodeSnippets.length > 1) {
       for (let index = 1; index < testCodeSnippets.length; index++) {
         const executionCode = testCodeSnippets[index];
@@ -239,28 +233,36 @@ function StudentPracticePage() {
 
   const handleSubmit = async () => {
     setSubmissionStatus("loading");
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const isSuccess = Math.random() > 0.5;
-      if (!isSuccess) throw new Error();
+      const passedAllTests = testResults.every((result) => result.passed);
+      if (!passedAllTests) {
+        throw new Error("Not all test cases passed");
+      }
+
+      if (!student?._id) {
+        throw new Error("Student not authenticated");
+      }
+
+      await updateSolvedChallenges(
+        student._id,
+        challenge.id,
+        challenge.title,
+        challenge.difficulty,
+        value
+      );
       setSubmissionStatus("success");
-      toast({
-        title: "✅ Submission Successful!",
-        description: "Great job! Your solution has been submitted.",
-      });
     } catch (error) {
       setSubmissionStatus("error");
-      toast({
-        title: "❌ Submission Failed",
-        description: "Please check your code and try again.",
-        variant: "destructive",
-      });
+      console.log(error)
     } finally {
       setTimeout(() => setSubmissionStatus("idle"), 2000);
     }
   };
 
   const getSubmitButton = () => {
+    const passedAllTests = testResults.length > 0 && testResults.every((result) => result.passed);
+
     switch (submissionStatus) {
       case "loading":
         return (
@@ -271,21 +273,25 @@ function StudentPracticePage() {
         );
       case "success":
         return (
-          <Button className="bg-green-500 hover:bg-green-600">
+          <Button className="bg-green-500 hover:bg-green-600" disabled>
             <Check className="mr-2 h-4 w-4" />
             Submitted!
           </Button>
         );
       case "error":
         return (
-          <Button variant="destructive">
+          <Button variant="destructive" disabled={!passedAllTests}>
             <AlertCircle className="mr-2 h-4 w-4" />
             Failed
           </Button>
         );
       default:
         return (
-          <Button variant="outline" onClick={handleSubmit}>
+          <Button
+            variant="outline"
+            onClick={handleSubmit}
+            disabled={!passedAllTests || submissionStatus === "loading"}
+          >
             <Send className="mr-2 h-4 w-4" />
             Submit
           </Button>

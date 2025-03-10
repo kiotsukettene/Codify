@@ -51,6 +51,14 @@ const studentSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    solvedChallenges: [
+      {
+        id: String,
+        title: String,
+        difficulty: String,
+        codeSubmitted: String,
+      }
+    ],
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
     // verificationToken: String,
