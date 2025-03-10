@@ -69,6 +69,7 @@ import MainLogin from "./pages/Guest-view-pages/Login";
 import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
 import { useStudentStore }  from "@/store/studentStore";
 
+
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
   const { checkStudentAuth, isCheckingStudentAuth } = useStudentStore();

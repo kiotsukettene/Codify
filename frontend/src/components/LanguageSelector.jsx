@@ -69,7 +69,7 @@ const LanguageSelector = ({ language, onSelect }) => {
             <SelectValue placeholder="Select language" />
           </div>
         </SelectTrigger>
-      <SelectContent islazy className='bg-neutral-200'>
+      <SelectContent className='bg-neutral-200'>
       <SelectGroup>
             {languages.map(([lang]) => {
               const LogoComponent = languageLogos[lang]
