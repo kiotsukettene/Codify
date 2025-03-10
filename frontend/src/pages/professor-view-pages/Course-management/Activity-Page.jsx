@@ -20,36 +20,44 @@ import {
 import Bear from "@/assets/picture/Avatar/bear.png";
 import { useActivityStore } from "@/store/activityStore";
 
+const students = [
+  { id: "1", name: "All students", score: 0 },
+  { id: "2", name: "Dela Cruz, Momo W.", score: 0, avatar: Bear },
+  {
+    id: "3",
+    name: "Antang, JunMar H.",
+    score: 100,
+    submitted: "11:58 PM",
+    avatar: Bear,
+    comment: "Ma'am sorry, namail ng pasa po kanina",
+  },
+  { id: "4", name: "Dela Cruz, Momo W.", score: 0, avatar: Bear },
+  { id: "5", name: "Caps, Elle B.", score: 0, avatar: Bear },
+];
+
 const ActivityPage = () => {
-  const { activityId } = useParams();
+  const { activities, activity, fetchActivityById } = useActivityStore();
+  const { activitySlug } = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
-  const { activity, fetchActivityById } = useActivityStore();
+
+  const getActivityIdFromSlug = (slug) => {
+    if (!activities || activities.length === 0) return null;
+    const matchedActivity = activities.find((a) => a.slug === slug);
+    return matchedActivity ? matchedActivity._id : null;
+  };
 
   useEffect(() => {
-    console.log("activityId from useParams:", activityId);
+    const activityId = getActivityIdFromSlug(activitySlug);
+    console.log("Converted activityId from activitySlug:", activityId);
     if (activityId) {
       fetchActivityById(activityId);
     } else {
       console.error("activityId is undefined or null");
     }
-  }, [activityId, fetchActivityById]);
+  }, [activitySlug, activities, fetchActivityById]);
 
-  const students = [
-    { id: "1", name: "All students", score: 0 },
-    { id: "2", name: "Dela Cruz, Momo W.", score: 0, avatar: Bear },
-    {
-      id: "3",
-      name: "Antang, JunMar H.",
-      score: 100,
-      submitted: "11:58 PM",
-      avatar: Bear,
-      comment: "Ma'am sorry, namail ng pasa po kanina",
-    },
-    { id: "4", name: "Dela Cruz, Momo W.", score: 0, avatar: Bear },
-    { id: "5", name: "Caps, Elle B.", score: 0, avatar: Bear },
-  ];
   if (!activity) {
     return <p>Loading activity...</p>;
   }
