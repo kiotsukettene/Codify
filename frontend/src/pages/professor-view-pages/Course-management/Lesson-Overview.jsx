@@ -155,6 +155,7 @@ const LessonOverview = () => {
     useCourseStore();
   const { activities, fetchActivitiesByCourse } = useActivityStore();
   const { lessons, fetchLessonsByCourse } = useLessonStore();
+  const lessonId = lessons.map((lesson) => lesson._id);
   const { professor } = useprofAuthStore();
 
   // Fetch courses if not already loaded
