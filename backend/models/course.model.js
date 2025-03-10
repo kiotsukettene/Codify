@@ -10,6 +10,7 @@ const CourseSchema = new mongoose.Schema(
       required: true,
     },
     className: { type: String, required: true },
+    description: { type: String, required: true },
     program: { type: String, required: true },
     section: { type: String, required: true },
     language: { type: String, required: true },

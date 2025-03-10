@@ -204,6 +204,7 @@ const CourseModal = ({ onClose }) => {
     if (validateForm()) {
       const courseData = {
         className: formValues.className,
+        description: formValues.description,
         program: formValues.program,
         section: formValues.section,
         language: formValues.programmingLanguage,
@@ -262,6 +263,19 @@ const CourseModal = ({ onClose }) => {
           {errors.className && (
             <p className="text-red-500 text-sm">{errors.className}</p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm sm:text-base font-medium text-gray-700">
+            Course Description
+          </label>
+          <Input
+            name="description"
+            placeholder="course description"
+            value={formValues.description}
+            onChange={handleChange}
+            className="w-full"
+          />
         </div>
 
         <div className="space-y-2">

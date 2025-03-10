@@ -5,7 +5,8 @@ import slugify from "slugify";
 export const createCourse = async (req, res) => {
   try {
     // Destructure only the course data from the request body
-    const { className, program, section, language, schedule } = req.body;
+    const { className, description, program, section, language, schedule } =
+      req.body;
 
     // Get professorId from the token attached by the middleware
     const professorId = req.professorId;
@@ -25,6 +26,7 @@ export const createCourse = async (req, res) => {
     const course = new Course({
       professorId,
       className,
+      description,
       program,
       section,
       language,
