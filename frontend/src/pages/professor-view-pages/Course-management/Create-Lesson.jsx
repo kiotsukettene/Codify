@@ -201,6 +201,7 @@ const CreateLesson = () => {
           break;
       }
     });
+    c;
 
     return groupedSections;
   }

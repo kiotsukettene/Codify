@@ -28,7 +28,8 @@ const Card = ({
     try {
       await useCourseStore.getState().deleteCourse(courseId);
       toast.success("Course deleted successfully!");
-      setIsDeleteDialogOpen(false); // ✅ Close dialog after deletion
+      setIsDeleteDialogOpen(false); // Close dialog after deletion
+      navigate("/professor/course"); // Redirect after deletion
     } catch (error) {
       console.error("Error deleting course:", error);
       toast.error("Failed to delete course");
@@ -119,7 +120,11 @@ const Card = ({
             {/* Options */}
             <button
               className="p-2 hover:bg-gray-100 rounded-full"
-              onClick={() => setIsDeleteDialogOpen(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDeleteDialogOpen(true);
+              }}
             >
               <svg
                 viewBox="0 0 24 24"
