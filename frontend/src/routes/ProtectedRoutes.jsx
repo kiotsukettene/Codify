@@ -109,10 +109,11 @@ export const ProtectedRouteStudents = ({ children }) => {
 };
 
 export const ProtectedRouteProfessors = ({ children }) => {
-  const { isAuthenticated } = useprofAuthStore();
+  const { isAuthenticated: isProfessorAuthenticated } = useprofAuthStore();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/professor/login" replace />;
-  }
-  return children;
+  return isProfessorAuthenticated ? (
+    children
+  ) : (
+    <Navigate to="/professor/login" replace />
+  );
 };

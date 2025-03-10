@@ -26,6 +26,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
 import { toast } from "react-hot-toast";
 import { useprofAuthStore } from "@/store/profAuthStore";
+import { useCourseStore } from "@/store/courseStore";
 
 const studentList = [
   {
@@ -144,63 +145,45 @@ const tabs = [
 ];
 
 const LessonOverview = () => {
-  const { courseId } = useParams();
-  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const { lessons, fetchLessonsByCourse } = useLessonStore(); // Use lessonStore to get lessons, loading state, and the fetch function
-  const { activities, fetchActivitiesByCourse, error } = useActivityStore(); // Use activityStore to get activities, loading state, and the fetch function
-  const location = useLocation();
-  const courseData = location.state?.course || {}; // Get course details from navigation state
-  const lessonId = activities.length > 0 ? activities[0].lessonId : null;
+
+  //BE
+  const { courseSlug, lessonSlug } = useParams();
+
+  const { courses, course, fetchCourseById, fetchCoursesByProfessor } =
+    useCourseStore();
+  const { activities, fetchActivitiesByCourse } = useActivityStore();
+  const { lessons, fetchLessonsByCourse } = useLessonStore();
+  const lessonIds = lessons.map((lesson) => lesson._id);
+
   const { professor } = useprofAuthStore();
 
-  const CourseDetails = ({ courseId }) => {
-    const [courseData, setCourseData] = useState(() => {
-      // ✅ Load from sessionStorage if available
-      const storedData = sessionStorage.getItem(`course_${courseId}`);
-      return storedData ? JSON.parse(storedData) : null;
-    });
-
-    useEffect(() => {
-      const fetchCourseData = async () => {
-        try {
-          const response = await fetch(`/api/courses/${courseId}`);
-          const data = await response.json();
-
-          // ✅ Store data in sessionStorage to persist it when navigating back
-          sessionStorage.setItem(`course_${courseId}`, JSON.stringify(data));
-
-          setCourseData(data);
-        } catch (error) {
-          console.error("Error fetching course:", error);
-        }
-      };
-
-      // ✅ Fetch only if not already stored
-      if (!courseData) {
-        fetchCourseData();
-      }
-    }, [courseId, courseData]);
-  };
-
-  // Fetch lessons for the given courseId when the component mounts or courseId changes
+  // Fetch courses if not already loaded
   useEffect(() => {
-    if (!courseId) {
-      console.error("Error: Course ID is undefined");
-      toast.error("Invalid Course ID");
-      return;
+    if (courses.length === 0) {
+      fetchCoursesByProfessor();
     }
+  }, [courses, fetchCoursesByProfessor]);
 
-    // Validate that courseId is a valid ObjectId before calling API
-    if (!/^[0-9a-fA-F]{24}$/.test(courseId)) {
-      console.error("Error: Invalid Course ID format", courseId);
-      toast.error("Invalid Course ID format");
-      return;
+  const currentCourse = courses.find((course) => course.slug === courseSlug);
+  const courseId = currentCourse?._id;
+
+  useEffect(() => {
+    console.log("Current course matching slug:", currentCourse);
+  }, [currentCourse]);
+
+  // Fetch lessons once courseId is available
+  useEffect(() => {
+    if (courseId) {
+      fetchLessonsByCourse(courseId);
     }
-
-    fetchLessonsByCourse(courseId);
   }, [courseId, fetchLessonsByCourse]);
+
+  // In the parent component (LessonOverview), before mapping:
+  const filteredActivities = activities.filter((activity) =>
+    lessonIds.includes(activity.lessonId)
+  );
 
   //fetch activities for the given courseId when the component mounts or courseId changes
   useEffect(() => {
@@ -243,24 +226,29 @@ const LessonOverview = () => {
             </Breadcrumb>
 
             <CourseHeader
-              title={courseData.className}
-              description={courseData.program}
+              title={currentCourse?.className || "Loading..."}
+              description={currentCourse?.program}
               details={{
-                language: courseData.language,
+                language: currentCourse?.language,
                 //
-                students: courseData.studentEnrolled
-                  ? `${courseData.studentEnrolled.length} student${
-                      courseData.studentEnrolled.length === 1 ? "" : "s"
+                students: currentCourse?.studentEnrolled
+                  ? `${currentCourse?.studentEnrolled.length} student${
+                      currentCourse?.studentEnrolled.length === 1 ? "" : "s"
                     }`
                   : "0 students",
                 instructor: professor
                   ? `${professor.firstName} ${professor.lastName}`
                   : "Unknown Instructor", // Fetch from local storage
-                schedule: courseData.schedule
-                  ? `${courseData.schedule.day}, ${courseData.schedule.time}`
+                schedule: currentCourse?.schedule
+                  ? `${currentCourse?.schedule.day}, ${currentCourse?.schedule.time}`
                   : "No schedule available",
-                courseCode: courseData.courseCode,
-                section: courseData.section,
+                courseCode: currentCourse?.courseCode,
+                section: currentCourse?.section,
+                schedule: currentCourse?.schedule
+                  ? `${currentCourse?.schedule.day}, ${currentCourse?.schedule.time}`
+                  : "No schedule available",
+                courseCode: currentCourse?.courseCode,
+                section: currentCourse?.section,
               }}
             />
 
@@ -282,7 +270,7 @@ const LessonOverview = () => {
                       whileTap={{ y: 0 }}
                     >
                       {activeTab === tab.id && (
-                        <motion.div
+                        <motion.divc
                           className="absolute inset-0 bg-violet-100 rounded-t-lg -z-10"
                           layoutId="activeTab"
                           transition={{ type: "spring", bounce: 0.2 }}
@@ -311,10 +299,7 @@ const LessonOverview = () => {
                     transition={{ duration: 0.2 }}
                   >
                     {activeTab === "overview" && (
-                      <OverviewTab
-                        lessons={lessons || []}
-                        course={courseData}
-                      />
+                      <OverviewTab lessons={lessons || []} course={course} />
                     )}
 
                     {activeTab === "activities" && (
@@ -337,8 +322,8 @@ const LessonOverview = () => {
                               <ActivityTab
                                 index={index + 1}
                                 activity={activity}
-                                courseId={courseId}
-                                lessonId={lessonId}
+                                courseId={courseSlug}
+                                lessonIds={lessonSlug}
                               />
                             </motion.div>
                           ))}

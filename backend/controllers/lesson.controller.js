@@ -1,15 +1,19 @@
 import Lesson from "../models/lesson.model.js";
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 export const createLesson = async (req, res) => {
   try {
     const { courseId, title, subTitle, sections } = req.body;
 
+    const slug = slugify(title, { lower: true, strict: true });
+
     const lesson = new Lesson({
       courseId,
       title,
       subTitle,
-      sections, // sections contain subTitle, description, codeSnippets, notes
+      sections,
+      slug,
     });
 
     await lesson.save();

@@ -11,6 +11,7 @@ import { Eye, EyeOff } from "lucide-react";
 import ProfBg1 from "@/components/Auth/Prof-Bg-1";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import LoaderOne from "@/components/ui/loader-one";
+import toast from "react-hot-toast";
 
 const ProfessorLogin = () => {
   const [email, setEmail] = useState("");
@@ -18,13 +19,20 @@ const ProfessorLogin = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const navigate = useNavigate();
 
-  //
   const { login, isLoading, error, LoginWithGoogle } = useprofAuthStore();
 
   const handleProfessorLogin = async (e) => {
-    e.preventDefault();
-    await login(email, password);
-    navigate("/professor/dashboard");
+    e.preventDefault(); // ✅ Prevent page reload
+
+    try {
+      await login(email, password); // ✅ Call Zustand store login function
+      toast.success("Login successful!");
+
+      // ✅ Navigate to admin dashboard
+      navigate("/professor/dashboard", { replace: true });
+    } catch (error) {
+      console.log(error?.message || "Failed to login. Try again.");
+    }
   };
 
   const handleGoogleLogin = async () => {

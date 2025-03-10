@@ -41,6 +41,8 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useActivityStore } from "@/store/activityStore";
 import { useParams } from "react-router-dom";
+import { useLessonStore } from "@/store/lessonStore";
+import { useCourseStore } from "@/store/courseStore";
 
 const CreateActivity = () => {
   const [title, setTitle] = React.useState("");
@@ -57,8 +59,36 @@ const CreateActivity = () => {
   const [date, setDate] = useState(null);
   const [time, setTime] = useState("");
   const [sections, setSections] = useState([]);
+
   const { createActivity } = useActivityStore();
-  const { lessonId, courseId } = useParams();
+  const { courses } = useCourseStore();
+  const { lessonSlug, courseSlug } = useParams();
+  const { lessons, fetchLessonsByCourse, isLoading } = useLessonStore();
+
+  const getCourseIdFromSlug = (slug) => {
+    if (!courses || courses.length === 0) return null;
+    const matchedCourse = courses.find((course) => course.slug === slug);
+    return matchedCourse ? matchedCourse._id : null;
+  };
+
+  const courseId = getCourseIdFromSlug(courseSlug);
+
+  useEffect(() => {
+    if (courseId && lessons.length === 0) {
+      console.log("Fetching lessons for courseId:", courseId);
+      fetchLessonsByCourse(courseId);
+    }
+  }, [courseId, lessons, fetchLessonsByCourse]);
+
+  const getLessonIdFromSlug = (slug) => {
+    if (!lessons || lessons.length === 0) return null;
+    const matchedLesson = lessons.find((l) => l.slug === slug);
+    return matchedLesson ? matchedLesson._id : null;
+  };
+
+  useEffect(() => {
+    console.log("Received lessonSlug from URL:", lessonSlug);
+  }, [lessonSlug]);
 
   const dueDateTime =
     date && time
@@ -67,87 +97,40 @@ const CreateActivity = () => {
         }:00.000Z`
       : null;
 
-  // const handleSubmit = async () => {
-  //   console.log("Raw Date:", date);
-  //   console.log("Raw Time:", time);
-  //   console.log("Final Due Date before submission:", dueDateTime);
-
-  //   if (!lessonId || lessonId.length !== 24) {
-  //     console.error("Invalid lessonId:", lessonId);
-  //     toast.error("Invalid lessonId");
-  //     return;
-  //   }
-
-  //   const newActivity = {
-  //     lessonId,
-  //     title,
-  //     subTitle: subtitle,
-  //     instructions: instruction,
-  //     dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null, // ✅ Ensure ISO string
-  //     points: 100,
-  //   };
-
-  //   try {
-  //     console.log("Sending activity data:", newActivity); // ✅ Debugging
-
-  //     const createdActivity = await createActivity(newActivity);
-  //     console.log("Created Activity Response:", createdActivity); // ✅ Debugging
-
-  //     if (createdActivity && createdActivity._id) {
-  //       toast.success("Activity created successfully! 🎉");
-
-  //       navigate(
-  //         `/professor/course/${courseId}/lesson/${lessonId}/activity/${createdActivity._id}`
-  //       );
-  //     } else {
-  //       console.error(
-  //         "Activity creation failed or _id is missing",
-  //         createdActivity
-  //       );
-  //       toast.error("Failed to create activity. Check server logs.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error creating activity:", error);
-  //     toast.error("Error creating activity. Check console logs.");
-  //   }
-  // };
-
   const handleSubmit = async () => {
-    console.log("Raw Date:", date);
-    console.log("Raw Time:", time);
-    console.log("Final Due Date before submission:", dueDateTime);
-
-    if (!lessonId || lessonId.length !== 24) {
-      console.error("Invalid lessonId:", lessonId);
+    const lessonIdConverted = getLessonIdFromSlug(lessonSlug);
+    if (!lessonIdConverted || lessonIdConverted.length !== 24) {
+      console.error("Invalid lessonId:", lessonIdConverted);
       toast.error("Invalid lessonId");
       return;
     }
 
     const newActivity = {
-      lessonId,
+      lessonId: lessonIdConverted,
       title,
       subTitle: subtitle,
       instructions: instruction,
-      dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null, // ✅ Ensure ISO string
+      dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null, // Ensure ISO string
       points: 100,
     };
 
+    if (dueDateTime) {
+      newActivity.dueDate = new Date(dueDateTime).toISOString();
+    }
+
     try {
       console.log("Sending activity data:", newActivity);
-
-      // ✅ Pass files as the second argument
       const createdActivity = await createActivity(newActivity, files);
-
       console.log("Created Activity Response:", createdActivity);
 
-      if (createdActivity && createdActivity._id) {
+      if (createdActivity && createdActivity._id && createdActivity.slug) {
         toast.success("Activity created successfully! 🎉");
         navigate(
-          `/professor/course/${courseId}/lesson/${lessonId}/activity/${createdActivity._id}`
+          `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${createdActivity.slug}`
         );
       } else {
         console.error(
-          "Activity creation failed or _id is missing",
+          "Activity creation failed or slug is missing",
           createdActivity
         );
         toast.error("Failed to create activity. Check server logs.");
@@ -257,6 +240,10 @@ const CreateActivity = () => {
       setIsUploading(false);
     }
   };
+
+  if (isLoading) {
+    return <p>Loading lessons...</p>;
+  }
 
   return (
     <SidebarProvider>

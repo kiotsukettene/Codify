@@ -28,12 +28,28 @@ const Card = ({
     try {
       await useCourseStore.getState().deleteCourse(courseId);
       toast.success("Course deleted successfully!");
-      setIsDeleteDialogOpen(false); // ✅ Close dialog after deletion
+      setIsDeleteDialogOpen(false); // Close dialog after deletion
+      navigate("/professor/course"); // Redirect after deletion
     } catch (error) {
       console.error("Error deleting course:", error);
       toast.error("Failed to delete course");
     }
   };
+
+  const languageColors = {
+    "c#": "bg-green-200 text-green-800",
+    ai: "bg-indigo-200 text-indigo-800",
+    css: "bg-pink-200 text-pink-800",
+    javascript: "bg-yellow-200 text-yellow-800",
+    python: "bg-blue-200 text-blue-800",
+    html: "bg-red-200 text-red-800",
+    "c++": "bg-purple-200 text-purple-800",
+  };
+
+  const testLang = "JavaScript"; // Replace with any test language
+  const classes =
+    languageColors[testLang.toLowerCase()] || "bg-gray-200 text-gray-800";
+  console.log(`Classes for ${testLang}:`, classes);
 
   return (
     <div className="w-[230px] sm:w-[240px] h-[320px] transform hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
@@ -86,11 +102,9 @@ const Card = ({
               {Array.isArray(languages) ? (
                 languages.map((lang, index) => (
                   <span
-                    key={index}
                     className={`px-2 py-1 rounded-full text-xs ${
-                      lang.toLowerCase() === "javascript"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-blue-200 text-blue-800"
+                      languageColors[lang.toLowerCase()] ||
+                      "bg-gray-100 text-gray-700"
                     }`}
                   >
                     {lang}
@@ -106,7 +120,11 @@ const Card = ({
             {/* Options */}
             <button
               className="p-2 hover:bg-gray-100 rounded-full"
-              onClick={() => setIsDeleteDialogOpen(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDeleteDialogOpen(true);
+              }}
             >
               <svg
                 viewBox="0 0 24 24"
