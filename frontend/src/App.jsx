@@ -68,6 +68,7 @@ import LandingPage from "./pages/Guest-view-pages/Landing-page";
 import MainLogin from "./pages/Guest-view-pages/Login";
 import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
 import StudentAccountSettings from "./pages/student-view-pages/Student-Account-Setting";
+import VideoConference from "./pages/student-view-pages/Video-Conference";
 import { useStudentStore }  from "@/store/studentStore";
 
 
@@ -150,6 +151,7 @@ function App() {
 
         {/* Additional Routes */}
         <Route path="/code-editor" element={<CodeEditor />} />
+        <Route path="/video-conference" element={<VideoConference/>}/>
       </Routes>
 
       <Toaster position="top-right" />
