@@ -1,5 +1,6 @@
+// frontend/src/components/student-view/StudentPracticePage.jsx
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom"; // Add useLocation
 import Editor from "@monaco-editor/react";
 import { Play, Send, Sparkles, Loader2, Check, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,10 @@ import challenges, { LANGUAGE_VERSIONS } from "@/constants/challenges";
 import axios from "axios";
 import { useChallengeStore } from "@/store/challengeStore";
 import { useStudentStore } from "@/store/studentStore";
-import toast from "react-hot-toast";
 
 function StudentPracticePage() {
   const { id } = useParams();
+  const location = useLocation(); // Get navigation state
   const [challenge, setChallenge] = useState(null);
   const [value, setValue] = useState("");
   const [language, setLanguage] = useState("javascript");
@@ -27,17 +28,28 @@ function StudentPracticePage() {
   const [runStatus, setRunStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState("test-cases");
   const { toast } = useToast();
-  const { updateSolvedChallenges } = useChallengeStore();
+  const { updateSolvedChallenges, solvedChallenges } = useChallengeStore();
   const { student } = useStudentStore();
-  console.log(student)
 
   useEffect(() => {
     const selectedChallenge = challenges.find((c) => c.id === id);
     if (selectedChallenge) {
       setChallenge(selectedChallenge);
-      setValue(selectedChallenge.starterCode[language].trim());
+
+      // Check if challenge is completed and load submitted code
+      const isCompleted = location.state?.isCompleted || false;
+      if (isCompleted) {
+        const solvedChallenge = solvedChallenges.find((solved) => solved.id === id);
+        if (solvedChallenge?.codeSubmitted) {
+          setValue(solvedChallenge.codeSubmitted.trim());
+        } else {
+          setValue(selectedChallenge.starterCode[language].trim());
+        }
+      } else {
+        setValue(selectedChallenge.starterCode[language].trim());
+      }
     }
-  }, [id, language]);
+  }, [id, language, location.state, solvedChallenges]);
 
   const parseError = (errorString) => {
     if (!errorString) return { message: "Unknown error", line: null };
@@ -252,16 +264,27 @@ function StudentPracticePage() {
         value
       );
       setSubmissionStatus("success");
+      toast({
+        title: "✅ Submission Successful!",
+        description: "Great job! Your solution has been submitted.",
+      });
     } catch (error) {
       setSubmissionStatus("error");
-      console.log(error)
+      toast({
+        title: "❌ Submission Failed",
+        description: error.message || "Please check your code and try again.",
+        variant: "destructive",
+      });
     } finally {
       setTimeout(() => setSubmissionStatus("idle"), 2000);
     }
   };
 
   const getSubmitButton = () => {
-    const passedAllTests = testResults.length > 0 && testResults.every((result) => result.passed);
+    const allTestsPassed =
+      testResults.length > 0 &&
+      testResults.length === challenge.testCases.answers.length &&
+      testResults.every((result) => result.passed);
 
     switch (submissionStatus) {
       case "loading":
@@ -280,7 +303,7 @@ function StudentPracticePage() {
         );
       case "error":
         return (
-          <Button variant="destructive" disabled={!passedAllTests}>
+          <Button variant="destructive" disabled>
             <AlertCircle className="mr-2 h-4 w-4" />
             Failed
           </Button>
@@ -290,7 +313,7 @@ function StudentPracticePage() {
           <Button
             variant="outline"
             onClick={handleSubmit}
-            disabled={!passedAllTests || submissionStatus === "loading"}
+            disabled={!allTestsPassed}
           >
             <Send className="mr-2 h-4 w-4" />
             Submit

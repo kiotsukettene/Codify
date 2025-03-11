@@ -9,13 +9,14 @@ import challengesImg from '@/assets/picture/random background/challenges.png';
 import wave from '@/assets/picture/random background/wave.png';
 import { useStudentStore } from '@/store/studentStore';
 import { useChallengeStore } from '@/store/challengeStore';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 function StudentChallengesView() {
   const [challengeList, setChallengeList] = useState(challenges);
   const { student } = useStudentStore();
   const { solvedChallenges, fetchSolvedChallenges } = useChallengeStore();
+  const navigate = useNavigate(); // Hook for navigation
 
-  
   useEffect(() => {
     const fetchChallenges = async () => {
       try {
@@ -46,13 +47,21 @@ function StudentChallengesView() {
   };
 
   const completedChallenges = useMemo(() => {
-    return solvedChallenges.length; // Use solvedChallenges directly from store
+    return solvedChallenges.length;
   }, [solvedChallenges]);
+
+  const handleChallengeClick = (challengeId, status) => {
+    navigate(`/student/challenges/${challengeId}`, { state: { isCompleted: status === 'completed' } });
+  };
 
   const ChallengeCard = ({ challenges }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
       {challenges.map((challenge) => (
-        <div key={challenge.id} className="w-full">
+        <div
+          key={challenge.id}
+          className="w-full cursor-pointer"
+          onClick={() => handleChallengeClick(challenge.id, challenge.status)}
+        >
           <StudentChallengeCard
             id={challenge.id}
             title={challenge.title}
