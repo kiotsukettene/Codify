@@ -69,6 +69,7 @@ import { useStudentStore } from "@/store/studentStore";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
+  const { isCheckingStudentAuth, checkStudentAuth } = useStudentStore();
 
   useEffect(() => {
     checkAuth();
@@ -380,7 +381,10 @@ function App() {
               </ProtectedRouteStudents>
             }
           />
-          <Route path="module/:lessonSlug" element={<StudentModulePage />} />
+          <Route
+            path=":courseSlug/module/:lessonSlug"
+            element={<StudentModulePage />}
+          />
           <Route path="activity" element={<StudentActivityPage />} />
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
