@@ -98,7 +98,7 @@ function StudentLessonListPage() {
                   className="border-primary text-primary" 
                   onClick={() => navigate("/video-conference")}
                 >
-                  <Blend />
+                  <Blend /> Video Meet
                 </Button>
               </CardFooter>
             </Card>
