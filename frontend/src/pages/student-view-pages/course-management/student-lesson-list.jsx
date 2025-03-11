@@ -32,21 +32,18 @@ import {
 import { useNavigate } from "react-router-dom";
 import useStudentCourseStore from "@/store/studentCourseStore";
 import { useStudentStore } from "@/store/studentStore";
+import { useCourseStore } from "@/store/courseStore";
 
 // Mock data imports (kept for reference, but not used)
 import lessonData from "@/mock/lesson-list";
 import lessonOverview from "@/mock/lesson-overview";
 
 //cours slug convert
-const CourseID = (courseSlug, courses) => {
-  if (!courses || courses.length === 0) return null;
-  const matchedCourse = courses.find((course) => course.slug === courseSlug);
-  return matchedCourse ? matchedCourse._id : null;
-};
 
 function StudentLessonListPage() {
   const navigate = useNavigate();
   const {
+    enrolledCourses,
     lessons,
     fetchLessonsForCourse,
     isLoading,
@@ -57,17 +54,34 @@ function StudentLessonListPage() {
   const { student } = useStudentStore();
   const [showGuide, setShowGuide] = useState(false);
 
+  const { courseSlug } = useParams();
+  console.log("Course Slug:", courseSlug);
+
+  const CourseID = (courseSlug, enrolledCourses) => {
+    if (!enrolledCourses || enrolledCourses.length === 0) return null;
+    const matchedCourse = enrolledCourses.find(
+      (course) => course.slug === courseSlug
+    );
+    return matchedCourse ? matchedCourse._id : null;
+  };
+
+  console.log("Course Slug from URL:", courseSlug);
+
   console.log("Lessons:", lessons);
   console.log("Current Course:", currentCourse);
 
-  const courseId = currentCourse?._id;
+  const courseId =
+    enrolledCourses && enrolledCourses.length > 0
+      ? CourseID(courseSlug, enrolledCourses)
+      : null;
+
+  console.log("Course ID:", courseId);
 
   useEffect(() => {
     if (courseId) {
       console.log("Course ID:", courseId);
-
       fetchLessonsForCourse(courseId);
-      fetchCourseById(courseId); // Fetch course details
+      fetchCourseById(courseId);
     }
   }, [courseId, fetchLessonsForCourse, fetchCourseById]);
 
@@ -78,6 +92,12 @@ function StudentLessonListPage() {
 
   // Ensure lessons is treated as an array, default to empty array if invalid
   const lessonList = Array.isArray(lessons) ? lessons : [];
+
+  console.log("Enrolled Courses Array:", enrolledCourses);
+
+  if (!enrolledCourses || enrolledCourses.length === 0) {
+    return <div>Loading courses...</div>;
+  }
 
   return (
     <div className="flex flex-col mx-6">
