@@ -20,7 +20,7 @@ function StudentLayout() {
             </header>
 
             {/* ✅ Page Content */}
-            <div className="flex flex-1 w-full  mx-auto overflow-auto bg-neutral-50 p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <div className="flex flex-1 w-full  mx-auto overflow-auto bg-neutral-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <Outlet />
             </div>
           </SidebarInset>
