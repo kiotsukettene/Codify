@@ -23,5 +23,15 @@ const professorSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+professorSchema.virtual("courseCount", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "professorId",
+  count: true, // Return the number of courses
+});
+
+professorSchema.set("toObject", { virtuals: true });
+professorSchema.set("toJSON", { virtuals: true });
+
 export const Professor =
   mongoose.models.Professor || mongoose.model("Professor", professorSchema);

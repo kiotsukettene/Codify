@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Hearder from "@/components/professor-view/Header";
 import BattleCard from "@/components/professor-view/BattleCard";
 import RankingList from "@/components/professor-view/RankingList";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import { Separator } from "@/Components/ui/separator";
+import { useprofAuthStore } from "@/store/profAuthStore";
 
 const mockStudentRankings = [
   {
@@ -104,6 +105,15 @@ const mockSchedule = [
 
 const ProfDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { courseCount, isLoading, professorId } = useprofAuthStore();
+
+  useEffect(() => {
+    if (professorId) {
+      useprofAuthStore.getState().fetchProfessorById(professorId);
+    }
+  }, [professorId]);
+
+  const displayedCourseCount = isLoading ? "Loading..." : courseCount ?? 0;
 
   return (
     <SidebarProvider>
@@ -135,7 +145,7 @@ const ProfDashboard = () => {
                   />
                   <StatsCard
                     title="Total Courses"
-                    value="4"
+                    value={displayedCourseCount}
                     icon={<BookOpenText size={24} />}
                   />
                   <StatsCard

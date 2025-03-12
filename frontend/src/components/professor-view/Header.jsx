@@ -1,8 +1,13 @@
 import { Button } from "../ui/button";
 import SearchBar from "./searchBar";
 import books from "../../assets/picture/random background/bookprofheader.png";
+//import { useCourseStore } from "@/store/courseStore";
+import { useprofAuthStore } from "@/store/profAuthStore";
 
 const Header = () => {
+  const { professor } = useprofAuthStore();
+
+  const professorName = professor ? professor.firstName : "professor";
   return (
     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
       {/* Left Section */}

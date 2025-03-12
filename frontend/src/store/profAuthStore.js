@@ -208,6 +208,27 @@ export const useprofAuthStore = create((set) => ({
     }
   },
 
+  fetchProfessorById: async (professorId) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Assumes your GET endpoint returns { professor, courseCount }
+      const response = await axios.get(`${API_URL}/${professorId}`);
+      const { professor, courseCount } = response.data;
+
+      set({
+        professor,
+        courseCount,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error fetching professor",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error fetching professor");
+    }
+  },
+
   deleteProfessor: async (id) => {
     set({ isLoading: true, error: null });
 
