@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useLocation } from "react-router-dom"; // Import useLocation from React Router
+import { useLocation } from "react-router-dom";
 
 const data = [
   { to: "/professor/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -18,7 +18,7 @@ const data = [
 ];
 
 function AppSidebar() {
-  const location = useLocation(); // Get the current URL location
+  const location = useLocation();
 
   return (
     <Sidebar className="mx-2 py-4 item">
@@ -30,22 +30,21 @@ function AppSidebar() {
 
       <SidebarMenu className="mt-4">
         {data.map((item) => {
-          // Check if the current path matches the item's route
           const isActive = location.pathname === item.to;
 
           return (
             <SidebarMenuItem
               className="py-2 px-4"
               key={item.label}
-              style={{ color: "#7648C8" }}
+              style={{ color: "#7648C8" }} // Default color for inactive items
             >
               <SidebarMenuButton asChild>
                 <a
                   href={item.to}
                   className={`flex items-center font-medium transition-all ${
                     isActive
-                      ? "bg-violet-200 text-violet-900" // Active styles
-                      : "hover:bg-violet-100" // Inactive hover styles
+                      ? "bg-violet-600 text-white" // Darker highlight, white text
+                      : "hover:bg-violet-100 text-[#7648C8]" // Inactive styles with hover
                   }`}
                 >
                   <item.icon className="mr-2" />
