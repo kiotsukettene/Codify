@@ -71,6 +71,7 @@ import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
 import StudentAccountSettings from "./pages/student-view-pages/Student-Account-Setting";
 import VideoConference from "./pages/student-view-pages/Video-Conference";
 import { useStudentStore }  from "@/store/studentStore";
+import ContactUsPage from "./pages/Guest-view-pages/Contact-Us";
 
 
 function App() {
@@ -92,6 +93,7 @@ function App() {
         <Route path="/" element={<GuestLayout />}>
           <Route index element={<LandingPage />} />
           <Route path="/login" element={<MainLogin />} />
+          <Route path="/contact" element={<ContactUsPage/>}/>
           <Route path="*" element={<PageNotFoundPage />} />
           {/* Admin Registration & Authentication */}
           <Route path="/admin/register" element={<RedirectAuthenticatedInstitution><AdminRegisterPage /></RedirectAuthenticatedInstitution>} />

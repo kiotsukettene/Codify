@@ -39,15 +39,14 @@ function Testimonials() {
                 <CarouselItem className="lg:basis-1/2" key={index}>
                   <div
                     className="bg-muted rounded-md h-full lg:col-span-2 p-6 aspect-video flex justify-between flex-col">
-                    <User className="w-8 h-8 stroke-1" />
+                    <User className="w-8 h-8 stroke-1 text-primary" />
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col">
                         <h3 className="text-xl tracking-tight">
                           Best decision
                         </h3>
                         <p className="text-muted-foreground max-w-xs text-base">
-                          Our goal was to streamline SMB trade, making it easier
-                          and faster than ever and we did it together.
+                        Our institution has been using this LMS, and it has completely transformed how we deliver education.
                         </p>
                       </div>
                       <p className="flex flex-row gap-2 text-sm items-center">
@@ -56,7 +55,7 @@ function Testimonials() {
                           <AvatarImage src="https://github.com/shadcn.png" />
                           <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
-                        <span>John Johnsen</span>
+                        <span>Momo Johnsen</span>
                       </p>
                     </div>
                   </div>
