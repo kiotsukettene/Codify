@@ -15,13 +15,12 @@ import { useAuthStore } from "@/store/authStore";
 import { Loader, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 
-import union from "../../../assets/picture/random-background/union.png";
-import pinkFlower from "../../../assets/picture/random-background/pink-flower.png";
-import blueFlower from "../../../assets/picture/random-background/blue-flower.png";
-import purpleFlower from "../../../assets/picture/random-background/purple-flower.png";
-import arrow from "../../../assets/picture/random-background/arrow.png";
-import mascot from "../../../assets/picture/random-background/mascot.png";
-import logo from "../../../assets/picture/logos/logo.png";
+import union from "@/assets/picture/random-background/union.png"
+import pinkFlower from "@/assets/picture/random-background/pink-flower.png"
+import blueFlower from "@/assets/picture/random-background/blue-flower.png"
+import purpleFlower from "@/assets/picture/random-background/purple-flower.png"
+import arrow from "@/assets/picture/random-background/arrow.png"
+import mascot from "@/assets/picture/random-background/mascot.png"
 
 function AdminForgotPasswordPage() {
   const [emailSent, setEmailSent] = useState(false);
@@ -42,13 +41,7 @@ function AdminForgotPasswordPage() {
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
       {/* Background Images */}
-      <Link to="/">
-        <img
-          src={logo}
-          alt="Logo"
-          className="absolute top-7 left-24 lg:left-10 lg:w-28"
-        />
-      </Link>
+
       <img
         src={pinkFlower}
         alt="Pink Flower"
