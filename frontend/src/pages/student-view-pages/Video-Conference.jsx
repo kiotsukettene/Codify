@@ -27,8 +27,8 @@ export default function VideoConference() {
   const roomID = getUrlParams().get("roomID") || randomID(5);
   let myMeeting = async (element) => {
     // generate Kit Token
-    const appID = Number(process.env.REACT_APP_ZEGO_APP_ID);
-    const serverSecret = process.env.ZEGO_SERVER_SECRET;
+    const appID = Number(import.meta.env.VITE_REACT_APP_ZEGO_APP_ID);
+    const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
