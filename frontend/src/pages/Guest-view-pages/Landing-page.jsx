@@ -415,6 +415,8 @@ function LandingPage({title}) {
         <Testimonials/>
        </section>
 
+       <Footer/>
+
        
       
     </main>

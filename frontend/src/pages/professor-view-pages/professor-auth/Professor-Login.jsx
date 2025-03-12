@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,11 @@ const ProfessorLogin = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const navigate = useNavigate();
 
-  const { login, isLoading, error, LoginWithGoogle } = useprofAuthStore();
+  const { login, isLoading, error, LoginWithGoogle, clearError } = useprofAuthStore();
+
+  useEffect(() => {
+    clearError();
+  }, []);
 
   const handleProfessorLogin = async (e) => {
     e.preventDefault(); // ✅ Prevent page reload
@@ -65,7 +69,6 @@ const ProfessorLogin = () => {
                 name="email"
                 placeholder="Email Address"
                 className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
-                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -80,7 +83,6 @@ const ProfessorLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 id="password"
                 disabled={isLoading}
-                required
               />
               <button
                 type="button"

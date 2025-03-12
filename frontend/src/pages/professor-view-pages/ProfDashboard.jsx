@@ -104,28 +104,7 @@ const ProfDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-
-     // SIDEBAR SECTION
-
-     <SidebarProvider>
-     <AppSidebar />
-       <div 
-       className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300"
-       >
-     <SidebarInset
-       className="flex-1"
-       >
-       <header 
-       className="flex h-20 shrink-0 items-center gap-2 px-4"
-       >
-     <SidebarTrigger 
-       className="-ml-1"   
-       onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-       />
-    <Separator orientation="vertical" className="mr-2 h-4" />
-       </header>
-
-    <div className="w-full min-h-screen px-4 md:px-6 overflow-hidden">
+<div className="w-full min-h-screen px-4 md:px-6 overflow-hidden">
       {/* Header */}
       <Hearder />
 
@@ -172,10 +151,10 @@ const ProfDashboard = () => {
         {/* To-Grade Tasks */}
         <GradeTask activityData={mockToGradeTasks} />
       </div>
-    </div>
-     </SidebarInset>
-          </div>
-        </SidebarProvider>
+      </div>
+
+    
+
   );
 };
 

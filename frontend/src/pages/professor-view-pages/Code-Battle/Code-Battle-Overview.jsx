@@ -17,25 +17,9 @@ const CodeBattleOverview = () => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-col w-full min-h-screen">
-        <SidebarInset className="flex-1">
-          <header className="flex h-20 shrink-0 items-center gap-2 px-4 border-b">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <motion.h2
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-xl font-semibold"
-            >
-              Code Battle Arena
-            </motion.h2>
-          </header>
-
-          <div className="flex flex-col min-h-screen bg-white">
+          <div className="flex-1 flex flex-col overflow-hidden">
             {/* Tabs Navigation */}
-            <div className="flex h-14 items-center px-4 gap-4">
+            <div className="items-center px-4 gap-4">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
                 <TabsList className="bg-transparent p-0 h-full">
                   <TabsTrigger
@@ -62,13 +46,10 @@ const CodeBattleOverview = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="p-6">
+            <div className="flex-1 p-6">
               {activeTab === "battle" ? <CodeBattleTab /> : <Leaderboard />}
             </div>
           </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
   );
 };
 

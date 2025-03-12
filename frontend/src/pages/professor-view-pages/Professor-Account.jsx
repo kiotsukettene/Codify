@@ -66,22 +66,7 @@ const Account = () => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300">
-        <SidebarInset className="flex-1">
-          <header className="flex h-20 shrink-0 items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-          </header>
-
-          <motion.div className="container w-full px-6 py-2"
-           initial={{ opacity: 0, x: 10 }} 
-           animate={{ opacity: 1, x: 0 }} 
-           transition={{ duration: .8 , ease: "easeOut" }}>
-
-            
-            <div className="space-y-6">
+    <div className="space-y-6 p-6 w-full">
               <motion.div initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, ease: "easeOut" }}>
@@ -91,7 +76,10 @@ const Account = () => {
 
               <Separator />
 
-              <div className="grid gap-6">
+              <motion.div className="grid gap-6"
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}>
                 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -113,7 +101,7 @@ const Account = () => {
                     <Input id="lastName" value={profile.lastname} disabled className="bg-purple-100 mt-1" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               <Separator className="my-8" />
 
@@ -199,10 +187,6 @@ const Account = () => {
                 </form>
               </div>
             </div>
-          </motion.div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
   );
 };
 

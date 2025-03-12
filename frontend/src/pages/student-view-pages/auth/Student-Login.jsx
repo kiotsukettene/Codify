@@ -35,6 +35,7 @@ function StudentLoginPage() {
       e.preventDefault()
       await login(email, password)
       navigate('/student/dashboard');  // Redirect to the dashboard after successful login
+      toast.success("Login successfully")
 
     }
 
@@ -160,7 +161,7 @@ const handleGoogleSignIn = async () => {
                 </Label>
               </div>
     
-                <Button  onClick={() => navigate('/student-forgot-password')}  variant="link" className="px-0 text-[#4F46E5] hover:text-[#4338CA] font-normal text-xs sm:text-sm">
+                <Button  onClick={() => navigate('/student/forgot-password')}  variant="link" className="px-0 text-[#4F46E5] hover:text-[#4338CA] font-normal text-xs sm:text-sm">
                   Forgot password?
                 </Button>
             </div>

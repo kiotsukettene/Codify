@@ -51,7 +51,7 @@ const RoleCard = ({ role }) => {
   return (
     <motion.div
       whileHover={{ y: -5 }}
-      className={`w-full rounded-xl ${role.bgColor} ${role.hoverBg} transition-colors duration-300 p-8 backdrop-blur-sm bg-opacity-95`}
+      className={`w-full rounded-xl ${role.bgColor} ${role.hoverBg} transition-colors duration-300 p-8 backdrop-blur-sm bg-opacity-95 `}
     >
       <div className="flex flex-col items-center text-center">
         <div className={`${role.iconBg} text-white p-4 rounded-full mb-6`}>
@@ -77,7 +77,7 @@ function MainLogin() {
   const [color, setColor] = useState("#000000");
 
   return (
-    <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full min-h-screen flex flex-col items-center py-12">
+    <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full min-h-screen flex flex-col items-center py-12 ">
       <div className="absolute inset-0 z-0">
         <Particles
           className="w-full h-full"

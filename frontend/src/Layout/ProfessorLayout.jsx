@@ -4,7 +4,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Sidebar from "@/components/professor-view/Sidebar";
-import ProfessorHeader from "@/components/professor-view/ProfessorHeader";
+import ProfessorHeader from "@/components/professor-view/Applayout-Header";
 import { Outlet } from "react-router-dom";
 
 function ProfessorLayout() {

@@ -4,11 +4,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MessageCircle, Phone } from "lucide-react"
 import React from 'react'
+import Footer from "@/components/ui/footer"
 
 const ContactUsPage = () => {
   return (
     <div>
-         <header className="relative w-full pt-6 overflow-hidden rounded-b-[2.5rem] bg-gradient-to-b from-indigo-700 via-purple-400 to-pink-200 px-6 py-12 text-center md:px-8 md:py-24">
+         <header className="relative w-full pt-6 overflow-hidden rounded-b-[2.5rem] bg-gradient-to-b from-indigo-700 via-purple-400 to-pink-200 px-6  text-center md:px-8 md:py-24">
      
       {/* Main Content */}
       <div className="mx-auto max-w-4xl space-y-6 pt-28">
@@ -92,7 +93,10 @@ const ContactUsPage = () => {
         </div>
       </div>
     </div>
+    
+    <Footer/>
     </section>
+
       
     </div>
   )

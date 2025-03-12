@@ -9,7 +9,6 @@ function GuestLayout() {
         <main className=""> 
         <Outlet /> 
         <div className="pb-6">
-        <Footer/>
         </div>
       </main>
       

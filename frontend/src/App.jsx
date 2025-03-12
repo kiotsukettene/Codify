@@ -72,6 +72,7 @@ import StudentAccountSettings from "./pages/student-view-pages/Student-Account-S
 import VideoConference from "./pages/student-view-pages/Video-Conference";
 import { useStudentStore }  from "@/store/studentStore";
 import ContactUsPage from "./pages/Guest-view-pages/Contact-Us";
+import ProfessorLayout from "./Layout/ProfessorLayout";
 
 
 function App() {
@@ -95,8 +96,8 @@ function App() {
         <Route path="/" element={<GuestLayout />}>
           <Route index element={<LandingPage />} />
           <Route path="/login" element={<MainLogin />} />
-          <Route path="/contact" element={<ContactUsPage/>}/>
           <Route path="*" element={<PageNotFoundPage />} />
+          <Route path="/contact" element={<ContactUsPage/>}/>
           {/* Admin Registration & Authentication */}
           <Route path="/admin/register" element={<RedirectAuthenticatedInstitution><AdminRegisterPage /></RedirectAuthenticatedInstitution>} />
           <Route path="/admin/login" element={<RedirectAuthenticatedInstitution><AdminLogin /></RedirectAuthenticatedInstitution>} />
@@ -120,23 +121,7 @@ function App() {
 
         {/* Professor Authentication */}
 
-        <Route path="/professor/">
-          <Route
-            path="login"
-            element={
-              <RedirectAuthenticatedProfessor>
-                <ProfessorLogin />
-              </RedirectAuthenticatedProfessor>
-            }
-          />
-          <Route
-            path="forgot-password"
-            element={
-              <RedirectAuthenticatedProfessor>
-                <ProfForgotPassword />
-              </RedirectAuthenticatedProfessor>
-            }
-          />
+        <Route path="/professor/" element={<ProfessorLayout />}>
           <Route
             path="dashboard"
             element={

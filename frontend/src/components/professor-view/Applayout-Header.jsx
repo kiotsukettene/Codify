@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import SearchForm from "./SearchForm";
+import SearchForm from "../student-view/SearchForm";
 import { BellRing, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import badge from "../../assets/picture/achievements/sampleBadge.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useProfAuthStore } from "@/store/profAuthStore";
+import { useprofAuthStore } from "@/store/profAuthStore";
 
 function ProfessorHeader() {
-  const { logoutProfessor } = useProfAuthStore();
+  const { logoutProfessor } = useprofAuthStore();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);

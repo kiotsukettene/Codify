@@ -69,15 +69,15 @@ const CodeBattleTab = () => {
 
   return (
 
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="w-full h-auto overflow-hidden">
       {/* Top Navigation */}
-      <div className="flex-1 p-1">
+      <div>
         {/* Hero Section */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="mb-8 rounded-xl bg-gradient-to-r from-[#f5f0ff] to-[#e9dfff] w-full overflow-hidden relative shadow-md"
+          className="mb-8 rounded-xl bg-gradient-to-r from-[#f5f0ff] to-[#e9dfff] overflow-hidden relative shadow-md"
         >
           <div className="flex items-end justify-between p-8 md:p-12">
             <div className="flex-1 z-10">
@@ -85,7 +85,7 @@ const CodeBattleTab = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="font-mono text-3xl font-bold text-gray-800 flex ml-64"
+                className="font-mono text-3xl font-bold text-gray-800 text-center md:text-left ml-60"
               >
                 Time to guide
                 <br />

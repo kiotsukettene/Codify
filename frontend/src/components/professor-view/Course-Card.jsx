@@ -66,7 +66,8 @@ const Card = ({
                  clipPath: 'polygon(20% 0%, 80% 0%, 70% 100%, 30% 100%)',
                  backdropFilter: 'blur(10px)',
                }}>
-            <Monitor className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
+            <Monitor className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" style = {{transform: 'skewX(15deg)' }} />
+
             <span className="text-xs sm:text-sm font-medium text-purple-600 pl-1" style = {{transform: 'skewX(15deg)' }}>{lessonCount} Lessons</span>
           </div>
 
@@ -88,7 +89,7 @@ const Card = ({
         </div>
         {/* Bottom section */}
         <div className="h-[10%] bg-white p-2 sm:p-3 relative text-center" >
-          <div className="flex justify-between items-start"> 
+          <div className="flex justify-between items-start bg-white"> 
             {/* Language tags */}
             <div className="flex gap-2" style={{ transform: 'skewX(15deg)' }}>
   {Array.isArray(languages) ? (
@@ -140,7 +141,7 @@ const Card = ({
           </div>
 
           {/* Infos*/}
-          <div style = {{transform: 'skewX(15deg)' }}>
+          <div style = {{transform: 'skewX(15deg)' }} >
             <h3 className="text-sm sm:text-base font-semibold text-purple-700 mb-1 mt-3">
               {title}
             </h3>

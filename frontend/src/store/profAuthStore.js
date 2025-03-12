@@ -15,6 +15,7 @@ export const useprofAuthStore = create((set) => ({
   isLoading: false,
   isCheckingAuth: true,
   message: null,
+  clearError: () => set({ error: null }), // New function to reset error
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });

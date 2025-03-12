@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button"
 import { Instagram, Twitter, Linkedin, ArrowRight, Heart, MapPin, Mail, Book, Globe, Box } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
+import { useNavigate } from "react-router-dom";
 
 export default function Footer() {
+  const navigate = useNavigate();
   return (
     <footer className="bg-[#1a061f] text-white max-w-7xl mx-auto rounded-3xl py-8 px-6 md:px-12">
       {/* Top section */}
@@ -127,6 +129,7 @@ export default function Footer() {
 
           {/* Contact Us Button */}
           <Button
+          onClick={() => navigate('/contact')}
             className="rounded-full bg-primary  text-white hover:bg-white hover:text-black transition-all  hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] w-full"
           >
             Contact Us <ArrowRight className="ml-2 h-4 w-4" />

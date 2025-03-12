@@ -59,7 +59,8 @@ const Leaderboard = () => {
   };
 
   return (
-    <div className="w-full lg:max-w-5xl mx-auto flex flex-col items-center">
+    <div className="w-full h-auto overflow-hidden">
+    <div className="mx-auto flex flex-col items-center">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -350,6 +351,7 @@ const Leaderboard = () => {
         </Pagination>
       </motion.div>
            
+    </div>
     </div>
   )
 }
