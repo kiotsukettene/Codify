@@ -16,7 +16,7 @@ import blueFlower from "../../../assets/picture/random-background/blue-flower.pn
 import purpleFlower from "../../../assets/picture/random-background/purple-flower.png"
 import arrow from "../../../assets/picture/random-background/arrow.png"
 import mascot from "../../../assets/picture/random-background/mascot.png"
-import logo from '../../../assets/picture/logos/Logo.png'
+
 
 
 function AdminNewPasswordPage() {
@@ -55,13 +55,6 @@ function AdminNewPasswordPage() {
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
 
      {/* Background Images */}
-     <Link to="/">
-     <img 
-      src={logo}
-      alt="Logo" 
-      className="absolute top-7 left-24 lg:left-10 lg:w-28" 
-      />
-   </Link>
    <img 
      src={pinkFlower}
      alt="Pink Flower" 
