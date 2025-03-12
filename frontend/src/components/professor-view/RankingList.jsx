@@ -1,8 +1,8 @@
 import { Trophy } from "lucide-react";
-import goldFrame from "../../assets/picture/frames/goldborder.png";
-import violetFrame from "../../assets/picture/frames/violetborder.png";
-import silverFrame from "../../assets/picture/frames/silverborder.png";
-import bronzeFrame from "../../assets/picture/frames/bronzeborder.png";
+import goldFrame from "@/assets/picture/frames/goldborder.png";
+import violetFrame from "@/assets/picture/frames/violetborder.png";
+import silverFrame from "@/assets/picture/frames/silverborder.png";
+import bronzeFrame from "@/assets/picture/frames/bronzeborder.png";
 
 const RankingList = ({ rankingData }) => {
   const getRankFrame = (rank) => {

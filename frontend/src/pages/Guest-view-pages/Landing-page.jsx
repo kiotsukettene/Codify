@@ -1,7 +1,7 @@
 import GalaxyButton from "@/components/ui/galaxyButton";
 import React, { useRef } from "react";
-import sampleImg from "../../assets/picture/random-background/sampleImg.png";
-import sampleImg2 from '../../assets/picture/random-background/sampleImg2.png';
+import sampleImg from "@/assets/picture/random-background/sampleImg.png";
+import sampleImg2 from '@/assets/picture/random-background/sampleImg2.png';
 import VariableFontHoverByRandomLetter from "@/fancy/components/text/variable-font-hover-by-random-letter";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import BrandsComponent from "@/components/ui/brands";
@@ -19,8 +19,8 @@ import { Testimonials } from "@/components/ui/testimonials";
 import FloatingElements from "@/components/ui/floating-elements";
 import ProgressBadge from "@/components/ui/progress-badge";
 import { motion, useScroll, useTransform } from "framer-motion"
-import astronautImg from '../../assets/picture/random-background/white-astronaut.png'
-import astronautImg2 from '../../assets/picture/random-background/Astro.png'
+import astronautImg from '@/assets/picture/random-background/white-astronaut.png'
+import astronautImg2 from '@/assets/picture/random-background/Astro.png'
 import Footer from "@/components/ui/footer";
 import { Award, Computer, Gamepad2, Gift, Sparkles, Star, Swords, Trophy, Video } from "lucide-react"
 import { useEffect } from "react";

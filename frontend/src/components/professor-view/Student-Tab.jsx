@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Search } from "lucide-react";
-import lion from "../../assets/picture/Avatar/lion.png";
+import lion from "@/assets/picture/Avatar/lion.png";
 
 const StudentTab = ({ studentList = [], activities = [] }) => {
   const [searchQuery, setSearchQuery] = useState("");

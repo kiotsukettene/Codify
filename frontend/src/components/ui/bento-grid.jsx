@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils"
 
 // Import your images
-import codeEditor from "../../assets/picture/banners/code-editor.png"
-import videoConference from "../../assets/picture/banners/Video-Conference.png"
-import Task from "../../assets/picture/banners/Task.png"
-import course from "../../assets/picture/banners/course.png"
-import codeBattle from '../../assets/picture/banners/code-battle.png'
+import codeEditor from "@/assets/picture/banners/code-editor.png"
+import videoConference from "@/assets/picture/banners/Video-Conference.png"
+import Task from "@/assets/picture/banners/Task.png"
+import course from "@/assets/picture/banners/course.png"
+import codeBattle from '@/assets/picture/banners/code-battle.png'
 
 const BentoGrid = ({ children, className }) => {
   return <div className={cn("grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", className)}>{children}</div>

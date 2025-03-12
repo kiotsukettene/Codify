@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import pic from "../../assets/picture/courses/header.png"
+import pic from "@/assets/picture/courses/header.png"
 import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from 'react-router-dom'
 

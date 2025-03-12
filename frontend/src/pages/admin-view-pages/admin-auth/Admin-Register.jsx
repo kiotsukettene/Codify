@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-context-menu";
 import React, { useState, useEffect } from "react";
-import Logo from "../../../assets/picture/logos/Logo.png";
+import Logo from "@/assets/picture/logos/Logo.png";
 import { Separator } from "@/components/ui/separator";
 import { BadgeCheck, Circle, Loader, LockKeyhole } from "lucide-react";
 import { useNavigate } from "react-router-dom";

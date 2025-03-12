@@ -5,8 +5,8 @@ import AppSidebar from "@/components/professor-view/Sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import CodeBattleTab from "../../../components/professor-view/Code-Battle-Tab"
-import Leaderboard from "../../../components/professor-view/Leaderboard-Tab";
+import CodeBattleTab from "@/components/professor-view/Code-Battle-Tab"
+import Leaderboard from "@/components/professor-view/Leaderboard-Tab";
 
 const CodeBattleOverview = () => {
   const [activeTab, setActiveTab] = useState(localStorage.getItem("activeTab") || "battle");

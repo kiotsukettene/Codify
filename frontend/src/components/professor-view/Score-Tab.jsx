@@ -2,7 +2,7 @@ import React from 'react'
 import { Card } from "@/components/ui/card"
 import { Medal } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import Dog from '../../assets/picture/Avatar/Dog.png'
+import Dog from '@/assets/picture/Avatar/Dog.png'
 import { motion } from "framer-motion"
 
 

@@ -4,7 +4,7 @@ import { AuthorCard } from "@/components/ui/content-card";
 import { Particles } from "@/components/ui/particles";
 import { Presentation } from "lucide-react";
 import React, { useState } from "react";
-import bg from "../../assets/picture/random-background/loginCard.png";
+import bg from "@/assets/picture/random-background/loginCard.png";
 import { Building2, GraduationCap, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";

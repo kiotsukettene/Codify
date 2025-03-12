@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { BellRing, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import badge from "../../assets/picture/achievements/sampleBadge.png";
+import badge from "@/assets/picture/achievements/sampleBadge.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";

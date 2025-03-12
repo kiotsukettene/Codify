@@ -11,7 +11,7 @@ import { BookOpenCheck, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchForm from "@/components/student-view/SearchForm";
 import { Input } from "@/components/ui/input";
-import card1 from "../../../assets/picture/courses/card1.png";
+import card1 from "@/assets/picture/courses/card1.png";
 import StudentCourseCard from "@/components/student-view/student-course-card";
 import { useNavigate } from "react-router-dom";
 import JoinCourseModal from "@/components/student-view/join-course-modal";

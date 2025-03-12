@@ -1,6 +1,6 @@
 import { Button } from "../ui/button";
 import SearchBar from "./searchBar";
-import books from "../../assets/picture/random-background/bookprofheader.png";
+import books from "@/assets/picture/random-background/bookprofheader.png";
 //import { useCourseStore } from "@/store/courseStore";
 import { useprofAuthStore } from "@/store/profAuthStore";
 

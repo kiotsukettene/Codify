@@ -1,5 +1,5 @@
 import React from "react";
-import card1 from "../../assets/picture/courses/card1.png";
+import card1 from "@/assets/picture/courses/card1.png";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";

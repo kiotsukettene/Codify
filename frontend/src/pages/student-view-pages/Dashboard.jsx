@@ -3,9 +3,9 @@ import Typewriter from '@/components/fancy/typewriter'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartNoAxesColumnIncreasing, LibraryBig, NotebookTabs, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import dashboardImage from "../../assets/picture/random-background/dashboard-img.png";
+import dashboardImage from "@/assets/picture/random-background/dashboard-img.png";
 import StudentHeader from '@/components/student-view/Header'
-import spaceShip from "../../assets/picture/random-background/dashboard-spaceShip.png";
+import spaceShip from "@/assets/picture/random-background/dashboard-spaceShip.png";
 import { useStudentStore } from '@/store/studentStore';
 import { useNavigate } from 'react-router-dom';
 

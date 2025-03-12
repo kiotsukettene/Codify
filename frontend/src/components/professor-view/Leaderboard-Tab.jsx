@@ -11,8 +11,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { motion } from "framer-motion"
-import bear from "../../assets/picture/Avatar/Bear.png"
-import dog from "../../assets/picture/Avatar/Dog.png"
+import bear from "@/assets/picture/Avatar/Bear.png"
+import dog from "@/assets/picture/Avatar/Dog.png"
 
 // Sample data for the leaderboard
 const leaderboardData = [

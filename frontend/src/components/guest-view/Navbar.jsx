@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Logo from "../../assets/picture/logos/Logo.png";
+import Logo from "@/assets/picture/logos/Logo.png";
 import WhiteLogo from "@/assets/picture/logos/White-Logo.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 

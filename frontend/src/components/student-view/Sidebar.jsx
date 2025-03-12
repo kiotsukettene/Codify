@@ -1,8 +1,8 @@
 import { Link, NavLink } from "react-router-dom";
 import { Calendar, Gamepad2, Layers, Sword, Video } from "lucide-react";
 import { CircleCheckBig, LayoutDashboard } from "lucide-react";
-import sidebarImage from "../../assets/picture/random-background/sidebar-image.png";
-import Logo from "../../assets/picture/logos/Logo.png";
+import sidebarImage from "@/assets/picture/random-background/sidebar-image.png";
+import Logo from "@/assets/picture/logos/Logo.png";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {

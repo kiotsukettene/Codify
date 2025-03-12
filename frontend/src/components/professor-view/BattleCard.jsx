@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import astronaut from "../../assets/picture/random-background/battleCardBg.png";
+import astronaut from "@/assets/picture/random-background/battleCardBg.png";
 
 const BattleCard = () => {
   return (

@@ -1,11 +1,11 @@
 import React from 'react'
-import union from "../../../src/assets/picture/random-background/union.png"
-import pinkFlower from "../../../src/assets/picture/random-background/pink-flower.png"
-import blueFlower from "../../../src/assets/picture/random-background/blue-flower.png"
-import purpleFlower from "../../../src/assets/picture/random-background/purple-flower.png"
-import arrow from "../../../src/assets/picture/random-background/arrow.png"
-import mascot from "../../../src/assets/picture/random-background/mascot.png"
-import logo from "../../../src/assets/picture/logos/logo.png"
+import union from "@/src/assets/picture/random-background/union.png"
+import pinkFlower from "@/src/assets/picture/random-background/pink-flower.png"
+import blueFlower from "@/src/assets/picture/random-background/blue-flower.png"
+import purpleFlower from "@/src/assets/picture/random-background/purple-flower.png"
+import arrow from "@/src/assets/picture/random-background/arrow.png"
+import mascot from "@/src/assets/picture/random-background/mascot.png"
+import logo from "@/src/assets/picture/logos/logo.png"
 
 
 
