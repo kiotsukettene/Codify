@@ -31,105 +31,48 @@ import { useCourseStore } from "@/store/courseStore";
 const studentList = [
   {
     id: 1,
-    name: "Antang, Irheil Mae S.",
+    name: "Student",
     avatar: "/placeholder.svg?height=40&width=40",
     crown: "gold",
     studentNo: "20221183-N",
-    email: "ayrelmay@gmail.com",
-    grade: 100,
-  },
-  {
-    id: 2,
-    name: "Bae, Cathy C.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    name: "Canada, Nana S.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    name: "Elton, Monica D.",
-    avatar: "/placeholder.svg?height=40&width=40",
-    crown: "gold",
-  },
-  {
-    id: 5,
-    name: "Faranas, Paul O.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 6,
-    name: "Gulo, Monica S.",
-    avatar: "/placeholder.svg?height=40&width=40",
-    crown: "silver",
+    email: "none",
+    grade: 0,
   },
 ];
 
 const metrics = [
   {
     title: "Class Performance",
-    value: "90%",
+    value: "0%",
     subtitle: "Average Score",
   },
   {
     title: "Completion Rate",
-    value: "80%",
+    value: "0%",
     subtitle: "Activities Completed",
   },
   {
     title: "Active Students",
-    value: "38/40",
+    value: "0",
     subtitle: "Currently Active",
   },
   {
     title: "Top Performers",
-    value: "6",
-    subtitle: "Above 15%",
+    value: "0",
+    subtitle: "Display Performance",
   },
 ];
 
 const students = [
   {
-    name: "Antang, Irheil Mae S.",
+    name: "Student 1",
     avatar: "/placeholder.svg?height=40&width=40",
-    initials: "IA",
-    rank: 1,
-    activities: 15,
+    initials: "S",
+    rank: 0,
+    activities: 0,
     incomplete: 0,
-    totalScore: 1500,
+    totalScore: 0,
     hasMedal: true,
-  },
-  {
-    name: "Antang, Paul Cyrus S.",
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "PA",
-    rank: 2,
-    activities: 15,
-    incomplete: 1,
-    totalScore: 1400,
-    hasMedal: true,
-  },
-  {
-    name: "Sison, Razel Mae",
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "SR",
-    rank: 3,
-    activities: 15,
-    incomplete: 2,
-    totalScore: 1300,
-    hasMedal: true,
-  },
-  {
-    name: "Abelong, Eugene",
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "AE",
-    rank: 4,
-    activities: 15,
-    incomplete: 3,
-    totalScore: 1200,
-    hasMedal: false,
   },
 ];
 

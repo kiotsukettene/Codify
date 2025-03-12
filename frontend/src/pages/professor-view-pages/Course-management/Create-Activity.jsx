@@ -532,13 +532,13 @@ const CreateActivity = () => {
                   </div>
                 )}
               </div>
-              <Button
+              {/* <Button
                 onClick={() => addSection("code")}
                 className="mt-8 font-normal"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Code snippets
-              </Button>
+              </Button> */}
             </div>
           </div>
         </SidebarInset>

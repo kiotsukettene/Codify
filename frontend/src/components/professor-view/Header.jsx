@@ -7,16 +7,16 @@ const Header = () => {
     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
       {/* Left Section */}
       <div className="flex items-center text-left gap-4 w-full md:w-auto">
-        <div className="p-2 bg-white rounded-lg flex-shrink-0">
+        {/* <div className="p-2 bg-white rounded-lg flex-shrink-0">
           <img
             src={books}
             alt="Professor"
             className="w-20 h-20 object-cover rounded-lg md:w-32 md:h-32"
           />
-        </div>
+        </div> */}
         <div>
           <h1 className="text-xl md:text-2xl font-semibold">
-            Welcome back, Prof. Joko!
+            Welcome back, Prof. Irheil!
           </h1>
           <p className="text-gray-500 text-sm md:text-base">
             Manage your courses and engage with students

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import Hearder from "@/components/professor-view/Header";
 import BattleCard from "@/components/professor-view/BattleCard";
 import RankingList from "@/components/professor-view/RankingList";
@@ -6,10 +6,13 @@ import GradeTask from "@/components/professor-view/GradeTask";
 import StatsCard from "@/components/professor-view/StatsCard";
 import ScheduleList from "@/components/professor-view/ScheduleList";
 import { UsersRound, BookOpenText, ChartLine } from "lucide-react";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/professor-view/Sidebar';
-import { Separator } from '@/Components/ui/separator';
-
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import AppSidebar from "@/components/professor-view/Sidebar";
+import { Separator } from "@/Components/ui/separator";
 
 const mockStudentRankings = [
   {
@@ -100,82 +103,72 @@ const mockSchedule = [
 ];
 
 const ProfDashboard = () => {
-  
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-
-     // SIDEBAR SECTION
-
-     <SidebarProvider>
-     <AppSidebar />
-       <div 
-       className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300"
-       >
-     <SidebarInset
-       className="flex-1"
-       >
-       <header 
-       className="flex h-20 shrink-0 items-center gap-2 px-4"
-       >
-     <SidebarTrigger 
-       className="-ml-1"   
-       onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-       />
-    <Separator orientation="vertical" className="mr-2 h-4" />
-       </header>
-
-    <div className="w-full min-h-screen px-4 md:px-6 overflow-hidden">
-      {/* Header */}
-      <Hearder />
-
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-        {/* Left Section: Stats Cards and Battle Card */}
-        <div className="space-y-6 md:col-span-2 lg:col-span-3">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
-            <StatsCard
-              title="Total Students"
-              value="150"
-              icon={<UsersRound size={24} />}
+    <SidebarProvider>
+      <AppSidebar />
+      <div className="flex mx-2 sm:mx-4 md:mx-7 transition-all duration-300">
+        <SidebarInset className="flex-1">
+          <header className="flex h-20 shrink-0 items-center gap-2 px-4">
+            <SidebarTrigger
+              className="-ml-1"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             />
-            <StatsCard
-              title="Total Courses"
-              value="4"
-              icon={<BookOpenText size={24} />}
-            />
-            <StatsCard
-              title="Grading Queue"
-              value="67"
-              icon={<ChartLine size={24} />}
-            />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+          </header>
+
+          <div className="w-full min-h-screen px-4 md:px-6 overflow-hidden">
+            {/* Header */}
+            <Hearder />
+
+            {/* Main Grid Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+              {/* Left Section: Stats Cards and Battle Card */}
+              <div className="space-y-6 md:col-span-2 lg:col-span-3">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
+                  <StatsCard
+                    title="Total Students"
+                    value="0"
+                    icon={<UsersRound size={24} />}
+                  />
+                  <StatsCard
+                    title="Total Courses"
+                    value="4"
+                    icon={<BookOpenText size={24} />}
+                  />
+                  <StatsCard
+                    title="Grading Queue"
+                    value="0"
+                    icon={<ChartLine size={24} />}
+                  />
+                </div>
+
+                {/* Battle Card */}
+                <BattleCard />
+              </div>
+
+              {/* Today's Schedule - Remains beside the stats & battle card */}
+              <div className="bg-white border border-black/5 p-6 rounded-lg shadow-sm text-left w-full md:col-span-1">
+                <div className="overflow-hidden">
+                  <ScheduleList scheduleData={mockSchedule} />
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+              {/* Rankings */}
+              <RankingList rankingData={mockStudentRankings} />
+
+              {/* To-Grade Tasks */}
+              <GradeTask activityData={mockToGradeTasks} />
+            </div>
           </div>
-
-          {/* Battle Card */}
-          <BattleCard />
-        </div>
-
-        {/* Today's Schedule - Remains beside the stats & battle card */}
-        <div className="bg-white border border-black/5 p-6 rounded-lg shadow-sm text-left w-full md:col-span-1">
-          <div className="overflow-hidden">
-            <ScheduleList scheduleData={mockSchedule} />
-          </div>
-        </div>
+        </SidebarInset>
       </div>
-
-      {/* Bottom Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-        {/* Rankings */}
-        <RankingList rankingData={mockStudentRankings} />
-
-        {/* To-Grade Tasks */}
-        <GradeTask activityData={mockToGradeTasks} />
-      </div>
-    </div>
-     </SidebarInset>
-          </div>
-        </SidebarProvider>
+    </SidebarProvider>
   );
 };
 

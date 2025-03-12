@@ -18,6 +18,7 @@ const ActivityTab = ({ activity, courseSlug, lessonSlug, index }) => {
       `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activity.slug}`,
       { state: { activity } }
     );
+    a;
   };
 
   // Format the due date
