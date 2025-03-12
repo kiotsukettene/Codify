@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { useNavigate, useParams } from "react-router-dom";
-import { useLessonStore } from "../../store/lessonStore";
-import { formatDate } from "../../utils/formatDate";
+import { useLessonStore } from "@/store/lessonStore";
+import { formatDate } from "@/utils/formatDate";
 import DeleteDialog from "../Dialog/DeleteDialog";
-import { useActivityStore } from "../../store/activityStore";
+import { useActivityStore } from "@/store/activityStore";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();

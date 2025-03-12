@@ -36,7 +36,7 @@ const timeSlots = Array.from({ length: 15 }, (_, i) => {
   };
 });
 import { useCourseStore } from "@/store/courseStore";
-import { TimeField } from "../../components/professor-view/Time-field";
+import { TimeField } from "@/components/professor-view/Time-field";
 
 const CourseModal = ({ onClose }) => {
   const [formValues, setFormValues] = useState({
