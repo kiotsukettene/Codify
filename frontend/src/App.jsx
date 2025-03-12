@@ -39,8 +39,6 @@ import { useprofAuthStore } from "@/store/profAuthStore";
 import ProfessorLogin from "./pages/professor-view-pages/professor-auth/Professor-Login";
 import ProfForgotPassword from "./pages/professor-view-pages/professor-auth/Professor-Forgot-Password";
 import ProfNewPassword from "./pages/professor-view-pages/professor-auth/Professor-New-Password";
-
-
 import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-Overview";
 import Courses from "./pages/professor-view-pages/Course-management/Course";
 import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
@@ -48,6 +46,9 @@ import ActivityPage from "./pages/professor-view-pages/Course-management/Activit
 import CreateActivity from "./pages/professor-view-pages/Course-management/Create-Activity";
 import CreateLesson from "./pages/professor-view-pages/Course-management/Create-Lesson";
 import Topic from "./pages/professor-view-pages/Course-management/Topic";
+import CodeBattleOverview from "./pages/professor-view-pages/Code-Battle/Code-Battle-Overview";
+import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle";
+import Account from "./pages/professor-view-pages/Professor-Account";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -119,7 +120,10 @@ function App() {
           <Route path="course/:courseId/lesson/:lessonId" element={<ProtectedRouteProfessors><Topic /></ProtectedRouteProfessors>} />
           <Route path="course/:courseId/lesson/:lessonId/create-activity" element={<ProtectedRouteProfessors><CreateActivity /></ProtectedRouteProfessors>} />
           <Route path="course/:courseId/lesson/:lessonId/activity/:activityId" element={<ProtectedRouteProfessors><ActivityPage /></ProtectedRouteProfessors>} />
-    
+          <Route path="code-battle" element={<ProtectedRouteProfessors><CodeBattleOverview /></ProtectedRouteProfessors>} />
+          <Route path="code-battle/create" element={<ProtectedRouteProfessors><CreateBattle /></ProtectedRouteProfessors>} />
+          <Route path="account" element={<ProtectedRouteProfessors><Account /></ProtectedRouteProfessors>} />
+
         </Route>
 
         {/* Authenticated Admin Routes */}

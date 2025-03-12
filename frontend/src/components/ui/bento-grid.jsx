@@ -158,9 +158,7 @@ const CodingEnvironmentCard = ({ className }) => (
           <span className="px-2 py-1 bg-white/20 rounded-full text-xs backdrop-blur-sm group-hover:bg-white/30 transition-all duration-300">
             Multiple Languages
           </span>
-          <span className="px-2 py-1 bg-white/20 rounded-full text-xs backdrop-blur-sm group-hover:bg-white/30 transition-all duration-300">
-            Auto-save
-          </span>
+         
         </div>
       </div>
     </div>

@@ -13,11 +13,7 @@ const ProfBg1 = () => {
   return (
     <div>
         {/* Background Images */}
-            <img 
-              src={logo}
-              alt="Logo" 
-              className="absolute top-7 left-24 lg:left-10 lg:w-28" 
-            />
+           
             <img 
               src={pinkFlower}
               alt="Pink Flower" 

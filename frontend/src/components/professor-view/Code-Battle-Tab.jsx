@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import pic from "../../assets/picture/courses/header.png"
 import { motion, AnimatePresence } from "framer-motion"
+import { useNavigate } from 'react-router-dom'
 
 const CodeBattleTab = () => {
   const [activeBattles, setActiveBattles] = useState([])
   const [scheduledBattles, setScheduledBattles] = useState([])
-  
+  const navigate = useNavigate()
     
   useEffect(() => {
     const fetchData = async () => {
@@ -53,6 +54,9 @@ const CodeBattleTab = () => {
     fetchData()
   }, [])
 
+  const handleCreateBattle = () => {
+    navigate("/professor/code-battle/create")
+  }
   const handleEditBattle = (id) => {
     console.log(`Edit battle with id: ${id}`)
     // Implement edit functionality
@@ -94,6 +98,7 @@ const CodeBattleTab = () => {
             >
               <Button 
                 className="bg-[#7c3aed] hover:bg-[#6d28d9] px-6 py-2 h-auto z-10 transition-all duration-300 shadow-md"
+                onClick={handleCreateBattle}
               >
                 <Play className="mr-2 h-4 w-4" />
                 CREATE BATTLE

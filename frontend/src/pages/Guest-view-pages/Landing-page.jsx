@@ -1,6 +1,7 @@
 import GalaxyButton from "@/components/ui/galaxyButton";
 import React from "react";
-import sampleImg from "../../assets/picture/random background/sample_img.png";
+import sampleImg from "../../assets/picture/random background/sampleImg.png";
+import sampleImg2 from '../../assets/picture/random background/sampleImg2.png';
 import VariableFontHoverByRandomLetter from "@/fancy/components/text/variable-font-hover-by-random-letter";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { Compare } from "@/components/ui/compare";
@@ -11,6 +12,7 @@ import BrandsComponent from "@/components/ui/brands";
 import { BentoGrid, CodeBattlesCard, CodingEnvironmentCard, GamifiedLearningCard, PersonalizedLearningCard,  VideoSessionsCard } from "@/components/ui/bento-grid";
 import { PricingCard } from "@/components/pricing-card";
 import { useNavigate } from "react-router-dom";
+import { Footer2 } from "@/components/ui/shadcnblocks-com-footer2";
 
 
 
@@ -62,7 +64,7 @@ function LandingPage() {
 
       {/* Content to enable scrolling */}
 
-      <section className="mt-[-8rem] pt-0 bg-neutral-50 ">
+      <section className="mt-[-8rem] pt-0 bg-neutral-50 w-full flex flex-col items-center justify-center">
         <div className="flex flex-col md:flex-row items-center">
           {/* Left Side - Text Content */}
           <div className="w-full md:w-1/2 p-6 lg:p-12">
@@ -114,7 +116,7 @@ function LandingPage() {
             // }
             >
               <img
-                src={sampleImg}
+                src={sampleImg2}
                 alt="hero"
                 className="w-full h-full object-cover object-left-top"
                 draggable={false}
@@ -139,12 +141,13 @@ function LandingPage() {
 
 
       {/* ==============================PRICING CARD================================== */}
-     <section className="w-full items-center justify-center flex">
+     <section className="w-full items-center justify-center flex ">
+     <div className="container mx-auto">
      <PricingCard
       title="Ultimate Plan"
       description="Access everything you need to grow your business."
-      price={70000}
-      originalPrice={90000}
+      price={"70,000"}
+      originalPrice={"90,000"}
       features={[
         {
           title: "Features",
@@ -170,6 +173,16 @@ function LandingPage() {
       buttonText="Subscribe Now"
       onButtonClick={() => navigate('/admin/register')}
     />
+     </div>
+     </section>
+
+     <section className="w-full flex flex-col items-center justify-center py-16 bg-[#140a16]  text-white border-t border-gray-700">  
+     <div className="container mx-auto text-center">
+
+      <Footer2>
+
+      </Footer2>
+      </div>
      </section>
 
   

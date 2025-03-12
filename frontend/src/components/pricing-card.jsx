@@ -69,7 +69,7 @@ export function PricingCard({
       initial="hidden"
       animate={hasAnimated ? "visible" : "hidden"}
       variants={containerVariants}>
-      <Card className="relative mx-auto w-full max-w-6xl overflow-hidden">
+      <Card className="relative mx-auto w-full max-w-7xl overflow-hidden">
         <div className="flex flex-col lg:flex-row">
           <motion.div
             className="flex flex-col justify-between p-6 lg:w-2/5 lg:p-10"

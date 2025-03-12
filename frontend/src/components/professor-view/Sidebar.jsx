@@ -14,7 +14,7 @@ import {
   const data = [
     { to: "/professor/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/professor/course", icon: Layers, label: "Course" },
-    { to: "/professor/codeBattle", icon: Sword, label: "Code Battle" },
+    { to: "/professor/code-battle", icon: Sword, label: "Code Battle" },
     { to: "/professor/account", icon: User2, label: "My Account" },
   ];
 
