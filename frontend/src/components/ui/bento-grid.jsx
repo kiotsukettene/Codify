@@ -32,7 +32,7 @@ const BentoCard = ({
   >
     <div className="flex items-center gap-2 mb-2">
       {Icon && (
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-neutral-800 to-neutral-900 text-white relative overflow-hidden group-hover:scale-110 transition-all duration-300 shadow-md">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#521a80] text-white relative overflow-hidden group-hover:scale-110 transition-all duration-300 shadow-md">
           <div className="absolute inset-0 bg-gradient-to-br from-transparent to-white/10 group-hover:opacity-100 opacity-0 transition-opacity duration-300"></div>
           <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/40 transition-colors duration-300"></div>
           <Icon className="h-6 w-6 relative z-10 group-hover:text-white transition-colors duration-300" />
