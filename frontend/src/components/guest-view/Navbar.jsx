@@ -13,8 +13,8 @@ const NavBar = () => {
     { to: "/", label: "Home" },
     { to: "/features", label: "Features" },
     { to: "/pricing", label: "Pricing" },
-    { to: "/demo", label: "Demo" },
-    { to: "/support", label: "Support" },
+    { to: "/about-us", label: "About" },
+    { to: "/contact", label: "Contact" },
   ];
 
   useEffect(() => {
