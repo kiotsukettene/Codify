@@ -180,7 +180,7 @@ const Courses = () => {
                         title={course.className}
                         courseCode={course.courseCode}
                         section={course.section}
-                        students={course.studentsEnrolled.length}
+                        students={course.studentCount}
                       />
                     </div>
                   ))

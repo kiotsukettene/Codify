@@ -174,9 +174,9 @@ const LessonOverview = () => {
               details={{
                 language: currentCourse?.language,
                 //
-                students: currentCourse?.studentEnrolled
-                  ? `${currentCourse?.studentEnrolled.length} student${
-                      currentCourse?.studentEnrolled.length === 1 ? "" : "s"
+                students: currentCourse?.studentCount
+                  ? `${currentCourse.studentCount} student${
+                      currentCourse.studentCount === 1 ? "" : "s"
                     }`
                   : "0 students",
                 instructor: professor
