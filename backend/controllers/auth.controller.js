@@ -1,8 +1,16 @@
 import { Institution } from "../models/institution.model.js";
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import admin from "../utils/firebaseAdmin.js"
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
+import {
+    sendVerificationEmail,
+    sendWelcomeEmail,
+    sendPasswordResetEmail,
+    sendResetSuccessEmail
+} from "../mailtrap/emails.js";
+import axios from 'axios';
+
 
 
 
@@ -13,6 +21,8 @@ export const registerInstitution = async (req, res) => {
         institutionName, 
         name,
         password,
+        address,
+        phoneNumber,
         subscription, 
         plan,
         paymentMethod,
@@ -21,19 +31,29 @@ export const registerInstitution = async (req, res) => {
 
     try {
         // Validate the data
-        if (!email || !institutionName || !name || !password || !subscription || !plan || !paymentMethod || !amount) {
+        if (!email || !institutionName || !name || !password || !subscription || !plan || !paymentMethod || !amount || !address || !phoneNumber) {
             throw new Error("All fields are required");
         }
 
-        const institutionAlreadyExists = await Institution.findOne({ email });
-
-        if (institutionAlreadyExists) {
-            return res.status(400).json({
-                success: false,
-                message: "Institution already exists"
-            });
+        // Check for duplicate email
+        const emailAlreadyExists = await Institution.findOne({ email });
+        if (emailAlreadyExists) {
+        return res.status(400).json({
+            success: false,
+            message: "An institution with this email already exists",
+        });
         }
 
+        // Check for duplicate institution name
+        const institutionNameExists = await Institution.findOne({ institutionName });
+        if (institutionNameExists) {
+        return res.status(400).json({
+            success: false,
+            message: "An institution with this name already exists",
+        });
+        }
+
+        
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -45,11 +65,13 @@ export const registerInstitution = async (req, res) => {
         // Step 2: Create and save the Institution with the subscription reference
         const newInstitution = new Institution({
             email,
-            institution_name: institutionName, 
+            institutionName, 
             name,
             password: hashedPassword,
+            address,
+            phoneNumber,
             verificationToken,
-            verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+            verificationTokenExpiresAt: Date.now() + (60 * 1000), // 1 minute
             subscription,
             plan,
             paymentMethod,
@@ -96,7 +118,7 @@ export const verifyEmail = async (req, res) => {
             console.log("Invalid or expired verification code");
             return res.status(400).json({
                 success: false,
-                message: "Invalid or expired verification code"
+                message: "Invalid or expired verification code. Please request a new one."
             })
         }
 
@@ -106,8 +128,7 @@ export const verifyEmail = async (req, res) => {
         institution.verificationTokenExpiresAt = undefined;
         await institution.save();
 
-        await sendWelcomeEmail(institution.email, institution.name);
-        console.log("Welcome Email Sent")   
+        
 
         res.status(200).json({
             success: true,
@@ -123,6 +144,44 @@ export const verifyEmail = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error verifying email"
+        })
+    }
+}
+
+export const resendVerificationCode = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const institution = await Institution.findOne({ email });
+
+        if (!institution) {
+            return res.status(400).json({
+                success: false,
+                messsage: "Institution not found"
+            })
+        }
+
+        // Generate new verification code
+
+        const newVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+        institution.verificationToken = newVerificationToken;
+        institution.verificationTokenExpiresAt = Date.now() + (60 * 1000); // 1 minute
+
+        await institution.save();
+
+        // Send new verification email
+
+        await sendVerificationEmail(institution.email, newVerificationToken)
+
+        res.status(200).json({
+            success: true,
+            message: "New verification code sent"
+        })
+    } catch (error) {
+        console.log("Error resending verification code: ", error)
+        res.status(500).json({
+            success: false,
+            message: "Error resending verification code",
         })
     }
 }
@@ -184,7 +243,7 @@ export const forgotPassword = async ( req, res) => {
         if (!institution) {
             return res.status(400).json({
                 success: false,
-                message: "Institution not found"
+                message: "Please provide an valid email"
             })
         }
 
@@ -200,7 +259,7 @@ export const forgotPassword = async ( req, res) => {
 
         // send reset password email
 
-        await sendPasswordResetEmail(institution.email,  `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+        await sendPasswordResetEmail(institution.email,  `${process.env.CLIENT_URL}/admin/reset-password/${resetToken}`);
 
         res.status(200).json({
             success: true,
@@ -275,7 +334,9 @@ export const checkAuth = async (req, res) => {
         success: true,
         institution
     })
-}   
+}
+
+
 
 export const logoutInstitution = async (req, res) => {
     res.clearCookie("token")
@@ -284,3 +345,129 @@ export const logoutInstitution = async (req, res) => {
         message: "Logged out successfully"
     })
 }
+
+
+export const googleLogin = async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        // Verify Firebase ID Token
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const email = decodedToken.email;
+
+        let institution = await Institution.findOne({ email });
+
+        if (!institution) {
+            return res.status(400).json({ success: false, message: "No registered institution found with this email" });
+        }
+
+        generateTokenAndSetCookie(res, institution._id);
+
+        res.status(200).json({ success: true, institution });
+    } catch (error) {
+        console.error("Error verifying Firebase token", error);
+        res.status(401).json({ success: false, message: "Invalid Google token" });
+    }
+};
+
+const PAYMONGO_API_URL = 'https://api.paymongo.com/v1/checkout_sessions';
+const PAYMONGO_AUTH = Buffer.from(`${process.env.PAYMONGO_SECRET_KEY}:`).toString('base64');
+
+export const initiatePayment = async (req, res) => {
+  const { institutionId } = req.body;
+
+  try {
+    const institution = await Institution.findById(institutionId);
+    if (!institution) {
+      return res.status(404).json({ success: false, message: "Institution not found" });
+    }
+
+    const totalAmount = Math.max(institution.amount * 100, 10000); // Convert to cents
+
+    const checkoutData = {
+      data: {
+        attributes: {
+          line_items: [
+            {
+              currency: "PHP",
+              amount: totalAmount,
+              name: `Subscription for ${institution.institutionName}`,
+              quantity: 1,
+            },
+          ],
+          payment_method_types: ["card"],
+          success_url: `${process.env.CLIENT_URL}/admin/payment-success`, // No token
+          cancel_url: `${process.env.CLIENT_URL}/admin/payment-summary`,
+          description: `Subscription payment for ${institution.institutionName}`,
+        },
+      },
+    };
+
+    const response = await axios.post(PAYMONGO_API_URL, checkoutData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Basic ${PAYMONGO_AUTH}`,
+      },
+    });
+
+    institution.checkoutSessionId = response.data.data.id; // Still useful for reference
+    await institution.save();
+
+    console.log('Checkout URL:', response.data.data.attributes.checkout_url);
+    res.status(200).json({
+      success: true,
+      checkoutUrl: response.data.data.attributes.checkout_url,
+    });
+  } catch (error) {
+    console.error('Error creating checkout session:', error.response?.data || error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Checkout session creation failed',
+      error: error.message,
+    });
+  }
+};
+
+export const markAsPaid = async (req, res) => {
+  const { institutionId } = req.body; // No successToken
+  console.log('Mark as paid called with institutionId:', institutionId);
+
+  try {
+    const institution = await Institution.findById(institutionId);
+    if (!institution) {
+      console.log('Institution not found');
+      return res.status(404).json({ success: false, message: "Institution not found" });
+    }
+
+    // No token validation anymore
+    console.log('Marking institution as paid:', institutionId);
+
+    institution.isPaid = true;
+    institution.billingExpiration = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year
+    institution.checkoutSessionId = undefined; // Clear optional field
+    await institution.save();
+
+    console.log('Payment marked as successful for institution:', institutionId);
+
+    try {
+      await sendWelcomeEmail(institution.email, institution.name);
+    } catch (emailError) {
+      console.error('Error sending welcome email:', emailError.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Payment successful! Subscription activated.",
+      institution,
+    });
+  } catch (error) {
+    console.error('Error marking as paid:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error marking as paid',
+      error: error.message,
+    });
+  }
+};
+

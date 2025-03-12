@@ -8,7 +8,7 @@ const institutionSchema = new mongoose.Schema({
         trim: true,
         lowercase: true
     },
-    institution_name: {
+    institutionName: {
         type: String,
         required: true,
         trim: true
@@ -21,6 +21,18 @@ const institutionSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    phoneNumber: {
+        type: Number,
+        required: true
+    },
+    role: {
+        type: String,
+        default: "admin"
     },
     lastLogin: {
         type: Date,
@@ -54,7 +66,14 @@ const institutionSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-
+    paymentSourceId: {
+        type: String,
+        default: null
+    },
+    checkoutSessionId: {
+        type: String,
+        default: null
+    },
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
     verificationToken: String,
@@ -62,35 +81,7 @@ const institutionSchema = new mongoose.Schema({
 
 }, {timestamps: true});
 
-// const subscriptionSchema = new mongoose.Schema({
-//     institution: {
-//         type: mongoose.Schema.Types.ObjectId, 
-//         ref: 'Institution',
-//         required: true
-//     },
-//     plan: {
-//         type: String,
-//         default: "Premium"
-//     },
-//     paymentMethod: {
-//         type: String,
-//         default: "credit_card"
-//     },
-//     amount: {
-//         type: Number,
-//         default: 24.99
-//     },
-//     billingExpiration: {
-//         type: Date, 
-//         default: Date.now
-//     },
-//     isPaid: {
-//         type: Boolean,
-//         default: false
-//     },
-// })
+
 
 
 export const Institution = mongoose.model('Institution', institutionSchema);
-// export const Subscription = mongoose.model('Subscription', subscriptionSchema);
-// export const Invoice = mongoose.model('Invoice', invoiceSchema);
