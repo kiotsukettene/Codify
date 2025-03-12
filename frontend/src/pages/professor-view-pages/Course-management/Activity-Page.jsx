@@ -64,18 +64,7 @@ const ActivityPage = () => {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1">
-        <SidebarInset className="flex-1 !p-0">
-          <header className="flex h-16 items-center px-4">
-            <SidebarTrigger
-              className="-ml-1"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mx-2 h-4" />
-          </header>
-
+    
           <div className="w-full px-10">
             {/* Header */}
             <div className="flex items-center justify-between gap-3 mb-6">
@@ -155,9 +144,7 @@ const ActivityPage = () => {
               </div>
             )}
           </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+
   );
 };
 

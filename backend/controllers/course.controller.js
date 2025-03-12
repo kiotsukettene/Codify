@@ -79,7 +79,6 @@ export const getCoursesByProfessor = async (req, res) => {
 };
 
 export const getCourseById = async (req, res) => {
-  c;
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId).populate({

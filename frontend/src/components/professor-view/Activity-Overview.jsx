@@ -207,7 +207,6 @@ const ActivityOverview = ({
           </DropdownMenu>
         </div>
       </div>
-
       {/* File Preview Section */}
       {/* <motion.div
         initial={{ opacity: 0 }}
@@ -296,7 +295,6 @@ const ActivityOverview = ({
           </div>
         </motion.div>
       )}
-
       {/* Instructions */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -317,9 +315,8 @@ const ActivityOverview = ({
           ))}
         </ol>
       </motion.div>
-
-      {/* Example Output */}
-      <motion.div
+      s{/* Example Output */}
+      {/* <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
@@ -328,8 +325,7 @@ const ActivityOverview = ({
         <pre className="font-mono text-sm whitespace-pre-line bg-gray-100 p-4 rounded-md overflow-x-auto">
           {exampleOutput}
         </pre>
-      </motion.div>
-
+      </motion.div> */}
       {/* Update Due Date Modal */}
       <UpdateDueDate
         isOpen={isModalOpen}

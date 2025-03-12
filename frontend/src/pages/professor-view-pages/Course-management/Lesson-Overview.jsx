@@ -31,105 +31,48 @@ import { useCourseStore } from "@/store/courseStore";
 const studentList = [
   {
     id: 1,
-    name: "Antang, Irheil Mae S.",
+    name: "Student",
     avatar: "/placeholder.svg?height=40&width=40",
     crown: "gold",
     studentNo: "20221183-N",
-    email: "ayrelmay@gmail.com",
-    grade: 100,
-  },
-  {
-    id: 2,
-    name: "Bae, Cathy C.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    name: "Canada, Nana S.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    name: "Elton, Monica D.",
-    avatar: "/placeholder.svg?height=40&width=40",
-    crown: "gold",
-  },
-  {
-    id: 5,
-    name: "Faranas, Paul O.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 6,
-    name: "Gulo, Monica S.",
-    avatar: "/placeholder.svg?height=40&width=40",
-    crown: "silver",
+    email: "none",
+    grade: 0,
   },
 ];
 
 const metrics = [
   {
     title: "Class Performance",
-    value: "90%",
+    value: "0%",
     subtitle: "Average Score",
   },
   {
     title: "Completion Rate",
-    value: "80%",
+    value: "0%",
     subtitle: "Activities Completed",
   },
   {
     title: "Active Students",
-    value: "38/40",
+    value: "0",
     subtitle: "Currently Active",
   },
   {
     title: "Top Performers",
-    value: "6",
-    subtitle: "Above 15%",
+    value: "0",
+    subtitle: "Display Performance",
   },
 ];
 
 const students = [
   {
-    name: "Antang, Irheil Mae S.",
+    name: "Student 1",
     avatar: "/placeholder.svg?height=40&width=40",
-    initials: "IA",
-    rank: 1,
-    activities: 15,
+    initials: "S",
+    rank: 0,
+    activities: 0,
     incomplete: 0,
-    totalScore: 1500,
+    totalScore: 0,
     hasMedal: true,
-  },
-  {
-    name: "Antang, Paul Cyrus S.",
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "PA",
-    rank: 2,
-    activities: 15,
-    incomplete: 1,
-    totalScore: 1400,
-    hasMedal: true,
-  },
-  {
-    name: "Sison, Razel Mae",
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "SR",
-    rank: 3,
-    activities: 15,
-    incomplete: 2,
-    totalScore: 1300,
-    hasMedal: true,
-  },
-  {
-    name: "Abelong, Eugene",
-    avatar: "/placeholder.svg?height=40&width=40",
-    initials: "AE",
-    rank: 4,
-    activities: 15,
-    incomplete: 3,
-    totalScore: 1200,
-    hasMedal: false,
   },
 ];
 
@@ -193,162 +136,138 @@ const LessonOverview = () => {
   }, [courseId, fetchActivitiesByCourse]);
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <motion.div
-        className="flex flex-1"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <SidebarInset className="flex-1 !p-0">
-          <header className="flex h-16 items-center px-4">
-            <SidebarTrigger
-              className="-ml-1"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mx-2 h-4" />
-          </header>
+    
+    <div className="p-2 sm:p-8 pt-2 space-y-4 sm:space-y-6 w-full">
+    <Breadcrumb className="mb-4">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/professor/course">Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>Lesson</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
 
-          {/* MAIN CONTENT */}
+    <CourseHeader
+      title={currentCourse?.className || "Loading..."}
+      description={currentCourse?.program}
+      details={{
+        language: currentCourse?.language,
+        //
+        students: currentCourse?.studentCount
+          ? `${currentCourse.studentCount} student${
+              currentCourse.studentCount === 1 ? "" : "s"
+            }`
+          : "0 students",
+        instructor: professor
+          ? `${professor.firstName} ${professor.lastName}`
+          : "Unknown Instructor", // Fetch from local storage
+        schedule: currentCourse?.schedule
+          ? `${currentCourse?.schedule.day}, ${currentCourse?.schedule.time}`
+          : "No schedule available",
+        courseCode: currentCourse?.courseCode,
+        section: currentCourse?.section,
 
-          <div className="p-2 sm:p-8 pt-2 space-y-4 sm:space-y-6">
-            <Breadcrumb className="mb-4">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/professor/course">Home</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Lesson</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+      }}
+    />
 
-            <CourseHeader
-              title={currentCourse?.className || "Loading..."}
-              description={currentCourse?.program}
-              details={{
-                language: currentCourse?.language,
-                //
-                students: currentCourse?.studentEnrolled
-                  ? `${currentCourse?.studentEnrolled.length} student${
-                      currentCourse?.studentEnrolled.length === 1 ? "" : "s"
-                    }`
-                  : "0 students",
-                instructor: professor
-                  ? `${professor.firstName} ${professor.lastName}`
-                  : "Unknown Instructor", // Fetch from local storage
-                schedule: currentCourse?.schedule
-                  ? `${currentCourse?.schedule.day}, ${currentCourse?.schedule.time}`
-                  : "No schedule available",
-                courseCode: currentCourse?.courseCode,
-                section: currentCourse?.section,
-                schedule: currentCourse?.schedule
-                  ? `${currentCourse?.schedule.day}, ${currentCourse?.schedule.time}`
-                  : "No schedule available",
-                courseCode: currentCourse?.courseCode,
-                section: currentCourse?.section,
-              }}
-            />
+    <div className="w-full">
+      {/* Enhanced Tabs */}
+      <div className="border-b mb-6 overflow-x-auto">
+        <div className="flex gap-1 sm:gap-2 min-w-[600px]">
+          {tabs.map((tab) => (
+            <motion.button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors relative
+      ${
+        activeTab === tab.id
+          ? "bg-violet-100 text-violet-600"
+          : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"
+      }`}
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+            >
+              {activeTab === tab.id && (
+                <motion.divc
+                  className="absolute inset-0 bg-violet-100 rounded-t-lg -z-10"
+                  layoutId="activeTab"
+                  transition={{ type: "spring", bounce: 0.2 }}
+                />
+              )}
+              {React.cloneElement(tab.icon, {
+                className: "w-3 h-3 sm:w-4 sm:h-4",
+              })}
+              {tab.label}
+              {activeTab === tab.id && (
+                <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
+              )}
+            </motion.button>
+          ))}
+        </div>
+      </div>
 
-            <div className="w-full">
-              {/* Enhanced Tabs */}
-              <div className="border-b mb-6 overflow-x-auto">
-                <div className="flex gap-1 sm:gap-2 min-w-[600px]">
-                  {tabs.map((tab) => (
-                    <motion.button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors relative
-              ${
-                activeTab === tab.id
-                  ? "bg-violet-100 text-violet-600"
-                  : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"
-              }`}
-                      whileHover={{ y: -2 }}
-                      whileTap={{ y: 0 }}
+      <div>
+        {/* Animated Tab Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === "overview" && (
+              <OverviewTab lessons={lessons || []} course={course} />
+            )}
+
+            {activeTab === "activities" && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key="activities"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {activities.map((activity, index) => (
+                    <motion.div
+                      key={activity._id || index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="grid gap-4"
                     >
-                      {activeTab === tab.id && (
-                        <motion.divc
-                          className="absolute inset-0 bg-violet-100 rounded-t-lg -z-10"
-                          layoutId="activeTab"
-                          transition={{ type: "spring", bounce: 0.2 }}
-                        />
-                      )}
-                      {React.cloneElement(tab.icon, {
-                        className: "w-3 h-3 sm:w-4 sm:h-4",
-                      })}
-                      {tab.label}
-                      {activeTab === tab.id && (
-                        <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                {/* Animated Tab Content */}
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {activeTab === "overview" && (
-                      <OverviewTab lessons={lessons || []} course={course} />
-                    )}
-
-                    {activeTab === "activities" && (
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key="activities"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          {activities.map((activity, index) => (
-                            <motion.div
-                              key={activity._id || index}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="grid gap-4"
-                            >
-                              <ActivityTab
-                                index={index + 1}
-                                activity={activity}
-                                courseId={courseSlug}
-                                lessonIds={lessonSlug}
-                              />
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      </AnimatePresence>
-                    )}
-
-                    {activeTab === "scores" && (
-                      <ScoreTab metrics={metrics} students={students} />
-                    )}
-
-                    {activeTab === "students" && (
-                      <StudentTab
-                        studentList={studentList}
-                        activities={activities}
+                      <ActivityTab
+                        index={index + 1}
+                        activity={activity}
+                        courseId={courseSlug}
+                        lessonIds={lessonSlug}
                       />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </SidebarInset>
-      </motion.div>
-    </SidebarProvider>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            )}
+
+            {activeTab === "scores" && (
+              <ScoreTab metrics={metrics} students={students} />
+            )}
+
+            {activeTab === "students" && (
+              <StudentTab
+                studentList={studentList}
+                activities={activities}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  </div>
+ 
   );
 };
 

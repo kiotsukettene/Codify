@@ -236,7 +236,7 @@ const CreateLesson = () => {
     try {
       await createLesson(lessonData);
       toast.success("Lesson created successfully!");
-      navigate(`/professor/course/${courseSlug}/lesson/${createLesson.slug}`); // Redirect to the lessons page for the course
+      navigate(`/professor/course/${courseSlug}`); // Redirect to the lessons page for the course
     } catch (error) {
       console.error("Error creating lesson:", error);
       toast.error("Error creating lesson!");

@@ -90,6 +90,33 @@ export const logoutProfessor = async (req, res) => {
   }
 };
 
+export const getProfessorById = async (req, res) => {
+  // Get the professorId from the URL parameters
+  const { professorId } = req.params;
+  console.log("Professor ID:", professorId);
+
+  try {
+    const professor = await Professor.findById(professorId);
+
+    if (!professor) {
+      return res.status(404).json({ message: "Professor not found" });
+    }
+
+    console.log("Number of Courses:", professor.courseCount);
+
+    res.status(200).json({
+      professor,
+      courseCount: professor.courseCount,
+    });
+  } catch (error) {
+    console.error("Error fetching professor:", error);
+    res.status(500).json({
+      message: "Error fetching professor",
+      error: error.message,
+    });
+  }
+};
+
 
 
 export const checkAuthProfessor = async (req, res) => {

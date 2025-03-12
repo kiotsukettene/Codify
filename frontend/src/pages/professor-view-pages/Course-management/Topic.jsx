@@ -161,19 +161,8 @@ const Topic = () => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1">
-        <SidebarInset className="flex-1 !p-0">
-          <header className="flex h-16 items-center px-4">
-            <SidebarTrigger
-              className="-ml-1"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mx-2 h-4" />
-          </header>
-
-          <div className="container mx-auto p-6 grid grid-cols-12 gap-6">
+    
+          <div className="container mx-auto p-4 grid grid-cols-12 gap-6">
             {/* Main Content */}
             <div className="col-span-12 lg:col-span-8 space-y-4">
               <div className="flex items-center gap-x-4">
@@ -395,9 +384,7 @@ const Topic = () => {
               </DialogContent>
             </Dialog>
           </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+      
   );
 };
 

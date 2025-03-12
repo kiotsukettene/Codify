@@ -24,12 +24,17 @@ const CourseSchema = new mongoose.Schema(
       default: generateCourseCode, // Generate course code on creation
     },
     slug: { type: String, unique: true, required: true },
-    studentsEnrolled: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
-    ],
+    studentsEnrolled: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
+      default: [],
+    },
   },
   { timestamps: true }
 );
+
+CourseSchema.virtual("studentCount").get(function () {
+  return this.studentsEnrolled.length;
+});
 
 // Define a virtual field to count lessons related to this course
 CourseSchema.virtual("lessonCount", {
