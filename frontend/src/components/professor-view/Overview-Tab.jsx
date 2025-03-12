@@ -21,12 +21,18 @@ import { useActivityStore } from "../../store/activityStore";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
-  const { courseId } = useParams();
+  const { courseSlug, lessonSlug } = useParams();
   const { fetchLessonById, deleteLesson } = useLessonStore();
   const { fetchActivitiesByLesson, activities } = useActivityStore();
   const [openLesson, setOpenLesson] = useState(null); // ✅ Track open lesson ID
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
+
+  const getLessonIdFromSlug = (slug) => {
+    if (!lessons || lessons.length === 0) return null;
+    const matchedLesson = lessons.find((l) => l.slug === slug);
+    return matchedLesson ? matchedLesson._id : null;
+  };
 
   const handleToggleLesson = async (lessonId) => {
     if (openLesson === lessonId) {
@@ -54,17 +60,17 @@ const OverviewTab = ({ lessons = [] }) => {
   };
 
   const handleLessonClick = async (lesson) => {
-    if (!lesson || !lesson._id) {
-      console.error("Error: Lesson ID is undefined", lesson);
+    if (!lesson || !lesson.slug) {
+      console.error("Error: Lesson slug is undefined", lesson);
       return;
     }
 
     try {
-      // Fetch the lesson details
-      await fetchLessonById(lesson._id);
+      // Optionally fetch lesson details by ID if needed:
+      // await fetchLessonById(lesson._id);
 
-      // Navigate with lesson details in the state
-      navigate(`/professor/course/${courseId}/lesson/${lesson._id}`, {
+      // Navigate using the courseSlug from useParams
+      navigate(`/professor/course/${courseSlug}/lesson/${lesson.slug}`, {
         state: { lesson },
       });
     } catch (error) {
@@ -72,26 +78,29 @@ const OverviewTab = ({ lessons = [] }) => {
     }
   };
 
-  const handleActivityClick = async (activity) => {
-    if (!activity || !activity._id || !activity.lessonId) {
-      console.error("Error: Activity or Lesson ID is undefined", activity);
+  const handleActivityClick = async (activity, lesson) => {
+    if (!lesson?.slug) {
+      console.error("No lesson slug available");
+      return;
+    }
+    if (!activity?.slug) {
+      console.error("No activity slug available");
       return;
     }
 
-    try {
-      // Fetch activities related to the lesson using Zustand store function
-      await fetchActivitiesByLesson(activity.lessonId);
-
-      // Navigate with activity details in the state
-      navigate(
-        `/professor/course/${courseId}/lesson/${activity.lessonId}/activity/${activity._id}`,
-        {
-          state: { activity },
-        }
-      );
-    } catch (error) {
-      console.error("Error fetching activity details", error);
+    // Convert lesson slug → ID if needed
+    const lessonId = getLessonIdFromSlug(lesson.slug);
+    if (!lessonId) {
+      console.error("No matching lesson for slug:", lesson.slug);
+      return;
     }
+
+    await fetchActivitiesByLesson(lessonId);
+
+    navigate(
+      `/professor/course/${courseSlug}/lesson/${lesson.slug}/activity/${activity.slug}`,
+      { state: { activity } }
+    );
   };
 
   return (
@@ -100,7 +109,7 @@ const OverviewTab = ({ lessons = [] }) => {
         <h2 className="text-xl font-semibold mb-4">Lessons</h2>
         <Button
           onClick={() =>
-            navigate(`/professor/course/${courseId}/create-lesson`)
+            navigate(`/professor/course/${courseSlug}/create-lesson`)
           }
         >
           Create Lesson
@@ -204,7 +213,7 @@ const OverviewTab = ({ lessons = [] }) => {
                     <div
                       key={index}
                       className="group flex items-center gap-2 text-violet-600 hover:underline hover:text-violet-700 transition-all duration-200"
-                      onClick={() => handleActivityClick(activity)}
+                      onClick={() => handleActivityClick(activity, lesson)}
                     >
                       <ScrollText className="h-4 w-4 text-violet-600 transition-all duration-200 group-hover:scale-110" />
                       <span className="font-medium">

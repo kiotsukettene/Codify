@@ -57,28 +57,36 @@ const comments = [
 const Topic = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeSection, setActiveSection] = useState(null); // ✅ Move it up before any return
+  const [activeSection, setActiveSection] = useState(null);
   const [activeTopic, setActiveTopic] = useState(null);
-
-  const { courseId, lessonId } = useParams();
-  const navigate = useNavigate();
-  const { fetchLessonById, lesson, isLoading, error } = useLessonStore();
-  const { fetchActivitiesByLesson, activities } = useActivityStore();
   const [sections, setSections] = useState([]);
 
+  const { courseSlug, lessonSlug } = useParams();
+  const navigate = useNavigate();
+  const { lessons, lesson, fetchLessonById, isLoading, error } =
+    useLessonStore();
+  const { fetchActivitiesByLesson, activities } = useActivityStore();
+
   useEffect(() => {
-    if (lessonId) {
-      fetchLessonById(lessonId);
-      fetchActivitiesByLesson(lessonId);
+    if (lessonSlug && lessons.length > 0) {
+      const matchedLesson = lessons.find((l) => l.slug === lessonSlug);
+
+      if (matchedLesson) {
+        // 3. Fetch by ID instead of slug
+        fetchLessonById(matchedLesson._id);
+        fetchActivitiesByLesson(matchedLesson._id);
+      } else {
+        console.error("No lesson found for slug:", lessonSlug);
+      }
     }
-  }, [lessonId, fetchLessonById, fetchActivitiesByLesson]);
+  }, [lessonSlug, lessons, fetchLessonById, fetchActivitiesByLesson]);
 
   useEffect(() => {
     if (lesson?.sections) {
       setSections(
         lesson.sections.map((section) => ({
           ...section,
-          id: section._id, // ✅ Ensures sections have an `id` field
+          id: section._id,
         }))
       );
     }
@@ -92,13 +100,13 @@ const Topic = () => {
 
   //scroll
   const handleScroll = () => {
-    let currentSection = topics[0].id;
-    lesson.forEach((topic) => {
+    let currentSection = lesson[0].id;
+    lesson.forEach((lesson) => {
       const section = document.getElementById(lesson.id);
       if (section) {
         const rect = section.getBoundingClientRect();
         if (rect.top >= 0 && rect.top <= window.innerHeight / 3) {
-          currentSection = topic.id;
+          currentSection = lesson.id;
         }
       }
     });
@@ -112,13 +120,13 @@ const Topic = () => {
     };
   }, []);
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setActiveTopic(sectionId);
-    }
-  };
+  // const scrollToSection = (sectionId) => {
+  //   const element = document.getElementById(sectionId);
+  //   if (element) {
+  //     element.scrollIntoView({ behavior: "smooth" });
+  //     setActiveTopic(sectionId);
+  //   }
+  // };
 
   // ✅ Ensure hooks always execute before any return statement
   if (isLoading || !lesson) {
@@ -132,15 +140,22 @@ const Topic = () => {
   }
 
   const handleNavigateToActivity = async () => {
+    // Use the lesson's _id from the fetched lesson
+    const lessonId = lesson?._id;
+    if (!lessonId) {
+      console.error("Lesson ID is not available");
+      return;
+    }
+
     await fetchActivitiesByLesson(lessonId);
 
     if (activities.length > 0) {
       navigate(
-        `/professor/course/${courseId}/lesson/${lessonId}/activity/${activities[0]._id}`
+        `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activities[0].slug}`
       );
     } else {
       navigate(
-        `/professor/course/${courseId}/lesson/${lessonId}/create-activity`
+        `/professor/course/${courseSlug}/lesson/${lessonSlug}/create-activity`
       );
     }
   };
@@ -165,7 +180,7 @@ const Topic = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate(`/professor/course/${courseSlug}`)}
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>

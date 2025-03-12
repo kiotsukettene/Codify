@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bold,
   Code2,
@@ -42,10 +42,12 @@ import {
 import { useLessonStore } from "@/store/lessonStore"; // Import lesson store
 import { useParams, useNavigate } from "react-router-dom"; // For getting courseId & navigation
 import toast from "react-hot-toast"; // For notifications
+import { useCourseStore } from "@/store/courseStore"; // Import course store
 
 const CreateLesson = () => {
-  const { createLesson, isLoading } = useLessonStore(); // Get function from store
-  const { courseId } = useParams(); // Get courseId from URL
+  const { createLesson } = useLessonStore(); // Get function from store
+  const { courses, fetchCoursesByProfessor } = useCourseStore(); // Get courses from store
+  const { courseSlug } = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -149,50 +151,83 @@ const CreateLesson = () => {
   //     toast.error("Error creating lesson!");
   //   }
   // };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("submit");
-
-    if (!courseId || !title) {
-      toast.error("Course ID and Title are required!");
-      return;
+  useEffect(() => {
+    if (courses.length === 0) {
+      fetchCoursesByProfessor(); // or whatever fetch function you have
     }
+  }, [courses, fetchCoursesByProfessor]);
+  const getCourseIdFromSlug = (slug) => {
+    if (!courses || courses.length === 0) return null;
+    console.log("Courses array in store:", courses);
 
-    // Properly group sections based on their subTitle
-    const groupedSections = sections.reduce((acc, section) => {
-      // Find an existing section with the same subTitle
-      let existingSection = acc.find(
-        (s) => s.subTitle === (section.subheader || "Untitled Section")
-      );
+    const matchedCourse = courses.find((c) => c.slug === slug);
+    return matchedCourse ? matchedCourse._id : null;
+  };
 
-      if (!existingSection) {
-        // If no existing section found, create a new one
-        existingSection = {
-          subTitle: section.subheader || "Untitled Section",
+  function groupSections(sections = []) {
+    const groupedSections = [];
+    let currentSection = null;
+
+    sections.forEach((item) => {
+      // If there's a new subheader, start a new section.
+      if (item.subheader) {
+        currentSection = {
+          subTitle: item.subheader,
           description: "",
           codeSnippets: [],
           notes: [],
         };
-        acc.push(existingSection);
+        groupedSections.push(currentSection);
       }
 
-      // Assign content to the correct fields
-      if (section.type === "description") {
-        existingSection.description = section.content;
-      } else if (section.type === "code") {
-        existingSection.codeSnippets.push(section.content);
-      } else if (section.type === "note") {
-        existingSection.notes.push(section.content);
+      // If no subheader is provided and we have not created a section yet,
+      // do nothing (or handle however you prefer).
+      if (!currentSection) {
+        return;
       }
 
-      return acc;
-    }, []);
+      // Add content to the current (last) section.
+      switch (item.type) {
+        case "description":
+          currentSection.description = item.content;
+          break;
+        case "code":
+          currentSection.codeSnippets.push(item.content);
+          break;
+        case "note":
+          currentSection.notes.push(item.content);
+          break;
+        default:
+          break;
+      }
+    });
 
+    return groupedSections;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Courses array in store:", courses);
+
+    // Convert courseSlug to courseId
+    const courseId = getCourseIdFromSlug(courseSlug);
+    if (!courseId) {
+      toast.error("No course found for that slug!");
+      return;
+    }
+    if (!title) {
+      toast.error("Title is required!");
+      return;
+    }
+
+    // Group sections based on subheader
+    const groupedSections = groupSections(sections);
+
+    // Build your lesson payload (adjust the field names as per your Lesson schema)
     const lessonData = {
       courseId,
       title,
-      subTitle: subtitle || "", // Store the lesson-wide subtitle
+      subTitle: subtitle, // optional, if you have a subtitle for the lesson
       sections: groupedSections,
     };
 
@@ -201,7 +236,7 @@ const CreateLesson = () => {
     try {
       await createLesson(lessonData);
       toast.success("Lesson created successfully!");
-      navigate(`/professor/course/${courseId}`); // Redirect to lessons page
+      navigate(`/professor/course/${courseSlug}/lesson/${createLesson.slug}`); // Redirect to the lessons page for the course
     } catch (error) {
       console.error("Error creating lesson:", error);
       toast.error("Error creating lesson!");

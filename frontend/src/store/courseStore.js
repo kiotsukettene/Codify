@@ -15,12 +15,7 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const professor = JSON.parse(localStorage.getItem("professor"));
-      const professorId = professor ? professor._id : null; // Get ID from local storage
-      if (!professorId)
-        throw new Error("Professor ID not found in local storage");
-
-      const response = await axios.get(`${API_URL}/${professorId}`);
+      const response = await axios.get(`${API_URL}/courses`);
       set({ courses: response.data, isLoading: false });
     } catch (error) {
       set({

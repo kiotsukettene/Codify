@@ -1,6 +1,7 @@
 import Activity from "../models/activity.model.js";
 import Lesson from "../models/lesson.model.js";
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 export const createActivity = async (req, res) => {
   try {
@@ -14,15 +15,19 @@ export const createActivity = async (req, res) => {
       return res.status(404).json({ message: "Lesson not found" });
     }
 
+    const slug = slugify(title, { lower: true, strict: true });
+
+    console.log("Received data:", req.body);
     // ✅ Create a new activity
     const activity = new Activity({
       lessonId,
       title,
       subTitle,
       instructions,
-      dueDate,
       points,
       file,
+      slug,
+      dueDate: dueDate && dueDate !== "null" ? new Date(dueDate) : undefined,
     });
 
     // ✅ Save the activity to the database

@@ -1,61 +1,85 @@
 import Course from "../models/course.model.js";
 import { generateCourseCode } from "../utils/generateCourseCode.js";
-import { Professor } from "../models/professor.model.js";
+import slugify from "slugify";
 
 export const createCourse = async (req, res) => {
   try {
-    const { professorId, className, program, section, language, schedule } =
+    // Destructure only the course data from the request body
+    const { className, description, program, section, language, schedule } =
       req.body;
+
+    // Get professorId from the token attached by the middleware
+    const professorId = req.professorId;
 
     // Generate a unique course code
     let courseCode;
     let isUnique = false;
-
-    // Ensure courseCode is unique in the database
     while (!isUnique) {
       courseCode = generateCourseCode();
       const existingCourse = await Course.findOne({ courseCode });
-      if (!existingCourse) isUnique = true; // Only break loop if the code is unique
+      if (!existingCourse) isUnique = true;
     }
 
+    const slug = slugify(className, { lower: true, strict: true });
+
+    // Create new course with professorId from the token
     const course = new Course({
       professorId,
       className,
+      description,
       program,
       section,
       language,
       schedule,
-      courseCode, // ✅ Add generated course code
+      courseCode,
+      slug,
     });
 
     await course.save();
 
     res.status(201).json({
       message: "Course created successfully!",
-      courseCode: course.courseCode, // Send generated course code
+      courseCode: course.courseCode,
       course,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating course", error: error.message });
+    res.status(500).json({
+      message: "Error creating course",
+      error: error.message,
+    });
   }
 };
 
+// export const getCoursesByProfessor = async (req, res) => {
+//   try {
+//     const { professorId } = req.params;
+//     const courses = await Course.find({ professorId });
+
+//     res.status(200).json(courses);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error fetching courses", error: error.message });
+//   }
+// };
+
 export const getCoursesByProfessor = async (req, res) => {
   try {
-    const { professorId } = req.params;
-    const courses = await Course.find({ professorId });
+    // Use professorId from the token (attached to req by profVerifyToken middleware)
+    const professorId = req.professorId;
+    const courses = await Course.find({ professorId }).populate("lessonCount");
 
     res.status(200).json(courses);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching courses", error: error.message });
+    res.status(500).json({
+      message: "Error fetching courses",
+      error: error.message,
+    });
   }
 };
 
 export const getCourseById = async (req, res) => {
+  c;
   try {
     const { courseId } = req.params;
     const course = await Course.findById(courseId).populate({

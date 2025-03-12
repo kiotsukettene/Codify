@@ -76,17 +76,19 @@ import { useStudentStore }  from "@/store/studentStore";
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
   const { checkStudentAuth, isCheckingStudentAuth } = useStudentStore();
+  const { checkProfAuth, isCheckingProfAuth } = useprofAuthStore();
 
   useEffect(() => {
     checkAuth();
     checkStudentAuth();
+    checkProfAuth();
   }, []);
 
-  if (isCheckingAuth || isCheckingStudentAuth) return <LoadingSpinner />;
+  if (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth) return <LoadingSpinner />;
   return (
     <div>
       <Routes>
-        <Route path="/professor/courses" element={<LessonOverview />} />
+        {/* <Route path="/professor/courses" element={<LessonOverview />} /> */}
 
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
@@ -96,6 +98,9 @@ function App() {
           {/* Admin Registration & Authentication */}
           <Route path="/admin/register" element={<RedirectAuthenticatedInstitution><AdminRegisterPage /></RedirectAuthenticatedInstitution>} />
           <Route path="/admin/login" element={<RedirectAuthenticatedInstitution><AdminLogin /></RedirectAuthenticatedInstitution>} />
+          <Route path="/admin/email-verify" element={<ProtectedRouteInstitution><AdminEmailVerificationPage /></ProtectedRouteInstitution>} />
+          <Route path="/admin/payment-summary" element={<ProtectedRouteInstitution><PaymentSummary /></ProtectedRouteInstitution>} />
+          <Route path="/admin/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess /></ProtectedRouteInstitution>} />
           <Route path="/admin/forgot-password" element={<RedirectAuthenticatedInstitution><AdminForgotPasswordPage /></RedirectAuthenticatedInstitution>} />
           <Route path="/admin/reset-password/:token" element={<RedirectAuthenticatedInstitution><AdminNewPasswordPage /></RedirectAuthenticatedInstitution>} />
           <Route path="/admin/success-reset" element={<AdminSuccessResetPage />} />
@@ -109,21 +114,94 @@ function App() {
           <Route path="/professor/reset-password/:token" element={<RedirectAuthenticatedProfessor><ProfNewPassword /></RedirectAuthenticatedProfessor>} />
 
         </Route>
+        
 
         {/* Professor Authentication */}
-        <Route path="/professor/" >
-          
-          <Route path="dashboard" element={<ProtectedRouteProfessors><ProfDashboard /></ProtectedRouteProfessors>} />
-          <Route path="course" element={<ProtectedRouteProfessors><Courses /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId" element={<ProtectedRouteProfessors><LessonOverview /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/create-lesson" element={<ProtectedRouteProfessors><CreateLesson /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/lesson/:lessonId" element={<ProtectedRouteProfessors><Topic /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/lesson/:lessonId/create-activity" element={<ProtectedRouteProfessors><CreateActivity /></ProtectedRouteProfessors>} />
-          <Route path="course/:courseId/lesson/:lessonId/activity/:activityId" element={<ProtectedRouteProfessors><ActivityPage /></ProtectedRouteProfessors>} />
+
+        <Route path="/professor/">
+          <Route
+            path="login"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfessorLogin />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
+          <Route
+            path="forgot-password"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfForgotPassword />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRouteProfessors>
+                <ProfDashboard />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course"
+            element={
+              <ProtectedRouteProfessors>
+                <Courses />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseSlug"
+            element={
+              <ProtectedRouteProfessors>
+                <LessonOverview />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseSlug/create-lesson"
+            element={
+              <ProtectedRouteProfessors>
+                <CreateLesson />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseSlug/lesson/:lessonSlug"
+            element={
+              <ProtectedRouteProfessors>
+                <Topic />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseSlug/lesson/:lessonSlug/create-activity"
+            element={
+              <ProtectedRouteProfessors>
+                <CreateActivity />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="course/:courseSlug/lesson/:lessonSlug/activity/:activitySlug"
+            element={
+              <ProtectedRouteProfessors>
+                <ActivityPage />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="reset-password/:token"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfNewPassword />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
           <Route path="code-battle" element={<ProtectedRouteProfessors><CodeBattleOverview /></ProtectedRouteProfessors>} />
           <Route path="code-battle/create" element={<ProtectedRouteProfessors><CreateBattle /></ProtectedRouteProfessors>} />
           <Route path="account" element={<ProtectedRouteProfessors><Account /></ProtectedRouteProfessors>} />
-
         </Route>
 
         {/* Authenticated Admin Routes */}
@@ -135,8 +213,7 @@ function App() {
           <Route path="addStudent" element={<ProtectedRouteInstitution><AddStudent /></ProtectedRouteInstitution>} />
         </Route>
 
-        <Route path="payment-summary" element={<ProtectedRouteInstitution><PaymentSummary /></ProtectedRouteInstitution>} />
-        <Route path="payment-success" element={<ProtectedRouteInstitution><PaymentSuccess /></ProtectedRouteInstitution>} />
+       
 
 
         {/* Student Routes */}

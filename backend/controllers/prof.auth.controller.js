@@ -1,5 +1,4 @@
 import { Professor } from "../models/professor.model.js";
-import { Institution } from "../models/institution.model.js";
 import bcrypt from "bcryptjs";
 import { profTokenAndCookie } from "../utils/profTokenAndCookie.js";
 import crypto from "crypto";
@@ -52,7 +51,7 @@ export const loginProfessor = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    const token = profTokenAndCookie(res, professor._id);
+    profTokenAndCookie(res, professor._id);
 
     professor.lastLogin = new Date();
     await professor.save();
@@ -60,7 +59,6 @@ export const loginProfessor = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
-      token,
       professor: {
         ...professor._doc,
         password: undefined, // Hide password from response
@@ -92,34 +90,30 @@ export const logoutProfessor = async (req, res) => {
   }
 };
 
-//checkAuth
+
+
 export const checkAuthProfessor = async (req, res) => {
-  console.log("Decoded Token Data:", req.user); // ✅ Debugging log
-
   try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized: No professor ID found",
-      });
-    }
+    const professor = await Professor.findById(req.professorId).select(
+      "-password")
 
-    const professor = await Professor.findById(req.user.id).select("-password");
+      if(!professor) {
+        return res.status(404).json({
+          success: false,
+          message: "Professor not found"
+        })
+      }
 
-    if (!professor) {
-      return res.status(404).json({
-        success: false,
-        message: "Professor not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      professor,
-    });
+      res.status(200).json({
+        success: true,
+        professor
+      })
   } catch (error) {
-    console.error("Error in checkAuthProfessor:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.log("Error checking professor authentication", error);
+    res.status(400).json({
+      success: false,
+      message: "Error checking professor authentication"
+    })
   }
 };
 
@@ -260,59 +254,6 @@ export const googleLoginProfessor = async (req, res) => {
   }
 };
 
-//register profeqssor
-// export const registerProfessor = async (req, res) => {
-//   try {
-//     const { firstName, lastName, email, institutionId } = req.body;
-
-//     if (!firstName || !lastName || !email || !institutionId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "All fields are required" });
-//     }
-
-//     const existingProfessor = await Professor.findOne({ email });
-
-//     if (existingProfessor) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Professor already exists" });
-//     }
-
-//     const plainPassword = lastName.trim();
-//     const hashedPassword = await bcrypt.hash(plainPassword, 10);
-
-//     const newProfessor = new Professor({
-//       firstName,
-//       lastName,
-//       email,
-//       password: hashedPassword,
-//       institution: institutionId, // ✅ Ensure institution ID is set
-//     });
-
-//     const savedProfessor = await Professor.findById(
-//       savedProfessor._id
-//     ).populate("institution", "institutionName");
-
-//     await sendProfessorWelcomeEmail(
-//       savedProfessor.email,
-//       savedProfessor.firstName,
-//       savedProfessor.lastName,
-//       plainPassword, // Send lastName as their temporary password
-//       savedProfessor.institution.institutionName
-//     );
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Professor registered successfully",
-//       professor: { ...savedProfessor._doc, password: undefined }, // ✅ Hide password in response
-//       token, // ✅ Ensure token is included in the response
-//     });
-//   } catch (error) {
-//     console.error("Error in registerProfessor:", error.message);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
 
 export const registerProfessor = async (req, res) => {
   try {
@@ -402,10 +343,9 @@ export const getProfessors = async (req, res) => {
     }
 
     // Fetch students that belong to the authenticated institution
-    const professors = await Professor.find({ institution: req.institutionId }).populate(
-      "institution",
-      "institutionName"
-    );
+    const professors = await Professor.find({
+      institution: req.institutionId,
+    }).populate("institution", "institutionName");
 
     res.status(200).json({
       success: true,

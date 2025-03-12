@@ -11,12 +11,11 @@ import {
   deleteProfessor,
   checkAuthProfessor,
 } from "../controllers/prof.auth.controller.js";
-import { checkAuth } from "../controllers/auth.controller.js";
-
+import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
-router.get("/check-auth", verifyToken, checkAuth);
+router.get("/professor-check-auth", profVerifyToken, checkAuthProfessor);
 router.post("/login", loginProfessor);
 router.post("/logout", logoutProfessor);
 router.post("/forgot-password", ForgotPasswordProfessor);
