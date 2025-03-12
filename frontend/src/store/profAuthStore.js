@@ -151,7 +151,6 @@ export const useprofAuthStore = create((set) => ({
 
       if (data.success) {
         set({ professor: null, isAuthenticated: false });
-        toast.success("Logged out successfully");
       } else {
         toast.error("Logout failed");
       }
