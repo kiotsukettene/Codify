@@ -382,8 +382,6 @@ export const studentCheckAuth = async (req,res) => {
       const decoded = await admin.auth().verifyIdToken(token);
       const email = decoded.email;
   
-      console.log("Google Login Attempt:", email);
-  
       // Check if student exists in database
       let student = await Student.findOne({ email });
   

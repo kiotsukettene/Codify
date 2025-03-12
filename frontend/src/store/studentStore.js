@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { signInWithPopup } from "firebase/auth";
+import { auth,googleProvider } from "@/firebase";
 
 const API_URL = "http://localhost:3000/api/students";
 
@@ -72,6 +74,42 @@ export const useStudentStore = create((set) => ({
       set({ error: error.response?.data?.message || "Error logging in", isLoading: false });
       throw error;
     }
+  },
+
+  loginWithGoogle: async( email, password) => {
+    set({ isLoading: true, error: null });
+
+    let token = null;
+
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      token = await result.user.getIdToken();
+    } catch (error) {
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.error("Google Sign-In cancelled.");
+      } else {
+        toast.error("Google Login Failed: " + error.message);
+      }
+      set({ isLoading: false });
+      return; // ⛔ Exit early if popup was closed
+    }
+
+    try {
+      const response = await axios.post(`${API_URL}/student-google-login`, { token });
+
+      set({
+        student: response.data.student,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error logging in with Google",
+        isLoading: false,
+      })
+    }
+
+    set({ isLoading: false });
   },
 
   // Check if student is authenticated (used in protected routes)

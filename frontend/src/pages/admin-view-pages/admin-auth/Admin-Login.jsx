@@ -58,6 +58,7 @@ function AdminLoginPage() {
     await loginWithGoogle();
 
     navigate("/admin/dashboard", { replace: true });
+    toast.success("Login Successfully");
 
   }
 

@@ -20,7 +20,6 @@ import {
 
 function StudentHeader() {
   const { logout } = useStudentStore()
-  
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -29,9 +28,7 @@ function StudentHeader() {
     navigate("/student/login", { replace: true }); // ✅ Now this works
 };
 
-  
  
-
   return (
     <div className="flex justify-between items-center w-full">
       <div className="flex item">
@@ -83,7 +80,7 @@ function StudentHeader() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+        </DropdownMenu>
 
         
       </div>
