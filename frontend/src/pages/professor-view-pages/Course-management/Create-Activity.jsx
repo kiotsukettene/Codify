@@ -36,7 +36,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { TimeField } from "../../../components/professor-view/Time-Field";
+import { TimeField } from "@/components/ui/time-field";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useActivityStore } from "@/store/activityStore";
