@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import CongratulationsModal from "@/components/student-view/congrats-modal";
 import { useLessonStore } from "@/store/lessonStore";
 import XPChallengeCard from "@/components/student-view/XPChallengeCard";
+import { useCourseStore } from "@/store/courseStore";
 
 function StudentModulePage() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ function StudentModulePage() {
   const [showModal, setShowModal] = useState(false);
   const topicRefs = useRef({});
   const [activeTopicId, setActiveTopicId] = useState(1);
+
 
   // Debug the fetched lesson data
   console.log("Fetched Lesson:", lesson);
@@ -85,7 +87,7 @@ function StudentModulePage() {
   const handleComplete = () => setShowModal(true);
   const handleNavigate = () => {
     setShowModal(false);
-    navigate(`/student/lesson-list/`)
+    navigate(`/student/lesson-list/${lesson.courseId}`)
   };
 
   if (isLoading) return <p>Loading lesson...</p>;
