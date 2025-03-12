@@ -1,5 +1,5 @@
 import { Card, CardContent, CardFooter } from "../ui/card";
-import wave from "@/assets/picture/random background/wave.png";
+import wave from "@/assets/picture/random-background/wave.png";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useNavigate } from "react-router-dom";

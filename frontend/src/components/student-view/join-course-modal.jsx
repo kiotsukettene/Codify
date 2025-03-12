@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
-import pinkCloud from '@/assets/picture/random background/pinkCloud.png';
+import pinkCloud from '@/assets/picture/random-background/pinkCloud.png';
 import useStudentCourseStore from "@/store/studentCourseStore";
 
 const JoinCourseModal = ({ isOpen, onClose }) => {

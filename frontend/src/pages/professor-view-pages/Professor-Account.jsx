@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react"; // Import Eye Icons
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/professor-view/Sidebar';
 import toast from "react-hot-toast";
-import pic from "../../assets/picture/random background/dashboard-img.png"
+import pic from "../../assets/picture/random-background/dashboard-img.png"
 import { motion } from "framer-motion";
 
 const Account = () => {

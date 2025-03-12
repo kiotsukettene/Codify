@@ -1,6 +1,6 @@
 import React from 'react'
 import { Toast } from '../ui/toast'
-import astronaut from '@/assets/picture/random background/toastAstronaut.png'
+import astronaut from '@/assets/picture/random-background/toastAstronaut.png'
 import { X } from 'lucide-react'
 
 function GamifiedToast({ open, onOpenChange, title, description }) {

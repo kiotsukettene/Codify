@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card } from '../ui/card'
 import xpAstonaut from '../../assets/picture/courses/xp-astronaut.png'
-import xpChest from '@/assets/picture/random background/chest.png'
+import xpChest from '@/assets/picture/random-background/chest.png'
 import { Gift, Sparkles, Star, Trophy } from 'lucide-react'
 import {motion} from 'framer-motion'
 

@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Home, Rocket } from "lucide-react";
 import { useEffect, useState } from "react";
-import notfound from "@/assets/picture/random background/notfound.png";
+import notfound from "@/assets/picture/random-background/notfound.png";
 import GalaxyButton from "@/components/ui/galaxyButton";
 
 function PageNotFoundPage() {

@@ -5,8 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Swords } from 'lucide-react';
 import challenges from '@/constants/challenges';
 import StudentChallengeCard from '@/components/student-view/challenge-card';
-import challengesImg from '@/assets/picture/random background/challenges.png';
-import wave from '@/assets/picture/random background/wave.png';
+import challengesImg from '@/assets/picture/random-background/challenges.png';
+import wave from '@/assets/picture/random-background/wave.png';
 import { useStudentStore } from '@/store/studentStore';
 import { useChallengeStore } from '@/store/challengeStore';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate

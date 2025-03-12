@@ -2,8 +2,8 @@ import StudentTaskCard from "@/components/student-view/TaskCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
-import wave from "@/assets/picture/random background/wave.png";
-import calendarImg from "@/assets/picture/random background/calendar-img.png";
+import wave from "@/assets/picture/random-background/wave.png";
+import calendarImg from "@/assets/picture/random-background/calendar-img.png";
 import React, { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 

@@ -8,13 +8,13 @@ import { useState } from "react";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import ProfPasswordResetConfirmation from "@/components/professor-view/Prof-Password-reset";
 import toast from "react-hot-toast";
-import Astro from "@/assets/picture/random background/Astro.png";
-import FiveStar from "@/assets/picture/random background/FiveStar.png";
-import FourStar from "@/assets/picture/random background/FourStar.png";
-import PinkStar from "@/assets/picture/random background/PinkStar.png";
-import VioletStar from "@/assets/picture/random background/VioletStar.png";
-import SpaceShip from "@/assets/picture/random background/Spaceship.png";
-import Waves from "@/assets/picture/random background/Waves.png";
+import Astro from "@/assets/picture/random-background/Astro.png";
+import FiveStar from "@/assets/picture/random-background/FiveStar.png";
+import FourStar from "@/assets/picture/random-background/FourStar.png";
+import PinkStar from "@/assets/picture/random-background/PinkStar.png";
+import VioletStar from "@/assets/picture/random-background/VioletStar.png";
+import SpaceShip from "@/assets/picture/random-background/Spaceship.png";
+import Waves from "@/assets/picture/random-background/Waves.png";
 
 const ProfForgotPassword = () => {
   const [email, setEmail] = useState("");

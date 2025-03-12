@@ -11,13 +11,13 @@ import { Eye, EyeOff } from "lucide-react";
 import useToggleVisibility from "@/hooks/use-toggle-visibility";
 
 //bg images
-import Astro from "@/assets/picture/random background/Astro.png";
-import FiveStar from "@/assets/picture/random background/FiveStar.png";
-import FourStar from "@/assets/picture/random background/FourStar.png";
-import PinkStar from "@/assets/picture/random background/PinkStar.png";
-import VioletStar from "@/assets/picture/random background/VioletStar.png";
-import SpaceShip from "@/assets/picture/random background/Spaceship.png";
-import Waves from "@/assets/picture/random background/Waves.png";
+import Astro from "@/assets/picture/random-background/Astro.png";
+import FiveStar from "@/assets/picture/random-background/FiveStar.png";
+import FourStar from "@/assets/picture/random-background/FourStar.png";
+import PinkStar from "@/assets/picture/random-background/PinkStar.png";
+import VioletStar from "@/assets/picture/random-background/VioletStar.png";
+import SpaceShip from "@/assets/picture/random-background/Spaceship.png";
+import Waves from "@/assets/picture/random-background/Waves.png";
 
 
 const ProfNewPassword = () => {
