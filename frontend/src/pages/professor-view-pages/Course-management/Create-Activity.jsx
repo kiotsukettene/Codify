@@ -7,8 +7,6 @@ import {
   FileIcon,
   X,
   CalendarIcon,
-  Clock,
-  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,14 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
-import AppSidebar from "@/components/professor-view/Sidebar";
-import confetti from "canvas-confetti";
+import { isBefore, startOfToday } from "date-fns";
 import { toast } from "react-hot-toast";
 import {
   Popover,
@@ -36,13 +27,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { TimeField } from "@/components/professor-view/Time-field";
+import TimeField  from "@/components/professor-view/Time-field";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useActivityStore } from "@/store/activityStore";
 import { useParams } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
 import { useCourseStore } from "@/store/courseStore";
+import { parse } from "date-fns";
+
 
 const CreateActivity = () => {
   const [title, setTitle] = React.useState("");
@@ -50,13 +43,11 @@ const CreateActivity = () => {
   const [instruction, setInstruction] = React.useState("");
   const [textFormat, setTextFormat] = useState([]);
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activityProgress, setActivityProgress] = useState(0);
-  const [hasShownConfetti, setHasShownConfetti] = useState(false);
   const [files, setFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-  const [date, setDate] = useState(null);
+  const [date, setDate] = useState(startOfToday());
   const [time, setTime] = useState("");
   const [sections, setSections] = useState([]);
 
@@ -148,16 +139,7 @@ const CreateActivity = () => {
     if (instruction) progress += 33.34;
 
     setActivityProgress(Math.round(progress));
-
-    if (Math.round(progress) === 100 && !hasShownConfetti) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-      setHasShownConfetti(true);
-    }
-  }, [title, subtitle, instruction, hasShownConfetti]);
+  });
 
   useEffect(() => {
     const hasContent =
@@ -402,15 +384,15 @@ const CreateActivity = () => {
               {/* Due Date */}
 
               <Card className="w-full lg:w-[300px] p-4 mt-6">
-                <p className="font-medium mb-4 flex">
-                  Due :
-                  {(date || time) && (
-                    <div className=" text-sm text-muted-foreground mt-1 ml-2">
-                      {date && format(date, "PPP")}
-                      {time && ` at ${time}`}
-                    </div>
-                  )}
-                </p>
+              <p className="font-medium mb-4 flex">
+                Due :
+                {(date || time) && (
+                  <div className="text-sm text-muted-foreground mt-1 ml-2">
+                    {date && format(date, "PPP")}
+                    {time && ` at ${format(parse(time, "HH:mm", new Date()), "hh:mm a")}`}
+                  </div>
+                )}
+              </p>
 
                 <Popover>
                   <PopoverTrigger asChild>
@@ -431,29 +413,15 @@ const CreateActivity = () => {
                       selected={date}
                       onSelect={setDate}
                       initialFocus
+                      disabled={(date) => isBefore(date, startOfToday())}
                     />
                   </PopoverContent>
                 </Popover>
 
                 <div className="mt-4">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !time && "text-muted-foreground"
-                        )}
-                      >
-                        <Clock className="mr-2 h-4 w-4" />
-                        {time || "Set time (optional)"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-3">
-                      <TimeField value={time} onChange={setTime} />
-                    </PopoverContent>
-                  </Popover>
+                  <TimeField value={time} onChange={setTime} />
                 </div>
+
 
                 {/* Upload Files */}
               </Card>

@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
-import AppSidebar from "@/components/professor-view/Sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate, useParams } from "react-router-dom";
 import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import Bear from "@/assets/picture/Avatar/bear.png";
 import { useActivityStore } from "@/store/activityStore";
 
@@ -39,7 +27,6 @@ const ActivityPage = () => {
   const { courseSlug, lessonSlug } = useParams();
   const { activities, activity, fetchActivityById } = useActivityStore();
   const { activitySlug } = useParams();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
@@ -65,7 +52,7 @@ const ActivityPage = () => {
 
   return (
     
-          <div className="w-full px-10">
+          <div className="w-full px-4">
             {/* Header */}
             <div className="flex items-center justify-between gap-3 mb-6">
               <div className="flex items-center gap-3">
@@ -83,17 +70,8 @@ const ActivityPage = () => {
 
                 <h1 className="text-xl font-semibold">{activity?.title}</h1>
               </div>
+
               {/* Right Section: Dropdown Menu */}
-              <DropdownMenu>
-                <DropdownMenuContent align="end" className="py-1 text-red-600">
-                  <DropdownMenuItem className="hover:bg-gray-100 transition-colors duration-200">
-                    Delete
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-gray-100 transition-colors duration-200">
-                    Edit
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
 
             {/* Tabs */}

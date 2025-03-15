@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -35,7 +35,6 @@ import { useLessonStore } from "@/store/lessonStore"; // Import lesson store
 import { useParams, useNavigate } from "react-router-dom"; // For getting courseId & navigation
 import toast from "react-hot-toast"; // For notifications
 import { useCourseStore } from "@/store/courseStore"; // Import course store
-import { Label } from "@radix-ui/react-context-menu";
 
 const CreateLesson = () => {
   const { createLesson } = useLessonStore(); // Get function from store
@@ -110,37 +109,6 @@ const CreateLesson = () => {
       ),
     });
   };
-
-  //submit
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   console.log("submit");
-  //   if (!courseId || !title) {
-  //     toast.error("Course ID and Title are required!");
-  //     return;
-  //   }
-
-  //   const lessonData = {
-  //     courseId,
-  //     title,
-  //     sections: sections.map((section) => ({
-  //       subTitle: section.subTitle || "Untitled Section", // ✅ Ensures a subTitle for all sections
-  //       description: section.type === "description" ? section.content : "",
-  //       codeSnippets: section.type === "code" ? [section.content] : [],
-  //       notes: section.type === "note" ? [section.content] : [],
-  //     })),
-  //   };
-  //   console.log("Saving lesson:", JSON.stringify(lessonData, null, 2));
-
-  //   try {
-  //     await createLesson(lessonData);
-  //     toast.success("Lesson created successfully!");
-  //     navigate(`/professor/course/${courseId}`); // Redirect to lessons page
-  //   } catch (error) {
-  //     console.error("Error creating lesson:", error);
-  //     toast.error("Error creating lesson!");
-  //   }
-  // };
 
   useEffect(() => {
     if (courses.length === 0) {

@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Card from "@/components/professor-view/Course-Card";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
 import { Plus } from "lucide-react";
 import { Button } from "@/Components/ui/button";
 import {
@@ -15,8 +10,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/Components/ui/pagination";
-import AppSidebar from "@/components/professor-view/Sidebar";
-import { Separator } from "@/Components/ui/separator";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CourseModal from "@/components/professor-view/Add-Course-Modal";
 import { useCourseStore } from "@/store/courseStore";

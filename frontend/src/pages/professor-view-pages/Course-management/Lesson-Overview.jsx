@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AppSidebar from "@/components/professor-view/Sidebar";
 import { Eye, FileText, Trophy, Users, Rocket } from "lucide-react";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
 import CourseHeader from "@/components/professor-view/Course-header";
 import OverviewTab from "@/components/professor-view/Overview-Tab";
 import ActivityTab from "@/components/professor-view/Activity-Tab";
@@ -20,11 +13,10 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
-import { toast } from "react-hot-toast";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import { useCourseStore } from "@/store/courseStore";
 

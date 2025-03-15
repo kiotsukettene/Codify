@@ -1,4 +1,4 @@
-import { Layers, Sword, User2, Video, LayoutDashboard } from "lucide-react";
+import { Layers, Sword, User2, LayoutDashboard } from "lucide-react";
 import Logo from "@/assets/picture/logos/Logo.png";
 import {
   Sidebar,
