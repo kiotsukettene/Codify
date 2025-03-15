@@ -17,7 +17,7 @@ const CodeBattleOverview = () => {
   };
 
   return (
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col">
             {/* Tabs Navigation */}
             <div className="items-center px-4 gap-4">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">

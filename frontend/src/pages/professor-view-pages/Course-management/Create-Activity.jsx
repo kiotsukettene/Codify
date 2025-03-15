@@ -246,17 +246,6 @@ const CreateActivity = () => {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1">
-        <SidebarInset className="flex-1 !p-0">
-          <header className="flex h-16 items-center px-4">
-            <SidebarTrigger
-              className="-ml-1"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mx-2 h-4" />
-          </header>
 
           <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-9">
@@ -541,9 +530,6 @@ const CreateActivity = () => {
               </Button> */}
             </div>
           </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
   );
 };
 

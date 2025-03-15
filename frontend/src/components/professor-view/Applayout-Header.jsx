@@ -15,9 +15,9 @@ function ProfessorHeader() {
   const dropdownRef = useRef(null);
 
   const handleLogout = async () => {
-    await logoutProfessor(); // ✅ Call the store logout function
+    await logoutProfessor(); 
     toast.success("Logged out successfully!");
-    navigate("/professor/login", { replace: true }); // ✅ Now this works
+    navigate("/professor/login", { replace: true }); 
   };
 
   // Toggle dropdown visibility
@@ -38,14 +38,11 @@ function ProfessorHeader() {
   }, []);
 
   return (
-    <div className="flex justify-between items-center w-full">
-      <div className="flex item">
-        <SearchForm />
-      </div>
+    <div className="flex justify-end items-center w-full">
 
       <div
-        className="flex gap-3 items-center md:flex md:items-center z-[-1] md:z-auto md:static 
-      absolute top-0 right-0 p-4 md:space-x-4 lg:space-x-0"
+        className="gap-3 flex item md:flex md:items-center z-[-1] md:z-auto md:static 
+       top-0 justify-end pr-4 md:space-x-4 lg:space-x-0"
       >
         {/* Notifications */}
         <div>
@@ -55,11 +52,6 @@ function ProfessorHeader() {
               1
             </span>
           </Button>
-        </div>
-
-        {/* Achievement Badge */}
-        <div>
-          <img className="w-8 h-8" src={badge} alt="Badge" />
         </div>
 
         {/* Avatar with Dropdown */}

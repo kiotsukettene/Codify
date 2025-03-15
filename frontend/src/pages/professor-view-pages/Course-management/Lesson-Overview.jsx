@@ -202,7 +202,7 @@ const LessonOverview = () => {
               })}
               {tab.label}
               {activeTab === tab.id && (
-                <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
+                <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute-right-1" />
               )}
             </motion.button>
           ))}

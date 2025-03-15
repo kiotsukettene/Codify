@@ -105,7 +105,11 @@ const Account = () => {
 
               <Separator className="my-8" />
 
-              <div className="grid md:grid-cols-2 gap-8">
+              <motion.div className="grid md:grid-cols-2 gap-8"
+                  initial={{ y: -50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  >
                 <div className="flex flex-col justify-center">
                   <h2 className="text-2xl font-bold text-gray-800">Change Password</h2>
                   <p className="text-gray-500 mt-2 text-sm">
@@ -185,7 +189,7 @@ const Account = () => {
                     </Button>
                   </div>
                 </form>
-              </div>
+              </motion.div>
             </div>
   );
 };

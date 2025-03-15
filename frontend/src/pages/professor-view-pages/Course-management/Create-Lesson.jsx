@@ -8,7 +8,6 @@ import {
   Trophy,
   Star,
   Target,
-  Sparkles,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,13 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
-import AppSidebar from "@/components/professor-view/Sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -43,12 +35,12 @@ import { useLessonStore } from "@/store/lessonStore"; // Import lesson store
 import { useParams, useNavigate } from "react-router-dom"; // For getting courseId & navigation
 import toast from "react-hot-toast"; // For notifications
 import { useCourseStore } from "@/store/courseStore"; // Import course store
+import { Label } from "@radix-ui/react-context-menu";
 
 const CreateLesson = () => {
   const { createLesson } = useLessonStore(); // Get function from store
   const { courses, fetchCoursesByProfessor } = useCourseStore(); // Get courses from store
   const { courseSlug } = useParams();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -60,8 +52,6 @@ const CreateLesson = () => {
     hasTitle: false,
     hasSubtitle: false,
     hasDescription: false,
-    hasCode: false,
-    hasNote: false,
   });
 
   const addSection = (type) => {
@@ -109,7 +99,7 @@ const CreateLesson = () => {
     if (sections.some((s) => s.type === "description" && s.content))
       completedSteps++;
 
-    setProgress((completedSteps / 5) * 100);
+    setProgress((completedSteps / 3) * 100);
 
     // Update achievements
     setAchievements({
@@ -151,9 +141,10 @@ const CreateLesson = () => {
   //     toast.error("Error creating lesson!");
   //   }
   // };
+
   useEffect(() => {
     if (courses.length === 0) {
-      fetchCoursesByProfessor(); // or whatever fetch function you have
+      fetchCoursesByProfessor(); 
     }
   }, [courses, fetchCoursesByProfessor]);
   const getCourseIdFromSlug = (slug) => {
@@ -248,20 +239,21 @@ const CreateLesson = () => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1">
-        <SidebarInset className="flex-1 !p-0">
-          <header className="flex h-16 items-center px-4">
-            <SidebarTrigger
-              className="-ml-1"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mx-2 h-4" />
-          </header>
+          <div className="w-full p-4">
+            <div className="flex items-center">
+              <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate(-1)}
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+            <h1 className="font-bold text-2xl text-purple-600">
+              Create Topic
+            </h1>
+                    </div>
 
-          <div className="container w-full p-4">
-            <Card className="border-0 shadow-none">
+
               <CardContent className="space-y-6">
                 <div className="space-y-4 mb-6">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -315,7 +307,7 @@ const CreateLesson = () => {
                       ))}
                       <Button
                         variant="secondary"
-                        className="ml-4"
+                        className="ml-4a bg-purple-600 text-white hover:bg-purple-700"
                         onClick={handleSubmit}
                       >
                         Save
@@ -325,23 +317,23 @@ const CreateLesson = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(-1)}
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </Button>
+                
                   <div className="space-y-4 flex-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                       Title
+                  </label>
                     <Input
                       value={title}
                       onChange={(e) => {
                         setTitle(e.target.value);
                         updateProgress();
                       }}
-                      placeholder="Title"
-                      className="text-balance font-semibold border-purple-100 px-4 focus-visible:ring-0 bg-purple-100"
+                      placeholder="Type title"
+                      className="border-purple-100 px-4 focus-visible:ring-0 bg-purple-100"
                     />
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                      Description
+                  </label>
                     <Textarea
                       value={subtitle}
                       onChange={(e) => {
@@ -356,6 +348,7 @@ const CreateLesson = () => {
 
                 {sections.map((section, index) => (
                   <div key={section.id} className="space-y-2 relative">
+                    
                     <div className="relative">
                       {section.type === "description" && (
                         <>
@@ -388,6 +381,9 @@ const CreateLesson = () => {
                             </ToggleGroupItem>
                           </ToggleGroup>
 
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 p-2">
+                      Sub-topic
+                  </label>
                           <Input
                             value={section.subheader || ""}
                             onChange={(e) =>
@@ -396,7 +392,7 @@ const CreateLesson = () => {
                               })
                             }
                             placeholder="Type sub-header"
-                            className="text-balance border-purple-100 px-4 focus-visible:ring-0 font-semibold mb-2"
+                            className="text-balance border-purple-100 px-4 focus-visible:ring-0 mb-2"
                           />
                           <Textarea
                             placeholder="Description"
@@ -513,17 +509,9 @@ const CreateLesson = () => {
                   </DropdownMenu>
                 </div>
 
-                {progress === 100 && (
-                  <div className="fixed top-4 right-4 animate-bounce">
-                    <Sparkles className="h-8 w-8 text-yellow-500" />
-                  </div>
-                )}
+               
               </CardContent>
-            </Card>
           </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
   );
 };
 
