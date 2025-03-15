@@ -381,10 +381,7 @@ function App() {
               </ProtectedRouteStudents>
             }
           />
-          <Route
-            path=":courseSlug/module/:lessonSlug"
-            element={<StudentModulePage />}
-          />
+          <Route path="module/:lessonSlug" element={<StudentModulePage />} />
           <Route path="activity" element={<StudentActivityPage />} />
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />

@@ -11,38 +11,49 @@ import {
 import { BadgeCheck, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import CongratulationsModal from "@/components/student-view/congrats-modal";
-import { useLessonStore } from "@/store/lessonStore";
+import useStudentCourseStore from "@/store/studentCourseStore";
 import XPChallengeCard from "@/components/student-view/XPChallengeCard";
 
 function StudentModulePage() {
   const navigate = useNavigate();
-  const { fetchLessonById, lesson, isLoading, error } = useLessonStore();
+  const { lessonSlug, courseSlug } = useParams();
+
+  const { lessons, fetchLessonsForCourse, isLoading, error } =
+    useStudentCourseStore();
+  const [currentLesson, setCurrentLesson] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const topicRefs = useRef({});
   const [activeTopicId, setActiveTopicId] = useState(1);
 
-  const lessonId = lesson?._id;
-
-  // Debug the fetched lesson data
-  console.log("Fetched Lesson:", lesson);
-  console.log("Lesson ID:", lessonId);
-
-  // Dynamically generate topics from fetched lesson sections
-  const topics =
-    lesson?.sections.map((section, index) => ({
-      id: index + 1,
-      title: section.subTitle || `Section ${index + 1}`, // Fallback title
-      content: section.description || "No content available", // Fallback content
-      codeSnippets: section.codeSnippets || [],
-      notes: section.notes || [], // Fallback note
-      icon: CheckCircle,
-    })) || [];
+  useEffect(() => {
+    if (courseSlug) {
+      fetchLessonsForCourse(courseSlug);
+    }
+  }, [courseSlug, fetchLessonsForCourse]);
 
   useEffect(() => {
-    if (lessonId) fetchLessonById(lessonId);
-  }, [lessonId, fetchLessonById]);
+    if (lessonSlug && lessons.length > 0) {
+      const matchedLesson = lessons.find((l) => l.slug === lessonSlug);
+      if (matchedLesson) {
+        setCurrentLesson(matchedLesson);
+      } else {
+        console.error("No lesson found for slug:", lessonSlug);
+      }
+    }
+  }, [lessonSlug, lessons]);
+
+  // Generate topics from the current lesson's sections
+  const topics =
+    currentLesson?.sections?.map((section, index) => ({
+      id: index + 1,
+      title: section.subTitle || `Section ${index + 1}`,
+      content: section.description || "No content available",
+      codeSnippets: section.codeSnippets || [],
+      notes: section.notes || [],
+      icon: CheckCircle,
+    })) || [];
 
   const scrollToTopic = useCallback((topicId) => {
     topicRefs.current[topicId]?.scrollIntoView({ behavior: "smooth" });
@@ -55,13 +66,6 @@ function StudentModulePage() {
         let targetId = activeTopicId;
 
         entries.forEach((entry) => {
-          console.log("Intersecting entry:", {
-            id: entry.target.getAttribute("data-topic-id"),
-            isIntersecting: entry.isIntersecting,
-            intersectionRatio: entry.intersectionRatio,
-            boundingClientRect: entry.boundingClientRect,
-            rootBounds: entry.rootBounds,
-          });
           if (
             entry.isIntersecting &&
             entry.intersectionRatio > highestIntersection
@@ -77,7 +81,7 @@ function StudentModulePage() {
           setActiveTopicId(targetId);
         }
 
-        // Fallback: Check if we're at the bottom and set the last topic
+        // Fallback: if at the bottom, set the last topic as active.
         const lastTopicId = topics.length;
         const lastRef = topicRefs.current[lastTopicId];
         if (
@@ -91,14 +95,13 @@ function StudentModulePage() {
       { rootMargin: "-40% 0px -40% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
 
-    console.log("Observing topics:", topicRefs.current);
     topics.forEach((topic) => {
       if (topicRefs.current[topic.id])
         observer.observe(topicRefs.current[topic.id]);
     });
 
     return () => observer.disconnect();
-  }, [lesson, topics]);
+  }, [currentLesson, topics, activeTopicId]);
 
   const handleComplete = () => setShowModal(true);
   const handleNavigate = () => {
@@ -106,15 +109,16 @@ function StudentModulePage() {
     navigate(`/student/lesson-list/`);
   };
 
-  if (isLoading) return <p>Loading lesson...</p>;
+  if (isLoading) return <p>Loading lessons...</p>;
   if (error) return <p>{error}</p>;
+  if (!currentLesson) return <p>No lesson found.</p>;
 
   return (
     <div className="flex flex-row mt-5">
       <div className="w-full lg:w-3/4">
         <Card className="shadow-none border-none bg-white p-6">
           <CardTitle className="bg-pink-50 p-5 rounded-lg">
-            Module 1: {lesson?.title || "Introduction to Networking"}
+            Module: {currentLesson.title || "Introduction to Networking"}
           </CardTitle>
 
           <div className="mt-5 max-h-[calc(100vh-200px)] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -155,7 +159,6 @@ function StudentModulePage() {
       </div>
 
       <div className="w-full lg:w-1/4 px-5">
-        {/*=========================== XP========================== Card */}
         <Card
           className="relative flex items-center justify-between mb-5 p-4 md:p-6 border-none shadow-none h-16 md:h-20 rounded-3xl max-w-[200px] md:max-w-md"
           style={{
