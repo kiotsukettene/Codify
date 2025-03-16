@@ -6,7 +6,7 @@ import blueFlower from "@/assets/picture/random-background/blue-flower.png"
 import purpleFlower from "@/assets/picture/random-background/Purple-flower.png"
 import arrow from "@/assets/picture/random-background/arrow.png"
 import mascot from "@/assets/picture/random-background/Mascot.png"
-import logo from "@/assets/picture/logos/logo.png"
+import logo from "@/assets/picture/logos/Logo.png"
 
 
 
