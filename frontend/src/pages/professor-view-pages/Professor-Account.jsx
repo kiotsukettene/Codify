@@ -52,7 +52,7 @@ const Account = () => {
     e.preventDefault();
     const validationMessage = validatePassword();
     if (validationMessage) {
-      setCurrentPassIncorrect(validationMessage);
+      setErrorMessage(validationMessage);
       toast.error(validationMessage);
       return;
     }
@@ -62,21 +62,22 @@ const Account = () => {
       firstName: professor.firstName,
       lastName: professor.lastName,
       email: professor.email,
-      currentPassword, // current password to verify before updating
+      currentPassword, // current password to verify on the backend
       password: newPassword, // new password to set
     };
 
     try {
       await updateProfessor(updatedProfessorData);
-      setCurrentPassIncorrect(""); // clear error if successful
+      setErrorMessage(""); // clear error if successful
       // Optionally clear the form fields as well
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      toast.success("Password updated successfully");
     } catch (error) {
       const backendErrorMessage =
         error.response?.data?.message || "Error updating professor";
-      setCurrentPassIncorrect(backendErrorMessage);
+      setErrorMessage(backendErrorMessage);
       toast.error(backendErrorMessage);
     }
   };
