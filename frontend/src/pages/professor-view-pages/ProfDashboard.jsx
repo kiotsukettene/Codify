@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/professor-view/Sidebar";
-import { Separator } from "@/Components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import { useprofAuthStore } from "@/store/profAuthStore";
 
 const mockStudentRankings = [
