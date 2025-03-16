@@ -6,7 +6,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
 import CourseHeader from "@/components/professor-view/Course-header";
 import OverviewTab from "@/components/professor-view/Overview-Tab";
 import ActivityTab from "@/components/professor-view/Activity-Tab";
