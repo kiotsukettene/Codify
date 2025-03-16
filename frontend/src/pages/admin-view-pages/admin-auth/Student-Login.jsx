@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-// import union from "@/assets/picture/random-background/union.png"
+import union from "@/assets/picture/random-background/Union.png"
 import pinkFlower from "@/assets/picture/random-background/pink-flower.png"
 import blueFlower from "@/assets/picture/random-background/blue-flower.png"
-import purpleFlower from "@/assets/picture/random-background/purple-flower.png"
+import purpleFlower from "@/assets/picture/random-background/Purple-flower.png"
 import arrow from "@/assets/picture/random-background/arrow.png"
-import mascot from "@/assets/picture/random-background/mascot.png"
+import mascot from "@/assets/picture/random-background/Mascot.png"
 import logo from "@/assets/picture/logos/logo.png"
 import { Eye, EyeOff } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -56,11 +56,11 @@ function StudentLogin() {
             alt="Blue Flower" 
             className="absolute top-[250px] right-[-30px] w-16 lg:w-56 opacity-90"
           />
-          {/* <img 
+          <img 
             src={union}
             alt="Star" 
             className="absolute top-10 right-96 w-10 lg:w-52"
-          /> */}
+          />
           <img 
             src={arrow}
             alt="Arrow" 
