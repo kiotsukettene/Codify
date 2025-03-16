@@ -1,6 +1,6 @@
 import React from "react";
 
-import planet from "@/assets/picture/random-background/planet.png";
+import planet from "@/assets/picture/random-background/Planet.png";
 import { Badge } from "../ui/badge";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
