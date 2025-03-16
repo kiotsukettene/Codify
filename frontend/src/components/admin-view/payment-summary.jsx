@@ -35,7 +35,7 @@ function PaymentSummary() {
   const handlePayment = async () => {
   setLoading(true);
   try {
-    const response = await axios.post('http://localhost:3000/api/auth/initiate-payment', {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/initiate-payment`, {
       institutionId: institution._id,
     });
 

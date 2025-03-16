@@ -29,7 +29,7 @@ function PaymentSuccess() {
 
       try {
         console.log('Making POST request to mark-as-paid');
-        const response = await axios.post('http://localhost:3000/api/auth/mark-as-paid', {
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/mark-as-paid`, {
           institutionId: institution._id,
         });
 

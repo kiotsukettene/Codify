@@ -3,7 +3,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import challenges from '@/constants/challenges';
 
-const API_URL = "http://localhost:3000/api/students/challenges";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/students/challenges`;
 
 export const useChallengeStore = create((set) => ({
   challenges: challenges, // Static challenges from challenges.js
