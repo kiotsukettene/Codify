@@ -73,6 +73,7 @@ import VideoConference from "./pages/student-view-pages/Video-Conference";
 import { useStudentStore }  from "@/store/studentStore";
 import ContactUsPage from "./pages/Guest-view-pages/Contact-Us";
 import ProfessorLayout from "./Layout/ProfessorLayout";
+import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/student-codeBattle-overview";
 
 
 function App() {
@@ -215,6 +216,7 @@ function App() {
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings/>}/>
+          <Route path="code-battle" element={<StudentCodeBattleOverview/>}/>
         </Route>
 
         {/* Additional Routes */}

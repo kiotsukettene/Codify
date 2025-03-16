@@ -95,9 +95,10 @@ export default {
   		},
 		  fontFamily: {
 			hero: ["Playfair Display", "serif"], // Custom font
-			
 
+			
 		  },
+		  
 		  
 		
 		

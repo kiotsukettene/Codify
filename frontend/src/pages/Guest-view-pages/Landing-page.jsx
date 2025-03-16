@@ -1,4 +1,3 @@
-import GalaxyButton from "@/components/ui/galaxyButton";
 import React, { useRef } from "react";
 import sampleImg from "@/assets/picture/random-background/sampleImg.png";
 import sampleImg2 from '@/assets/picture/random-background/sampleImg2.png';
