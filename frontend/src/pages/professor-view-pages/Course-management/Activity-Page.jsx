@@ -17,7 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import Bear from "@/assets/picture/Avatar/bear.png";
+import Bear from "@/assets/picture/Avatar/Bear.png";
 import { useActivityStore } from "@/store/activityStore";
 
 const students = [
