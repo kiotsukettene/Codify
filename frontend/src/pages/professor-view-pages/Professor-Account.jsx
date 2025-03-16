@@ -27,9 +27,7 @@ const Account = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { professor } = useprofAuthStore();
-
-  console.log(professor.institution);
+  const { professor, updateProfessor } = useprofAuthStore();
 
   const validatePassword = () => {
     if (newPassword.length < 8)
@@ -48,28 +46,38 @@ const Account = () => {
     return "";
   };
 
+  const [CurrentPassIncorrect, setCurrentPassIncorrect] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationMessage = validatePassword();
-
     if (validationMessage) {
-      setErrorMessage(validationMessage);
+      setCurrentPassIncorrect(validationMessage);
+      toast.error(validationMessage);
       return;
     }
 
-    setIsSubmitting(true);
-    setErrorMessage("");
+    const updatedProfessorData = {
+      _id: professor._id,
+      firstName: professor.firstName,
+      lastName: professor.lastName,
+      email: professor.email,
+      currentPassword, // current password to verify before updating
+      password: newPassword, // new password to set
+    };
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Password changed successfully");
+      await updateProfessor(updatedProfessorData);
+      setCurrentPassIncorrect(""); // clear error if successful
+      // Optionally clear the form fields as well
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      alert("Failed to change password");
-    } finally {
-      setIsSubmitting(false);
+      const backendErrorMessage =
+        error.response?.data?.message || "Error updating professor";
+      setCurrentPassIncorrect(backendErrorMessage);
+      toast.error(backendErrorMessage);
     }
   };
 
@@ -174,6 +182,10 @@ const Account = () => {
               {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
+
+          {CurrentPassIncorrect && (
+            <p className="text-red-500 text-sm">{CurrentPassIncorrect}</p>
+          )}
 
           <div className="relative">
             <Label htmlFor="newPassword">Create a new password</Label>

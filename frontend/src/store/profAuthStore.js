@@ -259,4 +259,31 @@ export const useprofAuthStore = create((set) => ({
       throw error;
     }
   },
+
+  updateProfessor: async (professorData) => {
+    set({
+      isLoading: true,
+      error: null,
+    });
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/update/${professorData._id}`,
+        professorData
+      );
+
+      set({
+        professor: response.data.professor,
+        isLoading: false,
+      });
+
+      toast.success("Professor updated successfully");
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error updating professor",
+        isLoading: false,
+      });
+      toast.error(error.response.data.message || "Error updating professor");
+    }
+  },
 }));

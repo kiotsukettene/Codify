@@ -382,27 +382,66 @@ export const getProfessors = async (req, res) => {
 };
 
 //update prof info
+// export const updateProfessor = async (req, res) => {
+//   try {
+//     const { firstName, lastName, email, password } = req.body;
+//     const updateProfessor = await Professor.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         firstName,
+//         lastName,
+//         email,
+//         password,
+//       },
+//       { new: true }
+//     );
+
+//     if (!updateProfessor) {
+//       return res.status(404).json({ message: "Professor not found" });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Professor updated successfully",
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 export const updateProfessor = async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
-    const updateProfessor = await Professor.findByIdAndUpdate(
-      req.params.id,
-      {
-        firstName,
-        lastName,
-        email,
-        password,
-      },
-      { new: true }
-    );
+    // Extract currentPassword and new password from the request body, along with other fields
+    const { currentPassword, password: newPassword, ...otherFields } = req.body;
 
-    if (!updateProfessor) {
+    // Retrieve the professor from the database
+    const professor = await Professor.findById(req.params.id);
+    if (!professor) {
       return res.status(404).json({ message: "Professor not found" });
     }
+
+    // Verify that the provided currentPassword matches the stored hashed password
+    const isMatch = await bcrypt.compare(currentPassword, professor.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // If a new password is provided, hash it before updating
+    if (newPassword) {
+      otherFields.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    // Update the professor document with the provided fields
+    const updatedProfessor = await Professor.findByIdAndUpdate(
+      req.params.id,
+      otherFields,
+      { new: true }
+    );
 
     res.status(200).json({
       success: true,
       message: "Professor updated successfully",
+      professor: updatedProfessor,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
