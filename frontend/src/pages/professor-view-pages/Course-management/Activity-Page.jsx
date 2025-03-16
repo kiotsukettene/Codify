@@ -4,7 +4,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
