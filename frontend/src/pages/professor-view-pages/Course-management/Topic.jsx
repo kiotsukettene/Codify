@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import lion from "@/assets/picture/Avatar/lion.png";
+import lion from "@/assets/picture/Avatar/Lion.png";
 import {
   SidebarInset,
   SidebarProvider,
