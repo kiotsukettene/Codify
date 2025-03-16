@@ -117,30 +117,29 @@ export const getProfessorById = async (req, res) => {
   }
 };
 
-
-
 export const checkAuthProfessor = async (req, res) => {
   try {
-    const professor = await Professor.findById(req.professorId).select(
-      "-password")
+    const professor = await Professor.findById(req.professorId)
+      .select("-password")
+      .populate("institution", "institutionName");
 
-      if(!professor) {
-        return res.status(404).json({
-          success: false,
-          message: "Professor not found"
-        })
-      }
+    if (!professor) {
+      return res.status(404).json({
+        success: false,
+        message: "Professor not found",
+      });
+    }
 
-      res.status(200).json({
-        success: true,
-        professor
-      })
+    res.status(200).json({
+      success: true,
+      professor,
+    });
   } catch (error) {
     console.log("Error checking professor authentication", error);
     res.status(400).json({
       success: false,
-      message: "Error checking professor authentication"
-    })
+      message: "Error checking professor authentication",
+    });
   }
 };
 
@@ -280,7 +279,6 @@ export const googleLoginProfessor = async (req, res) => {
     res.status(401).json({ success: false, message: "Invalid Google token" });
   }
 };
-
 
 export const registerProfessor = async (req, res) => {
   try {

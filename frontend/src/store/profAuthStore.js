@@ -11,6 +11,7 @@ export const useprofAuthStore = create((set) => ({
   professor: null,
   isAuthenticated: false,
   professors: [],
+  institution: [],
   error: null,
   isLoading: false,
   isCheckingAuth: true,
@@ -100,8 +101,6 @@ export const useprofAuthStore = create((set) => ({
       });
     }
   },
-
-
 
   AddProfessor: async (professorData) => {
     set({ isLoading: true, error: null });
