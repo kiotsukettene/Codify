@@ -35,7 +35,7 @@ const StudentCodeBattleOverview = () => {
   {/* Middle Text Column (Wider) */}
   <div className="flex flex-col items-center justify-center text-center p-4 md:p-8">
     <CardHeader className="text-header font-chango font-semibold">
-      <p className=" md:text-4xl lg:text-6xl font-semibold  mx-auto space-y-2 relative z-20 py-4 md:py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
+      <p className=" md:text-4xl lg:text-6xl font-semibold  text-header mx-auto space-y-2 relative z-20 py-4 md:py-6 bg-clip-text bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
         Get ready for your <Cover>Coding Battle</Cover>
       </p>
     </CardHeader>
