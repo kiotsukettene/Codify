@@ -233,6 +233,13 @@ export const useAuthStore = create((set) => ({
     }
   },
   checkAuth: async () => {
+    const state = useAuthStore.getState();
+
+    if (state.isAuthenticated && state.institution) {
+      set({ isCheckingAuth: false });
+      return;
+    }
+    
     set({
       isCheckingAuth: true,
       error: null,

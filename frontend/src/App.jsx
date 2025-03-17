@@ -81,10 +81,11 @@ function App() {
   const { checkProfAuth, isCheckingProfAuth } = useprofAuthStore();
 
   useEffect(() => {
-    checkAuth();
-    checkStudentAuth();
-    checkProfAuth();
-  }, []);
+    // Only call the auth checks if they haven't been called yet
+    if (!isCheckingAuth) checkAuth();
+    if (!isCheckingStudentAuth) checkStudentAuth();
+    if (!isCheckingProfAuth) checkProfAuth();
+  }, [checkAuth, checkStudentAuth, checkProfAuth]);
 
   if (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth) return <LoadingSpinner />;
   return (

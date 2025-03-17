@@ -82,6 +82,11 @@ export const useprofAuthStore = create((set) => ({
   },
 
   checkProfAuth: async () => {
+    const state = useprofAuthStore.getState();
+    if (state.isAuthenticated && state.professor) {
+      set({ isCheckingProfAuth: false });
+      return; // Skip API call if already authenticated
+    }
     set({ isCheckingProfAuth: true, error: null });
 
     try {

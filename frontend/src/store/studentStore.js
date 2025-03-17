@@ -114,6 +114,11 @@ export const useStudentStore = create((set) => ({
 
   // Check if student is authenticated (used in protected routes)
   checkStudentAuth: async () => {
+    const state = useStudentStore.getState();
+    if (state.isAuthenticated && state.student) {
+      set({ isCheckingStudentAuth: false });
+      return; // Skip API call if already authenticated
+    }
     set({ isCheckingStudentAuth: true, error: null });
 
     try {
