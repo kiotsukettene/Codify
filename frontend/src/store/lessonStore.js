@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/lessons`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/lessons` || "http://localhost:3000/api/lessons";
 
 export const useLessonStore = create((set) => ({
   lessons: [],
