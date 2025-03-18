@@ -24,8 +24,11 @@ app.use(
   cors({
     origin: function (origin, callback) {
       const allowedOrigins = [
-        "https://www.codifylms.me", // Production frontend
+        "https://codifylms.vercel.app", // Production frontend
         "http://localhost:5173", // Local dev (Vite default port)
+        "https://www.codifylms.me/", // Production domain
+        "https://api.codifylms.me", // Backend custom domain
+        "https://codifylms.me" // Root domain
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, origin || true);
