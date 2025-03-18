@@ -26,7 +26,7 @@ app.use(
       const allowedOrigins = [
         "https://codifylms.vercel.app", // Production frontend
         "http://localhost:5173", // Local dev (Vite default port)
-        "https://www.codifylms.me/", // Production domain
+        "https://www.codifylms.me", // Production domain
         "https://api.codifylms.me", // Backend custom domain
         "https://codifylms.me" // Root domain
       ];
