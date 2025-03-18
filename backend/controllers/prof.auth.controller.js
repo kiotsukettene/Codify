@@ -76,11 +76,15 @@ export const loginProfessor = async (req, res) => {
 //logout
 export const logoutProfessor = async (req, res) => {
   try {
-    res.clearCookie("token");
-    res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
-    });
+    res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  });
+  res.status(200).json({
+    success: true, // Fixed typo: "sucess" -> "success"
+    message: "Logged out successfully",
+  });
   } catch (error) {
     console.log("Error logging out professor", error);
     res.status(400).json({
