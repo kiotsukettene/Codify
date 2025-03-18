@@ -243,8 +243,6 @@ export const googleLoginProfessor = async (req, res) => {
   const { token } = req.body;
 
   try {
-    console.log("📌 Received Token in Backend:", token); // ✅ Debugging
-
     if (!token) {
       console.error("❌ Token is missing!");
       return res
@@ -254,16 +252,13 @@ export const googleLoginProfessor = async (req, res) => {
 
     // ✅ FIXED: Verify Firebase Token using Firebase Admin SDK
     const decodedToken = await admin.auth().verifyIdToken(token);
-    console.log("✅ Decoded Token:", decodedToken);
 
     const email = decodedToken.email;
-    console.log("📌 Searching for professor with email:", email);
 
     // ✅ FIXED: Rename variable to avoid conflict
     let professorUser = await Professor.findOne({ email });
 
     if (!professorUser) {
-      console.error("❌ No registered professor found for:", email);
       return res.status(400).json({
         success: false,
         message: "No registered institution found with this email",
@@ -273,7 +268,6 @@ export const googleLoginProfessor = async (req, res) => {
     // ✅ FIXED: Use correct variable name
     profTokenAndCookie(res, professorUser._id);
 
-    console.log("✅ Found Professor:", professorUser);
     res.status(200).json({ success: true, professor: professorUser });
   } catch (error) {
     console.error("❌ Error verifying Firebase token:", error);

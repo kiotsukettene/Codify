@@ -71,6 +71,7 @@ export const useprofAuthStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      toast.success("Login successful!");
     } catch (error) {
       set({
         error: error.response?.data?.message || "Server Error",
