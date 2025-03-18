@@ -282,13 +282,19 @@ const CreateActivity = () => {
                   </div>
 
                   {/* TITLE AND INSTRUCTION */}
-                  <div className="space-y-4">
+                  <div className="space-y-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                       Title
+                  </label>
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Title"
-                      className="lg:text-balance font-semibold border-purple-100 px-4 focus-visible:ring-0 "
+                      className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 "
                     />
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                      Description
+                  </label>
                     <Input
                       value={subtitle}
                       onChange={(e) => setSubtitle(e.target.value)}
@@ -297,6 +303,9 @@ const CreateActivity = () => {
                     />
 
                     <div className="space-y-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                      Instruction
+                  </label>
                       <ToggleGroup
                         type="multiple"
                         className="justify-start"
@@ -319,7 +328,7 @@ const CreateActivity = () => {
                           <span className="underline">U</span>
                         </ToggleGroupItem>
                       </ToggleGroup>
-
+                    
                       <Textarea
                         value={instruction}
                         onChange={(e) => setInstruction(e.target.value)}

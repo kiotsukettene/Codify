@@ -49,6 +49,7 @@ import Topic from "./pages/professor-view-pages/Course-management/Topic";
 import CodeBattleOverview from "./pages/professor-view-pages/Code-Battle/Code-Battle-Overview";
 import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle";
 import Account from "./pages/professor-view-pages/Professor-Account";
+import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -91,7 +92,7 @@ function App() {
     <div>
 
       <Routes>
-        <Route path="/professor/courses" element={<LessonOverview />} />
+        <Route path="/battle" element={<CodeBattle />} />
 
 
 

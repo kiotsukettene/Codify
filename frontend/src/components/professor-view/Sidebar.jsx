@@ -41,9 +41,9 @@ function AppSidebar() {
               <SidebarMenuButton asChild>
                 <a
                   href={item.to}
-                  className={`flex items-center font-medium transition-all ${
+                  className={`flex items-center font-medium transition-all py-6 ${
                     isActive
-                      ? "bg-violet-600 text-white" // Darker highlight, white text
+                      ? "bg-violet-100 text-purple-600 font-semibold" // Darker highlight, white text
                       : "hover:bg-violet-100 text-[#7648C8]" // Inactive styles with hover
                   }`}
                 >

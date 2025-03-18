@@ -138,9 +138,6 @@ const CreateLesson = () => {
         };
         groupedSections.push(currentSection);
       }
-
-      // If no subheader is provided and we have not created a section yet,
-      // do nothing (or handle however you prefer).
       if (!currentSection) {
         return;
       }
