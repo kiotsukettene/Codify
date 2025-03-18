@@ -11,6 +11,7 @@ import activityRoutes from "./routes/activity.route.js";
 import studentCourseRoutes from "./routes/studentCourse.route.js";
 import challengeRoutes from "./routes/challenge.route.js";
 import cors from "cors";
+import emailRoutes from "./routes/email.route.js"; // Import email routes
 import session from "express-session";
 import passport from "passport";
 
@@ -39,11 +40,8 @@ app.use(
   })
 );
 
-
-
 app.use(express.json());
 app.use(cookieParser());
-
 
 // Handle CORS Preflight Requests
 app.options("*", cors());
@@ -58,6 +56,9 @@ app.use("/uploads", express.static("uploads"));
 
 app.use("/api/students/courses", studentCourseRoutes);
 app.use("/api/students/challenges", challengeRoutes);
+
+// Use email routes
+app.use("/api/guest", emailRoutes); // Prefix all email routes with /api
 
 app.listen(PORT, () => {
   connectDB();
