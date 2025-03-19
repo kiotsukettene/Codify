@@ -1,8 +1,6 @@
-import GalaxyButton from "@/components/ui/galaxyButton";
 import React, { useRef } from "react";
 import sampleImg from "@/assets/picture/random-background/sampleImg.png";
 import sampleImg2 from '@/assets/picture/random-background/sampleImg2.png';
-import VariableFontHoverByRandomLetter from "@/fancy/components/text/variable-font-hover-by-random-letter";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import BrandsComponent from "@/components/ui/brands";
 import { PricingCard } from "@/components/pricing-card";
