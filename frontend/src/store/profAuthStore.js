@@ -4,7 +4,15 @@ import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/professors` || "http://localhost:3000/api/professors";
+
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/professors" // Local backend
+  : `${import.meta.env.VITE_API_URL}/api/professors`; // Production backend
+
+// Debug to confirm the URL
+console.log("Environment:", import.meta.env.MODE);
+console.log("API_URL:", API_URL);
 
 axios.defaults.withCredentials = true;
 
