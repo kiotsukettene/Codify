@@ -77,7 +77,7 @@ function MainLogin() {
   const [color, setColor] = useState("#000000");
 
   return (
-    <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full min-h-screen flex flex-col items-center py-12 ">
+    <main className="relative overflow-hidden bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full min-h-screen flex flex-col items-center py-12 ">
       <div className="absolute inset-0 z-0">
         <Particles
           className="w-full h-full"
@@ -88,7 +88,7 @@ function MainLogin() {
         />
       </div>
 
-      <div className="relative z-10 text-center mt-32 mb-7">
+      <div className="relative z-10 text-center mt-28 mb-7">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
           Choose your portal
         </h1>

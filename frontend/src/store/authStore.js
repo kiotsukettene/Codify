@@ -6,7 +6,12 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
 import toast from "react-hot-toast";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/auth` || "http://localhost:3000/api/auth";
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/auth" // Local backend
+  : `${import.meta.env.VITE_API_URL}/api/auth`; // Production backend
+
+
 
 axios.defaults.withCredentials = true;
 
@@ -166,6 +171,7 @@ export const useAuthStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      toast.success("Login successfully")
     } catch (error) {
       set({
         error: error.response?.data?.message || "Server Error",

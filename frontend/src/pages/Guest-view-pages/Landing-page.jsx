@@ -1,8 +1,6 @@
-import GalaxyButton from "@/components/ui/galaxyButton";
 import React, { useRef } from "react";
 import sampleImg from "@/assets/picture/random-background/sampleImg.png";
 import sampleImg2 from '@/assets/picture/random-background/sampleImg2.png';
-import VariableFontHoverByRandomLetter from "@/fancy/components/text/variable-font-hover-by-random-letter";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import BrandsComponent from "@/components/ui/brands";
 import { PricingCard } from "@/components/pricing-card";
@@ -311,7 +309,7 @@ function LandingPage({title}) {
       </section>
 
       {/*========================= Features Section ===============================*/}
-      <section className="max-w-7xl mx-auto mt-[-10rem] pb-16 px-6 bg-neutral-50">
+      <section id="features"  className="max-w-7xl mx-auto mt-[-10rem] pb-16 px-6 bg-neutral-50">
        {/* Section Title & Subheading */}
         {/* Progress Badge */}
         <motion.div
@@ -341,7 +339,7 @@ function LandingPage({title}) {
       </section>
 
       {/*========================= Pricing Section ===============================*/}
-      <section className="max-w-7xl mx-auto py-16 px-6 bg-neutral-50">
+      <section id="pricing" className="max-w-7xl mx-auto py-16 px-6 bg-neutral-50">
       <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

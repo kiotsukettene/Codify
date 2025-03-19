@@ -76,11 +76,11 @@ function StudentCourseListPage() {
       {isLoading ? (
         <p>Loading courses...</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 my-4">
           {enrolledCourses.map((course) => (
             <StudentCourseCard
               key={course._id}
-              lessons={course.lessons?.length || 0} // Adjust if lessons are fetched separately
+              lessons={course.lessonCount || 0} // Adjust if lessons are fetched separately
               image={course.image || "https://via.placeholder.com/150"}
               title={course.className}
               professor={`${course.professorId?.firstName} ${course.professorId?.lastName}`}

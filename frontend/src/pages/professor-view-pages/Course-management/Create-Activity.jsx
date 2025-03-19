@@ -7,8 +7,6 @@ import {
   FileIcon,
   X,
   CalendarIcon,
-  Clock,
-  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +27,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import confetti from "canvas-confetti";
+import { isBefore, startOfToday } from "date-fns";
 import { toast } from "react-hot-toast";
 import {
   Popover,
@@ -36,13 +35,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { TimeField } from "@/components/professor-view/Time-field";
+import TimeField  from "@/components/professor-view/Time-field";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useActivityStore } from "@/store/activityStore";
 import { useParams } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
 import { useCourseStore } from "@/store/courseStore";
+import { parse } from "date-fns";
+
 
 const CreateActivity = () => {
   const [title, setTitle] = React.useState("");
@@ -50,13 +51,11 @@ const CreateActivity = () => {
   const [instruction, setInstruction] = React.useState("");
   const [textFormat, setTextFormat] = useState([]);
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activityProgress, setActivityProgress] = useState(0);
-  const [hasShownConfetti, setHasShownConfetti] = useState(false);
   const [files, setFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-  const [date, setDate] = useState(null);
+  const [date, setDate] = useState(startOfToday());
   const [time, setTime] = useState("");
   const [sections, setSections] = useState([]);
 
@@ -148,16 +147,7 @@ const CreateActivity = () => {
     if (instruction) progress += 33.34;
 
     setActivityProgress(Math.round(progress));
-
-    if (Math.round(progress) === 100 && !hasShownConfetti) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-      setHasShownConfetti(true);
-    }
-  }, [title, subtitle, instruction, hasShownConfetti]);
+  });
 
   useEffect(() => {
     const hasContent =
@@ -246,17 +236,6 @@ const CreateActivity = () => {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1">
-        <SidebarInset className="flex-1 !p-0">
-          <header className="flex h-16 items-center px-4">
-            <SidebarTrigger
-              className="-ml-1"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mx-2 h-4" />
-          </header>
 
           <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-9">
@@ -311,13 +290,19 @@ const CreateActivity = () => {
                   </div>
 
                   {/* TITLE AND INSTRUCTION */}
-                  <div className="space-y-4">
+                  <div className="space-y-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                       Title
+                  </label>
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Title"
-                      className="lg:text-balance font-semibold border-purple-100 px-4 focus-visible:ring-0 "
+                      className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 "
                     />
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                      Description
+                  </label>
                     <Input
                       value={subtitle}
                       onChange={(e) => setSubtitle(e.target.value)}
@@ -326,6 +311,9 @@ const CreateActivity = () => {
                     />
 
                     <div className="space-y-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                      Instruction
+                  </label>
                       <ToggleGroup
                         type="multiple"
                         className="justify-start"
@@ -348,7 +336,7 @@ const CreateActivity = () => {
                           <span className="underline">U</span>
                         </ToggleGroupItem>
                       </ToggleGroup>
-
+                    
                       <Textarea
                         value={instruction}
                         onChange={(e) => setInstruction(e.target.value)}
@@ -413,15 +401,15 @@ const CreateActivity = () => {
               {/* Due Date */}
 
               <Card className="w-full lg:w-[300px] p-4 mt-6">
-                <p className="font-medium mb-4 flex">
-                  Due :
-                  {(date || time) && (
-                    <div className=" text-sm text-muted-foreground mt-1 ml-2">
-                      {date && format(date, "PPP")}
-                      {time && ` at ${time}`}
-                    </div>
-                  )}
-                </p>
+              <p className="font-medium mb-4 flex">
+                Due :
+                {(date || time) && (
+                  <div className="text-sm text-muted-foreground mt-1 ml-2">
+                    {date && format(date, "PPP")}
+                    {time && ` at ${format(parse(time, "HH:mm", new Date()), "hh:mm a")}`}
+                  </div>
+                )}
+              </p>
 
                 <Popover>
                   <PopoverTrigger asChild>
@@ -442,29 +430,15 @@ const CreateActivity = () => {
                       selected={date}
                       onSelect={setDate}
                       initialFocus
+                      disabled={(date) => isBefore(date, startOfToday())}
                     />
                   </PopoverContent>
                 </Popover>
 
                 <div className="mt-4">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !time && "text-muted-foreground"
-                        )}
-                      >
-                        <Clock className="mr-2 h-4 w-4" />
-                        {time || "Set time (optional)"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-3">
-                      <TimeField value={time} onChange={setTime} />
-                    </PopoverContent>
-                  </Popover>
+                  <TimeField value={time} onChange={setTime} />
                 </div>
+
 
                 {/* Upload Files */}
               </Card>
@@ -541,9 +515,6 @@ const CreateActivity = () => {
               </Button> */}
             </div>
           </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
   );
 };
 

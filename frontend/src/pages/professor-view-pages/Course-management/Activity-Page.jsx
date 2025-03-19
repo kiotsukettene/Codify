@@ -39,7 +39,6 @@ const ActivityPage = () => {
   const { courseSlug, lessonSlug } = useParams();
   const { activities, activity, fetchActivityById } = useActivityStore();
   const { activitySlug } = useParams();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
@@ -65,7 +64,7 @@ const ActivityPage = () => {
 
   return (
     
-          <div className="w-full px-10">
+          <div className="w-full px-4">
             {/* Header */}
             <div className="flex items-center justify-between gap-3 mb-6">
               <div className="flex items-center gap-3">
@@ -83,17 +82,8 @@ const ActivityPage = () => {
 
                 <h1 className="text-xl font-semibold">{activity?.title}</h1>
               </div>
+
               {/* Right Section: Dropdown Menu */}
-              <DropdownMenu>
-                <DropdownMenuContent align="end" className="py-1 text-red-600">
-                  <DropdownMenuItem className="hover:bg-gray-100 transition-colors duration-200">
-                    Delete
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-gray-100 transition-colors duration-200">
-                    Edit
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
 
             {/* Tabs */}

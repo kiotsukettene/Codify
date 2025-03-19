@@ -69,14 +69,6 @@ return(
         </div>
       </motion.div>
 
-      {/* <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-base"
-      >
-        {description}
-      </motion.p> */}
-
       {/* Card details */}
       <motion.div 
         className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mt-2 flex-1 lg:w-3/4"

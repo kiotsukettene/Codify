@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -36,7 +35,7 @@ const timeSlots = Array.from({ length: 15 }, (_, i) => {
   };
 });
 import { useCourseStore } from "@/store/courseStore";
-import { TimeField } from "@/components/professor-view/Time-field";
+import TimeField  from "@/components/professor-view/Time-field";
 
 const CourseModal = ({ onClose }) => {
   const [formValues, setFormValues] = useState({
@@ -370,15 +369,11 @@ const CourseModal = ({ onClose }) => {
             {errors.day && <p className="text-red-500 text-sm">{errors.day}</p>}
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label className="block text-sm sm:text-base font-medium text-gray-700">
               Time
             </label>
-            <TimeField
-              name="time"
-              value={formValues.time}
-              onChange={handleTimeChange}
-            />
+            <TimeField value={formValues.time} onChange={handleTimeChange} />
 
             {errors.time && (
               <p className="text-red-500 text-sm">{errors.time}</p>

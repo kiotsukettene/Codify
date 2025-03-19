@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AppSidebar from "@/components/professor-view/Sidebar";
 import { Eye, FileText, Trophy, Users, Rocket } from "lucide-react";
 import {
   SidebarInset,
@@ -19,11 +18,10 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
-import { toast } from "react-hot-toast";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import { useCourseStore } from "@/store/courseStore";
 
@@ -201,7 +199,7 @@ const LessonOverview = () => {
               })}
               {tab.label}
               {activeTab === tab.id && (
-                <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute -top-1 -right-1" />
+                <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute-right-1" />
               )}
             </motion.button>
           ))}

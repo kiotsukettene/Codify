@@ -55,7 +55,7 @@ function StudentChallengesView() {
   };
 
   const ChallengeCard = ({ challenges }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 w-full">
       {challenges.map((challenge) => (
         <div
           key={challenge.id}
@@ -75,8 +75,8 @@ function StudentChallengesView() {
   );
 
   return (
-    <div className="container mx-auto py-4">
-      <div className="flex flex-col lg:flex-row gap-6">
+    <div className="container mx-auto py-4 px-6">
+      <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 flex flex-col">
           <h1 className="text-header font-semibold text-4xl mt-3">Let's warm up!</h1>
           <Tabs defaultValue="all" className="w-full mt-5">
@@ -100,33 +100,39 @@ function StudentChallengesView() {
             </TabsContent>
           </Tabs>
         </div>
-        <div className="w-full lg:w-80 flex-shrink-0 flex flex-col justify-between h-full bg-white p-4 rounded-xl">
-          <div className="space-y-4">
-            <div className="w-full aspect-square rounded-2xl bg-[#5315BB] overflow-hidden">
-              <img src={challengesImg} alt="Space Computer" className="w-full h-full object-cover" />
-            </div>
-            <h1 className="text-center text-header font-semibold text-2xl">
-              Crack the Code, Level Up Your Skills
-            </h1>
-            <h4 className="text-center text-neutral-600 text-md">
-              Select a challenge and show your coding prowess
-            </h4>
-            <Card className="p-3 border-none shadow-none bg-purple-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-violet-200 rounded-lg">
-                  <Swords className="text-violet-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-800 font-medium">Completed Challenges</p>
-                  <p className="text-2xl font-bold text-primary">{completedChallenges}</p>
-                </div>
-              </div>
-            </Card>
+
+        <div className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 bg-white p-4 rounded-xl">
+          <div className="w-full aspect-square rounded-2xl bg-[#5315BB] overflow-hidden">
+            <img src={challengesImg} alt="Space Computer" className="w-full h-full object-cover" />
           </div>
-          <div className="w-full aspect-square rounded-2xl overflow-hidden mt-4">
-            <img src={wave || '/placeholder.svg'} alt="Wave decoration" className="w-full h-full object-cover" />
+
+          <h1 className="text-center text-header font-semibold text-2xl">
+            Crack the Code, Level Up Your Skills
+          </h1>
+
+          <h4 className="text-center text-neutral-600 text-md">
+            Select a challenge and show your coding prowess
+          </h4>
+
+          <Card className="p-3 border-none shadow-none bg-purple-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-violet-200 rounded-lg">
+                <Swords className="text-violet-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-800 font-medium">Completed Challenges</p>
+                <p className="text-2xl font-bold text-primary">{completedChallenges}</p>
+              </div>
+            </div>
+          </Card>
+
+          <div className="w-full rounded-2xl overflow-hidden mt-auto">
+            <img src={wave || '/placeholder.svg'} alt="Wave decoration" className="w-full h-auto object-cover" />
           </div>
         </div>
+
+
+
       </div>
     </div>
   );

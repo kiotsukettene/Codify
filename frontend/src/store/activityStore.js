@@ -2,7 +2,12 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/activities` || "http://localhost:3000/api/activities"; ;
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/activities" // Local backend
+  : `${import.meta.env.VITE_API_URL}/api/activities`; // Production backend
+
+
 
 export const useActivityStore = create((set) => ({
   activities: [],

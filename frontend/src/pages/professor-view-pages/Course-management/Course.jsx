@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Card from "@/components/professor-view/Course-Card";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

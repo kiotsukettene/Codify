@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,7 +44,7 @@ const ProfessorLogin = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
+    <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center pt-12 overflow-hidden p-4">
       <ProfBg1 />
 
       {/* Login Card */}

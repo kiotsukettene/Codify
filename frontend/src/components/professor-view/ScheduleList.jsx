@@ -1,32 +1,32 @@
 import PropTypes from "prop-types";
 import { Clock2, ChevronRight } from "lucide-react";
 
-const ScheduleList = ({ scheduleData }) => {
+const ScheduleList = ({ scheduleData, onClick }) => {
   return (
-    <div className=" max-w-lg mx-auto">
+    <div className="w-full mx-auto bg-white border border-gray-300 p-4 pt-6 rounded-lg">
       <div className="flex items-center gap-2 mb-4">
-        <Clock2 className="text-purple-800 w-5 h-5 sm:w-6 sm:h-6" />
+        <Clock2 className="text-purple-800 w-4 h-4 sm:w-5 sm:h-5" />
         <h3 className="text-xs sm:text-base font-semibold">
-          Today&apos;s Schedule
+          Today's Schedule
         </h3>
       </div>
-      {/* Schedule List */}
-      <div className="space-y-3 ">
+      <div className="space-y-3">
         {scheduleData.map((schedule) => (
-          <div
+          <button
             key={schedule.id}
-            className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg border-l-8 border-purple-800 bg-purple-100 transition-all sm:p-4"
+            className="w-full flex items-start justify-between text-left p-3 hover:bg-gray-50 rounded-lg border-l-8 border-purple-800 bg-purple-100 transition-all sm:p-4"
+            onClick={() => onClick(schedule.id)}
           >
-            <div className="flex-1 pr-11">
-              <p className="font-medium text-sm  sm:text-base truncate">
+            <div className="flex-1 pr-4">
+              <p className="font-medium text-xs sm:text-sm truncate">
                 {schedule.subject}
               </p>
-              <p className="text-xs sm:text-sm text-gray-500 truncate">
+              <p className="text-xs text-gray-500 truncate">
                 {schedule.class} | {schedule.time}
               </p>
             </div>
-            <ChevronRight className="text-purple-800 w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
+            <ChevronRight className="text-purple-800 w-3 h-3 sm:w-4 sm:h-4 self-center" />
+          </button>
         ))}
       </div>
     </div>

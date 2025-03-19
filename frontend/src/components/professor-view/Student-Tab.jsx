@@ -99,7 +99,7 @@ const StudentTab = ({ studentList = [], activities = [] }) => {
             {/* Student Activities */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Activities</h3>
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activities.length > 0 ? (
                   activities.map((activity) => (
                     <div
@@ -146,7 +146,7 @@ const StudentTab = ({ studentList = [], activities = [] }) => {
                 ) : (
                   <p className="text-gray-500">No activities available</p>
                 )}
-              </div> */}
+              </div>
             </div>
           </Card>
         ) : (

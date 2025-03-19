@@ -1,7 +1,7 @@
 import "./App.css";
 import { Routes, Route, Navigate, useLocation} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import LoadingSpinner from "./components/LoadingSpinner";
 import {
@@ -49,6 +49,7 @@ import Topic from "./pages/professor-view-pages/Course-management/Topic";
 import CodeBattleOverview from "./pages/professor-view-pages/Code-Battle/Code-Battle-Overview";
 import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle";
 import Account from "./pages/professor-view-pages/Professor-Account";
+import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -73,24 +74,39 @@ import VideoConference from "./pages/student-view-pages/Video-Conference";
 import { useStudentStore }  from "@/store/studentStore";
 import ContactUsPage from "./pages/Guest-view-pages/Contact-Us";
 import ProfessorLayout from "./Layout/ProfessorLayout";
+import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/student-codeBattle-overview";
+import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
+import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
   const { checkStudentAuth, isCheckingStudentAuth } = useStudentStore();
   const { checkProfAuth, isCheckingProfAuth } = useprofAuthStore();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Run auth checks only on initial load
   useEffect(() => {
-    checkAuth();
-    checkStudentAuth();
-    checkProfAuth();
-  }, []);
+    const initializeAuth = async () => {
+      await Promise.all([checkAuth(), checkStudentAuth(), checkProfAuth()]);
+      setIsInitialLoad(false); // Mark initial load as complete
+    };
+    initializeAuth();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
-  if (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth) return <LoadingSpinner />;
+  // Show spinner only during initial load when auth is being checked
+  if (isInitialLoad && (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth)) {
+    return <LoadingSpinner />;
+  }
   return (
     <div>
+
       <Routes>
-        {/* <Route path="/professor/courses" element={<LessonOverview />} /> */}
+        <Route path="/battle" element={<CodeBattle />} />
+
+
+
+
 
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
@@ -215,7 +231,13 @@ function App() {
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings/>}/>
+          <Route path="code-battle" element={<StudentCodeBattleOverview/>}/>
         </Route>
+
+
+        <Route path="/arena-dashboard" element={<ArenaDashboardPage/>}/>
+        <Route path="/main-arena" element={<MainArena/>}/>
+
 
         {/* Additional Routes */}
         <Route path="/code-editor" element={<CodeEditor />} />

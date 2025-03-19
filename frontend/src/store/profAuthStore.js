@@ -4,7 +4,12 @@ import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/professors` || "http://localhost:3000/api/professors";
+
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/professors" // Local backend
+  : `${import.meta.env.VITE_API_URL}/api/professors`; // Production backend
+
 
 axios.defaults.withCredentials = true;
 
@@ -12,6 +17,7 @@ export const useprofAuthStore = create((set) => ({
   professor: null,
   isAuthenticated: false,
   professors: [],
+  institution: [],
   error: null,
   isLoading: false,
   isCheckingAuth: true,
@@ -107,8 +113,6 @@ export const useprofAuthStore = create((set) => ({
       });
     }
   },
-
-
 
   AddProfessor: async (professorData) => {
     set({ isLoading: true, error: null });
@@ -265,6 +269,33 @@ export const useprofAuthStore = create((set) => ({
         error: error.response.data.message || "Error resetting password",
       });
       throw error;
+    }
+  },
+
+  updateProfessor: async (professorData) => {
+    set({
+      isLoading: true,
+      error: null,
+    });
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/update/${professorData._id}`,
+        professorData
+      );
+
+      set({
+        professor: response.data.professor,
+        isLoading: false,
+      });
+
+      toast.success("Professor updated successfully");
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error updating professor",
+        isLoading: false,
+      });
+      toast.error(error.response.data.message || "Error updating professor");
     }
   },
 }));

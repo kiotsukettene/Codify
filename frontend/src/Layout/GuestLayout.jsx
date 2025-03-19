@@ -8,8 +8,6 @@ function GuestLayout() {
        <NavBar/>
         <main className=""> 
         <Outlet /> 
-        <div className="pb-6">
-        </div>
       </main>
       
       

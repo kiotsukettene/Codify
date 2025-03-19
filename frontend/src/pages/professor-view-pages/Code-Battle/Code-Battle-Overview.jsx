@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Trophy, Zap } from "lucide-react";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/professor-view/Sidebar";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
 import CodeBattleTab from "@/components/professor-view/Code-Battle-Tab"
 import Leaderboard from "@/components/professor-view/Leaderboard-Tab";
 
@@ -17,7 +13,7 @@ const CodeBattleOverview = () => {
   };
 
   return (
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col">
             {/* Tabs Navigation */}
             <div className="items-center px-4 gap-4">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
