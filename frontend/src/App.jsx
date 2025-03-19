@@ -77,7 +77,6 @@ import ProfessorLayout from "./Layout/ProfessorLayout";
 import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/student-codeBattle-overview";
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
-import PostBattleSummary from "./pages/student-view-pages/code-battle/post-battle-summary";
 
 
 function App() {
@@ -231,7 +230,6 @@ function App() {
 
         <Route path="/arena-dashboard" element={<ArenaDashboardPage/>}/>
         <Route path="/main-arena" element={<MainArena/>}/>
-        <Route path="/post-battle-summary" element={<PostBattleSummary/>}/>
 
 
         {/* Additional Routes */}
