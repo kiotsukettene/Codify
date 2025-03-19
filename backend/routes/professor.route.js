@@ -28,7 +28,7 @@ router.get("/professor/:professorId", getProfessorById);
 //prof registration
 router.post("/register", verifyToken, registerProfessor);
 router.get("/list", verifyToken, getProfessors);
-router.put("/list/update/:id", verifyToken, updateProfessor);
+router.put("/update/:id", verifyToken, updateProfessor);
 router.delete("/list/delete/:id", verifyToken, deleteProfessor);
 
 export default router;
