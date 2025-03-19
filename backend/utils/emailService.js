@@ -16,7 +16,7 @@ const sendEmail = async ({ name, email, inquiryType, message }) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: "codify.dev2025@gmail.com",
-      subject: `New Inquiry: ${inquiryType}`,
+      subject: `New Inquiry: Codify Inquiry`,
       text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
     };
 

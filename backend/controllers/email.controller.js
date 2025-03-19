@@ -1,9 +1,8 @@
 import sendEmail from "../utils/emailService.js";
 
-// Controller function to handle email sending
 export const sendEmailController = async (req, res) => {
   try {
-    const result = await sendEmail(req.body); // Call email service
+    const result = await sendEmail(req.body);
     res.status(result.success ? 200 : 500).json(result);
   } catch (error) {
     console.error("❌ Controller Error:", error);

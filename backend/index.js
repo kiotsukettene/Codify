@@ -58,7 +58,7 @@ app.use("/api/students/courses", studentCourseRoutes);
 app.use("/api/students/challenges", challengeRoutes);
 
 // Use email routes
-app.use("/api/guest", emailRoutes); // Prefix all email routes with /api
+app.use("/api/guest", emailRoutes);
 
 app.listen(PORT, () => {
   connectDB();
