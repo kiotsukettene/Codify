@@ -1,22 +1,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Editor } from "@monaco-editor/react"
-import {
-  Clock,
-  Play,
-  Send,
-  XCircle,
-  CheckCircle,
-  AlertCircle,
-  ChevronRight,
-  ChevronDown,
-  Trophy,
-  User,
-  Users,
-  ArrowLeft,
-  Expand,
-  Minimize,
-} from "lucide-react"
+import {Clock,Play,Send,XCircle,CheckCircle,AlertCircle,ChevronRight,ChevronDown,Trophy,User,Users,ArrowLeft,Expand,Minimize,} from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -24,8 +9,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import ReactMarkdown from "react-markdown"
+import { useNavigate } from "react-router-dom"
 
-// Sample problem data
+//============= Sample problem data=================
 const problemData = {
   title: "Data Sorting Challenge",
   points: 150,
@@ -99,7 +85,7 @@ public class Solution {
   },
 }
 
-// Sample test cases
+// =============Sample test cases===============
 const testCases = [
   { id: 1, input: "[5, 2, 9, 1, 5]", expectedOutput: "[1, 2, 5, 5, 9]", status: "waiting" },
   { id: 2, input: "[3, 1, 2]", expectedOutput: "[1, 2, 3]", status: "waiting" },
@@ -107,7 +93,7 @@ const testCases = [
   { id: 4, input: "[7, 7, 7, 7]", expectedOutput: "[7, 7, 7, 7]", status: "waiting" },
 ]
 
-// Sample opponent data
+//============== Sample opponent data===============
 const opponents = [
   { id: 1, name: "CodeNinja", avatar: "/placeholder.svg?height=40&width=40", progress: 75, score: 120 },
 ]
@@ -124,25 +110,26 @@ export default function MainArena() {
   const [isEditorExpanded, setIsEditorExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState("output")
   const [editorKey, setEditorKey] = useState(0) // Key to force editor remount
+  const navigate = useNavigate()
 
   // Refs for scrollable elements
   const testCasesRef = useRef(null)
   const outputRef = useRef(null)
   const editorRef = useRef(null)
 
-  // Format time from seconds to MM:SS
+  // Format time
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Handle editor mounting
+  // Handle editor 
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor
   }
 
-  // Handle language change
+  // ========================== Language change =========================
   useEffect(() => {
     if (language === "javascript") {
       setCode(problemData.boilerplate.javascript)
@@ -153,7 +140,7 @@ export default function MainArena() {
     }
   }, [language])
 
-  // Countdown timer
+  // ========================== Countdown Timer==========================
   useEffect(() => {
     let timer
     if (timeLeft > 0) {
@@ -164,7 +151,7 @@ export default function MainArena() {
     return () => clearInterval(timer)
   }, [timeLeft])
 
-  // Handle editor expansion with debounce to prevent resize observer issues
+  // Handle editor expansion
   useEffect(() => {
     // Force editor to remount after layout changes
     const timer = setTimeout(() => {
@@ -176,9 +163,9 @@ export default function MainArena() {
     return () => clearTimeout(timer)
   }, [isEditorExpanded])
 
-  // Toggle editor expansion with debounce
+  // Toggle editor expansion
   const toggleEditorExpansion = () => {
-    // Increment key to force remount of editor
+  
     setEditorKey((prev) => prev + 1)
 
     // Use setTimeout to avoid immediate state changes that could cause layout thrashing
@@ -187,13 +174,13 @@ export default function MainArena() {
     }, 10)
   }
 
-  // Simulate running code
+  // ========================== running code==========================
   const handleRunCode = () => {
     setIsRunning(true)
     setOutput("Running your code...")
     setActiveTab("output") // Switch to output tab
 
-    // Simulate processing delay
+    // processing delay
     setTimeout(() => {
       setOutput(
         "Code executed successfully!\n\nTest case #1: [5, 2, 9, 1, 5] → [1, 2, 5, 5, 9] ✓\n\nYour function correctly sorts the array.",
@@ -205,12 +192,12 @@ export default function MainArena() {
     }, 1500)
   }
 
-  // Simulate submitting code
+  // ========================== submitting code function==========================
   const handleSubmitCode = () => {
     setIsRunning(true)
     setOutput("Evaluating your solution against all test cases...")
 
-    // Simulate processing delay
+    // processing delay
     setTimeout(() => {
       // Update test results
       const updatedResults = testResults.map((test) => ({
@@ -237,7 +224,7 @@ export default function MainArena() {
       {/* Header with battle info */}
       <header className="flex items-center justify-between px-6 py-3 bg-[#18122B] border-b border-[#2B1F4A]">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" className="p-2 hover:bg-[#2B1F4A] rounded-full text-[#C2C2DD] hover:text-[#F5F5F5]">
+          <Button onClick={() => navigate('/arena-dashboard')} variant="ghost" className="p-2 hover:bg-[#2B1F4A] rounded-full text-[#C2C2DD] hover:text-[#F5F5F5]">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

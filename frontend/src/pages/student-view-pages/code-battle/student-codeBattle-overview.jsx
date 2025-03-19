@@ -16,10 +16,12 @@ import StudentStatCards from "@/components/student-view/StudentStatsCard";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import AchievementBadges from "@/components/student-view/achievement-badges";
+import { useNavigate } from "react-router-dom";
 
 
 
 const StudentCodeBattleOverview = () => {
+  const navigate = useNavigate();
   return (
     <div className="w-full py-4 mx-6">
 <Card className="h-auto w-full bg-[#E9DCFF] shadow-none border-none relative overflow-hidden rounded-xl grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-4">
@@ -50,7 +52,7 @@ const StudentCodeBattleOverview = () => {
           >
         
 
-            <Button className=' px-8 py-6 text-lg font-medium bg-primary rounded-full'>
+            <Button onClick={() => navigate('/arena-dashboard')} className=' px-8 py-6 text-lg font-medium bg-primary rounded-full'>
             Enter Arena
             </Button>
           

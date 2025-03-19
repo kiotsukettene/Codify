@@ -8,8 +8,10 @@ import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import LiveNowBG from "@/assets/picture/random-background/LiveNow-BG.png";
 import { Cover } from "@/components/ui/cover";
 import { Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ArenaDashboardPage = () => {
+  const navigate = useNavigate()
   const cards = [
     {
       id: 1,
@@ -114,9 +116,8 @@ const ArenaDashboardPage = () => {
   return (
     <div className="min-h-screen bg-[#151135]  text-white p-6 px-7">
       <div className="flex justify-between items-center">
-        <img src={Logo} alt="" />
-
-        <Button>Back to Home</Button>
+      <img src={Logo} alt="" />
+        <Button onClick={() => navigate('/student/code-battle')}>Back to Home</Button>
       </div>
 
       <div className="w-full max-w-7xl mx-auto items-center flex justify-center">

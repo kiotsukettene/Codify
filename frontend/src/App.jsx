@@ -222,7 +222,7 @@ function App() {
           <Route path="code-battle" element={<StudentCodeBattleOverview/>}/>
         </Route>
 
-
+        {/*=========Nakalabas muna yung routes netong tatlo sa student ============*/}
         <Route path="/arena-dashboard" element={<ArenaDashboardPage/>}/>
         <Route path="/main-arena" element={<MainArena/>}/>
         <Route path="/post-battle-summary" element={<PostBattleSummary/>}/>
