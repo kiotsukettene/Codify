@@ -9,9 +9,7 @@ const API_URL = isDev
   ? "http://localhost:3000/api/students/challenges" // Local backend
   : `${import.meta.env.VITE_API_URL}/api/students/challenges`; // Production backend
 
-// Debug to confirm the URL
-console.log("Environment:", import.meta.env.MODE);
-console.log("API_URL:", API_URL);
+
 
 export const useChallengeStore = create((set) => ({
   challenges: challenges, // Static challenges from challenges.js

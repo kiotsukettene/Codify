@@ -7,9 +7,7 @@ const API_URL = isDev
   ? "http://localhost:3000/api/activities" // Local backend
   : `${import.meta.env.VITE_API_URL}/api/activities`; // Production backend
 
-// Debug to confirm the URL
-console.log("Environment:", import.meta.env.MODE);
-console.log("API_URL:", API_URL);
+
 
 export const useActivityStore = create((set) => ({
   activities: [],
