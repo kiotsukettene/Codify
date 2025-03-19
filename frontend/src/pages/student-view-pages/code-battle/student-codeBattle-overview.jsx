@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sparkles } from "lucide-react";
 
 import imageHeader from "@/assets/picture/random-background/Code-battle-header-img.png";
-import imageHeader2 from '@/assets/picture/random-background/Code-battle-header-2.png'
+
 
 import React from "react";
 import { Cover } from "@/components/ui/cover";
