@@ -73,7 +73,6 @@ const Account = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      toast.success("Password updated successfully");
     } catch (error) {
       const backendErrorMessage =
         error.response?.data?.message || "Error updating professor";
