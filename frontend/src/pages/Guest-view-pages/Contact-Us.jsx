@@ -11,17 +11,31 @@ import {
 } from "@/components/ui/select";
 import { MessageCircle, Phone } from "lucide-react";
 import Footer from "@/components/ui/footer";
-import { toast } from "react-hot-toast";
+
+// Custom email validation function
+const emailValidation = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const ContactUsPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // Clear previous error messages
+    setErrorMessage("");
+
+    // Custom email validation check
+    if (!emailValidation(email)) {
+      setErrorMessage("Please enter a valid email address.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const formData = { name, email, message };
 
     try {
@@ -36,21 +50,22 @@ const ContactUsPage = () => {
       const result = await response.json();
 
       if (result.success) {
-        toast.success("Email sent successfully!");
-        // Reset form fields
+        // You might consider a success notification here as well.
+        // For now, we're simply resetting the form.
         setName("");
         setEmail("");
         setMessage("");
       } else {
-        toast.error("Failed to send email. Please try again.");
+        setErrorMessage("Failed to send email. Please try again.");
       }
     } catch (error) {
       console.error("Error sending email:", error);
-      toast.error("Error sending email. Please try again.");
+      setErrorMessage("Error sending email. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div>
       <header className="relative w-full pt-6 overflow-hidden rounded-b-[2.5rem] bg-gradient-to-b from-indigo-700 via-purple-400 to-pink-200 px-6 text-center md:px-8 md:py-24">
@@ -78,7 +93,6 @@ const ContactUsPage = () => {
                       Contact Us
                     </h1>
                   </div>
-
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-xl bg-white p-6 shadow-sm">
                       <div className="mb-4">
@@ -97,7 +111,6 @@ const ContactUsPage = () => {
                         codify.dev2025@email.com
                       </a>
                     </div>
-
                     <div className="rounded-xl bg-white p-6 shadow-sm">
                       <div className="mb-4">
                         <Phone className="h-6 w-6 text-primary" />
@@ -119,7 +132,11 @@ const ContactUsPage = () => {
                 {/* Right Column - Contact Form */}
                 <div>
                   <div className="rounded-xl bg-white p-6 shadow-sm">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form
+                      onSubmit={handleSubmit}
+                      noValidate
+                      className="space-y-6"
+                    >
                       <div className="space-y-4">
                         <div>
                           <label className="text-sm font-medium text-gray-700">
@@ -132,7 +149,6 @@ const ContactUsPage = () => {
                             className="mt-1 border-gray-200"
                           />
                         </div>
-
                         <div>
                           <label className="text-sm font-medium text-gray-700">
                             Email
@@ -144,8 +160,12 @@ const ContactUsPage = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             className="mt-1 border-gray-200"
                           />
+                          {errorMessage && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errorMessage}
+                            </p>
+                          )}
                         </div>
-
                         <div>
                           <label className="text-sm font-medium text-gray-700">
                             Message
@@ -159,7 +179,6 @@ const ContactUsPage = () => {
                           />
                         </div>
                       </div>
-
                       <Button
                         type="submit"
                         className="w-full bg-primary"
@@ -174,7 +193,6 @@ const ContactUsPage = () => {
             </div>
           </div>
         </div>
-
         <Footer />
       </section>
     </div>
