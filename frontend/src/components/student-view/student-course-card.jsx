@@ -15,7 +15,7 @@ function StudentCourseCard({ lessons, image, title, professor, category, tags = 
 
   return (
     <Card
-      className="w-[355px] h-[390px] max-w-sm mx-auto bg-white rounded-xl shadow-sm border-none overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5 cursor-pointer"
+      className="w-full h-[390px] max-w-sm mx-auto bg-white rounded-xl shadow-sm border-none overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5 cursor-pointer"
       onClick={onClick} // Add onClick to the Card
     >
       {/* Image Section */}

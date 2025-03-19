@@ -102,6 +102,7 @@ export const useStudentStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      toast.success("Login successfully")
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error logging in with Google",

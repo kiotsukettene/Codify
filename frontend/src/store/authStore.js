@@ -166,6 +166,7 @@ export const useAuthStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      toast.success("Login successfully")
     } catch (error) {
       set({
         error: error.response?.data?.message || "Server Error",

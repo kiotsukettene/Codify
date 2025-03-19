@@ -24,7 +24,7 @@ const StudentChallengeCard = ({ id, title, description, tags = [], status = 'pen
   }
 
   return (
-    <Card className="w-[420px] h-auto max-w-sm mx-auto bg-white rounded-xl shadow-sm border-none overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5">
+    <Card className="w-full h-auto mx-auto bg-white rounded-xl shadow-sm border-none overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5">
     {/* Image Section */}
     <div className="relative bg-[#EEF7FE] rounded-lg">
       <img
