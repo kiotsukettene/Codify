@@ -11,9 +11,7 @@ const API_URL = isDev
   ? "http://localhost:3000/api/auth" // Local backend
   : `${import.meta.env.VITE_API_URL}/api/auth`; // Production backend
 
-// Debug to confirm the URL
-console.log("Environment:", import.meta.env.MODE);
-console.log("API_URL:", API_URL);
+
 
 axios.defaults.withCredentials = true;
 
@@ -173,6 +171,7 @@ export const useAuthStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      toast.success("Login successfully")
     } catch (error) {
       set({
         error: error.response?.data?.message || "Server Error",

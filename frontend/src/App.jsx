@@ -1,7 +1,7 @@
 import "./App.css";
 import { Routes, Route, Navigate, useLocation} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import LoadingSpinner from "./components/LoadingSpinner";
 import {
@@ -83,14 +83,21 @@ function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
   const { checkStudentAuth, isCheckingStudentAuth } = useStudentStore();
   const { checkProfAuth, isCheckingProfAuth } = useprofAuthStore();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Run auth checks only on initial load
   useEffect(() => {
-    checkAuth();
-    checkStudentAuth();
-    checkProfAuth();
-  }, []);
+    const initializeAuth = async () => {
+      await Promise.all([checkAuth(), checkStudentAuth(), checkProfAuth()]);
+      setIsInitialLoad(false); // Mark initial load as complete
+    };
+    initializeAuth();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
-  if (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth) return <LoadingSpinner />;
+  // Show spinner only during initial load when auth is being checked
+  if (isInitialLoad && (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth)) {
+    return <LoadingSpinner />;
+  }
   return (
     <div>
 

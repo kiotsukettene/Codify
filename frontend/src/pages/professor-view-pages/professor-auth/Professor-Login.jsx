@@ -44,7 +44,7 @@ const ProfessorLogin = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
+    <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center pt-12 overflow-hidden p-4">
       <ProfBg1 />
 
       {/* Login Card */}

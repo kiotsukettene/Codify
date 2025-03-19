@@ -4,7 +4,13 @@ import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
 import { auth,googleProvider } from "@/firebase";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/students` || "http://localhost:3000/api/students";
+
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/students" // Local backend
+  : `${import.meta.env.VITE_API_URL}/api/students`; // Production backend
+
+
 
 axios.defaults.withCredentials = true;
 
@@ -102,6 +108,7 @@ export const useStudentStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      toast.success("Login successfully")
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error logging in with Google",

@@ -1,7 +1,7 @@
             
 import Typewriter from '@/components/fancy/typewriter'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartNoAxesColumnIncreasing, LibraryBig, NotebookTabs, Trophy } from 'lucide-react'
+import { ActivityIcon, ChartNoAxesColumnIncreasing, LibraryBig, NotebookTabs, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import dashboardImage from "@/assets/picture/random-background/dashboard-img.png";
 import StudentHeader from '@/components/student-view/Header'
@@ -112,7 +112,7 @@ function StudentDashboard() {
 
           <Card className="w-full h-40 rounded-xl bg-blue-50 border-0 shadow-none px-4">
             <CardHeader className="pt-7">
-              <CardTitle className="text-lg font-medium text-gray-500">Total Course</CardTitle>
+              <CardTitle className="text-lg font-medium text-gray-500">Total Activity</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center">
@@ -120,7 +120,7 @@ function StudentDashboard() {
                   <p className="text-base font-medium text-pink-500">All</p>
                   <h1 className="text-4xl text-neutral-900 font-semibold">12</h1>
                 </div>
-                <LibraryBig color="#FF62A4" className="w-12 h-12" />
+                <ActivityIcon color="#FF62A4" className="w-12 h-12" />
               </div>
             </CardContent>
           </Card>

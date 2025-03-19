@@ -11,8 +11,8 @@ const NavBar = () => {
   const location = useLocation();
   const navItem = [
     { to: "/", label: "Home" },
-    { to: "/features", label: "Features" },
-    { to: "/pricing", label: "Pricing" },
+    { to: "/#features", label: "Features" },
+    { to: "/#pricing", label: "Pricing" },
     { to: "/about-us", label: "About" },
     { to: "/contact", label: "Contact" },
   ];
@@ -54,22 +54,39 @@ const NavBar = () => {
 
         {/* Center Navigation */}
         <div className="hidden md:flex items-center space-x-8">
-          {navItem.map(({ to, label }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`text-md px-2 py-2 rounded-full transition-colors ${
-                isScrolled
-                  ? "w-[90%] md:w-[80%] bg-transparent hover:bg-primary hover:text-white px-4 rounded-full shadow-xs"
-                  : isLoginPage
-                  ? "w-full rounded-full px-4 py-2 text-gray-900 hover:bg-primary hover:text-white"
-                  : "w-full rounded-full px-4 py-2 hover:bg-white hover:text-neutral-900"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+  {navItem.map(({ to, label }) => (
+    to.startsWith("/#") ? (
+      <a
+        key={to}
+        href={to}
+        className={`text-md px-2 py-2 rounded-full transition-colors ${
+          isScrolled
+            ? "w-[90%] md:w-[80%] bg-transparent hover:bg-primary hover:text-white px-4 rounded-full shadow-xs"
+            : isLoginPage
+            ? "w-full rounded-full px-4 py-2 text-gray-900 hover:bg-primary hover:text-white"
+            : "w-full rounded-full px-4 py-2 hover:bg-white hover:text-neutral-900"
+        }`}
+      >
+        {label}
+      </a>
+    ) : (
+      <Link
+        key={to}
+        to={to}
+        className={`text-md px-2 py-2 rounded-full transition-colors ${
+          isScrolled
+            ? "w-[90%] md:w-[80%] bg-transparent hover:bg-primary hover:text-white px-4 rounded-full shadow-xs"
+            : isLoginPage
+            ? "w-full rounded-full px-4 py-2 text-gray-900 hover:bg-primary hover:text-white"
+            : "w-full rounded-full px-4 py-2 hover:bg-white hover:text-neutral-900"
+        }`}
+      >
+        {label}
+      </Link>
+    )
+  ))}
+</div>
+
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
