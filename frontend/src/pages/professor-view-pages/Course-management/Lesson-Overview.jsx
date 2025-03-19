@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Eye, FileText, Trophy, Users, Rocket } from "lucide-react";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import CourseHeader from "@/components/professor-view/Course-header";
 import OverviewTab from "@/components/professor-view/Overview-Tab";
 import ActivityTab from "@/components/professor-view/Activity-Tab";

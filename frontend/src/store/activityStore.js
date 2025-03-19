@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:3000/api/activities";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/activities` || "http://localhost:3000/api/activities"; ;
 
 export const useActivityStore = create((set) => ({
   activities: [],

@@ -3,7 +3,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
-const API_URL = "http://localhost:3000/api/professors";
+
+const API_URL = `${import.meta.env.VITE_API_URL}/api/professors` || "http://localhost:3000/api/professors";
 
 axios.defaults.withCredentials = true;
 
@@ -70,6 +71,7 @@ export const useprofAuthStore = create((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      toast.success("Login successful!");
     } catch (error) {
       set({
         error: error.response?.data?.message || "Server Error",
@@ -81,6 +83,11 @@ export const useprofAuthStore = create((set) => ({
   },
 
   checkProfAuth: async () => {
+    const state = useprofAuthStore.getState();
+    if (state.isAuthenticated && state.professor) {
+      set({ isCheckingProfAuth: false });
+      return; // Skip API call if already authenticated
+    }
     set({ isCheckingProfAuth: true, error: null });
 
     try {
@@ -108,7 +115,7 @@ export const useprofAuthStore = create((set) => ({
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/professors/register",
+        `${API_URL}/register`,
         professorData
       );
 

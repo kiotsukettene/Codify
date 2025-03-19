@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from "react";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import AppSidebar from "@/components/professor-view/Sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate, useParams } from "react-router-dom";
 import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
-import Bear from "@/assets/picture/Avatar/bear.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import Bear from "@/assets/picture/Avatar/Bear.png";
 import { useActivityStore } from "@/store/activityStore";
 
 const students = [

@@ -15,7 +15,7 @@ export const profTokenAndCookie = (res, professorId) => {
   res.cookie("token", token, {
     httpOnly: true, // Cannot be accessed via JavaScript, only HTTP
     secure: process.env.NODE_ENV === "production", // Only works in HTTPS
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 

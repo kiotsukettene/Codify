@@ -339,11 +339,15 @@ export const checkAuth = async (req, res) => {
 
 
 export const logoutInstitution = async (req, res) => {
-    res.clearCookie("token")
-    res.status(200).json({
-        sucess: true,
-        message: "Logged out successfully"
-    })
+    res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  });
+  res.status(200).json({
+    success: true, // Fixed typo: "sucess" -> "success"
+    message: "Logged out successfully",
+  });
 }
 
 

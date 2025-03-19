@@ -19,6 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import AppSidebar from "@/components/professor-view/Sidebar";
+import confetti from "canvas-confetti";
 import { isBefore, startOfToday } from "date-fns";
 import { toast } from "react-hot-toast";
 import {

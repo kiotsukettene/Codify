@@ -18,12 +18,12 @@ import useToggleVisibility from "@/hooks/use-toggle-visibility";
 import { Eye, EyeOff } from "lucide-react";
 
 
-import union from "@/assets/picture/random-background/union.png"
+import union from "@/assets/picture/random-background/Union.png"
 import pinkFlower from "@/assets/picture/random-background/pink-flower.png"
 import blueFlower from "@/assets/picture/random-background/blue-flower.png"
-import purpleFlower from "@/assets/picture/random-background/purple-flower.png"
+import purpleFlower from "@/assets/picture/random-background/Purple-flower.png"
 import arrow from "@/assets/picture/random-background/arrow.png"
-import mascot from "@/assets/picture/random-background/mascot.png"
+import mascot from "@/assets/picture/random-background/Mascot.png"
 
 
 function AdminLoginPage() {
@@ -59,7 +59,6 @@ function AdminLoginPage() {
     await loginWithGoogle();
 
     navigate("/admin/dashboard", { replace: true });
-    toast.success("Login Successfully");
 
   }
 

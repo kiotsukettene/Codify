@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:3000/api/students/courses"; 
+const API_URL = `${import.meta.env.VITE_API_URL}/api/students/courses` || "http://localhost:3000/api/students/courses"; 
 
 const useStudentCourseStore = create((set) => ({
     enrolledCourses: [],

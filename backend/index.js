@@ -10,7 +10,6 @@ import lessonRoutes from "./routes/lesson.route.js";
 import activityRoutes from "./routes/activity.route.js";
 import studentCourseRoutes from "./routes/studentCourse.route.js";
 import challengeRoutes from "./routes/challenge.route.js";
-
 import cors from "cors";
 import session from "express-session";
 import passport from "passport";
@@ -20,34 +19,36 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Dynamic CORS configuration
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "https://codifylms.vercel.app", // Production frontend
+        "http://localhost:5173", // Local dev (Vite default port)
+        "https://www.codifylms.me", // Production domain
+        "https://api.codifylms.me", // Backend custom domain
+        "https://codifylms.me" // Root domain
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, origin || true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-app.use(
-  session({
-    secret: process.env.JWT_SECRET || "your_secret_key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // Only true in production
-      httpOnly: true,
-      sameSite: "strict",
-    },
-  })
-);
 
-app.use(express.json()); // allows us to parse incoming request with JSON payloads (req.body)
-app.use(cookieParser()); // allows us to parse cookies from the incoming request headers
-app.use(passport.initialize());
-app.use(passport.session()); // ✅ Enable session for Google Login
 
-// ✅ Handle CORS Preflight Requests
+app.use(express.json());
+app.use(cookieParser());
+
+
+// Handle CORS Preflight Requests
 app.options("*", cors());
 
 app.use("/api/auth", authRoutes);
@@ -56,7 +57,7 @@ app.use("/api/professors", professorRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/activities", activityRoutes);
-app.use("/uploads", express.static("uploads")); // ✅ Serve uploaded files
+app.use("/uploads", express.static("uploads"));
 
 app.use("/api/students/courses", studentCourseRoutes);
 app.use("/api/students/challenges", challengeRoutes);
@@ -65,5 +66,3 @@ app.listen(PORT, () => {
   connectDB();
   console.log("Server is running on port", PORT);
 });
-
-// app.use("/admin", adminRoutes)

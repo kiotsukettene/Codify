@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
 import { auth,googleProvider } from "@/firebase";
 
-const API_URL = "http://localhost:3000/api/students";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/students` || "http://localhost:3000/api/students";
 
 axios.defaults.withCredentials = true;
 
@@ -114,6 +114,11 @@ export const useStudentStore = create((set) => ({
 
   // Check if student is authenticated (used in protected routes)
   checkStudentAuth: async () => {
+    const state = useStudentStore.getState();
+    if (state.isAuthenticated && state.student) {
+      set({ isCheckingStudentAuth: false });
+      return; // Skip API call if already authenticated
+    }
     set({ isCheckingStudentAuth: true, error: null });
 
     try {

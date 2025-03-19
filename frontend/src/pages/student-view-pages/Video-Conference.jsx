@@ -3,7 +3,7 @@ import { VideoResolution, ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebui
 
 
 
-import Logo from '@/assets/picture/logos/logo.png';
+import Logo from '@/assets/picture/logos/Logo.png';
 function randomID(len) {
   let result = "";
   if (result) return result;

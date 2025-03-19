@@ -15,13 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import lion from "@/assets/picture/Avatar/lion.png";
+import lion from "@/assets/picture/Avatar/Lion.png";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation, useParams } from "react-router-dom";

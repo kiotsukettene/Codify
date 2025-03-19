@@ -6,6 +6,13 @@ import GradeTask from "@/components/professor-view/GradeTask";
 import StatsCard from "@/components/professor-view/StatsCard";
 import ScheduleList from "@/components/professor-view/ScheduleList";
 import { UsersRound, BookOpenText, ChartLine } from "lucide-react";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import AppSidebar from "@/components/professor-view/Sidebar";
+import { Separator } from "@/components/ui/separator";
 import { useprofAuthStore } from "@/store/profAuthStore";
 
 const mockStudentRankings = [

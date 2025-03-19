@@ -6,7 +6,7 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase.config";
 import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:3000/api/auth";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/auth` || "http://localhost:3000/api/auth";
 
 axios.defaults.withCredentials = true;
 
@@ -233,6 +233,13 @@ export const useAuthStore = create((set) => ({
     }
   },
   checkAuth: async () => {
+    const state = useAuthStore.getState();
+
+    if (state.isAuthenticated && state.institution) {
+      set({ isCheckingAuth: false });
+      return;
+    }
+    
     set({
       isCheckingAuth: true,
       error: null,
