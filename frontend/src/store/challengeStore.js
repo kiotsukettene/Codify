@@ -3,7 +3,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import challenges from '@/constants/challenges';
 
-
+axios.defaults.withCredentials = true;
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
   ? "http://localhost:3000/api/students/challenges" // Local backend

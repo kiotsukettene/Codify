@@ -48,4 +48,6 @@ CourseSchema.pre("save", generateCourseSlug); // Generate slug on save
 CourseSchema.set("toObject", { virtuals: true });
 CourseSchema.set("toJSON", { virtuals: true });
 
-export default mongoose.model("Course", CourseSchema);
+
+const Course = mongoose.model("Course", CourseSchema);
+export default Course;

@@ -87,7 +87,7 @@ const StudentTab = ({ studentList = [], activities = [] }) => {
                   )}
                 </div>
                 <div className="text-sm text-gray-500 mt-1">
-                  <p>Student no.: {selectedStudent.studentNo}</p>
+                  <p>Student #: {selectedStudent.studentNo}</p>
                   <p>Email: {selectedStudent.email}</p>
                 </div>
                 <p className="mt-2">

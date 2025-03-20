@@ -50,6 +50,7 @@ import CodeBattleOverview from "./pages/professor-view-pages/Code-Battle/Code-Ba
 import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle";
 import Account from "./pages/professor-view-pages/Professor-Account";
 import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
+import EditActivity from "./pages/professor-view-pages/Course-management/Edit-Activity";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -194,6 +195,10 @@ function App() {
               </ProtectedRouteProfessors>
             }
           />
+          <Route
+          path="course/:courseSlug/lesson/:lessonSlug/activity/:activitySlug/edit"
+          element={<EditActivity />}
+        />
           <Route
             path="reset-password/:token"
             element={

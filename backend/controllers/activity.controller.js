@@ -71,6 +71,28 @@ export const createActivity = async (req, res) => {
 //   }
 // };
 
+export const getActivityBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const activity = await Activity.findOne({ slug });
+
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+
+    // Construct file URL if applicable
+    let fileUrl = null;
+    if (activity.file) {
+      const fileName = activity.file.replace(/^uploads[\\/]/, "");
+      fileUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
+    }
+
+    res.status(200).json({ ...activity._doc, file: fileUrl });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching activity", error: error.message });
+  }
+};
+
 export const getActivitiesByLesson = async (req, res) => {
   try {
     const { lessonId } = req.params;
@@ -166,25 +188,35 @@ export const getActivityById = async (req, res) => {
 export const updateActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
-    const updatedActivity = await Activity.findByIdAndUpdate(
-      activityId,
-      req.body,
-      {
-        new: true,
-      }
-    );
+    const { title, subTitle, instructions, dueDate, points } = req.body;
+    const file = req.file ? req.file.path : null;
 
-    if (!updatedActivity)
+    const updateData = {
+      title,
+      subTitle,
+      instructions,
+      dueDate: dueDate && dueDate !== "null" ? new Date(dueDate) : undefined,
+      points,
+    };
+
+    if (file) {
+      updateData.file = file;
+    }
+
+    const updatedActivity = await Activity.findByIdAndUpdate(activityId, updateData, {
+      new: true,
+    });
+
+    if (!updatedActivity) {
       return res.status(404).json({ message: "Activity not found" });
+    }
 
     res.status(200).json({
       message: "Activity updated successfully!",
       updatedActivity,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error updating activity", error: error.message });
+    res.status(500).json({ message: "Error updating activity", error: error.message });
   }
 };
 

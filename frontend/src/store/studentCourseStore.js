@@ -8,7 +8,7 @@ const API_URL = isDev
   : `${import.meta.env.VITE_API_URL}/api/students/courses`; // Production backend
 
 
-
+axios.defaults.withCredentials = true;
 const useStudentCourseStore = create((set) => ({
     enrolledCourses: [],
     lessons: [],

@@ -1,5 +1,6 @@
 import { Student } from "../models/student.model.js";
 import { Institution } from "../models/institution.model.js";
+import Course from "../models/course.model.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import {
@@ -175,13 +176,17 @@ export const updateStudent = async (req, res) => {
 
 export const deleteStudent = async (req, res) => {
   try {
-    const deletedStudent = await Student.findByIdAndDelete(req.params.id);
+    const studentId = req.params.id;
+    const deletedStudent = await Student.findByIdAndDelete(studentId);
 
     if (!deletedStudent) {
       return res
         .status(404)
         .json({ success: false, message: "Student not found" });
     }
+
+    // Cascade delete student from institution
+    await Course.updateMany({ studentsEnrolled: studentId }, { $pull: { studentsEnrolled: studentId } });
 
     res
       .status(200)

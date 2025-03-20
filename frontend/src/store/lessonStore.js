@@ -9,7 +9,7 @@ const API_URL = isDev
   : `${import.meta.env.VITE_API_URL}/api/lessons`; // Production backend
 
 
-
+axios.defaults.withCredentials = true;
 export const useLessonStore = create((set) => ({
   lessons: [],
   lesson: null,
@@ -29,6 +29,23 @@ export const useLessonStore = create((set) => ({
         isLoading: false,
       });
       toast.error(error.response?.data?.message || "Error fetching lessons");
+    }
+  },
+
+  fetchLessonBySlug: async (slug) => {
+    set({ isLoading: true, error: null });
+    try {
+      console.log(`Fetching lesson with slug: ${slug}`);
+      const response = await axios.get(`${API_URL}/slug/${slug}`);
+      console.log("Lesson API Response:", response.data);
+      set({ lesson: response.data, isLoading: false });
+    } catch (error) {
+      console.error("Error fetching lesson by slug:", error);
+      set({
+        error: error.response?.data?.message || "Error fetching lesson",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error fetching lesson");
     }
   },
 
