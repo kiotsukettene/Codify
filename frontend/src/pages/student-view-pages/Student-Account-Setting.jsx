@@ -1,99 +1,121 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { User, School, BookOpen, Award, Shield, Save, Edit, Upload, Check, Key } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  User,
+  School,
+  BookOpen,
+  Award,
+  Shield,
+  Save,
+  Edit,
+  Upload,
+  Check,
+  Key,
+} from "lucide-react";
+import { useStudentStore } from "../../store/studentStore";
 
-const StudentAccountSettings= () => {
+const StudentAccountSettings = () => {
+  const { student, isAuthenticated, checkStudentAuth } = useStudentStore();
   // Sample preset avatars
   const presetAvatars = [
     "/placeholder.svg?height=100&width=100",
     "/placeholder.svg?height=100&width=100",
     "/placeholder.svg?height=100&width=100",
     "/placeholder.svg?height=100&width=100",
-  ]
+  ];
+
+  useEffect(() => {
+    checkStudentAuth(); // Optional: Ensure authentication check
+  }, []);
 
   // State for basic information
-  const [profileImage, setProfileImage] = useState(presetAvatars[0])
-  const [showAvatarSelector, setShowAvatarSelector] = useState(false)
-  const [fullName, setFullName] = useState("Alex Johnson")
-  const [email, setEmail] = useState("alex.johnson@example.edu")
-  const [phone, setPhone] = useState("(555) 123-4567")
+  const [profileImage, setProfileImage] = useState(presetAvatars[0]);
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  // const [fullName, setFullName] = useState("Alex Johnson");
+  // const [email, setEmail] = useState("alex.johnson@example.edu");
+  // const [phone, setPhone] = useState("(555) 123-4567");
 
   // State for password management
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [passwordError, setPasswordError] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   // Academic information (read-only)
+  const fullName =
+    (student?.firstName || "Loading...") + " " + (student?.lastName || "");
+
+  const email = student?.email || "Loading...";
+  const phone = student?.phone || "";
   const academicInfo = {
-    studentId: "2023-001",
-    institution: "Gamified University",
-    course: "Computer Science",
-    yearLevel: "3rd Year - Section A",
-  }
+    studentId: student?.studentId || "N/A",
+    institution: student?.institution || "N/A",
+    course: student?.course || "N/A",
+    yearLevel: student?.yearLevel || "N/A",
+  };
 
   // Handle profile image upload
   const handleImageUpload = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setProfileImage(e.target.result)
-        setShowAvatarSelector(false)
-      }
-      reader.readAsDataURL(file)
+        setProfileImage(e.target.result);
+        setShowAvatarSelector(false);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   // Handle password update
   const handlePasswordUpdate = (e) => {
-    e.preventDefault()
-    setPasswordError("")
+    e.preventDefault();
+    setPasswordError("");
 
     if (!currentPassword) {
-      setPasswordError("Current password is required")
-      return
+      setPasswordError("Current password is required");
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError("New passwords don't match")
-      return
+      setPasswordError("New passwords don't match");
+      return;
     }
 
     if (newPassword.length < 8) {
-      setPasswordError("Password must be at least 8 characters")
-      return
+      setPasswordError("Password must be at least 8 characters");
+      return;
     }
 
     // Password update success animation
-    setPasswordError("Security upgrade successful!")
+    setPasswordError("Security upgrade successful!");
     setTimeout(() => {
-      setPasswordError("")
-      setCurrentPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
-    }, 2000)
-  }
+      setPasswordError("");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }, 2000);
+  };
 
   // Handle profile save
   const handleProfileSave = () => {
     // Show success notification
-    const notification = document.getElementById("notification")
-    notification.classList.remove("opacity-0")
-    notification.classList.add("opacity-100")
+    const notification = document.getElementById("notification");
+    notification.classList.remove("opacity-0");
+    notification.classList.add("opacity-100");
 
     setTimeout(() => {
-      notification.classList.remove("opacity-100")
-      notification.classList.add("opacity-0")
-    }, 3000)
-  }
+      notification.classList.remove("opacity-100");
+      notification.classList.add("opacity-0");
+    }, 3000);
+  };
 
   return (
     <div className="w-full bg-purple-50 text-gray-700 p-6">
       <div className="max-w-full mx-auto">
         <h1 className="text-3xl font-bold items-start mb-8 mt-4">
-          <span className="text-header"> MY ACCOUNT</span> 
+          <span className="text-header"> MY ACCOUNT</span>
         </h1>
 
         {/* Success Notification */}
@@ -125,7 +147,11 @@ const StudentAccountSettings= () => {
               {/* Profile Picture */}
               <div className="relative mb-4 md:mb-0 md:mr-6">
                 <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-purple-200 relative">
-                  <img src={profileImage || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
+                  <img
+                    src={profileImage || "/placeholder.svg"}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <button
                   onClick={() => setShowAvatarSelector(!showAvatarSelector)}
@@ -142,7 +168,11 @@ const StudentAccountSettings= () => {
                         <div
                           key={index}
                           onClick={() => setProfileImage(avatar)}
-                          className={`cursor-pointer rounded-full overflow-hidden border-2 ${profileImage === avatar ? "border-purple-400" : "border-purple-100"}`}
+                          className={`cursor-pointer rounded-full overflow-hidden border-2 ${
+                            profileImage === avatar
+                              ? "border-purple-400"
+                              : "border-purple-100"
+                          }`}
                         >
                           <img
                             src={avatar || "/placeholder.svg"}
@@ -156,7 +186,12 @@ const StudentAccountSettings= () => {
                       <label className="bg-primary text-white w-full py-2 rounded-lg flex items-center justify-center cursor-pointer ">
                         <Upload size={16} className="mr-2" />
                         Upload Custom
-                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
                       </label>
                     </div>
                   </div>
@@ -166,7 +201,9 @@ const StudentAccountSettings= () => {
               {/* Basic Info Fields */}
               <div className="flex-1 w-full">
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-purple-700">Full Name</label>
+                  <label className="block text-sm font-medium mb-1 text-purple-700">
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     value={fullName}
@@ -175,7 +212,9 @@ const StudentAccountSettings= () => {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-purple-700">Email Address</label>
+                  <label className="block text-sm font-medium mb-1 text-purple-700">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     value={email}
@@ -184,7 +223,9 @@ const StudentAccountSettings= () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-purple-700">Phone Number (Optional)</label>
+                  <label className="block text-sm font-medium mb-1 text-purple-700">
+                    Phone Number (Optional)
+                  </label>
                   <input
                     type="tel"
                     value={phone}
@@ -204,10 +245,14 @@ const StudentAccountSettings= () => {
 
             <div className="space-y-4">
               <div className="bg-purple-50 rounded-lg p-3 border border-purple-100 ">
-                <div className="text-xs text-primary mb-1">PLAYER STUDENT ID</div>
+                <div className="text-xs text-primary mb-1">
+                  PLAYER STUDENT ID
+                </div>
                 <div className="flex items-center">
                   <Shield className="mr-2 text-primary" size={18} />
-                  <span className="font-mono text-gray-700">{academicInfo.studentId}</span>
+                  <span className="font-mono text-gray-700">
+                    {academicInfo.studentId}
+                  </span>
                 </div>
               </div>
 
@@ -215,7 +260,9 @@ const StudentAccountSettings= () => {
                 <div className="text-xs text-primary mb-1">INSTITUTION</div>
                 <div className="flex items-center">
                   <School className="mr-2 text-primary" size={18} />
-                  <span className="text-gray-700">{academicInfo.institution}</span>
+                  <span className="text-gray-700">
+                    {academicInfo.institution}
+                  </span>
                 </div>
               </div>
 
@@ -231,7 +278,9 @@ const StudentAccountSettings= () => {
                 <div className="text-xs text-primary mb-1">RANK/DIVISION</div>
                 <div className="flex items-center">
                   <Award className="mr-2 text-primary" size={18} />
-                  <span className="text-gray-700">{academicInfo.yearLevel}</span>
+                  <span className="text-gray-700">
+                    {academicInfo.yearLevel}
+                  </span>
                 </div>
               </div>
             </div>
@@ -243,9 +292,14 @@ const StudentAccountSettings= () => {
               <Key className="mr-2" /> Update Password
             </h2>
 
-            <form onSubmit={handlePasswordUpdate} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <form
+              onSubmit={handlePasswordUpdate}
+              className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            >
               <div>
-                <label className="block text-sm font-medium mb-1 text-primary">Current Password</label>
+                <label className="block text-sm font-medium mb-1 text-primary">
+                  Current Password
+                </label>
                 <input
                   type="password"
                   value={currentPassword}
@@ -255,7 +309,9 @@ const StudentAccountSettings= () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-primary">New Password</label>
+                <label className="block text-sm font-medium mb-1 text-primary">
+                  New Password
+                </label>
                 <input
                   type="password"
                   value={newPassword}
@@ -265,7 +321,9 @@ const StudentAccountSettings= () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-primary">Confirm New Password</label>
+                <label className="block text-sm font-medium mb-1 text-primary">
+                  Confirm New Password
+                </label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -277,7 +335,11 @@ const StudentAccountSettings= () => {
               <div className="md:col-span-3 flex items-center justify-between">
                 {passwordError && (
                   <div
-                    className={`text-sm ${passwordError.includes("successful") ? "text-green-600" : "text-red-500"}`}
+                    className={`text-sm ${
+                      passwordError.includes("successful")
+                        ? "text-green-600"
+                        : "text-red-500"
+                    }`}
                   >
                     {passwordError}
                   </div>
@@ -287,7 +349,7 @@ const StudentAccountSettings= () => {
                   className="bg-primary text-white px-6 py-2 rounded-lg flex items-center ml-auto transition-all transform hover:scale-105 "
                 >
                   <Shield className="mr-2" size={18} />
-                    Update Password
+                  Update Password
                 </button>
               </div>
             </form>
@@ -295,8 +357,7 @@ const StudentAccountSettings= () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default StudentAccountSettings
-
+export default StudentAccountSettings;
