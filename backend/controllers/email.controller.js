@@ -1,6 +1,7 @@
 import sendEmail from "../utils/emailService.js";
 
 export const sendEmailController = async (req, res) => {
+  console.log("🔍 Received form data:", req.body); // add this line
   try {
     const result = await sendEmail(req.body);
     res.status(result.success ? 200 : 500).json(result);
