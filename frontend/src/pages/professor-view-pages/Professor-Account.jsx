@@ -27,7 +27,12 @@ const Account = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { professor, updateProfessor } = useprofAuthStore();
+  const { professor, updateProfessor, isAuthenticated, checkProfAuth } =
+    useprofAuthStore();
+
+  useEffect(() => {
+    checkProfAuth(); // Optional: Ensure authentication check
+  }, []);
 
   const validatePassword = () => {
     if (newPassword.length < 8)

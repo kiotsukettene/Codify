@@ -50,7 +50,7 @@ const StudentAccountSettings = () => {
   const phone = student?.phone || "";
   const academicInfo = {
     studentId: student?.studentId || "N/A",
-    institution: student?.institution || "N/A",
+    institution: student?.institution?.institutionName || "N/A",
     course: student?.course || "N/A",
     yearLevel: student?.yearLevel || "N/A",
   };
