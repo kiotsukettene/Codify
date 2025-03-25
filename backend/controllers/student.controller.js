@@ -143,18 +143,26 @@ export const updateStudent = async (req, res) => {
       section,
       password,
     } = req.body;
+
+    const updateData = {
+      studentId,
+      firstName,
+      lastName,
+      email,
+      course,
+      year,
+      section,
+    };
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      updateData.password = hashedPassword;
+    }
+
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
-      {
-        studentId,
-        firstName,
-        lastName,
-        email,
-        course,
-        year,
-        section,
-        password,
-      },
+      updateData,
       { new: true }
     );
 
@@ -167,6 +175,7 @@ export const updateStudent = async (req, res) => {
       message: "Student updated successfully",
     });
   } catch (error) {
+    console.error("Error in updateStudent:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };

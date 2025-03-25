@@ -31,7 +31,7 @@ const Account = () => {
     useprofAuthStore();
 
   useEffect(() => {
-    checkProfAuth(); // Optional: Ensure authentication check
+    checkProfAuth();
   }, []);
 
   const validatePassword = () => {

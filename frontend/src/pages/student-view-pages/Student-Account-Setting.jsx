@@ -16,7 +16,9 @@ import {
 import { useStudentStore } from "../../store/studentStore";
 
 const StudentAccountSettings = () => {
-  const { student, isAuthenticated, checkStudentAuth } = useStudentStore();
+  const { student, isAuthenticated, checkStudentAuth, updateStudent } =
+    useStudentStore();
+
   // Sample preset avatars
   const presetAvatars = [
     "/placeholder.svg?height=100&width=100",
@@ -69,7 +71,7 @@ const StudentAccountSettings = () => {
   };
 
   // Handle password update
-  const handlePasswordUpdate = (e) => {
+  const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     setPasswordError("");
 
@@ -88,14 +90,22 @@ const StudentAccountSettings = () => {
       return;
     }
 
-    // Password update success animation
-    setPasswordError("Security upgrade successful!");
-    setTimeout(() => {
-      setPasswordError("");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    }, 2000);
+    try {
+      await updateStudent({
+        ...student,
+        password: newPassword,
+      });
+
+      setPasswordError("Security upgrade successful!");
+      setTimeout(() => {
+        setPasswordError("");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }, 2000);
+    } catch (err) {
+      setPasswordError("Failed to update password.");
+    }
   };
 
   // Handle profile save
