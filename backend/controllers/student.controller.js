@@ -133,46 +133,35 @@ export const getStudentById = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   try {
-    const {
-      studentId,
-      firstName,
-      lastName,
-      email,
-      course,
-      year,
-      section,
-      password,
-    } = req.body;
+    const { currentPassword, password: newPassword, ...otherFields } = req.body;
 
-    const updateData = {
-      studentId,
-      firstName,
-      lastName,
-      email,
-      course,
-      year,
-      section,
-    };
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-      updateData.password = hashedPassword;
+    const isMatch = await bcrypt.compare(currentPassword, student.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // Hash new password if provided
+    if (newPassword) {
+      otherFields.password = await bcrypt.hash(newPassword, 10);
     }
 
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
-      updateData,
-      { new: true }
+      otherFields,
+      {
+        new: true,
+      }
     );
-
-    if (!updatedStudent) {
-      return res.status(404).json({ message: "Student not found" });
-    }
 
     res.status(200).json({
       success: true,
       message: "Student updated successfully",
+      student: updatedStudent,
     });
   } catch (error) {
     console.error("Error in updateStudent:", error.message);
@@ -201,10 +190,7 @@ export const deleteStudent = async (req, res) => {
 export const loginStudent = async (req, res) => {
   const { email } = req.body;
   try {
-    const student = await Student.findOne({ email }).populate(
-      "institution",
-      "institutionName"
-    );
+    const student = await Student.findOne({ email });
     if (!student) {
       return res.status(400).json({
         success: false,
@@ -357,7 +343,9 @@ export const studentRestPassword = async (req, res) => {
 
 export const studentCheckAuth = async (req, res) => {
   try {
-    const student = await Student.findById(req.studentId).select("-password");
+    const student = await Student.findById(req.studentId)
+      .select("-password")
+      .populate("institution", "institutionName");
 
     if (!student) {
       return res.status(400).json({

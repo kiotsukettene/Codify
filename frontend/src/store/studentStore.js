@@ -224,7 +224,8 @@ export const useStudentStore = create((set) => ({
 
     try {
       const response = await axios.put(
-        `${API_URL}/list/update/${studentData._id}`,
+        `${API_URL}/update/${studentData._id}`,
+
         studentData
       );
 

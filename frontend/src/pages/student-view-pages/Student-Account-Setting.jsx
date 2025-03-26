@@ -92,7 +92,8 @@ const StudentAccountSettings = () => {
 
     try {
       await updateStudent({
-        ...student,
+        _id: student._id,
+        currentPassword,
         password: newPassword,
       });
 
