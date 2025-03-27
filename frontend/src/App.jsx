@@ -225,7 +225,8 @@ function App() {
         {/*=========Nakalabas muna yung routes netong tatlo sa student ============*/}
         <Route path="/arena-dashboard" element={<ArenaDashboardPage/>}/>
         <Route path="/main-arena" element={<MainArena/>}/>
-        <Route path="/post-battle-summary" element={<PostBattleSummary/>}/>
+        <Route path="/post-battle-summary" element={<PostBattleSummary/>}/>  {/*====wala pa to sa develop=====*/}
+
 
 
         {/* Additional Routes */}
