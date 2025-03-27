@@ -154,3 +154,28 @@ export const sendProfessorWelcomeEmail = async (
     throw new Error(`Error sending Professor welcome email: ${error}`);
   }
 };
+
+export const sendInquiryEmail = async ({ name, email, message }) => {
+  try {
+    const response = await mailtrapClient.send({
+      from: sender, // e.g., codify.dev2025@gmail.com
+      to: [{ email: "codify.dev2025@gmail.com" }],
+      reply_to: { email }, // <-- this allows you to hit "Reply" and email the user directly
+      subject: `New Inquiry Message from ${name}`,
+      html: `
+        <h2>New Contact Message</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `,
+      category: "Contact Form",
+    });
+
+    console.log("✅ Email sent via Mailtrap:", response);
+    return { success: true, message: "Email sent successfully!" };
+  } catch (error) {
+    console.error("❌ Mailtrap email error:", error);
+    return { success: false, message: "Failed to send email", error };
+  }
+};

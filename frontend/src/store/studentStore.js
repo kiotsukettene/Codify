@@ -2,15 +2,12 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { signInWithPopup } from "firebase/auth";
-import { auth,googleProvider } from "@/firebase";
-
+import { auth, googleProvider } from "@/firebase";
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
   ? "http://localhost:3000/api/students" // Local backend
   : `${import.meta.env.VITE_API_URL}/api/students`; // Production backend
-
-
 
 axios.defaults.withCredentials = true;
 
@@ -31,7 +28,10 @@ export const useStudentStore = create((set) => ({
       const response = await axios.get(`${API_URL}/list`);
       set({ students: response.data.students, isLoading: false });
     } catch (error) {
-      set({ error: error.response?.data?.message || "Error fetching students", isLoading: false });
+      set({
+        error: error.response?.data?.message || "Error fetching students",
+        isLoading: false,
+      });
     }
   },
 
@@ -50,7 +50,10 @@ export const useStudentStore = create((set) => ({
         students: [...state.students, response.data.student],
       }));
     } catch (error) {
-      set({ error: error.response?.data?.message || "Error adding student", isLoading: false });
+      set({
+        error: error.response?.data?.message || "Error adding student",
+        isLoading: false,
+      });
     }
   },
 
@@ -65,7 +68,10 @@ export const useStudentStore = create((set) => ({
         isLoading: false,
       }));
     } catch (error) {
-      set({ error: error.response?.data?.message || "Error deleting student", isLoading: false });
+      set({
+        error: error.response?.data?.message || "Error deleting student",
+        isLoading: false,
+      });
     }
   },
 
@@ -74,15 +80,25 @@ export const useStudentStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.post(`${API_URL}/loginStudent`, { email, password });
-      set({ student: response.data.student, isAuthenticated: true, isLoading: false });
+      const response = await axios.post(`${API_URL}/loginStudent`, {
+        email,
+        password,
+      });
+      set({
+        student: response.data.student,
+        isAuthenticated: true,
+        isLoading: false,
+      });
     } catch (error) {
-      set({ error: error.response?.data?.message || "Error logging in", isLoading: false });
+      set({
+        error: error.response?.data?.message || "Error logging in",
+        isLoading: false,
+      });
       throw error;
     }
   },
 
-  loginWithGoogle: async( email, password) => {
+  loginWithGoogle: async (email, password) => {
     set({ isLoading: true, error: null });
 
     let token = null;
@@ -101,19 +117,21 @@ export const useStudentStore = create((set) => ({
     }
 
     try {
-      const response = await axios.post(`${API_URL}/student-google-login`, { token });
+      const response = await axios.post(`${API_URL}/student-google-login`, {
+        token,
+      });
 
       set({
         student: response.data.student,
         isAuthenticated: true,
         isLoading: false,
       });
-      toast.success("Login successfully")
+      toast.success("Login successfully");
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error logging in with Google",
         isLoading: false,
-      })
+      });
     }
 
     set({ isLoading: false });
@@ -130,9 +148,17 @@ export const useStudentStore = create((set) => ({
 
     try {
       const response = await axios.get(`${API_URL}/student-check-auth`);
-      set({ student: response.data.student, isAuthenticated: true, isCheckingStudentAuth: false });
+      set({
+        student: response.data.student,
+        isAuthenticated: true,
+        isCheckingStudentAuth: false,
+      });
     } catch (error) {
-      set({ isCheckingStudentAuth: false, error: null, isAuthenticated: false });
+      set({
+        isCheckingStudentAuth: false,
+        error: null,
+        isAuthenticated: false,
+      });
     }
   },
 
@@ -141,10 +167,15 @@ export const useStudentStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.post(`${API_URL}/student-forgot-password`, { email });
+      const response = await axios.post(`${API_URL}/student-forgot-password`, {
+        email,
+      });
       set({ isLoading: false, message: response.data.message });
     } catch (error) {
-      set({ isLoading: false, error: error.response?.data?.message || "Failed to send reset email" });
+      set({
+        isLoading: false,
+        error: error.response?.data?.message || "Failed to send reset email",
+      });
     }
   },
 
@@ -153,10 +184,16 @@ export const useStudentStore = create((set) => ({
     set({ isLoading: true, error: null, message: null });
 
     try {
-      const response = await axios.post(`${API_URL}/student-reset-password/${token}`, { password });
+      const response = await axios.post(
+        `${API_URL}/student-reset-password/${token}`,
+        { password }
+      );
       set({ message: response.data.message, isLoading: false });
     } catch (error) {
-      set({ isLoading: false, error: error.response?.data?.message || "Error resetting password" });
+      set({
+        isLoading: false,
+        error: error.response?.data?.message || "Error resetting password",
+      });
       throw error;
     }
   },
@@ -166,7 +203,11 @@ export const useStudentStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      await axios.post(`${API_URL}/logoutStudent`, {}, { withCredentials: true });
+      await axios.post(
+        `${API_URL}/logoutStudent`,
+        {},
+        { withCredentials: true }
+      );
       set({ student: null, isAuthenticated: false, isLoading: false });
       window.location.href = "/student/login"; // Redirect to login page
     } catch (error) {
@@ -176,4 +217,29 @@ export const useStudentStore = create((set) => ({
 
   // Clear error
   clearError: () => set({ error: null }),
+
+  //student update
+  updateStudent: async (studentData) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/update/${studentData._id}`,
+
+        studentData
+      );
+
+      set((state) => ({
+        isLoading: false,
+        students: state.students.map((student) =>
+          student._id === studentData._id ? response.data.student : student
+        ),
+      }));
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error updating student",
+        isLoading: false,
+      });
+    }
+  },
 }));
