@@ -11,6 +11,8 @@ import {
   ProtectedRouteStudents,
   RedirectAuthenticatedProfessor,
   ProtectedRouteProfessors,
+  RestrictPublicRoutes,
+  ProtectedRouteStudentOrProfessor,
 } from "./routes/ProtectedRoutes";
 
 // Layouts
@@ -110,11 +112,11 @@ function App() {
 
 
         {/* Public Routes */}
-        <Route path="/" element={<GuestLayout />}>
-          <Route index element={<LandingPage />} />
-          <Route path="/login" element={<MainLogin />} />
+        <Route path="/" element={<RestrictPublicRoutes><GuestLayout /></RestrictPublicRoutes>}>
+          <Route index element={<RestrictPublicRoutes><LandingPage /></RestrictPublicRoutes>} />
+          <Route path="/login" element={<RestrictPublicRoutes><MainLogin /></RestrictPublicRoutes>} />
           <Route path="*" element={<PageNotFoundPage />} />
-          <Route path="/contact" element={<ContactUsPage/>}/>
+          <Route path="/contact" element={<RestrictPublicRoutes><ContactUsPage/></RestrictPublicRoutes>}/>
           {/* Admin Registration & Authentication */}
           <Route path="/admin/register" element={<RedirectAuthenticatedInstitution><AdminRegisterPage /></RedirectAuthenticatedInstitution>} />
           <Route path="/admin/login" element={<RedirectAuthenticatedInstitution><AdminLogin /></RedirectAuthenticatedInstitution>} />
@@ -236,7 +238,8 @@ function App() {
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings/>}/>
-          <Route path="code-battle" element={<StudentCodeBattleOverview/>}/>
+          <Route path="code-battle" element={<StudentCodeBattleOverview />} />
+          {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}
         </Route>
 
 
@@ -245,8 +248,9 @@ function App() {
 
 
         {/* Additional Routes */}
-        <Route path="/code-editor" element={<CodeEditor />} />
-        <Route path="/video-conference" element={<VideoConference/>}/>
+
+        <Route path="/video-conference" element={<VideoConference />} />
+        <Route path="/code-editor" element={<ProtectedRouteStudentOrProfessor><CodeEditor /></ProtectedRouteStudentOrProfessor>} />
       </Routes>
 
       <Toaster position="top-right" />

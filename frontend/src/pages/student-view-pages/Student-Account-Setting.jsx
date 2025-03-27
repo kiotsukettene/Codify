@@ -1,9 +1,11 @@
-"use client"
-
 import { useState } from "react"
 import { User, School, BookOpen, Award, Shield, Save, Edit, Upload, Check, Key } from "lucide-react"
+import { useStudentStore } from "@/store/studentStore"
 
-const StudentAccountSettings= () => {
+const StudentAccountSettings = () => {
+  
+  const { student } = useStudentStore();
+  
   // Sample preset avatars
   const presetAvatars = [
     "/placeholder.svg?height=100&width=100",
@@ -15,9 +17,7 @@ const StudentAccountSettings= () => {
   // State for basic information
   const [profileImage, setProfileImage] = useState(presetAvatars[0])
   const [showAvatarSelector, setShowAvatarSelector] = useState(false)
-  const [fullName, setFullName] = useState("Alex Johnson")
-  const [email, setEmail] = useState("alex.johnson@example.edu")
-  const [phone, setPhone] = useState("(555) 123-4567")
+
 
   // State for password management
   const [currentPassword, setCurrentPassword] = useState("")
@@ -27,10 +27,10 @@ const StudentAccountSettings= () => {
 
   // Academic information (read-only)
   const academicInfo = {
-    studentId: "2023-001",
-    institution: "Gamified University",
-    course: "Computer Science",
-    yearLevel: "3rd Year - Section A",
+    studentId: student.studentId,
+    institution: student.institution?.institutionName,
+    course: student.course,
+    yearLevel: student.year,
   }
 
   // Handle profile image upload
@@ -169,25 +169,28 @@ const StudentAccountSettings= () => {
                   <label className="block text-sm font-medium mb-1 text-purple-700">Full Name</label>
                   <input
                     type="text"
-                    value={fullName}
+                    value={student.firstName + " " + student.lastName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                    disabled
                   />
+                  
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1 text-purple-700">Email Address</label>
                   <input
                     type="email"
-                    value={email}
+                    value={student.email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                    disabled
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-purple-700">Phone Number (Optional)</label>
                   <input
                     type="tel"
-                    value={phone}
+                    value={student.phoneNumber}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
                   />

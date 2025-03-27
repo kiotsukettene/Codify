@@ -199,7 +199,10 @@ export const deleteStudent = async (req, res) => {
 export const loginStudent = async (req, res) => {
   const { email } = req.body;
   try {
-    const student = await Student.findOne({ email });
+    const student = await Student.findOne({ email }).populate(
+      "institution",
+      "institutionName"
+    );
     if (!student) {
       return res.status(400).json({
         success: false,
