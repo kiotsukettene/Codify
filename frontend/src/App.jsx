@@ -77,6 +77,7 @@ import ProfessorLayout from "./Layout/ProfessorLayout";
 import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/student-codeBattle-overview";
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
+import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
 
 
 function App() {
@@ -103,6 +104,8 @@ function App() {
 
       <Routes>
         <Route path="/battle" element={<CodeBattle />} />
+        <Route path="/terms" element={<TermsAndCondition />} />
+
 
 
 
