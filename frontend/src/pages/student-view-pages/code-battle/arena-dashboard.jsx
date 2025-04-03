@@ -8,8 +8,10 @@ import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import LiveNowBG from "@/assets/picture/random-background/LiveNow-BG.png";
 import { Cover } from "@/components/ui/cover";
 import { Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ArenaDashboardPage = () => {
+  const navigate = useNavigate()
   const cards = [
     {
       id: 1,
@@ -164,7 +166,7 @@ const ArenaDashboardPage = () => {
 
       {/* Join Battle Button (Only for Upcoming Battles) */}
       {card.id === 1 && (
-        <button className="mt-4 w-full bg-white text-neutral-900 font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
+        <button onClick={()=> navigate('/main-arena')}  className="mt-4 w-full bg-white text-neutral-900 font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
           Join Battle
         </button>
       )}
