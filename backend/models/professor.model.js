@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const professorSchema = new mongoose.Schema(
   {
     googleId: { type: String, unique: true }, // Google OAuth ID
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true},
     password: { type: String }, // Optional for Google SSO users
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -22,6 +22,8 @@ const professorSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+professorSchema.index({ email: 1, institution: 1 }, { unique: true });
 
 professorSchema.virtual("courseCount", {
   ref: "Course",

@@ -253,7 +253,6 @@ function AddStudent({ onClose }) {
     
     try {
       await addStudent(formData)
-      toast.success("Student added successfully")
       navigate("/admin/students")
       onClose()
     } catch (error) {

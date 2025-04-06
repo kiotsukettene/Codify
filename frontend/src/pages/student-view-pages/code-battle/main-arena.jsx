@@ -1,3 +1,4 @@
+"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { Editor } from "@monaco-editor/react"
@@ -16,6 +17,12 @@ import {
   ArrowLeft,
   Expand,
   Minimize,
+  Loader2,
+  CheckCheck,
+  ChevronUp,
+  FileText,
+  ListChecks,
+  BarChart,
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
@@ -23,8 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import ReactMarkdown from "react-markdown"
-
+import ReactMarkdown from 'react-markdown'
 // Sample problem data
 const problemData = {
   title: "Data Sorting Challenge",
@@ -107,9 +113,16 @@ const testCases = [
   { id: 4, input: "[7, 7, 7, 7]", expectedOutput: "[7, 7, 7, 7]", status: "waiting" },
 ]
 
-// Sample opponent data
+// Update the opponents array to only have one opponent (2 players total)
 const opponents = [
-  { id: 1, name: "CodeNinja", avatar: "/placeholder.svg?height=40&width=40", progress: 75, score: 120 },
+  {
+    id: 1,
+    name: "CodeNinja",
+    avatar: "/placeholder.svg?height=40&width=40",
+    progress: 75,
+    score: 120,
+    status: "typing", // typing, submitted, idle
+  },
 ]
 
 export default function MainArena() {
@@ -124,6 +137,13 @@ export default function MainArena() {
   const [isEditorExpanded, setIsEditorExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState("output")
   const [editorKey, setEditorKey] = useState(0) // Key to force editor remount
+  const [userStatus, setUserStatus] = useState("idle") // idle, typing, submitted
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
+
+  // Collapsible panel states
+  const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(false)
+  const [isProgressPanelOpen, setIsProgressPanelOpen] = useState(false)
+  const [isOutputPanelOpen, setIsOutputPanelOpen] = useState(true)
 
   // Refs for scrollable elements
   const testCasesRef = useRef(null)
@@ -174,7 +194,23 @@ export default function MainArena() {
     }, 100)
 
     return () => clearTimeout(timer)
-  }, [isEditorExpanded])
+  }, [isEditorExpanded, isProblemPanelOpen, isProgressPanelOpen, isOutputPanelOpen])
+
+  // Set user status to typing when code changes
+  useEffect(() => {
+    if (code !== problemData.boilerplate[language]) {
+      setUserStatus("typing")
+
+      // Reset to idle after 2 seconds of inactivity
+      const timer = setTimeout(() => {
+        if (userStatus === "typing") {
+          setUserStatus("idle")
+        }
+      }, 2000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [code, language, userStatus])
 
   // Toggle editor expansion with debounce
   const toggleEditorExpansion = () => {
@@ -192,6 +228,7 @@ export default function MainArena() {
     setIsRunning(true)
     setOutput("Running your code...")
     setActiveTab("output") // Switch to output tab
+    setIsOutputPanelOpen(true) // Ensure output panel is open
 
     // Simulate processing delay
     setTimeout(() => {
@@ -202,13 +239,19 @@ export default function MainArena() {
 
       // Update progress
       setUserProgress((prev) => Math.min(prev + 25, 100))
+
+      // Show success animation
+      setShowSuccessAnimation(true)
+      setTimeout(() => setShowSuccessAnimation(false), 1500)
     }, 1500)
   }
 
   // Simulate submitting code
   const handleSubmitCode = () => {
     setIsRunning(true)
+    setUserStatus("submitted")
     setOutput("Evaluating your solution against all test cases...")
+    setIsOutputPanelOpen(true) // Ensure output panel is open
 
     // Simulate processing delay
     setTimeout(() => {
@@ -229,48 +272,88 @@ export default function MainArena() {
       // Update progress based on passed tests
       setUserProgress(Math.round((passedCount / totalCount) * 100))
       setActiveTab("testcases") // Switch to test cases tab after submission
+
+      // Show success animation if all tests passed
+      if (passedCount === totalCount) {
+        setShowSuccessAnimation(true)
+        setTimeout(() => setShowSuccessAnimation(false), 1500)
+      }
     }, 2000)
   }
 
+  // Get status icon based on status
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "typing":
+        return (
+          <span className="flex items-center text-blue-400">
+            <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Typing...
+          </span>
+        )
+      case "submitted":
+        return (
+          <span className="flex items-center text-green-400">
+            <CheckCheck className="h-3 w-3 mr-1" /> Submitted
+          </span>
+        )
+      case "idle":
+      default:
+        return null
+    }
+  }
+
+  // Get time color class based on time left
+  const getTimeColorClass = () => {
+    if (timeLeft < 60) return "text-red-500 animate-pulse font-bold"
+    if (timeLeft < 300) return "text-red-400 font-bold"
+    if (timeLeft < 600) return "text-yellow-400"
+    return "text-gray-200"
+  }
+
   return (
-    <div className="flex flex-col h-screen bg-[#0D0A1A] text-[#F5F5F5] overflow-hidden">
-      {/* Header with battle info */}
-      <header className="flex items-center justify-between px-6 py-3 bg-[#18122B] border-b border-[#2B1F4A]">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" className="p-2 hover:bg-[#2B1F4A] rounded-full text-[#C2C2DD] hover:text-[#F5F5F5]">
-            <ArrowLeft className="h-5 w-5" />
+    <div className="flex flex-col h-screen bg-[#0D0A1A] text-[#F5F5F5] overflow-hidden ">
+      {/* Sticky header with essential info */}
+
+      {!isEditorExpanded && (
+
+      <header className="flex items-center justify-between px-3 py-2 bg-[#18122B] border-b border-[#2B1F4A] sticky top-0 z-10">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            className="p-1 h-8 w-8 hover:bg-[#2B1F4A] rounded-full text-[#C2C2DD] hover:text-[#F5F5F5]"
+          >
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-400" />
-              {problemData.title}
-            </h1>
-            <div className="flex items-center gap-2 text-sm text-[#C2C2DD]">
-             
-              <span className="flex items-center gap-1">
-                <Trophy className="h-3 w-3 text-yellow-400" />
-                {problemData.points} points
-              </span>
-            </div>
-          </div>
+          <h1 className="text-base font-bold flex items-center gap-1 truncate">
+            <Trophy className="h-4 w-4 text-yellow-400 flex-shrink-0" />
+            <span className="truncate">{problemData.title}</span>
+            <Badge variant="outline" className="ml-1 text-xs text-gray-300 bg-[#2B1F4A]/50 border-[#561e7b]">
+              {problemData.points} pts
+            </Badge>
+          </h1>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-[#2B1F4A] px-3 py-1 rounded-full">
-            <Clock className="h-4 w-4 text-[#E94560]" />
-            <span className={`font-mono ${timeLeft < 300 ? "text-[#E94560]" : "text-[#C2C2DD]"}`}>
-              {formatTime(timeLeft)}
-            </span>
+        <div className="flex items-center gap-2">
+          {/* Timer */}
+          <div className="bg-[#231b3d] border border-[#2B1F4A] px-2 py-1 rounded text-sm">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3 text-[#E94560]" />
+              <span className={`font-mono text-sm ${getTimeColorClass()}`}>{formatTime(timeLeft)}</span>
+            </div>
           </div>
 
+          {/* Players count */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  className="border-[#2B1F4A] hover:bg-[#2B1F4A] bg-neutral-700 hover:text-[#F5F5F5]"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 border-[#2B1F4A] hover:bg-[#2B1F4A] bg-[#231b3d] hover:text-[#F5F5F5]"
+                  onClick={() => setIsProgressPanelOpen(!isProgressPanelOpen)}
                 >
-                  <Users className="h-4 w-4 mr-2" />
-                  <span>{opponents.length + 1} Players</span>
+                  <Users className="h-3 w-3 mr-1" />
+                  <span className="text-xs">{opponents.length + 1}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -278,96 +361,123 @@ export default function MainArena() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          {/* Exit button */}
+          <Button variant="destructive" size="sm" className="h-7 px-4 bg-red-600/80 hover:bg-red-700 text-sm">
+            Exit
+          </Button>
         </div>
       </header>
+      )}
 
-      {/* Main content area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left panel - Problem statement (hidden when editor is expanded) */}
+      {/* Main content area - Vertical stack */}
+      
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Problem description panel - Collapsible */}
         {!isEditorExpanded && (
-          <div className="w-2/5 border-r border-[#2B1F4A] overflow-y-auto p-6 bg-[#18122B]">
-            <Tabs defaultValue="description">
-              <TabsList className="bg-[#0D0A1A] mb-4">
-                <TabsTrigger
-                  value="description"
-                  className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD]"
-                >
-                  Description
-                </TabsTrigger>
-                <TabsTrigger
-                  value="examples"
-                  className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD]"
-                >
-                  Examples
-                </TabsTrigger>
-                <TabsTrigger
-                  value="hints"
-                  className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD]"
-                >
-                  Hints
-                </TabsTrigger>
-              </TabsList>
 
-              <TabsContent value="description" className="mt-0">
-                <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown>{problemData.description}</ReactMarkdown>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="examples" className="mt-0 space-y-4">
-                {problemData.examples.map((example, index) => (
-                  <div key={index} className="bg-[#0D0A1A] rounded-lg p-4 border border-[#2B1F4A]">
-                    <h3 className="font-semibold text-[#B689F4] mb-2">Example {index + 1}</h3>
-
-                    <div className="mb-3">
-                      <div className="text-sm text-[#C2C2DD] mb-1">Input:</div>
-                      <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-sm">{example.input}</pre>
-                    </div>
-
-                    <div className="mb-3">
-                      <div className="text-sm text-[#C2C2DD] mb-1">Output:</div>
-                      <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-sm">{example.output}</pre>
-                    </div>
-
-                    {example.explanation && (
-                      <div>
-                        <div className="text-sm text-[#C2C2DD] mb-1">Explanation:</div>
-                        <p className="text-sm">{example.explanation}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="hints" className="mt-0">
-                <div className="bg-[#0D0A1A] rounded-lg p-4 border border-[#2B1F4A]">
-                  <h3 className="font-semibold text-yellow-400 mb-2 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
+        <Collapsible
+          open={isProblemPanelOpen}
+          onOpenChange={setIsProblemPanelOpen}
+          className="border-b border-[#2B1F4A]"
+        >
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 bg-[#18122B] hover:bg-[#231b3d] transition-colors">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-[#B689F4]" />
+              <span className="font-medium">Problem Description</span>
+            </div>
+            {isProblemPanelOpen ? (
+              <Button variant='ghost'><ChevronUp className="h-4 w-4 text-[#C2C2DD]" /> Close</Button>
+            ) : (
+              <Button variant='ghost'><ChevronDown className="h-4 w-4 text-[#C2C2DD]" />Open</Button>
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-[#18122B]">
+            <div className="max-h-[30vh] overflow-y-auto">
+              <Tabs defaultValue="description" className="p-3">
+                <TabsList className="bg-[#0D0A1A] mb-3">
+                  <TabsTrigger
+                    value="description"
+                    className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD] text-xs"
+                  >
+                    Description
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="examples"
+                    className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD] text-xs"
+                  >
+                    Examples
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="hints"
+                    className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD] text-xs"
+                  >
                     Hints
-                  </h3>
-                  <ul className="space-y-2">
-                    {problemData.hints.map((hint, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <ChevronRight className="h-4 w-4 text-yellow-400 mt-1 flex-shrink-0" />
-                        <span>{hint}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+                  </TabsTrigger>
+                </TabsList>
 
-        {/* Right panel - Code editor */}
-        <div className={`flex-1 flex flex-col bg-[#0D0A1A] ${isEditorExpanded ? "w-full" : ""}`}>
+                <TabsContent value="description" className="mt-0">
+                  <div className="prose prose-invert prose-sm max-w-none">
+                    <ReactMarkdown>{problemData.description}</ReactMarkdown>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="examples" className="mt-0 space-y-3">
+                  {problemData.examples.map((example, index) => (
+                    <div key={index} className="bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
+                      <h3 className="font-semibold text-[#B689F4] mb-2 text-sm">Example {index + 1}</h3>
+
+                      <div className="mb-2">
+                        <div className="text-xs text-[#C2C2DD] mb-1">Input:</div>
+                        <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{example.input}</pre>
+                      </div>
+
+                      <div className="mb-2">
+                        <div className="text-xs text-[#C2C2DD] mb-1">Output:</div>
+                        <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{example.output}</pre>
+                      </div>
+
+                      {example.explanation && (
+                        <div>
+                          <div className="text-xs text-[#C2C2DD] mb-1">Explanation:</div>
+                          <p className="text-xs">{example.explanation}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </TabsContent>
+
+                <TabsContent value="hints" className="mt-0">
+                  <div className="bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
+                    <h3 className="font-semibold text-yellow-400 mb-2 flex items-center gap-1 text-sm">
+                      <AlertCircle className="h-3 w-3" />
+                      Hints
+                    </h3>
+                    <ul className="space-y-1">
+                      {problemData.hints.map((hint, index) => (
+                        <li key={index} className="flex items-start gap-1 text-xs">
+                          <ChevronRight className="h-3 w-3 text-yellow-400 mt-0.5 flex-shrink-0" />
+                          <span>{hint}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+          )}
+
+        {/* Code editor - Dominant element */}
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Language selector */}
-          <div className="flex items-center justify-between px-4 py-2 bg-[#18122B] border-b border-[#2B1F4A]">
+          <div className="flex items-center justify-between px-3 py-1 bg-[#18122B] border-b border-[#2B1F4A]">
             <div className="flex items-center">
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="bg-[#0D0A1A] text-[#F5F5F5] border border-[#2B1F4A] rounded px-2 py-1 text-sm"
+                className="bg-[#0D0A1A] text-[#F5F5F5] border border-[#2B1F4A] rounded px-2 py-1 text-xs"
               >
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
@@ -379,18 +489,19 @@ export default function MainArena() {
               <Button
                 variant="secondary"
                 size="sm"
-                className=" border-[#2B1F4A] hover:bg-[#2B1F4A] hover:text-[#F5F5F5]"
+                className="h-7 px-2 text-xs border-[#2B1F4A] hover:bg-[#2B1F4A] hover:text-[#F5F5F5]"
                 onClick={() => setTheme(theme === "vs-dark" ? "light" : "vs-dark")}
               >
-                Toggle Theme
+                Theme
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-primary text-white border-[#2B1F4A] hover:bg-[#2B1F4A] hover:text-[#F5F5F5]"
+                className="h-7 px-2 text-xs bg-primary text-white border-[#2B1F4A] hover:bg-[#2B1F4A] hover:text-[#F5F5F5]"
                 onClick={toggleEditorExpansion}
               >
-                {isEditorExpanded ? <Minimize/> : <Expand/>}
+                {isEditorExpanded ? <Minimize className="h-3 w-3 mr-1" /> : <Expand className="h-3 w-3 mr-1" />}
+                {isEditorExpanded ? "Exit" : "Fullscreen"}
               </Button>
             </div>
           </div>
@@ -418,119 +529,209 @@ export default function MainArena() {
             </div>
           </div>
 
-          {/* Output panel */}
-          <div className="h-1/3 border-t border-[#2B1F4A] flex flex-col">
-            <Tabs defaultValue="output" value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between px-4 py-2 bg-[#18122B]">
-                <TabsList className="bg-[#0D0A1A]">
-                  <TabsTrigger
-                    value="output"
-                    className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD]"
-                  >
-                    Output
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="testcases"
-                    className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD]"
-                  >
-                    Test Cases
-                  </TabsTrigger>
-                </TabsList>
+          {/* Action buttons */}
+          <div className="flex items-center justify-between px-3 py-2 bg-[#18122B] border-t border-b border-[#2B1F4A]">
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleRunCode}
+                disabled={isRunning}
+                className="bg-[#14AE5C] hover:bg-[#14AE5C]/80 text-white transition-all duration-200 transform hover:scale-105 h-8"
+                size="sm"
+              >
+                {isRunning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
+                Run
+              </Button>
+              <Button
+                onClick={handleSubmitCode}
+                disabled={isRunning}
+                className="bg-[#E94560] hover:bg-[#E94560]/80 text-white transition-all duration-200 transform hover:scale-105 h-8"
+                size="sm"
+              >
+                {isRunning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                Submit
+              </Button>
+            </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleRunCode}
-                    disabled={isRunning}
-                    className="bg-[#14AE5C] hover:bg-[#14AE5C]/80 text-white"
-                    size="sm"
-                  >
-                    <Play className="h-4 w-4 mr-1" />
-                    Run
-                  </Button>
-                  <Button
-                    onClick={handleSubmitCode}
-                    disabled={isRunning}
-                    className="bg-[#E94560] hover:bg-[#E94560]/80 text-white"
-                    size="sm"
-                  >
-                    <Send className="h-4 w-4 mr-1" />
-                    Submit
-                  </Button>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs hover:bg-[#2B1F4A]"
+                onClick={() => setIsOutputPanelOpen(!isOutputPanelOpen)}
+              >
+                {isOutputPanelOpen ? <ChevronDown className="h-3 w-3 mr-1" /> : <ChevronUp className="h-3 w-3 mr-1" />}
+                {isOutputPanelOpen ? "Hide Output" : "Show Output"}
+              </Button>
 
-              <TabsContent value="output" className="flex-1 p-0 m-0 h-full">
-                <div className="h-full">
-                  <pre
-                    ref={outputRef}
-                    className="bg-[#1E1B38] text-[#C2C2DD] p-4 h-full overflow-auto font-mono text-sm"
-                  >
-                    {output || "Run your code to see output here..."}
-                  </pre>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="testcases" className="flex-1 p-0 m-0 h-full">
-                <div className="h-full">
-                  <div ref={testCasesRef} className="bg-[#1E1B38] h-full overflow-auto p-4">
-                    {testResults.map((test) => (
-                      <div key={test.id} className="border border-[#2B1F4A] rounded-lg overflow-hidden mb-3">
-                        <Collapsible>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full p-3 hover:bg-[#18122B] transition-colors">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm">Test Case #{test.id}</span>
-                              {test.status === "passed" && <CheckCircle className="h-4 w-4 text-[#14AE5C]" />}
-                              {test.status === "failed" && <XCircle className="h-4 w-4 text-[#E94560]" />}
-                              {test.status === "waiting" && <Clock className="h-4 w-4 text-yellow-400" />}
-                            </div>
-                            <ChevronDown className="h-4 w-4 text-[#C2C2DD]" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="p-3 border-t border-[#2B1F4A] bg-[#18122B]">
-                              <div className="mb-2">
-                                <div className="text-xs text-[#C2C2DD] mb-1">Input:</div>
-                                <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">{test.input}</pre>
-                              </div>
-                              <div>
-                                <div className="text-xs text-[#C2C2DD] mb-1">Expected Output:</div>
-                                <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
-                                  {test.expectedOutput}
-                                </pre>
-                              </div>
-                              {test.status === "failed" && (
-                                <div className="mt-2 p-2 bg-[#E94560]/10 border border-[#E94560]/30 rounded">
-                                  <div className="text-xs text-[#E94560] mb-1">Your Output:</div>
-                                  <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
-                                    {test.id === 3 ? "[10, -5, 0, 20, 100]" : "No output"}
-                                  </pre>
-                                </div>
-                              )}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs hover:bg-[#2B1F4A]"
+                onClick={() => setIsProgressPanelOpen(!isProgressPanelOpen)}
+              >
+                {isProgressPanelOpen ? (
+                  <ChevronDown className="h-3 w-3 mr-1" />
+                ) : (
+                  <ChevronUp className="h-3 w-3 mr-1" />
+                )}
+                {isProgressPanelOpen ? "Hide Progress" : "Show Progress"}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom panel - Battle stats */}
-      <div className="bg-[#231b3d] border-t border-[#271e3d] p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h3 className="text-sm font-semibold mb-2">Battle Progress</h3>
-            <div className="space-y-3">
+        {/* Output panel - Collapsible */}
+        <Collapsible open={isOutputPanelOpen} onOpenChange={setIsOutputPanelOpen} className="border-t border-[#2B1F4A]">
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 bg-[#18122B] hover:bg-[#231b3d] transition-colors md:hidden">
+            <div className="flex items-center gap-2">
+              <ListChecks className="h-4 w-4 text-[#B689F4]" />
+              <span className="font-medium">Output & Test Cases</span>
+            </div>
+            {isOutputPanelOpen ? (
+              <ChevronUp className="h-4 w-4 text-[#C2C2DD]" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-[#C2C2DD]" />
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-[#18122B]">
+            <div className="h-[25vh] flex flex-col">
+              <Tabs defaultValue="output" value={activeTab} onValueChange={setActiveTab}>
+                <div className="flex items-center px-3 py-1 bg-[#18122B]">
+                  <TabsList className="bg-[#0D0A1A] h-7">
+                    <TabsTrigger
+                      value="output"
+                      className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD] text-xs h-6"
+                    >
+                      Output
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="testcases"
+                      className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD] text-xs h-6"
+                    >
+                      Test Cases
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="output" className="flex-1 p-0 m-0 h-full">
+                  <div className="h-full">
+                    <pre
+                      ref={outputRef}
+                      className="bg-[#1E1B38] text-[#C2C2DD] p-3 h-full overflow-auto font-mono text-xs"
+                    >
+                      {output || "Run your code to see output here..."}
+                    </pre>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="testcases" className="flex-1 p-0 m-0 h-full">
+                  <div className="h-full overflow-hidden">
+                    <div ref={testCasesRef} className="bg-[#1E1B38] h-full overflow-auto p-2">
+                      {testResults.map((test) => (
+                        <div key={test.id} className="border border-[#2B1F4A] rounded-lg overflow-hidden mb-2">
+                          <Collapsible>
+                            <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-[#18122B] transition-colors">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs">Test #{test.id}</span>
+                                {test.status === "passed" && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-green-500/20 text-green-400 border-green-500 text-xs py-0 h-5"
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1" /> Passed
+                                  </Badge>
+                                )}
+                                {test.status === "failed" && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-red-500/20 text-red-400 border-red-500 text-xs py-0 h-5"
+                                  >
+                                    <XCircle className="h-3 w-3 mr-1" /> Failed
+                                  </Badge>
+                                )}
+                                {test.status === "waiting" && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-yellow-500/20 text-yellow-400 border-yellow-500 text-xs py-0 h-5"
+                                  >
+                                    <Clock className="h-3 w-3 mr-1" /> Waiting
+                                  </Badge>
+                                )}
+                              </div>
+                              <ChevronDown className="h-3 w-3 text-[#C2C2DD]" />
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="p-2 border-t border-[#2B1F4A] bg-[#18122B]">
+                                <div className="mb-2">
+                                  <div className="text-xs text-[#C2C2DD] mb-1">Input:</div>
+                                  <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">{test.input}</pre>
+                                </div>
+                                <div className="mb-2">
+                                  <div className="text-xs text-[#C2C2DD] mb-1">Expected Output:</div>
+                                  <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
+                                    {test.expectedOutput}
+                                  </pre>
+                                </div>
+                                {test.status === "failed" && (
+                                  <div className="mt-2 p-2 bg-[#E94560]/10 border border-[#E94560]/30 rounded">
+                                    <div className="text-xs text-[#E94560] mb-1">Your Output:</div>
+                                    <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
+                                      {test.id === 3 ? "[10, -5, 0, 20, 100]" : "No output"}
+                                    </pre>
+                                  </div>
+                                )}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Battle progress panel - Collapsible */}
+        <Collapsible
+          open={isProgressPanelOpen}
+          onOpenChange={setIsProgressPanelOpen}
+          className="border-t border-[#2B1F4A]"
+        >
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 bg-[#18122B] hover:bg-[#231b3d] transition-colors md:hidden">
+            <div className="flex items-center gap-2">
+              <BarChart className="h-4 w-4 text-[#B689F4]" />
+              <span className="font-medium">Battle Progress</span>
+            </div>
+            {isProgressPanelOpen ? (
+              <ChevronUp className="h-4 w-4 text-[#C2C2DD]" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-[#C2C2DD]" />
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-[#231b3d]">
+            <div className="p-3 space-y-3">
               {/* Your progress */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 w-32">
-                  <div className="h-8 w-8 rounded-full bg-[#8A63D2] flex items-center justify-center">
-                    <User className="h-4 w-4" />
+                  <div className="h-6 w-6 rounded-full bg-[#8A63D2] flex items-center justify-center relative">
+                    <User className="h-3 w-3" />
+                    {userStatus !== "idle" && (
+                      <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                        <span
+                          className={`animate-ping absolute inline-flex h-full w-full rounded-full ${userStatus === "typing" ? "bg-blue-400" : "bg-green-400"} opacity-75`}
+                        ></span>
+                        <span
+                          className={`relative inline-flex rounded-full h-2 w-2 ${userStatus === "typing" ? "bg-blue-500" : "bg-green-500"}`}
+                        ></span>
+                      </span>
+                    )}
                   </div>
-                  <span className="text-sm font-medium">You</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium">You</span>
+                    {getStatusIcon(userStatus)}
+                  </div>
                 </div>
                 <div className="flex-1">
                   <Progress
@@ -539,19 +740,34 @@ export default function MainArena() {
                     indicatorClassName="bg-gradient-to-r from-[#7B3FBF] to-[#B689F4]"
                   />
                 </div>
-                <span className="text-sm font-mono w-12 text-right">{userProgress}%</span>
+                <span className="text-xs font-mono w-8 text-right font-bold">{userProgress}%</span>
               </div>
 
               {/* Opponents progress */}
               {opponents.map((opponent) => (
                 <div key={opponent.id} className="flex items-center gap-3">
                   <div className="flex items-center gap-2 w-32">
-                    <img
-                      src={opponent.avatar || "/placeholder.svg"}
-                      alt={opponent.name}
-                      className="h-8 w-8 rounded-full bg-[#2B1F4A]"
-                    />
-                    <span className="text-sm font-medium truncate">{opponent.name}</span>
+                    <div className="relative">
+                      <img
+                        src={opponent.avatar || "/placeholder.svg"}
+                        alt={opponent.name}
+                        className="h-6 w-6 rounded-full bg-[#2B1F4A] border border-[#2B1F4A]"
+                      />
+                      {opponent.status !== "idle" && (
+                        <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                          <span
+                            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${opponent.status === "typing" ? "bg-blue-400" : "bg-green-400"} opacity-75`}
+                          ></span>
+                          <span
+                            className={`relative inline-flex rounded-full h-2 w-2 ${opponent.status === "typing" ? "bg-blue-500" : "bg-green-500"}`}
+                          ></span>
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-medium truncate">{opponent.name}</span>
+                      {getStatusIcon(opponent.status)}
+                    </div>
                   </div>
                   <div className="flex-1">
                     <Progress
@@ -560,19 +776,23 @@ export default function MainArena() {
                       indicatorClassName="bg-gradient-to-r from-[#545A91] to-[#8A63D2]/70"
                     />
                   </div>
-                  <span className="text-sm font-mono w-12 text-right">{opponent.progress}%</span>
+                  <span className="text-xs font-mono w-8 text-right font-bold">{opponent.progress}%</span>
                 </div>
               ))}
-            </div>
-          </div>
 
-          <div className="ml-6 flex items-center gap-4">
-          
-            <Button variant="destructive" size="sm" className="bg-[#E94560] hover:bg-[#E94560]/80">
-              Exit Battle
-            </Button>
-          </div>
-        </div>
+              <div className="flex justify-center pt-1">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700 text-white font-medium"
+                >
+                  <Trophy className="h-3 w-3 mr-1" />
+                  View Leaderboard
+                </Button>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   )

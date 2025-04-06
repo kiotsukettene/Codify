@@ -9,7 +9,7 @@ const API_URL = isDev
   : `${import.meta.env.VITE_API_URL}/api/courses`; // Production backend
 
 
-
+axios.defaults.withCredentials = true;
 export const useCourseStore = create((set) => ({
   courses: [],
   course: null,
@@ -37,7 +37,7 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.get(`${API_URL}/${courseId}`);
+      const response = await axios.get(`${API_URL}/course/${courseId}`);
       set({ course: response.data, isLoading: false });
     } catch (error) {
       set({

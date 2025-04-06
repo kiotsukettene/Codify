@@ -29,7 +29,7 @@ function StudentCourseListPage() {
     fetchEnrolledCourses();
   }, [fetchEnrolledCourses])
 
-
+  console.log("Enrolled Courses:", enrolledCourses); // Debugging line
   return (
     <div className="mx-6 w-full py-4">
       <Card className="h-[272px] w-full bg-[#ededff]  shadow-none border-none flex justify-between relative overflow-hidden rounded-xl">
@@ -84,6 +84,7 @@ function StudentCourseListPage() {
               image={course.image || "https://via.placeholder.com/150"}
               title={course.className}
               professor={`${course.professorId?.firstName} ${course.professorId?.lastName}`}
+              schedule={`${course.schedule.day.charAt(0).toUpperCase()}${course.schedule.day.slice(1)} | ${course.schedule.time}`}
               tags={[course.program, course.language]}
               onClick={() => navigate(`/student/lesson-list/${course._id}`)}
             />

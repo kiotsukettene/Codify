@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 const ActivityTab = ({ activity, courseSlug, lessonSlug, index }) => {
-  // ✅ Ensure a single activity is passed
   if (!activity) {
     return <p className="text-gray-500">No activity available.</p>;
   }
@@ -14,14 +13,15 @@ const ActivityTab = ({ activity, courseSlug, lessonSlug, index }) => {
   const navigate = useNavigate();
 
   const handleActivityClick = () => {
-    navigate(
-      `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activity.slug}`,
-      { state: { activity } }
-    );
-    a;
+    if (!courseSlug || !lessonSlug || !activity.slug) {
+      console.error("Missing navigation parameters:", { courseSlug, lessonSlug, activitySlug: activity.slug });
+      return;
+    }
+    navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activity.slug}`, {
+      state: { activity },
+    });
   };
 
-  // Format the due date
   const formattedDueDate = activity.dueDate
     ? new Date(activity.dueDate).toLocaleDateString("en-US", {
         weekday: "short",
@@ -32,7 +32,6 @@ const ActivityTab = ({ activity, courseSlug, lessonSlug, index }) => {
     : "No due date";
 
   return (
-    // ✅ No unnecessary div wrapping
     <div className="mb-4">
       <Button
         key={activity._id}

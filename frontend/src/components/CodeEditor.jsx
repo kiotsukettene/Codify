@@ -1,6 +1,6 @@
-
 import { Editor } from "@monaco-editor/react";
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import LanguageSelector from "./LanguageSelector";
 import { CODE_SNIPPETS } from "@/constants";
 import Output from "./Output";
@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Maximize2, Minimize2, Play } from "lucide-react";
 import Input from "./Input";
 import { executeCode } from "@/api";
-import Logo from '@/assets/picture/logos/Logo.png';
+import Logo from "@/assets/picture/logos/Logo.png";
+import { useStudentStore } from "@/store/studentStore"; // Add this import
+import { useprofAuthStore } from "@/store/profAuthStore"; // Add this import
 
 const CodeEditor = () => {
   const editorRef = useRef();
@@ -17,7 +19,10 @@ const CodeEditor = () => {
   const [maximizedPanel, setMaximizedPanel] = useState(null);
   const [output, setOutput] = useState(null);
   const [isError, setIsError] = useState(false);
-  const [inputValue, setInputValue] = useState(""); // State for input
+  const [inputValue, setInputValue] = useState("");
+  const navigate = useNavigate(); // Hook for navigation
+  const { isAuthenticated: isStudentAuthenticated } = useStudentStore(); // Check student auth
+  const { isAuthenticated: isProfessorAuthenticated } = useprofAuthStore(); // Check professor auth
 
   const onMount = (editor) => {
     editorRef.current = editor;
@@ -39,7 +44,7 @@ const CodeEditor = () => {
   };
 
   const handleInputChange = (newInput) => {
-    setInputValue(newInput); // Update input state
+    setInputValue(newInput);
   };
 
   const runCode = async () => {
@@ -47,7 +52,7 @@ const CodeEditor = () => {
     if (!sourceCode) return;
 
     try {
-      const { run: result } = await executeCode(language, sourceCode, inputValue); // Pass inputValue
+      const { run: result } = await executeCode(language, sourceCode, inputValue);
       setOutput(result.output.split("\n"));
       result.stderr ? setIsError(true) : setIsError(false);
     } catch (error) {
@@ -57,11 +62,28 @@ const CodeEditor = () => {
     }
   };
 
+  // Function to handle logo click and navigate to the appropriate dashboard
+  const handleLogoClick = () => {
+    if (isStudentAuthenticated) {
+      navigate("/student/dashboard");
+    } else if (isProfessorAuthenticated) {
+      navigate("/professor/dashboard");
+    } else {
+      // Fallback: if somehow neither is authenticated, go to login
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e] overflow-hidden">
       <div className="flex items-center justify-between p-2 bg-[#2d2d2d] border-b border-gray-800">
         <div>
-          <img src={Logo} className="w-28 h-auto" alt="Logo" />
+          <img
+            src={Logo}
+            className="w-28 h-auto cursor-pointer" // Add cursor-pointer for visual feedback
+            alt="Logo"
+            onClick={handleLogoClick} // Add click handler
+          />
         </div>
         <div className="flex items-center pt-4 gap-4">
           <LanguageSelector language={language} onSelect={handleSelect} />
@@ -108,7 +130,7 @@ const CodeEditor = () => {
           <Input
             isMaximized={maximizedPanel === "input"}
             onToggleMaximize={() => toggleMaximize("input")}
-            onInputChange={handleInputChange} // Pass callback to update input
+            onInputChange={handleInputChange}
           />
         </div>
       </div>

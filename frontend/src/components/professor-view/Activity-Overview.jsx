@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Calendar } from "lucide-react";
-import UpdateDueDate from "@/components/professor-view/UpdateDueDate"; 
+import UpdateDueDate from "@/components/professor-view/UpdateDueDate";
 import { useActivityStore } from "@/store/activityStore";
 import toast from "react-hot-toast";
-import { format, parseISO } from "date-fns"; 
-
+import { format, parseISO } from "date-fns";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ActivityOverview = ({
   activityId,
@@ -23,6 +23,9 @@ const ActivityOverview = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dueDate, setDueDate] = useState(initialDueDate || "No due date");
+  const { updateActivity, deleteActivity } = useActivityStore();
+  const { courseSlug, lessonSlug, activitySlug } = useParams();
+  const navigate = useNavigate();
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -34,14 +37,10 @@ const ActivityOverview = ({
     }
 
     const formattedDate = time
-    ? new Date(`${format(date, "yyyy-MM-dd")}T${time}:00`) // Ensures valid format
-    : new Date(date);
+      ? new Date(`${format(date, "yyyy-MM-dd")}T${time}:00`)
+      : new Date(date);
 
-  console.log("Formatted Due Date:", formattedDate, formattedDate instanceof Date);
-
-  setDueDate(new Date(formattedDate));
-
-  const { updateActivity } = useActivityStore.getState();
+    setDueDate(new Date(formattedDate));
 
     if (!activityId) {
       toast.error("Error: Activity ID is missing.");
@@ -49,11 +48,24 @@ const ActivityOverview = ({
     }
 
     try {
-      await updateActivity(activityId, { dueDate: formattedDate.toISOString() }); 
+      await updateActivity(activityId, { dueDate: formattedDate.toISOString() });
       toast.success("Due date updated successfully!");
     } catch (error) {
       toast.error("Error updating due date.");
       console.error(error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (activityId && window.confirm("Are you sure you want to delete this activity?")) {
+      try {
+        await deleteActivity(activityId);
+        toast.success("Activity deleted successfully!");
+        navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}`);
+      } catch (error) {
+        toast.error("Error deleting activity.");
+        console.error(error);
+      }
     }
   };
 
@@ -67,22 +79,18 @@ const ActivityOverview = ({
       {/* Due Date & Points */}
       <div className="flex flex-col sm:flex-row sm:justify-between text-gray-600 text-sm mb-8 gap-2">
         <span className="flex items-center gap-1">
-        <Calendar className="h-4 w-4" /> Due date:{" "}
+          <Calendar className="h-4 w-4" /> Due date:{" "}
+          {dueDate
+            ? format(
+                dueDate instanceof Date ? dueDate : new Date(dueDate),
+                "MM/dd/yyyy 'at' h:mm a"
+              )
+            : "No due date"}
+        </span>
 
-        {dueDate 
-  ? format(
-      dueDate instanceof Date ? dueDate : new Date(dueDate),
-      "MM/dd/yyyy 'at' h:mm a"
-    )
-  : "No due date"}
-
-                </span>
-
-        {/* Wrap points and menu in a flex container */}
+        {/* Points and Menu */}
         <div className="flex items-center gap-2">
           <span>{points} Points</span>
-
-          {/* Three Dots Dropdown Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -91,13 +99,17 @@ const ActivityOverview = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="py-1">
               <DropdownMenuItem onClick={handleOpenModal}>
-                Due Date
+                Update Due Date
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                Edit
+              <DropdownMenuItem
+                onClick={() =>
+                  navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activitySlug}/edit`)
+                }
+              >
+                Edit Activity
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600">
-                Delete
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                Delete Activity
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -126,7 +138,6 @@ const ActivityOverview = ({
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-
             <a
               href={fileName}
               target="_blank"
@@ -135,7 +146,6 @@ const ActivityOverview = ({
             >
               {decodeURIComponent(fileName.split("/").pop())}
             </a>
-
             <a
               href={fileName}
               download
@@ -158,6 +168,7 @@ const ActivityOverview = ({
           </div>
         </motion.div>
       )}
+
       {/* Instructions */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -178,6 +189,7 @@ const ActivityOverview = ({
           ))}
         </ol>
       </motion.div>
+
       <UpdateDueDate
         isOpen={isModalOpen}
         onClose={handleCloseModal}

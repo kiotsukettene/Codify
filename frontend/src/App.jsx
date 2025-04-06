@@ -11,6 +11,8 @@ import {
   ProtectedRouteStudents,
   RedirectAuthenticatedProfessor,
   ProtectedRouteProfessors,
+  RestrictPublicRoutes,
+  ProtectedRouteStudentOrProfessor,
 } from "./routes/ProtectedRoutes";
 
 // Layouts
@@ -50,6 +52,7 @@ import CodeBattleOverview from "./pages/professor-view-pages/Code-Battle/Code-Ba
 import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle";
 import Account from "./pages/professor-view-pages/Professor-Account";
 import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
+import EditActivity from "./pages/professor-view-pages/Course-management/Edit-Activity";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -110,10 +113,10 @@ function App() {
 
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
-          <Route index element={<LandingPage />} />
-          <Route path="/login" element={<MainLogin />} />
+          <Route index element={<RestrictPublicRoutes><LandingPage /></RestrictPublicRoutes>} />
+          <Route path="/login" element={<RestrictPublicRoutes><MainLogin /></RestrictPublicRoutes>} />
           <Route path="*" element={<PageNotFoundPage />} />
-          <Route path="/contact" element={<ContactUsPage/>}/>
+          <Route path="/contact" element={<RestrictPublicRoutes><ContactUsPage/></RestrictPublicRoutes>}/>
           {/* Admin Registration & Authentication */}
           <Route path="/admin/register" element={<RedirectAuthenticatedInstitution><AdminRegisterPage /></RedirectAuthenticatedInstitution>} />
           <Route path="/admin/login" element={<RedirectAuthenticatedInstitution><AdminLogin /></RedirectAuthenticatedInstitution>} />
@@ -195,6 +198,10 @@ function App() {
             }
           />
           <Route
+          path="course/:courseSlug/lesson/:lessonSlug/activity/:activitySlug/edit"
+          element={<EditActivity />}
+        />
+          <Route
             path="reset-password/:token"
             element={
               <RedirectAuthenticatedProfessor>
@@ -231,7 +238,8 @@ function App() {
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings/>}/>
-          <Route path="code-battle" element={<StudentCodeBattleOverview/>}/>
+          <Route path="code-battle" element={<StudentCodeBattleOverview />} />
+          {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}
         </Route>
 
 
@@ -240,8 +248,9 @@ function App() {
 
 
         {/* Additional Routes */}
-        <Route path="/code-editor" element={<CodeEditor />} />
-        <Route path="/video-conference" element={<VideoConference/>}/>
+
+        <Route path="/video-conference" element={<VideoConference />} />
+        <Route path="/code-editor" element={<ProtectedRouteStudentOrProfessor><CodeEditor /></ProtectedRouteStudentOrProfessor>} />
       </Routes>
 
       <Toaster position="top-right" />

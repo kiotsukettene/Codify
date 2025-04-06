@@ -84,12 +84,17 @@ export const getCourseById = async (req, res) => {
     const course = await Course.findById(courseId).populate({
       path: "professorId",
       select: "firstName lastName email", // ✅ Select only necessary fields
-    });
+    })
+      .populate({
+        path: "studentsEnrolled", // Populate Students
+        select: "firstName lastName email studentId"
+      });
 
     if (!course) return res.status(404).json({ message: "Course not found" });
 
     console.log("Course Data:", course); // ✅ Debugging log
     console.log("Professor Data:", course.professorId); // ✅ Should contain firstName & lastName
+    console.log("Students Enrolled:", course.studentsEnrolled);
 
     res.status(200).json(course);
   } catch (error) {
