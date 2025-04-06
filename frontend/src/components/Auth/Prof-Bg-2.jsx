@@ -15,7 +15,7 @@ const ProfBg2= () => {
             <img
               src={Astro}
               alt="Mascot"
-              className="absolute top-10 right-[-120px] w-60 lg:w-96 opacity-90 -rotate-12"
+              className="absolute top-14 right-[-120px] w-60 lg:w-96 opacity-90 -rotate-12"
             />
             <img
               src={FiveStar}

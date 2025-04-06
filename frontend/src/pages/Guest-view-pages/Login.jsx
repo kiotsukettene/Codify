@@ -97,7 +97,7 @@ function MainLogin() {
         </p>
       </div>
 
-      <div className="relative pt-9 z-10 flex flex-wrap justify-center gap-8 mt-8 w-full max-w-6xl px-4">
+      <div className="relative pt-9 z-10 flex flex-wrap justify-center gap-8 mt-8 w-full max-w-6xl px-4 ">
       {roles.map((role, index) => (
           <motion.div
             key={index}

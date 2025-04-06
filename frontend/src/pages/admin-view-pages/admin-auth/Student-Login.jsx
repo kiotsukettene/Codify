@@ -16,6 +16,7 @@ import useToggleVisibility from '@/hooks/use-toggle-visibility'
 import { Link } from 'react-router-dom'
 import { useStudentAuthStore } from '@/store/studentAuthStore.js'
 import { Form } from '@/components/ui/form'
+import { Toast } from '@/components/ui/toast'
 
 
 function StudentLogin() {
@@ -160,6 +161,7 @@ function StudentLogin() {
                     <p className="text-red-500 text-sm text-center">
                     {error}
                     </p>
+                   
                 )
     }
             <div className="pt-4 space-y-3">
