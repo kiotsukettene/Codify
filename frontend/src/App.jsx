@@ -112,7 +112,7 @@ function App() {
 
 
         {/* Public Routes */}
-        <Route path="/" element={<RestrictPublicRoutes><GuestLayout /></RestrictPublicRoutes>}>
+        <Route path="/" element={<GuestLayout />}>
           <Route index element={<RestrictPublicRoutes><LandingPage /></RestrictPublicRoutes>} />
           <Route path="/login" element={<RestrictPublicRoutes><MainLogin /></RestrictPublicRoutes>} />
           <Route path="*" element={<PageNotFoundPage />} />

@@ -24,6 +24,7 @@ export const registerStudent = async (req, res) => {
   } = req.body;
 
   try {
+    // Check if all required fields are provided
     if (
       !studentId ||
       !firstName ||
@@ -37,20 +38,29 @@ export const registerStudent = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Verify institution exists
     const institution = await Institution.findById(institutionId);
     if (!institution) {
       return res.status(404).json({ message: "Institution not found" });
     }
 
-    const existingStudent = await Student.findOne({ email });
-    if (existingStudent) {
-      return res.status(400).json({ message: "Student already exists" });
+    // Check if student already exists by email and institution
+    const existingStudentByEmail = await Student.findOne({ email, institution: institutionId });
+    if (existingStudentByEmail) {
+      return res.status(400).json({ message: "Student ID Already Exists" });
+    }
+
+    // Check if studentId already exists (optionally scoped to institution)
+    const existingStudentById = await Student.findOne({ studentId });
+    if (existingStudentById) {
+      return res.status(400).json({ message: "Student Email Already Exists" });
     }
 
     // Set lastName as the default password
     const plainPassword = lastName.trim().toUpperCase();
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
+    // Create the new student
     const newStudent = await Student.create({
       studentId,
       firstName,
@@ -63,6 +73,7 @@ export const registerStudent = async (req, res) => {
       institution: institution._id,
     });
 
+    // Populate institution details
     const savedStudent = await Student.findById(newStudent._id).populate(
       "institution",
       "institutionName"
@@ -77,6 +88,7 @@ export const registerStudent = async (req, res) => {
       savedStudent.institution.institutionName
     );
 
+    // Return success response
     res.status(201).json({
       success: true,
       message: "Student created successfully",

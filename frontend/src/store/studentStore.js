@@ -38,22 +38,25 @@ export const useStudentStore = create((set) => ({
   // Register a new student
   addStudent: async (studentData) => {
     set({ isLoading: true, error: null });
-
+  
     try {
       const response = await axios.post(`${API_URL}/register`, {
         ...studentData,
         password: studentData.lastName, // Default password logic
       });
-
+  
       set((state) => ({
         isLoading: false,
         students: [...state.students, response.data.student],
       }));
+      toast.success("Student added successfully");
     } catch (error) {
-      set({
+      set((state) => ({
         error: error.response?.data?.message || "Error adding student",
         isLoading: false,
-      });
+        students: state.students, // Explicitly preserve the existing students array
+      }));
+      toast.error(error.response?.data?.message || "Error adding student");
     }
   },
 
