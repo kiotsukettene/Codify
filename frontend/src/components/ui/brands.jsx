@@ -29,13 +29,14 @@ function BrandsComponent() {
       <div className="container mx-auto px-4">
       <h2 className="text-lg font-medium text-center text-gray-800 mb-10">
           Learn, Build, and Innovate with These Technologies
-        </h2>        <div className="flex flex-wrap justify-center items-center gap-20 md:gap-16 lg:gap-20">
+        </h2>
+        <div className="flex flex-wrap justify-center items-center mb-20 gap-20 md:gap-16 lg:gap-20">
           {brands.map((brand) => (
-            <div key={brand.name} className="group relative flex items-center justify-center">
+            <div key={brand.name} className="group relative flex items-center justify-center ">
               <img
                 src={brand.icon || "/placeholder.svg"}
                 alt={`${brand.name} logo`}
-                className="h-10 w-10 md:h-16 md:w-16 object-contain transition-all duration-300 
+                className="h-6 w-6 md:h-16 md:w-16 object-contain transition-all duration-300 
                          filter grayscale opacity-60 "
               />
              
