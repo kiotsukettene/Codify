@@ -22,7 +22,26 @@ export const useprofAuthStore = create((set) => ({
   message: null,
   clearError: () => set({ error: null }),
 
-  // ... (other functions like login, LoginWithGoogle, etc. remain unchanged)
+   fetchProfessorById: async (professorId) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Assumes your GET endpoint returns { professor, courseCount }
+      const response = await axios.get(`${API_URL}/${professorId}`);
+      const { professor, courseCount } = response.data;
+
+      set({
+        professor,
+        courseCount,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error fetching professor",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error fetching professor");
+    }
+  },
 
   fetchProfessors: async () => {
     set({ isLoading: true, error: null });
@@ -82,5 +101,186 @@ export const useprofAuthStore = create((set) => ({
     }
   },
 
-  // ... (other functions like logoutProfessor, fetchProfessorById, etc. remain unchanged)
+  login: async (email, password) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await axios.post(`${API_URL}/login`, {
+        email,
+        password,
+      });
+
+      set({
+        professor: response.data.professor,
+        isAuthenticated: true,
+        loading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error logging in",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  LoginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+
+    let token = null;
+
+    // First try-catch: Handle popup closure
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      token = await result.user.getIdToken(); // ✅ Get Firebase token
+    } catch (error) {
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.error("Google Sign-In cancelled.");
+      } else {
+        toast.error("Google Login Failed: " + error.message);
+      }
+      set({ isLoading: false });
+      return;
+    }
+
+    // Second try-catch: Handle backend token verification
+    try {
+      const response = await axios.post(`${API_URL}/google-login`, {
+        token,
+      });
+
+      set({
+        professor: response.data.professor,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      toast.success("Login successful!");
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Server Error",
+        isLoading: false,
+      });
+    }
+
+    set({ isLoading: false });
+  },
+
+  checkProfAuth: async () => {
+    const state = useprofAuthStore.getState();
+    if (state.isAuthenticated && state.professor) {
+      set({ isCheckingProfAuth: false });
+      return; // Skip API call if already authenticated
+    }
+    set({ isCheckingProfAuth: true, error: null });
+
+    try {
+      // ✅ No need to manually get token, browser sends it automatically
+      const response = await axios.get(`${API_URL}/professor-check-auth`);
+
+      set({
+        professor: response.data.professor,
+        isAuthenticated: true,
+        isCheckingProfAuth: false,
+      });
+    } catch (error) {
+      set({
+        isCheckingProfAuth: false,
+        isAuthenticated: false,
+        error: error.response?.data?.message || "Authentication failed",
+      });
+    }
+  },
+    forgotPassword: async (email) => {
+    set({
+      isLoading: true,
+      error: null,
+    });
+    try {
+      const response = await axios.post(`${API_URL}/forgot-password`, {
+        email,
+      });
+      set({
+        message: response.data.message,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error sending email",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  resetPassword: async (token, password) => {
+    set({
+      isLoading: true,
+      error: null,
+    });
+
+    try {
+      const response = await axios.post(`${API_URL}/reset-password/${token}`, {
+        password,
+      });
+      set({
+        message: response.data.message,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error.response.data.message || "Error resetting password",
+      });
+      throw error;
+    }
+  },
+
+  updateProfessor: async (professorData) => {
+    set({
+      isLoading: true,
+      error: null,
+    });
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/update/${professorData._id}`,
+        professorData
+      );
+
+      set({
+        professor: response.data.professor,
+        isLoading: false,
+      });
+
+      toast.success("Professor updated successfully");
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error updating professor",
+        isLoading: false,
+      });
+      toast.error(error.response.data.message || "Error updating professor");
+    }
+  },
+
+  logoutProfessor: async () => {
+    try {
+      const res = await fetch(`${API_URL}/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        set({ professor: null, isAuthenticated: false });
+      } else {
+        toast.error("Logout failed");
+      }
+    } catch (error) {
+      toast.error("An error occurred during logout");
+    }
+  },
+
+
+ 
 }));
