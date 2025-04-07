@@ -128,10 +128,10 @@ function StudentDashboard() {
           {/* Task Section */}
           <div className="col-span-1 md:col-span-2 h-72 w-full rounded-xl bg-violet-200 p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
             <div>
-              <h1 className="text-4xl font-semibold text-gray-900">Check up your current and upcoming task here</h1>
-              <Button className="bg-primary rounded-full px-20 py-6 mt-5 text-white" onClick={() => navigate('/student/task-list')}>View Task</Button>
+              <h1 className="lg:text-3xl text-3xl lg:text-left md:text-left text-center font-semibold text-gray-900 xl:text-center">Check up your current and upcoming task here</h1>
+              <Button className="bg-primary rounded-full  md:px-20 md:py-6 lg:mt-5 mt-9 items-center justify-center w-full text-white xl:flex xl:flex-col xl:justify-center xl:text-center xl:mx-auto" onClick={() => navigate('/student/task-list')}>View Task</Button>
             </div>
-            <img src={dashboardImage} className="hidden lg:block w-80 h-80" alt="Task Illustration" />
+            <img src={dashboardImage} className="hidden lg:block lg:w-80 lg:h-80 md:h-60 md:w-60 md:block" alt="Task Illustration" />
           </div>
         </div>
   
@@ -199,12 +199,12 @@ function StudentDashboard() {
               <div key={index} className={`${classItem.bgColor} rounded-xl p-4 hover:translate-x-1 cursor-pointer`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className={`${classItem.color} w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold`}>{classItem.initials}</div>
+                    <div className={`${classItem.color} w-12 h-12   rounded-full flex items-center justify-center text-white font-semibold `}>{classItem.initials}</div>
                     <div>
                       <h3 className="font-medium text-gray-800">{classItem.name}</h3>
-                      <div className="text-sm text-gray-500 flex items-center">
+                      <div className="text-sm text-gray-500 flex items-left flex-col xl:flex-row xl:items-center">
                         <span>{classItem.date}</span>
-                        <span className="mx-2">•</span>
+                        <span className="mx-2 hidden xl:block">•</span>
                         <span>{classItem.time}</span>
                       </div>
                     </div>
@@ -217,7 +217,7 @@ function StudentDashboard() {
   
         {/* Additional Info Section */}
         <div className="bg-white rounded-lg p-6 mt-4">
-          <div className="flex">
+          <div className="flex flex-col items-center justify-center text-center md:flex-row md:justify-between lg:flex-col xl:flex xl:flex-row xl:justify-between">
             <img src={spaceShip} className="w-56 h-52" alt="Space Ship" />
             <div className="p-4">
               <h1 className="text-2xl font-semibold text-gray-900">Ready to take off?</h1>
