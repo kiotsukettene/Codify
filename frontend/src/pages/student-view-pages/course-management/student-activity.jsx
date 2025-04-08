@@ -263,6 +263,7 @@ function StudentActivityPage() {
 
   const [open, setOpen] = useState(false); // Gamified Toast
   const [files, setFiles] = useState([]); // Files to upload
+  const [errorMessage, setErrorMessage] = useState(""); // Error message for file validation
 
   useEffect(() => {
     if (activitySlug) {
@@ -276,29 +277,49 @@ function StudentActivityPage() {
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      setFiles([
-        ...files,
-        {
-          file, // Store the actual File object
-          name: file.name,
-          size: `${Math.round(file.size / 1024)} KB`,
-          date: new Date().toLocaleDateString(),
-          progress: 100,
-        },
-      ]);
+    setErrorMessage(""); // Clear previous error message
+
+    if (!file) {
+      setErrorMessage("Please select a file to upload.");
+      return;
     }
+
+    // Check file size (20MB = 20 * 1024 * 1024 bytes)
+    const maxSizeInBytes = 20 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      setErrorMessage(
+        `File size exceeds 20MB limit. Selected file is ${(
+          file.size /
+          (1024 * 1024)
+        ).toFixed(2)}MB.`
+      );
+      event.target.value = ""; // Clear the file input
+      return;
+    }
+
+    // If file passes validation, add it to the files list
+    setFiles([
+      ...files,
+      {
+        file, // Store the actual File object
+        name: file.name,
+        size: `${Math.round(file.size / 1024)} KB`,
+        date: new Date().toLocaleDateString(),
+        progress: 100,
+      },
+    ]);
   };
 
   const removeFile = (index) => {
     const newFiles = [...files];
     newFiles.splice(index, 1);
     setFiles(newFiles);
+    setErrorMessage(""); // Clear error message when removing a file
   };
 
   const handleSubmit = async () => {
     if (!files.length) {
-      alert("Please upload at least one file before submitting.");
+      setErrorMessage("Please upload at least one file before submitting.");
       return;
     }
 
@@ -308,6 +329,7 @@ function StudentActivityPage() {
     if (submitted) {
       setOpen(true);
       setFiles([]);
+      setErrorMessage("");
       window.location.reload(); // Refresh page to fetch updated submission
     }
   };
@@ -374,6 +396,7 @@ function StudentActivityPage() {
                       id="fileInput"
                       className="hidden"
                       onChange={handleFileUpload}
+                      accept=".pdf,.pptx,.zip"
                     />
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <p className="mt-2 text-sm text-gray-500">
@@ -383,6 +406,12 @@ function StudentActivityPage() {
                       PDF, PPTX, ZIP (max. 20MB)
                     </p>
                   </div>
+
+                  {errorMessage && (
+                    <p className="text-red-500 text-sm font-medium bg-red-50 p-2 rounded">
+                      ⚠️ {errorMessage}
+                    </p>
+                  )}
 
                   <div className="space-y-3">
                     {files.map((file, index) => (
