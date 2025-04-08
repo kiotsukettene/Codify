@@ -1,5 +1,6 @@
 import Activity from "../models/activity.model.js";
 import Lesson from "../models/lesson.model.js";
+import submissionModel from "../models/submission.model.js";
 import mongoose from "mongoose";
 import slugify from "slugify";
 
@@ -89,7 +90,9 @@ export const getActivityBySlug = async (req, res) => {
 
     res.status(200).json({ ...activity._doc, file: fileUrl });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching activity", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching activity", error: error.message });
   }
 };
 
@@ -203,9 +206,13 @@ export const updateActivity = async (req, res) => {
       updateData.file = file;
     }
 
-    const updatedActivity = await Activity.findByIdAndUpdate(activityId, updateData, {
-      new: true,
-    });
+    const updatedActivity = await Activity.findByIdAndUpdate(
+      activityId,
+      updateData,
+      {
+        new: true,
+      }
+    );
 
     if (!updatedActivity) {
       return res.status(404).json({ message: "Activity not found" });
@@ -216,7 +223,9 @@ export const updateActivity = async (req, res) => {
       updatedActivity,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error updating activity", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating activity", error: error.message });
   }
 };
 
@@ -234,5 +243,140 @@ export const deleteActivity = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error deleting activity", error: error.message });
+  }
+};
+
+// Add this to activity.controller.js
+export const getStudentActivitiesByCourse = async (req, res) => {
+  try {
+    const { courseSlug } = req.params;
+
+    const activities = await Activity.aggregate([
+      {
+        $lookup: {
+          from: "lessons",
+          localField: "lessonId",
+          foreignField: "_id",
+          as: "lessonData",
+        },
+      },
+      { $unwind: "$lessonData" },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "lessonData.courseId",
+          foreignField: "_id",
+          as: "courseData",
+        },
+      },
+      { $unwind: "$courseData" },
+      { $match: { "courseData.slug": courseSlug } },
+    ]);
+
+    const currentDate = new Date();
+    const formattedActivities = activities.map((activity) => {
+      const dueDate = activity.dueDate ? new Date(activity.dueDate) : null;
+      let status = "Not Submitted";
+      let isCompleted = false;
+
+      if (dueDate && dueDate < currentDate) {
+        status = "Missing"; // Past due, no submission assumed
+      } else if (dueDate) {
+        status = "Not Submitted"; // Due date in future or present
+      } else {
+        status = "Not Submitted"; // No due date
+      }
+
+      return {
+        subject: activity.lessonData.title || "Unknown Subject",
+        activity: activity.title,
+        dueDate: dueDate ? dueDate.toLocaleString() : "No Due Date",
+        status,
+        isCompleted, // Always false without submission tracking
+      };
+    });
+
+    res.status(200).json(formattedActivities);
+  } catch (error) {
+    console.error("Error fetching student activities:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching activities", error: error.message });
+  }
+};
+
+// In activity.controller.js
+export const getStudentAllActivities = async (req, res) => {
+  try {
+    if (!req.studentId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No student ID available" });
+    }
+
+    const studentId = req.studentId; // Use req.studentId set by StudentVerifyToken
+    console.log("Student ID:", studentId);
+
+    const courses = await mongoose.model("Course").find({
+      studentsEnrolled: studentId,
+    });
+    console.log("Enrolled courses:", courses);
+
+    if (!courses.length) {
+      console.log("No enrolled courses found for student");
+      return res.status(200).json([]);
+    }
+
+    const courseIds = courses.map((course) => course._id);
+    console.log("Course IDs:", courseIds);
+
+    const activities = await Activity.aggregate([
+      {
+        $lookup: {
+          from: "lessons",
+          localField: "lessonId",
+          foreignField: "_id",
+          as: "lessonData",
+        },
+      },
+      { $unwind: "$lessonData" },
+      {
+        $match: {
+          "lessonData.courseId": { $in: courseIds },
+        },
+      },
+    ]);
+    console.log("Raw activities:", activities);
+
+    const currentDate = new Date();
+    const formattedActivities = activities.map((activity) => {
+      const dueDate = activity.dueDate ? new Date(activity.dueDate) : null;
+      let status = "Not Submitted";
+      let isCompleted = false;
+
+      if (dueDate && dueDate < currentDate) {
+        status = "Missing";
+      } else if (dueDate) {
+        status = "Not Submitted";
+      } else {
+        status = "Not Submitted";
+      }
+
+      return {
+        subject: activity.lessonData.title || "Unknown Subject",
+        activity: activity.title,
+        dueDate: dueDate ? dueDate.toLocaleString() : "No Due Date",
+        status,
+        isCompleted,
+      };
+    });
+
+    console.log("Formatted activities:", formattedActivities);
+    res.status(200).json(formattedActivities);
+  } catch (error) {
+    console.error("Error fetching all student activities:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching activities", error: error.message });
   }
 };

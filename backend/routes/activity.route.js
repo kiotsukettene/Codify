@@ -6,19 +6,38 @@ import {
   deleteActivity,
   getActivitiesByCourse,
   getActivityById,
-  getActivityBySlug, // New
+  getActivityBySlug,
+  getStudentActivitiesByCourse,
+  getStudentAllActivities,
 } from "../controllers/activity.controller.js";
 import upload from "../middleware/multerConfig.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js"; // Adjust path
-
+import { StudentVerifyToken } from "../middleware/studentVerifyToken.js"; // Adjust path
 const router = express.Router();
 
 router.post("/create", profVerifyToken, upload.single("file"), createActivity);
 router.get("/:activityId", profVerifyToken, getActivityById);
 router.get("/lesson/:lessonId", profVerifyToken, getActivitiesByLesson);
 router.get("/slug/:slug", profVerifyToken, getActivityBySlug); // New route
-router.put("/:activityId", profVerifyToken, upload.single("file"), updateActivity);
+router.put(
+  "/:activityId",
+  profVerifyToken,
+  upload.single("file"),
+  updateActivity
+);
 router.delete("/:activityId", profVerifyToken, deleteActivity);
 router.get("/course/:courseId", profVerifyToken, getActivitiesByCourse);
+
+router.get(
+  "/student/course/slug/:courseSlug",
+  StudentVerifyToken,
+  getStudentActivitiesByCourse
+);
+
+router.get(
+  "/student/all-activities",
+  StudentVerifyToken,
+  getStudentAllActivities
+);
 
 export default router;

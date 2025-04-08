@@ -145,7 +145,9 @@ export const useActivityStore = create((set) => ({
     try {
       await axios.delete(`${API_URL}/${activityId}`);
       set((state) => ({
-        activities: state.activities.filter((activity) => activity._id !== activityId),
+        activities: state.activities.filter(
+          (activity) => activity._id !== activityId
+        ),
         activity: null,
         isLoading: false,
       }));
@@ -156,6 +158,52 @@ export const useActivityStore = create((set) => ({
         isLoading: false,
       });
       toast.error(error.response?.data?.message || "Error deleting activity");
+    }
+  },
+
+  // Add this to useActivityStore in the create function
+  // In useActivityStore
+  // In useActivityStore.js
+  // In useActivityStore.js
+  fetchStudentActivitiesByCourse: async (courseSlug) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(
+        `${API_URL}/student/course/slug/${courseSlug}`
+      );
+      set({ activities: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({
+        error:
+          error.response?.data?.message || "Error fetching student activities",
+        isLoading: false,
+      });
+      toast.error(
+        error.response?.data?.message || "Error fetching student activities"
+      );
+      return [];
+    }
+  },
+
+  // In useActivityStore.js
+  fetchStudentAllActivities: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/student/all-activities`);
+      set({ activities: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({
+        error:
+          error.response?.data?.message ||
+          "Error fetching all student activities",
+        isLoading: false,
+      });
+      toast.error(
+        error.response?.data?.message || "Error fetching all student activities"
+      );
+      return [];
     }
   },
 }));
