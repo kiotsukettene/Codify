@@ -71,6 +71,27 @@ function StudentDashboard() {
   }, [fetchEnrolledCourses]);
   console.log("Enrolled Courses:", enrolledCourses); // Debugging line
 
+  // Get current date
+  // Get current day of the week
+  const currentDate = new Date();
+  const daysOfWeek = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const currentDay = daysOfWeek[currentDate.getDay()]; // e.g., "tuesday" for April 08, 2025
+
+  // Filter enrolledCourses for the current day of the week
+  const todaysCourses = enrolledCourses.filter(
+    (course) => course.schedule?.day.toLowerCase() === currentDay
+  );
+
+  console.log("Today's Courses:", todaysCourses); // Debugging line
+
   return (
     <div className="flex flex-col mx-6">
       {/* ✅ Greeting Section at the Top */}
@@ -163,7 +184,6 @@ function StudentDashboard() {
           </div>
 
           {/* My Courses Section */}
-          {/* My Courses Section */}
           <div className="pt-8">
             <div className="flex justify-between w-full">
               <h1 className="text-3xl font-semibold text-gray-900">
@@ -227,32 +247,44 @@ function StudentDashboard() {
               </Button>
             </div>
             <div className="h-[500px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              {classes.map((classItem, index) => (
-                <div
-                  key={index}
-                  className={`${classItem.bgColor} rounded-xl p-4 hover:translate-x-1 cursor-pointer`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`${classItem.color} w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold`}
-                      >
-                        {classItem.initials}
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-800">
-                          {classItem.name}
-                        </h3>
-                        <div className="text-sm text-gray-500 flex items-center">
-                          <span>{classItem.date}</span>
-                          <span className="mx-2">•</span>
-                          <span>{classItem.time}</span>
+              {todaysCourses.length > 0 ? (
+                todaysCourses.map((course, index) => (
+                  <div
+                    key={index}
+                    className={`${
+                      course.bgColor || "bg-blue-50"
+                    } rounded-xl p-4 hover:translate-x-1 cursor-pointer`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className={`${
+                            course.color || "bg-blue-500"
+                          } w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold`}
+                        >
+                          {course.initials ||
+                            course.className?.substring(0, 2).toUpperCase() ||
+                            "NA"}
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-800">
+                            {course.className || "Unnamed Course"}
+                          </h3>
+                          <div className="text-sm text-gray-500 flex items-center">
+                            <span>{course.schedule?.day || "Day TBD"}</span>
+                            <span className="mx-2">•</span>
+                            <span>{course.schedule?.time || "Time TBD"}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-gray-500 p-4">
+                  No classes scheduled for today
+                </p>
+              )}
             </div>
           </div>
 
