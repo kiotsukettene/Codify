@@ -327,18 +327,19 @@ function StudentActivityPage() {
     const submitted = await submitActivity(activity._id, fileToSubmit);
 
     if (submitted) {
-      setOpen(true);
+      setOpen(true); // Toast appears for submit
       setFiles([]);
       setErrorMessage("");
-      window.location.reload(); // Refresh page to fetch updated submission
+      await fetchSubmission(activity._id); // Re-fetch submission to update UI
     }
   };
 
   const handleUnsubmit = async () => {
     const unsubmitted = await unsubmitActivity(activity._id);
     if (unsubmitted) {
-      setOpen(true); // Reuse toast for unsubmit success
-      window.location.reload(); // Refresh page to clear submission display
+      await fetchSubmission(activity._id); // Re-fetch submission to update UI
+      // Explicitly ensure toast does not appear
+      setOpen(false); // Reset toast state
     }
   };
 
@@ -523,12 +524,8 @@ function StudentActivityPage() {
               <GamifiedToast
                 open={open}
                 onOpenChange={setOpen}
-                title={isSubmitted ? "Unsubmitted!" : "Success!"}
-                description={
-                  isSubmitted
-                    ? "Your submission has been removed."
-                    : "Your activity has been submitted."
-                }
+                title="Success!"
+                description="Your activity has been submitted."
               />
               <ToastViewport className="fixed bottom-0 right-0 flex flex-col p-6 gap-2 w-full md:max-w-[420px]" />
             </ToastProvider>
