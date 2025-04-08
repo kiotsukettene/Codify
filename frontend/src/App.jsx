@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route, Navigate, useLocation} from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
@@ -34,7 +34,6 @@ import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
 import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
 import StudentList from "./pages/admin-view-pages/admin-student/Student";
 import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
-
 
 // Professor Pages
 import { useprofAuthStore } from "@/store/profAuthStore";
@@ -74,13 +73,12 @@ import MainLogin from "./pages/Guest-view-pages/Login";
 import PageNotFoundPage from "./pages/Guest-view-pages/NotFound";
 import StudentAccountSettings from "./pages/student-view-pages/Student-Account-Setting";
 import VideoConference from "./pages/student-view-pages/Video-Conference";
-import { useStudentStore }  from "@/store/studentStore";
+import { useStudentStore } from "@/store/studentStore";
 import ContactUsPage from "./pages/Guest-view-pages/Contact-Us";
 import ProfessorLayout from "./Layout/ProfessorLayout";
 import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/student-codeBattle-overview";
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
-
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -98,45 +96,156 @@ function App() {
   }, []); // Empty dependency array ensures this runs only once on mount
 
   // Show spinner only during initial load when auth is being checked
-  if (isInitialLoad && (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth)) {
+  if (
+    isInitialLoad &&
+    (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth)
+  ) {
     return <LoadingSpinner />;
   }
   return (
     <div>
-
       <Routes>
         <Route path="/battle" element={<CodeBattle />} />
 
-
-
-
-
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
-          <Route index element={<RestrictPublicRoutes><LandingPage /></RestrictPublicRoutes>} />
-          <Route path="/login" element={<RestrictPublicRoutes><MainLogin /></RestrictPublicRoutes>} />
+          <Route
+            index
+            element={
+              <RestrictPublicRoutes>
+                <LandingPage />
+              </RestrictPublicRoutes>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <RestrictPublicRoutes>
+                <MainLogin />
+              </RestrictPublicRoutes>
+            }
+          />
           <Route path="*" element={<PageNotFoundPage />} />
-          <Route path="/contact" element={<RestrictPublicRoutes><ContactUsPage/></RestrictPublicRoutes>}/>
+          <Route
+            path="/contact"
+            element={
+              <RestrictPublicRoutes>
+                <ContactUsPage />
+              </RestrictPublicRoutes>
+            }
+          />
           {/* Admin Registration & Authentication */}
-          <Route path="/admin/register" element={<RedirectAuthenticatedInstitution><AdminRegisterPage /></RedirectAuthenticatedInstitution>} />
-          <Route path="/admin/login" element={<RedirectAuthenticatedInstitution><AdminLogin /></RedirectAuthenticatedInstitution>} />
-          <Route path="/admin/email-verify" element={<ProtectedRouteInstitution><AdminEmailVerificationPage /></ProtectedRouteInstitution>} />
-          <Route path="/admin/payment-summary" element={<ProtectedRouteInstitution><PaymentSummary /></ProtectedRouteInstitution>} />
-          <Route path="/admin/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess /></ProtectedRouteInstitution>} />
-          <Route path="/admin/forgot-password" element={<RedirectAuthenticatedInstitution><AdminForgotPasswordPage /></RedirectAuthenticatedInstitution>} />
-          <Route path="/admin/reset-password/:token" element={<RedirectAuthenticatedInstitution><AdminNewPasswordPage /></RedirectAuthenticatedInstitution>} />
-          <Route path="/admin/success-reset" element={<AdminSuccessResetPage />} />
-           {/* Student Authentication */}
-          <Route path="/student/login" element={<RedirectAuthenticatedStudent><StudentLoginPage /></RedirectAuthenticatedStudent>}/>
-          <Route path="/student/forgot-password" element={<RedirectAuthenticatedStudent><StudentForgotPasswordPage /></RedirectAuthenticatedStudent>}/>
-          <Route path="/student/reset-password/:token" element={<RedirectAuthenticatedStudent><StudentNewPasswordPage /></RedirectAuthenticatedStudent>} />
-          
-          <Route path="/professor/login" element={<RedirectAuthenticatedProfessor><ProfessorLogin /></RedirectAuthenticatedProfessor>} />
-          <Route path="/professor/forgot-password" element={<RedirectAuthenticatedProfessor><ProfForgotPassword /></RedirectAuthenticatedProfessor>} />
-          <Route path="/professor/reset-password/:token" element={<RedirectAuthenticatedProfessor><ProfNewPassword /></RedirectAuthenticatedProfessor>} />
+          <Route
+            path="/admin/register"
+            element={
+              <RedirectAuthenticatedInstitution>
+                <AdminRegisterPage />
+              </RedirectAuthenticatedInstitution>
+            }
+          />
+          <Route
+            path="/admin/login"
+            element={
+              <RedirectAuthenticatedInstitution>
+                <AdminLogin />
+              </RedirectAuthenticatedInstitution>
+            }
+          />
+          <Route
+            path="/admin/email-verify"
+            element={
+              <ProtectedRouteInstitution>
+                <AdminEmailVerificationPage />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="/admin/payment-summary"
+            element={
+              <ProtectedRouteInstitution>
+                <PaymentSummary />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="/admin/payment-success"
+            element={
+              <ProtectedRouteInstitution>
+                <PaymentSuccess />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="/admin/forgot-password"
+            element={
+              <RedirectAuthenticatedInstitution>
+                <AdminForgotPasswordPage />
+              </RedirectAuthenticatedInstitution>
+            }
+          />
+          <Route
+            path="/admin/reset-password/:token"
+            element={
+              <RedirectAuthenticatedInstitution>
+                <AdminNewPasswordPage />
+              </RedirectAuthenticatedInstitution>
+            }
+          />
+          <Route
+            path="/admin/success-reset"
+            element={<AdminSuccessResetPage />}
+          />
+          {/* Student Authentication */}
+          <Route
+            path="/student/login"
+            element={
+              <RedirectAuthenticatedStudent>
+                <StudentLoginPage />
+              </RedirectAuthenticatedStudent>
+            }
+          />
+          <Route
+            path="/student/forgot-password"
+            element={
+              <RedirectAuthenticatedStudent>
+                <StudentForgotPasswordPage />
+              </RedirectAuthenticatedStudent>
+            }
+          />
+          <Route
+            path="/student/reset-password/:token"
+            element={
+              <RedirectAuthenticatedStudent>
+                <StudentNewPasswordPage />
+              </RedirectAuthenticatedStudent>
+            }
+          />
 
+          <Route
+            path="/professor/login"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfessorLogin />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
+          <Route
+            path="/professor/forgot-password"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfForgotPassword />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
+          <Route
+            path="/professor/reset-password/:token"
+            element={
+              <RedirectAuthenticatedProfessor>
+                <ProfNewPassword />
+              </RedirectAuthenticatedProfessor>
+            }
+          />
         </Route>
-        
 
         {/* Professor Authentication */}
 
@@ -198,9 +307,9 @@ function App() {
             }
           />
           <Route
-          path="course/:courseSlug/lesson/:lessonSlug/activity/:activitySlug/edit"
-          element={<EditActivity />}
-        />
+            path="course/:courseSlug/lesson/:lessonSlug/activity/:activitySlug/edit"
+            element={<EditActivity />}
+          />
           <Route
             path="reset-password/:token"
             element={
@@ -209,48 +318,144 @@ function App() {
               </RedirectAuthenticatedProfessor>
             }
           />
-          <Route path="code-battle" element={<ProtectedRouteProfessors><CodeBattleOverview /></ProtectedRouteProfessors>} />
-          <Route path="code-battle/create" element={<ProtectedRouteProfessors><CreateBattle /></ProtectedRouteProfessors>} />
-          <Route path="account" element={<ProtectedRouteProfessors><Account /></ProtectedRouteProfessors>} />
+          <Route
+            path="code-battle"
+            element={
+              <ProtectedRouteProfessors>
+                <CodeBattleOverview />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="code-battle/create"
+            element={
+              <ProtectedRouteProfessors>
+                <CreateBattle />
+              </ProtectedRouteProfessors>
+            }
+          />
+          <Route
+            path="account"
+            element={
+              <ProtectedRouteProfessors>
+                <Account />
+              </ProtectedRouteProfessors>
+            }
+          />
         </Route>
 
         {/* Authenticated Admin Routes */}
         <Route path="/admin/" element={<AdminLayout />}>
-          <Route path="dashboard" element={<ProtectedRouteInstitution><AdminDashboard /></ProtectedRouteInstitution>}/>
-          <Route path="professors" element={<ProtectedRouteInstitution><ProfessorList /></ProtectedRouteInstitution>}/>
-          <Route path="addProfessor" element={<ProtectedRouteInstitution><AddProfessor /></ProtectedRouteInstitution>}/>
-          <Route path="students" element={<ProtectedRouteInstitution><StudentList /></ProtectedRouteInstitution>}/>
-          <Route path="addStudent" element={<ProtectedRouteInstitution><AddStudent /></ProtectedRouteInstitution>} />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRouteInstitution>
+                <AdminDashboard />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="professors"
+            element={
+              <ProtectedRouteInstitution>
+                <ProfessorList />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="addProfessor"
+            element={
+              <ProtectedRouteInstitution>
+                <AddProfessor />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="students"
+            element={
+              <ProtectedRouteInstitution>
+                <StudentList />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="addStudent"
+            element={
+              <ProtectedRouteInstitution>
+                <AddStudent />
+              </ProtectedRouteInstitution>
+            }
+          />
         </Route>
-
-       
-
 
         {/* Student Routes */}
         <Route path="/student/" element={<StudentLayout />}>
-          <Route path="dashboard" element={<ProtectedRouteStudents><StudentDashboard /></ProtectedRouteStudents>} />
-          <Route path="course-list" element={<ProtectedRouteStudents><StudentCourseListPage /></ProtectedRouteStudents>} />
-          <Route path="challenges" element={<ProtectedRouteStudents><StudentChallengesView /></ProtectedRouteStudents>} />
-          <Route path="challenges/:id" element={<ProtectedRouteStudents><StudentPracticePage /></ProtectedRouteStudents>} />
-          <Route path="lesson-list/:courseId" element={<ProtectedRouteStudents><StudentLessonListPage /></ProtectedRouteStudents>} />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRouteStudents>
+                <StudentDashboard />
+              </ProtectedRouteStudents>
+            }
+          />
+          <Route
+            path="course-list"
+            element={
+              <ProtectedRouteStudents>
+                <StudentCourseListPage />
+              </ProtectedRouteStudents>
+            }
+          />
+          <Route
+            path="challenges"
+            element={
+              <ProtectedRouteStudents>
+                <StudentChallengesView />
+              </ProtectedRouteStudents>
+            }
+          />
+          <Route
+            path="challenges/:id"
+            element={
+              <ProtectedRouteStudents>
+                <StudentPracticePage />
+              </ProtectedRouteStudents>
+            }
+          />
+          <Route
+            path="lesson-list/:courseId"
+            element={
+              <ProtectedRouteStudents>
+                <StudentLessonListPage />
+              </ProtectedRouteStudents>
+            }
+          />
           <Route path="module/:lessonId" element={<StudentModulePage />} />
-          <Route path="activity" element={<StudentActivityPage />} />
+          <Route
+            path="/student/activity/:activitySlug"
+            element={<StudentActivityPage />}
+          />
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
-          <Route path="account-settings" element={<StudentAccountSettings/>}/>
+          <Route path="account-settings" element={<StudentAccountSettings />} />
           <Route path="code-battle" element={<StudentCodeBattleOverview />} />
           {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}
         </Route>
 
-
-        <Route path="/arena-dashboard" element={<ArenaDashboardPage/>}/>
-        <Route path="/main-arena" element={<MainArena/>}/>
-
+        <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
+        <Route path="/main-arena" element={<MainArena />} />
 
         {/* Additional Routes */}
 
         <Route path="/video-conference" element={<VideoConference />} />
-        <Route path="/code-editor" element={<ProtectedRouteStudentOrProfessor><CodeEditor /></ProtectedRouteStudentOrProfessor>} />
+        <Route
+          path="/code-editor"
+          element={
+            <ProtectedRouteStudentOrProfessor>
+              <CodeEditor />
+            </ProtectedRouteStudentOrProfessor>
+          }
+        />
       </Routes>
 
       <Toaster position="top-right" />
