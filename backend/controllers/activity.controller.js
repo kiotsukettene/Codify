@@ -517,3 +517,33 @@ export const getSubmission = async (req, res) => {
       .json({ message: "Error fetching submission", error: error.message });
   }
 };
+
+export const unsubmitActivity = async (req, res) => {
+  try {
+    const studentId = req.studentId; // From StudentVerifyToken
+    const { activityId } = req.params;
+
+    if (!studentId || !activityId) {
+      return res
+        .status(400)
+        .json({ message: "Student ID and Activity ID are required" });
+    }
+
+    const submission = await Submission.findOneAndDelete({
+      activityId,
+      studentId,
+    });
+    if (!submission) {
+      return res
+        .status(404)
+        .json({ message: "No submission found to unsubmit" });
+    }
+
+    res.status(200).json({ message: "Submission successfully removed" });
+  } catch (error) {
+    console.error("Error unsubmitting activity:", error);
+    res
+      .status(500)
+      .json({ message: "Error unsubmitting activity", error: error.message });
+  }
+};

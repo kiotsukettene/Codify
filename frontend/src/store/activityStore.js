@@ -251,4 +251,23 @@ export const useActivityStore = create((set) => ({
       return null;
     }
   },
+
+  unsubmitActivity: async (activityId) => {
+    set({ isLoading: true, error: null });
+    try {
+      await axios.delete(`${API_URL}/submission/${activityId}`);
+      set({ submission: null, isLoading: false }); // Clear submission state
+      toast.success("Submission removed successfully!");
+      return true;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error unsubmitting activity",
+        isLoading: false,
+      });
+      toast.error(
+        error.response?.data?.message || "Error unsubmitting activity"
+      );
+      return false;
+    }
+  },
 }));

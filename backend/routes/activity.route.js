@@ -10,6 +10,7 @@ import {
   createSubmission,
   getStudentAllActivities,
   getSubmission,
+  unsubmitActivity,
 } from "../controllers/activity.controller.js";
 import upload from "../middleware/multerConfig.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js"; // Adjust path
@@ -43,5 +44,6 @@ router.get(
 );
 
 router.get("/submission/:activityId", StudentVerifyToken, getSubmission);
+router.delete("/submission/:activityId", StudentVerifyToken, unsubmitActivity);
 
 export default router;

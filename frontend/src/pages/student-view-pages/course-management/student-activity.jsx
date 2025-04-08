@@ -232,9 +232,6 @@
 
 // export default StudentActivityPage;
 
-// StudentActivityPage.jsx
-// StudentActivityPage.jsx
-// StudentActivityPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useActivityStore } from "../../../store/activityStore";
@@ -258,6 +255,7 @@ function StudentActivityPage() {
     fetchActivityBySlug,
     fetchSubmission,
     submitActivity,
+    unsubmitActivity,
     isLoading,
     error,
   } = useActivityStore();
@@ -304,12 +302,21 @@ function StudentActivityPage() {
       return;
     }
 
-    const fileToSubmit = files[0].file; // Submit the first file
+    const fileToSubmit = files[0].file;
     const submitted = await submitActivity(activity._id, fileToSubmit);
 
     if (submitted) {
-      setOpen(true); // Show success toast
-      setFiles([]); // Clear files after submission
+      setOpen(true);
+      setFiles([]);
+      window.location.reload(); // Refresh page to fetch updated submission
+    }
+  };
+
+  const handleUnsubmit = async () => {
+    const unsubmitted = await unsubmitActivity(activity._id);
+    if (unsubmitted) {
+      setOpen(true); // Reuse toast for unsubmit success
+      window.location.reload(); // Refresh page to clear submission display
     }
   };
 
@@ -339,8 +346,7 @@ function StudentActivityPage() {
                       <FileText className="h-5 w-5 text-gray-400" />
                       <div>
                         <p className="text-sm font-medium">
-                          {submission.file.split("/").pop()}{" "}
-                          {/* Display file name */}
+                          {submission.file.split("/").pop()}
                         </p>
                         <p className="text-xs text-gray-500">
                           Submitted on{" "}
@@ -360,35 +366,22 @@ function StudentActivityPage() {
               ) : (
                 <>
                   <div
-                    className={`border-2 border-dashed border-gray-200 rounded-lg p-8 text-center transition-colors ${
-                      isSubmitted
-                        ? "bg-gray-100 cursor-not-allowed"
-                        : "hover:bg-gray-50 cursor-pointer"
-                    }`}
-                    onClick={
-                      !isSubmitted
-                        ? () => document.getElementById("fileInput").click()
-                        : null
-                    }
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => document.getElementById("fileInput").click()}
                   >
                     <input
                       type="file"
                       id="fileInput"
                       className="hidden"
                       onChange={handleFileUpload}
-                      disabled={isSubmitted}
                     />
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <p className="mt-2 text-sm text-gray-500">
-                      {isSubmitted
-                        ? "Submission completed"
-                        : "Click to upload or drag and drop"}
+                      Click to upload or drag and drop
                     </p>
-                    {!isSubmitted && (
-                      <p className="text-xs text-gray-400">
-                        PDF, PPTX, ZIP (max. 20MB)
-                      </p>
-                    )}
+                    <p className="text-xs text-gray-400">
+                      PDF, PPTX, ZIP (max. 20MB)
+                    </p>
                   </div>
 
                   <div className="space-y-3">
@@ -415,10 +408,7 @@ function StudentActivityPage() {
                               />
                             </div>
                           )}
-                          <button
-                            onClick={() => removeFile(index)}
-                            disabled={isSubmitted}
-                          >
+                          <button onClick={() => removeFile(index)}>
                             <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                           </button>
                         </div>
@@ -495,17 +485,21 @@ function StudentActivityPage() {
 
             <ToastProvider>
               <Button
-                onClick={handleSubmit}
+                onClick={isSubmitted ? handleUnsubmit : handleSubmit}
                 className="text-white w-full"
-                disabled={isSubmitted || isLoading || !files.length}
+                disabled={isLoading || (!isSubmitted && !files.length)}
               >
-                {isSubmitted ? "Submitted" : "Submit"}
+                {isSubmitted ? "Unsubmit" : "Submit"}
               </Button>
               <GamifiedToast
                 open={open}
                 onOpenChange={setOpen}
-                title="Success!"
-                description="Your activity has been submitted."
+                title={isSubmitted ? "Unsubmitted!" : "Success!"}
+                description={
+                  isSubmitted
+                    ? "Your submission has been removed."
+                    : "Your activity has been submitted."
+                }
               />
               <ToastViewport className="fixed bottom-0 right-0 flex flex-col p-6 gap-2 w-full md:max-w-[420px]" />
             </ToastProvider>
