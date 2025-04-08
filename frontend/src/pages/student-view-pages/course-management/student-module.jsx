@@ -94,7 +94,7 @@ function StudentModulePage() {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="flex flex-row mt-5">
+    <div className="flex lg:flex-row mt-5 flex-col">
       <div className="w-full lg:w-3/4">
         <Card className="shadow-none border-none bg-white p-6">
           <CardTitle className="bg-pink-50 p-5 rounded-lg">
@@ -117,7 +117,7 @@ function StudentModulePage() {
             ))}
           </div>
 
-          <div className="mt-6 border-t pt-4 flex justify-end">
+          <div className="mt-6 border-t pt-4 flex lg:justify-end items-center mx-auto justify-center">
             <Button onClick={handleComplete} className="bg-primary text-white hover:bg-purple-700 px-6 py-2 rounded-md">
               🚀 Complete Module
             </Button>
@@ -133,13 +133,13 @@ function StudentModulePage() {
       <div className="w-full lg:w-1/4 px-5">
         {/*=========================== XP========================== Card */}
         <Card
-          className="relative flex items-center justify-between mb-5 p-4 md:p-6 border-none shadow-none h-16 md:h-20 rounded-3xl max-w-[200px] md:max-w-md"
+          className="relative flex items-center justify-between mx-auto mb-5 p-4 mt-2 md:p-6 border-none shadow-none h-16 md:h-20 rounded-3xl ] md:max-w-[250px] lg:max-w-full lg:h-24"
           style={{
             background: "linear-gradient(90deg, rgb(243, 232, 255) 0%, rgb(224, 242, 254) 100%)",
           }}
         >
           <div className="z-10">
-            <CardTitle className="text-xs md:text-sm lg:text-lg text-[#8268AE] font-medium">Total XP Earned</CardTitle>
+            <CardTitle className="text-xs md:text-sm lg:text-lg text-[#8268AE] font-medium ">Total XP Earned</CardTitle>
             <h2 className="text-lg md:text-2xl lg:text-3xl text-[#7548C1] font-bold">40 XP</h2>
           </div>
           <div className="hidden md:block absolute right-0 bottom-0 w-20 md:w-24 lg:w-28">

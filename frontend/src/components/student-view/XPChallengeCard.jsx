@@ -9,7 +9,7 @@ function XPChallengeCard() {
   return (
     <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.3 }}>
     <Card 
-      className="relative shadow-none border-none p-6 bg-gradient-to-br from-[#C9D6FF] to-[#E0E7FF] rounded-lg overflow-hidden"
+      className=" lg:flex lg:flex-row relative shadow-none border-none p-6 bg-gradient-to-br from-[#C9D6FF] to-[#E0E7FF] rounded-lg overflow-hidden "
     >
       
       {/* Floating Decorative Stars Inside the Card */}

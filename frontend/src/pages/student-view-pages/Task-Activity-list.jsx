@@ -90,7 +90,7 @@ function StudentTaskPage() {
       
       {/* Main Content - Tasks Section */}
       <div className="flex-1 flex flex-col">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
 
 
 
@@ -161,7 +161,7 @@ function StudentTaskPage() {
        <div className="w-full lg:w-80 flex-shrink-0 flex flex-col justify-between h-full">
           <div className="space-y-4">
             {/* Space Computer Image */}
-            <div className="w-full aspect-square rounded-2xl bg-[#5555A4] overflow-hidden">
+            <div className="lg:w-full w-72 justify-center items-center mx-auto aspect-square rounded-2xl bg-[#5555A4] overflow-hidden">
               <img
                 src={calendarImg || "/placeholder.svg"}
                 alt="Space Computer"
@@ -175,7 +175,7 @@ function StudentTaskPage() {
             </Card>
 
             {/* Total Tasks */}
-            <Card className="p-4 border-none shadow-none">
+            <Card className="p-4 border-none shadow-none lg:bg-white w-80 bg-[#F5F5F5] rounded-xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <svg className="w-6 h-6 text-purple-600" viewBox="0 0 24 24">
@@ -193,7 +193,7 @@ function StudentTaskPage() {
           </div>
 
           {/* Wave Image */}
-          <div className="w-full aspect-square rounded-2xl overflow-hidden mt-4">
+          <div className="lg:w-full w-80  items-center justify-center mx-auto aspect-square rounded-2xl overflow-hidden mt-4">
             <img src={wave || "/placeholder.svg"} alt="Wave decoration" className="w-full h-full object-cover" />
           </div>
         </div>
