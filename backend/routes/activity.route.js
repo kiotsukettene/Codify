@@ -7,8 +7,9 @@ import {
   getActivitiesByCourse,
   getActivityById,
   getActivityBySlug,
-  getStudentActivitiesByCourse,
+  createSubmission,
   getStudentAllActivities,
+  getSubmission,
 } from "../controllers/activity.controller.js";
 import upload from "../middleware/multerConfig.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js"; // Adjust path
@@ -28,10 +29,11 @@ router.put(
 router.delete("/:activityId", profVerifyToken, deleteActivity);
 router.get("/course/:courseId", profVerifyToken, getActivitiesByCourse);
 
-router.get(
-  "/student/course/slug/:courseSlug",
+router.post(
+  "/submit",
   StudentVerifyToken,
-  getStudentActivitiesByCourse
+  upload.single("file"), // Use multer to handle file upload
+  createSubmission
 );
 
 router.get(
@@ -39,5 +41,7 @@ router.get(
   StudentVerifyToken,
   getStudentAllActivities
 );
+
+router.get("/submission/:activityId", StudentVerifyToken, getSubmission);
 
 export default router;

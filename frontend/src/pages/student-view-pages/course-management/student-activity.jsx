@@ -233,6 +233,8 @@
 // export default StudentActivityPage;
 
 // StudentActivityPage.jsx
+// StudentActivityPage.jsx
+// StudentActivityPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useActivityStore } from "../../../store/activityStore";
@@ -249,26 +251,30 @@ import GamifiedToast from "@/components/student-view/gamified-success-toast";
 import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 
 function StudentActivityPage() {
-  const { activitySlug } = useParams(); // Get slug from URL
-  const { activity, fetchActivityBySlug, isLoading, error } =
-    useActivityStore();
+  const { activitySlug } = useParams();
+  const {
+    activity,
+    submission,
+    fetchActivityBySlug,
+    fetchSubmission,
+    submitActivity,
+    isLoading,
+    error,
+  } = useActivityStore();
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false); // Gamified Toast
-  const [files, setFiles] = useState([
-    {
-      name: "File Title.pdf",
-      size: "313 KB",
-      date: "24 Oct, 2024",
-      progress: 45,
-    },
-  ]);
+  const [files, setFiles] = useState([]); // Files to upload
 
   useEffect(() => {
     if (activitySlug) {
-      fetchActivityBySlug(activitySlug);
+      fetchActivityBySlug(activitySlug).then(() => {
+        if (activity?._id) {
+          fetchSubmission(activity._id); // Fetch submission after activity loads
+        }
+      });
     }
-  }, [activitySlug, fetchActivityBySlug]);
+  }, [activitySlug, fetchActivityBySlug, fetchSubmission, activity?._id]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -276,6 +282,7 @@ function StudentActivityPage() {
       setFiles([
         ...files,
         {
+          file, // Store the actual File object
           name: file.name,
           size: `${Math.round(file.size / 1024)} KB`,
           date: new Date().toLocaleDateString(),
@@ -291,6 +298,23 @@ function StudentActivityPage() {
     setFiles(newFiles);
   };
 
+  const handleSubmit = async () => {
+    if (!files.length) {
+      alert("Please upload at least one file before submitting.");
+      return;
+    }
+
+    const fileToSubmit = files[0].file; // Submit the first file
+    const submitted = await submitActivity(activity._id, fileToSubmit);
+
+    if (submitted) {
+      setOpen(true); // Show success toast
+      setFiles([]); // Clear files after submission
+    }
+  };
+
+  const isSubmitted = submission && submission.status === "submitted";
+
   if (isLoading) return <div>Loading activity details...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!activity) return <div>No activity found</div>;
@@ -301,95 +325,113 @@ function StudentActivityPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Instructions and Upload */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Instruction Section */}
             <div className="space-y-6">
               <h2 className="text-xl font-semibold">{activity.title}</h2>
               <p className="text-gray-600">{activity.instructions}</p>
-
-              {/* Static for now; update with dynamic data if available */}
-              <div className="space-y-2">
-                <h3 className="font-medium">Learning Objectives:</h3>
-                <ul className="list-disc list-inside space-y-1 text-gray-600">
-                  <li>
-                    Implement secure user authentication and authorization
-                  </li>
-                  <li>Design and develop RESTful APIs</li>
-                  <li>Create responsive and accessible user interfaces</li>
-                  <li>Deploy and manage web applications in the cloud</li>
-                </ul>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="font-medium">Submission Requirements</h3>
-                <ul className="list-disc list-inside space-y-1 text-gray-600">
-                  <li>Source code repository (GitHub link)</li>
-                  <li>Technical documentation (PDF, max 10MB)</li>
-                  <li>Deployment URL</li>
-                  <li>Presentation slides (PPT/PPTX, max 20MB)</li>
-                </ul>
-              </div>
             </div>
 
-            {/* Upload File Section */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Upload Files</h2>
-              <div
-                className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => document.getElementById("fileInput").click()}
-              >
-                <input
-                  type="file"
-                  id="fileInput"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-                <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-500">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-xs text-gray-400">
-                  PDF, PPTX, ZIP (max. 20MB)
-                </p>
-              </div>
-
-              {/* Files List */}
-              <div className="space-y-3">
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
+              {isSubmitted && submission.file ? (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <FileText className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium">{file.name}</p>
+                        <p className="text-sm font-medium">
+                          {submission.file.split("/").pop()}{" "}
+                          {/* Display file name */}
+                        </p>
                         <p className="text-xs text-gray-500">
-                          {file.size} - {file.date}
+                          Submitted on{" "}
+                          {new Date(submission.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      {file.progress < 100 && (
-                        <div className="w-24 h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-purple-600 rounded-full"
-                            style={{ width: `${file.progress}%` }}
-                          />
-                        </div>
-                      )}
-                      <button onClick={() => removeFile(index)}>
-                        <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                      </button>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(submission.file, "_blank")}
+                    >
+                      View PDF
+                    </Button>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className={`border-2 border-dashed border-gray-200 rounded-lg p-8 text-center transition-colors ${
+                      isSubmitted
+                        ? "bg-gray-100 cursor-not-allowed"
+                        : "hover:bg-gray-50 cursor-pointer"
+                    }`}
+                    onClick={
+                      !isSubmitted
+                        ? () => document.getElementById("fileInput").click()
+                        : null
+                    }
+                  >
+                    <input
+                      type="file"
+                      id="fileInput"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      disabled={isSubmitted}
+                    />
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-500">
+                      {isSubmitted
+                        ? "Submission completed"
+                        : "Click to upload or drag and drop"}
+                    </p>
+                    {!isSubmitted && (
+                      <p className="text-xs text-gray-400">
+                        PDF, PPTX, ZIP (max. 20MB)
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    {files.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <FileText className="h-5 w-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm font-medium">{file.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {file.size} - {file.date}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          {file.progress < 100 && (
+                            <div className="w-24 h-1 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-purple-600 rounded-full"
+                                style={{ width: `${file.progress}%` }}
+                              />
+                            </div>
+                          )}
+                          <button
+                            onClick={() => removeFile(index)}
+                            disabled={isSubmitted}
+                          >
+                            <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* Right Column - Details */}
           <div className="space-y-6 bg-white p-4">
-            {/* Due Date Section */}
             <Card className="p-6 bg-purple-50 shadow-none border-none rounded-lg">
               <h2 className="text-lg font-semibold mb-4">Important Dates</h2>
               <div className="space-y-3">
@@ -418,7 +460,6 @@ function StudentActivityPage() {
               </div>
             </Card>
 
-            {/* Resources Files */}
             <div className="grid grid-cols-2 gap-4">
               {activity.file ? (
                 <Card className="p-4 bg-red-50 shadow-none border-none">
@@ -452,13 +493,13 @@ function StudentActivityPage() {
               )}
             </div>
 
-            {/* Submit Button with Gamified Toast */}
             <ToastProvider>
               <Button
-                onClick={() => setOpen(true)}
+                onClick={handleSubmit}
                 className="text-white w-full"
+                disabled={isSubmitted || isLoading || !files.length}
               >
-                Submit
+                {isSubmitted ? "Submitted" : "Submit"}
               </Button>
               <GamifiedToast
                 open={open}

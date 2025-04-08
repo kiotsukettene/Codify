@@ -12,6 +12,7 @@ axios.defaults.withCredentials = true;
 export const useActivityStore = create((set) => ({
   activities: [],
   activity: null,
+  submission: null,
   isLoading: false,
   error: null,
 
@@ -204,6 +205,50 @@ export const useActivityStore = create((set) => ({
         error.response?.data?.message || "Error fetching all student activities"
       );
       return [];
+    }
+  },
+
+  submitActivity: async (activityId, file) => {
+    set({ isLoading: true, error: null });
+    try {
+      const formData = new FormData();
+      formData.append("activityId", activityId);
+      if (file) formData.append("file", file);
+
+      const response = await axios.post(`${API_URL}/submit`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      set({ isLoading: false });
+      toast.success("Submission successful!");
+      return response.data.submission;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error submitting activity",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error submitting activity");
+      return null;
+    }
+  },
+
+  fetchSubmission: async (activityId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/submission/${activityId}`);
+      set({ submission: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        set({ submission: null, isLoading: false }); // No submission exists yet
+        return null;
+      }
+      set({
+        error: error.response?.data?.message || "Error fetching submission",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error fetching submission");
+      return null;
     }
   },
 }));
