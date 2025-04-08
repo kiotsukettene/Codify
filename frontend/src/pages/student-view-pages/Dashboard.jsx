@@ -1,12 +1,6 @@
 import Typewriter from "@/components/fancy/typewriter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ActivityIcon,
-  ChartNoAxesColumnIncreasing,
-  LibraryBig,
-  NotebookTabs,
-  Trophy,
-} from "lucide-react";
+import { ActivityIcon, LibraryBig, NotebookTabs, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dashboardImage from "@/assets/picture/random-background/dashboard-img.png";
 import StudentHeader from "@/components/student-view/Header";
@@ -71,6 +65,11 @@ function StudentDashboard() {
       bgColor: "bg-yellow-50",
     },
   ];
+
+  useEffect(() => {
+    fetchEnrolledCourses();
+  }, [fetchEnrolledCourses]);
+  console.log("Enrolled Courses:", enrolledCourses); // Debugging line
 
   return (
     <div className="flex flex-col mx-6">
@@ -164,6 +163,7 @@ function StudentDashboard() {
           </div>
 
           {/* My Courses Section */}
+          {/* My Courses Section */}
           <div className="pt-8">
             <div className="flex justify-between w-full">
               <h1 className="text-3xl font-semibold text-gray-900">
@@ -179,44 +179,38 @@ function StudentDashboard() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 pt-2">
-              {/* Course Cards */}
-              <div className="rounded-lg w-auto h-32 bg-white flex justify-start items-center gap-4 px-8">
-                <h1 className="w-24 h-24 bg-violet-100 rounded-lg font-medium text-4xl flex justify-center items-center">
-                  SE
-                </h1>
-                <div>
-                  <h1 className="font-semibold">Software Engineering</h1>
-                  <div className="flex space-x-8">
-                    <div className="flex items-center gap-2">
-                      <NotebookTabs color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">12 Lessons</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Trophy color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">Average</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-lg w-auto h-32 bg-white flex justify-start items-center gap-4 px-8">
-                <h1 className="w-24 h-24 bg-violet-100 rounded-lg font-medium text-4xl flex justify-center items-center">
-                  SE
-                </h1>
-                <div>
-                  <h1 className="font-semibold">Software Engineering</h1>
-                  <div className="flex space-x-8">
-                    <div className="flex items-center gap-2">
-                      <NotebookTabs color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">12 Lessons</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Trophy color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">Average</p>
+              {enrolledCourses.map((course, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg w-auto h-32 bg-white flex justify-start items-center gap-4 px-8"
+                >
+                  <h1 className="w-24 h-24 bg-violet-100 rounded-lg font-medium text-4xl flex justify-center items-center">
+                    {course.className?.substring(0, 2).toUpperCase() || "NA"}
+                  </h1>
+                  <div>
+                    <h1 className="font-semibold">
+                      {course.className || "Unnamed Course"}
+                    </h1>
+                    <div className="flex space-x-8">
+                      <div className="flex items-center gap-2">
+                        <NotebookTabs color="#C2A6DE" />
+                        <p className="text-sm text-neutral-800">
+                          {course.lessonCount || 0} Lessons
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Trophy color="#C2A6DE" />
+                        <p className="text-sm text-neutral-800">
+                          {course.status || "In Progress"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ))}
+              {enrolledCourses.length === 0 && (
+                <p className="text-gray-500">No enrolled courses yet</p>
+              )}
             </div>
           </div>
         </div>
