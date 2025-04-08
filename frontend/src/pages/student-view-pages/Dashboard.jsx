@@ -19,7 +19,7 @@ import useStudentCourseStore from "@/store/studentCourseStore";
 function StudentDashboard() {
   const navigate = useNavigate();
   const { student } = useStudentStore();
-  const { enrolledCourses } = useStudentCourseStore();
+  const { enrolledCourses, fetchEnrolledCourses } = useStudentCourseStore();
   const studentName = student ? student.firstName : "Student";
   const classes = [
     {
