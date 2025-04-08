@@ -21,13 +21,13 @@ import { useStudentStore } from "@/store/studentStore";
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
-  const { enrolledCourses, fetchEnrolledCourses, isLoading} = useStudentCourseStore();
+  const { enrolledCourses, fetchEnrolledCourses, isLoading } =
+    useStudentCourseStore();
   const { student } = useStudentStore();
-
 
   useEffect(() => {
     fetchEnrolledCourses();
-  }, [fetchEnrolledCourses])
+  }, [fetchEnrolledCourses]);
 
   console.log("Enrolled Courses:", enrolledCourses); // Debugging line
   return (
@@ -56,7 +56,10 @@ function StudentCourseListPage() {
           {/* ==============================================
             ============MODAL FOR JOIN COURSE CODE ===========
             ==================================================*/}
-          <JoinCourseModal isOpen={joinCourse} onClose={() => setJoinCourse(false)} />
+          <JoinCourseModal
+            isOpen={joinCourse}
+            onClose={() => setJoinCourse(false)}
+          />
         </div>
 
         <div className="relative w-[50%] h-full ml-auto">
@@ -84,7 +87,11 @@ function StudentCourseListPage() {
               image={course.image || "https://via.placeholder.com/150"}
               title={course.className}
               professor={`${course.professorId?.firstName} ${course.professorId?.lastName}`}
-              schedule={`${course.schedule.day.charAt(0).toUpperCase()}${course.schedule.day.slice(1)} | ${course.schedule.time}`}
+              schedule={`${course.schedule.day
+                .charAt(0)
+                .toUpperCase()}${course.schedule.day.slice(1)} | ${
+                course.schedule.time
+              }`}
               tags={[course.program, course.language]}
               onClick={() => navigate(`/student/lesson-list/${course._id}`)}
             />
