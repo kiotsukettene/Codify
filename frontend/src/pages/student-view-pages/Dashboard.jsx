@@ -1,24 +1,19 @@
 import Typewriter from "@/components/fancy/typewriter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ActivityIcon,
-  ChartNoAxesColumnIncreasing,
-  LibraryBig,
-  NotebookTabs,
-  Trophy,
-} from "lucide-react";
+import { ActivityIcon, LibraryBig, NotebookTabs, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dashboardImage from "@/assets/picture/random-background/dashboard-img.png";
 import StudentHeader from "@/components/student-view/Header";
 import spaceShip from "@/assets/picture/random-background/dashboard-spaceShip.png";
 import { useStudentStore } from "@/store/studentStore";
 import { useNavigate } from "react-router-dom";
-import { useActivityStore } from "../../store/activityStore";
+import { useEffect } from "react";
+import useStudentCourseStore from "@/store/studentCourseStore";
 
 function StudentDashboard() {
   const navigate = useNavigate();
   const { student } = useStudentStore();
-  const { activities, fetchStudentAllActivities } = useActivityStore();
+  const { enrolledCourses, fetchEnrolledCourses } = useStudentCourseStore();
   const studentName = student ? student.firstName : "Student";
   const classes = [
     {
@@ -70,6 +65,33 @@ function StudentDashboard() {
       bgColor: "bg-yellow-50",
     },
   ];
+
+  useEffect(() => {
+    fetchEnrolledCourses();
+  }, [fetchEnrolledCourses]);
+  console.log("Enrolled Courses:", enrolledCourses); // Debugging line
+
+  // Get current date
+  // Get current day of the week
+  const currentDate = new Date();
+  const daysOfWeek = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const currentDay = daysOfWeek[currentDate.getDay()]; // e.g., "tuesday" for April 08, 2025
+
+  // Filter enrolledCourses for the current day of the week
+  const todaysCourses = enrolledCourses.filter(
+    (course) => course.schedule?.day.toLowerCase() === currentDay
+  );
+
+  console.log("Today's Courses:", todaysCourses); // Debugging line
+
   return (
     <div className="flex flex-col mx-6">
       {/* ✅ Greeting Section at the Top */}
@@ -85,6 +107,7 @@ function StudentDashboard() {
               "Let's keep things organized!",
               "Keep shining 🌟",
               "Stay on top of everything!",
+              "panget mo lol!!",
             ]}
             speed={70}
             className="text-primary font-semibold"
@@ -112,7 +135,7 @@ function StudentDashboard() {
                   <div>
                     <p className="text-base font-medium text-pink-500">All</p>
                     <h1 className=" text-4xl text-neutral-900 font-semibold">
-                      12
+                      {enrolledCourses.length}
                     </h1>
                   </div>
                   <LibraryBig color="#FF62A4" className="w-12 h-12" />
@@ -131,7 +154,7 @@ function StudentDashboard() {
                   <div>
                     <p className="text-base font-medium text-pink-500">All</p>
                     <h1 className="text-4xl text-neutral-900 font-semibold">
-                      {activities.length}
+                      12
                     </h1>
                   </div>
                   <ActivityIcon color="#FF62A4" className="w-12 h-12" />
@@ -176,44 +199,38 @@ function StudentDashboard() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 pt-2">
-              {/* Course Cards */}
-              <div className="rounded-lg w-auto h-32 bg-white flex justify-start items-center gap-4 px-8">
-                <h1 className="w-24 h-24 bg-violet-100 rounded-lg font-medium text-4xl flex justify-center items-center">
-                  SE
-                </h1>
-                <div>
-                  <h1 className="font-semibold">Software Engineering</h1>
-                  <div className="flex space-x-8">
-                    <div className="flex items-center gap-2">
-                      <NotebookTabs color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">12 Lessons</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Trophy color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">Average</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-lg w-auto h-32 bg-white flex justify-start items-center gap-4 px-8">
-                <h1 className="w-24 h-24 bg-violet-100 rounded-lg font-medium text-4xl flex justify-center items-center">
-                  SE
-                </h1>
-                <div>
-                  <h1 className="font-semibold">Software Engineering</h1>
-                  <div className="flex space-x-8">
-                    <div className="flex items-center gap-2">
-                      <NotebookTabs color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">12 Lessons</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Trophy color="#C2A6DE" />
-                      <p className="text-sm text-neutral-800">Average</p>
+              {enrolledCourses.map((course, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg w-auto h-32 bg-white flex justify-start items-center gap-4 px-8"
+                >
+                  <h1 className="w-24 h-24 bg-violet-100 rounded-lg font-medium text-4xl flex justify-center items-center">
+                    {course.className?.substring(0, 2).toUpperCase() || "NA"}
+                  </h1>
+                  <div>
+                    <h1 className="font-semibold">
+                      {course.className || "Unnamed Course"}
+                    </h1>
+                    <div className="flex space-x-8">
+                      <div className="flex items-center gap-2">
+                        <NotebookTabs color="#C2A6DE" />
+                        <p className="text-sm text-neutral-800">
+                          {course.lessonCount || 0} Lessons
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Trophy color="#C2A6DE" />
+                        <p className="text-sm text-neutral-800">
+                          {course.status || "In Progress"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ))}
+              {enrolledCourses.length === 0 && (
+                <p className="text-gray-500">No enrolled courses yet</p>
+              )}
             </div>
           </div>
         </div>
@@ -230,32 +247,44 @@ function StudentDashboard() {
               </Button>
             </div>
             <div className="h-[500px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              {classes.map((classItem, index) => (
-                <div
-                  key={index}
-                  className={`${classItem.bgColor} rounded-xl p-4 hover:translate-x-1 cursor-pointer`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`${classItem.color} w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold`}
-                      >
-                        {classItem.initials}
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-800">
-                          {classItem.name}
-                        </h3>
-                        <div className="text-sm text-gray-500 flex items-center">
-                          <span>{classItem.date}</span>
-                          <span className="mx-2">•</span>
-                          <span>{classItem.time}</span>
+              {todaysCourses.length > 0 ? (
+                todaysCourses.map((course, index) => (
+                  <div
+                    key={index}
+                    className={`${
+                      course.bgColor || "bg-blue-50"
+                    } rounded-xl p-4 hover:translate-x-1 cursor-pointer`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className={`${
+                            course.color || "bg-blue-500"
+                          } w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold`}
+                        >
+                          {course.initials ||
+                            course.className?.substring(0, 2).toUpperCase() ||
+                            "NA"}
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-800">
+                            {course.className || "Unnamed Course"}
+                          </h3>
+                          <div className="text-sm text-gray-500 flex items-center">
+                            <span>{course.schedule?.day || "Day TBD"}</span>
+                            <span className="mx-2">•</span>
+                            <span>{course.schedule?.time || "Time TBD"}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-gray-500 p-4">
+                  No classes scheduled for today
+                </p>
+              )}
             </div>
           </div>
 
