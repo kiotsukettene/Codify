@@ -6,7 +6,6 @@ import {
 import { Calendar, Clock, FileText, Trophy, Star, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 export function EventHoverCard({ event }) {
@@ -89,13 +88,6 @@ export function EventHoverCard({ event }) {
               {event.event.title}
             </h3>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Progress</span>
-                <span>{isCompleted ? "100%" : "0%"}</span>
-              </div>
-              <Progress value={isCompleted ? 100 : 0} className="h-1" />
-            </div>
           </div>
 
           {/* ===================Date and Time ====================*/}
