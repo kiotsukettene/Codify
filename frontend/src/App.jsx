@@ -34,7 +34,7 @@ import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
 import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
 import StudentList from "./pages/admin-view-pages/admin-student/Student";
 import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
-import CoursesAdmin from "./pages/admin-view-pages/Courses";
+import CoursesAdmin from "./pages/admin-view-pages/courses";
 
 // Professor Pages
 import { useprofAuthStore } from "@/store/profAuthStore";
