@@ -431,7 +431,10 @@ function App() {
             }
           />
           <Route path="module/:lessonId" element={<StudentModulePage />} />
-          <Route path="activity" element={<StudentActivityPage />} />
+          <Route
+            path="/student/activity/:activitySlug"
+            element={<StudentActivityPage />}
+          />
           <Route path="task-list" element={<StudentTaskPage />} />
           <Route path="schedules" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings />} />
