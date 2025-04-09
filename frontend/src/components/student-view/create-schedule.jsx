@@ -1,124 +1,189 @@
-"use client";
-
-import * as React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import toast from "react-hot-toast";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const priorities = [
-  { label: "Low Priority", value: "low", color: "#60a5fa" },
-  { label: "Medium Priority", value: "medium", color: "#fdba74" },
-  { label: "High Priority", value: "high", color: "#f87171" },
-];
+const CreateEventModal = ({
+  open,
+  onOpenChange,
+  addEvent,
+  editEvent,
+  deleteEvent,
+  eventToEdit,
+  isAddingEvent,
+  isEditingEvent,
+  isDeletingEvent,
+}) => {
+  const priorities = [
+    { label: "High Priority", value: "high", color: "#f87171" },
+    { label: "Medium Priority", value: "medium", color: "#fdba74" },
+    { label: "Low Priority", value: "low", color: "#60a5fa" },
+  ];
 
-export function CreateEventModal({ open, onOpenChange, addEvent, isAddingEvent }) {
-  const [title, setTitle] = React.useState("");
-  const [date, setDate] = React.useState(new Date());
-  const [startTime, setStartTime] = React.useState("00:00");
-  const [endTime, setEndTime] = React.useState("00:00");
-  const [priority, setPriority] = React.useState("low");
+  const [formData, setFormData] = useState({
+    title: "",
+    start: "",
+    end: "",
+    backgroundColor: priorities[2].color,
+  });
+
+  useEffect(() => {
+    if (eventToEdit) {
+      const startDateTime = new Date(eventToEdit.start);
+      const endDateTime = new Date(eventToEdit.end);
+      const startDate = startDateTime.toISOString().split("T")[0];
+      const startTime = startDateTime.toISOString().split("T")[1].slice(0, 5);
+      const endDate = endDateTime.toISOString().split("T")[0];
+      const endTime = endDateTime.toISOString().split("T")[1].slice(0, 5);
+
+      setFormData({
+        title: eventToEdit.title,
+        start: `${startDate}T${startTime}`,
+        end: `${endDate}T${endTime}`,
+        backgroundColor: eventToEdit.backgroundColor,
+      });
+    } else {
+      setFormData({
+        title: "",
+        start: "",
+        end: "",
+        backgroundColor: priorities[2].color,
+      });
+    }
+  }, [eventToEdit]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!title.trim()) {
-      toast.error("Please enter a title for the event.");
-      return;
-    }
-
-    const newEvent = {
-      id: Date.now().toString(),
-      title,
-      start: `${format(date, "yyyy-MM-dd")}T${startTime}:00`,
-      end: `${format(date, "yyyy-MM-dd")}T${endTime}:00`,
-      backgroundColor: priorities.find((p) => p.value === priority)?.color || "#64748b",
-      borderColor: priorities.find((p) => p.value === priority)?.color || "#64748b",
-      textColor: "#ffffff",
+    const eventData = {
+      id: eventToEdit ? eventToEdit.id : undefined,
+      title: formData.title,
+      start: formData.start,
+      end: formData.end,
+      backgroundColor: formData.backgroundColor,
     };
 
-    addEvent(newEvent);
-    onOpenChange(false);
+    if (eventToEdit) {
+      editEvent(eventData);
+    } else {
+      addEvent(eventData);
+    }
+  };
+
+  const handleDelete = () => {
+    if (eventToEdit) {
+      deleteEvent(eventToEdit.id);
+      onOpenChange(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-xl font-medium bg-purple-100 mt-4 rounded-md py-2 px-3">
-            🛰️ Schedule Event
-          </DialogTitle>
+          <DialogTitle>{eventToEdit ? "Edit Event" : "Create Event"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium bg-blue-50 px-3 py-1 rounded-md">Title</label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Software Engineering Class"
-              disabled={isAddingEvent}
-            />
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="start">Start Date & Time</Label>
+              <Input
+                id="start"
+                type="datetime-local"
+                value={formData.start}
+                onChange={(e) => setFormData({ ...formData, start: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="end">End Date & Time</Label>
+              <Input
+                id="end"
+                type="datetime-local"
+                value={formData.end}
+                onChange={(e) => setFormData({ ...formData, end: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <Select
+                value={formData.backgroundColor}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, backgroundColor: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  {priorities.map((priority) => (
+                    <SelectItem key={priority.value} value={priority.color}>
+                      {priority.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-
-          <div className="space-y-2 flex flex-col">
-            <label className="text-sm font-medium mr-5 bg-blue-50 px-3 py-1 rounded-md">Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" disabled={isAddingEvent}>
-                  <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
-                  {format(date, "EEEE, dd MMMM")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0">
-                <Calendar mode="single" selected={date} onSelect={setDate} />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="flex flex-row gap-4">
-            <Input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              disabled={isAddingEvent}
-            />
-            <span className="items-center flex justify-center">-</span>
-            <Input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              disabled={isAddingEvent}
-            />
-          </div>
-
-          <Select value={priority} onValueChange={setPriority} disabled={isAddingEvent}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {priorities.map((p) => (
-                <SelectItem key={p.value} value={p.value}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            type="submit"
-            className="w-full bg-primary"
-            disabled={isAddingEvent}
-          >
-            {isAddingEvent ? "Adding..." : "Add Event"}
-          </Button>
+          <DialogFooter className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            {eventToEdit && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isAddingEvent || isEditingEvent || isDeletingEvent}
+              >
+                {isDeletingEvent ? "Deleting..." : "Delete"}
+              </Button>
+            )}
+            <Button
+              type="submit"
+              disabled={isAddingEvent || isEditingEvent || isDeletingEvent}
+            >
+              {isAddingEvent || isEditingEvent
+                ? eventToEdit
+                  ? "Updating..."
+                  : "Creating..."
+                : eventToEdit
+                ? "Update Event"
+                : "Create Event"}
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default CreateEventModal;

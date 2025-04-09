@@ -1,5 +1,5 @@
 import express from "express";
-import { addEvent, getEvents } from "../controllers/studentEvent.controller.js";
+import { addEvent, getEvents, editEvent, deleteEvent } from "../controllers/studentEvent.controller.js";
 import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
 
 const router = express.Router();
@@ -12,5 +12,7 @@ router.get("/health", (req, res) => {
 // Routes that require authentication
 router.post("/schedule", StudentVerifyToken, addEvent);
 router.get("/", StudentVerifyToken, getEvents);
+router.put("/:eventId", StudentVerifyToken, editEvent); 
+router.delete("/:eventId", StudentVerifyToken, deleteEvent); 
 
 export default router;

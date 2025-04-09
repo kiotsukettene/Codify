@@ -67,7 +67,7 @@ export const addEvent = async (req, res) => {
       title,
       start: startDateTime,
       end: endDateTime,
-      priority: schemaPriority, // Use the transformed priority
+      priority: schemaPriority,
       allDay: false,
       createdAt: new Date(),
     };
@@ -171,6 +171,184 @@ export const getEvents = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching events",
+      error: error.message,
+    });
+  }
+};
+
+export const editEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { title, date, startTime, endTime, priority } = req.body;
+
+    console.log("Received editEvent request:", { eventId, ...req.body });
+    console.log("Request cookies in editEvent:", req.cookies);
+    console.log("Request headers in editEvent:", req.headers);
+
+    console.log("Student ID from middleware in editEvent:", req.studentId);
+    if (!req.studentId) {
+      console.log("Unauthorized: Student not authenticated, returning 401");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Student not authenticated",
+      });
+    }
+
+    if (!eventId) {
+      return res.status(400).json({
+        success: false,
+        message: "Event ID is required",
+      });
+    }
+
+    if (!title || !date || !startTime || !endTime || !priority) {
+      return res.status(400).json({
+        success: false,
+        message: "Title, date, start time, end time, and priority are required",
+      });
+    }
+
+    const normalizedPriority = priority.toLowerCase();
+    if (!["low", "medium", "high"].includes(normalizedPriority)) {
+      return res.status(400).json({
+        success: false,
+        message: "Priority must be one of: low, medium, high",
+      });
+    }
+
+    const schemaPriority = normalizedPriority.charAt(0).toUpperCase() + normalizedPriority.slice(1);
+
+    const student = await Student.findById(req.studentId);
+    if (!student) {
+      console.log("Student not found for ID:", req.studentId);
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    const eventIndex = student.events.findIndex((event) => event.id === eventId);
+    if (eventIndex === -1) {
+      console.log("Event not found for ID:", eventId);
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    const startDateTime = new Date(`${date}T${startTime}`);
+    const endDateTime = endTime ? new Date(`${date}T${endTime}`) : null;
+
+    console.log("Parsed dates:", { startDateTime, endDateTime });
+
+    if (endDateTime && endDateTime <= startDateTime) {
+      return res.status(400).json({
+        success: false,
+        message: "End time must be after start time",
+      });
+    }
+
+    const updatedEvent = {
+      id: eventId,
+      title,
+      start: startDateTime,
+      end: endDateTime,
+      priority: schemaPriority,
+      allDay: false,
+      createdAt: student.events[eventIndex].createdAt,
+    };
+
+    console.log("Updated event:", updatedEvent);
+
+    student.events[eventIndex] = updatedEvent;
+    console.log("Saving student with updated event...");
+    await student.save();
+
+    console.log("Event updated successfully:", updatedEvent);
+
+    res.status(200).json({
+      success: true,
+      message: "Event updated successfully!",
+      event: {
+        id: updatedEvent.id,
+        title: updatedEvent.title,
+        start: updatedEvent.start,
+        end: updatedEvent.end,
+        allDay: updatedEvent.allDay,
+        priority: updatedEvent.priority,
+      },
+    });
+  } catch (error) {
+    console.error("Error in editEvent:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating event",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    console.log("Received deleteEvent request:", { eventId });
+    console.log("Request cookies in deleteEvent:", req.cookies);
+    console.log("Request headers in deleteEvent:", req.headers);
+
+    // Use the student ID from the middleware
+    console.log("Student ID from middleware in deleteEvent:", req.studentId);
+    if (!req.studentId) {
+      console.log("Unauthorized: Student not authenticated, returning 401");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Student not authenticated",
+      });
+    }
+
+    // Validations
+    if (!eventId) {
+      return res.status(400).json({
+        success: false,
+        message: "Event ID is required",
+      });
+    }
+
+    const student = await Student.findById(req.studentId);
+    if (!student) {
+      console.log("Student not found for ID:", req.studentId);
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Find the event in the student's events array
+    const eventIndex = student.events.findIndex((event) => event.id === eventId);
+    if (eventIndex === -1) {
+      console.log("Event not found for ID:", eventId);
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    // Remove the event from the array
+    student.events.splice(eventIndex, 1);
+    console.log("Saving student after deleting event...");
+    await student.save();
+
+    console.log("Event deleted successfully:", eventId);
+
+    res.status(200).json({
+      success: true,
+      message: "Event deleted successfully!",
+    });
+  } catch (error) {
+    console.error("Error in deleteEvent:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting event",
       error: error.message,
     });
   }

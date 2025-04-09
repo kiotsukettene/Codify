@@ -7,13 +7,13 @@ import timeGridPlugin from "@fullcalendar/timegrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Calendar, Clock } from "lucide-react"
-import { CreateEventModal } from "@/components/student-view/create-schedule"
 import { EventHoverCard } from "@/components/student-view/hover-card-schedule"
 import toast from "react-hot-toast"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import CreateEventModal from "@/components/student-view/create-schedule"
 
 function StudentCalendar() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -22,6 +22,9 @@ function StudentCalendar() {
   const [completedEvents, setCompletedEvents] = useState(0)
   const [totalEvents, setTotalEvents] = useState(0)
   const [isAddingEvent, setIsAddingEvent] = useState(false)
+  const [isEditingEvent, setIsEditingEvent] = useState(false)
+  const [isDeletingEvent, setIsDeletingEvent] = useState(false) // Track deleting state
+  const [eventToEdit, setEventToEdit] = useState(null)
 
   const priorities = [
     { label: "High Priority", description: "Urgent or high-priority tasks", value: "high", color: "#f87171" },
@@ -85,7 +88,7 @@ function StudentCalendar() {
       } catch (error) {
         console.error("Error fetching events:", error.message)
         toast.error(error.message || "Failed to load events")
-        setEvents([]) // Clear events on error
+        setEvents([])
       }
     }
 
@@ -207,6 +210,142 @@ function StudentCalendar() {
     }
   }
 
+  const editEvent = async (updatedEvent) => {
+    try {
+      setIsEditingEvent(true)
+
+      const startDateTime = new Date(updatedEvent.start)
+      const endDateTime = new Date(updatedEvent.end)
+      if (endDateTime <= startDateTime) {
+        throw new Error("End time must be after start time")
+      }
+
+      const [date] = updatedEvent.start.split("T")
+      const startTime = updatedEvent.start.split("T")[1].slice(0, 5)
+      const endTime = updatedEvent.end.split("T")[1].slice(0, 5)
+      const priorityValue = priorities.find((p) => p.color === updatedEvent.backgroundColor)?.value
+
+      if (!priorityValue) {
+        throw new Error("Invalid priority selected")
+      }
+
+      const payload = {
+        title: updatedEvent.title,
+        date,
+        startTime,
+        endTime,
+        priority: priorityValue,
+      }
+
+      console.log("Updating event with payload:", payload)
+
+      const response = await fetch(`http://localhost:3000/api/events/${updatedEvent.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      })
+
+      console.log("Update event response status:", response.status)
+
+      if (!response.ok) {
+        let errorData
+        try {
+          errorData = await response.json()
+        } catch (jsonError) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        if (response.status === 401) {
+          throw new Error("Unauthorized: Please log in again")
+        } else if (response.status === 400) {
+          throw new Error(errorData.message || "Invalid event data")
+        } else if (response.status === 404) {
+          throw new Error(errorData.message || "Event not found")
+        } else {
+          throw new Error(errorData.message || "Failed to update event")
+        }
+      }
+
+      const updatedEventData = await response.json()
+      console.log("Updated event:", updatedEventData)
+
+      const priorityObj = priorities.find((p) => p.value === priorityValue) || priorities[2]
+
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event.id === updatedEvent.id
+            ? {
+                id: updatedEventData.event.id,
+                title: updatedEventData.event.title,
+                start: updatedEventData.event.start,
+                end: updatedEventData.event.end,
+                backgroundColor: priorityObj.color,
+                borderColor: priorityObj.color,
+                textColor: "#ffffff",
+                extendedProps: {
+                  completed: event.extendedProps.completed,
+                  priority: priorityValue,
+                  notes: event.extendedProps.notes,
+                },
+              }
+            : event
+        )
+      )
+
+      toast.success("Event updated successfully!")
+    } catch (error) {
+      console.error("Error updating event:", error.message)
+      toast.error(error.message || "Failed to update event")
+    } finally {
+      setIsEditingEvent(false)
+    }
+  }
+
+  const deleteEvent = async (eventId) => {
+    try {
+      setIsDeletingEvent(true)
+
+      console.log("Deleting event with ID:", eventId)
+
+      const response = await fetch(`http://localhost:3000/api/events/${eventId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+
+      console.log("Delete event response status:", response.status)
+
+      if (!response.ok) {
+        let errorData
+        try {
+          errorData = await response.json()
+        } catch (jsonError) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        if (response.status === 401) {
+          throw new Error("Unauthorized: Please log in again")
+        } else if (response.status === 404) {
+          throw new Error(errorData.message || "Event not found")
+        } else {
+          throw new Error(errorData.message || "Failed to delete event")
+        }
+      }
+
+      const data = await response.json()
+      console.log("Delete event response:", data)
+
+      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId))
+
+      toast.success("Event deleted successfully!")
+    } catch (error) {
+      console.error("Error deleting event:", error.message)
+      toast.error(error.message || "Failed to delete event")
+    } finally {
+      setIsDeletingEvent(false)
+    }
+  }
+
   // Helper function to format date and time
   const formatEventTime = (dateString) => {
     const date = new Date(dateString)
@@ -219,7 +358,6 @@ function StudentCalendar() {
     return date.toLocaleDateString([], { month: "short", day: "numeric" })
   }
 
-  // Group events by date for sidebar display
   const groupEventsByDate = () => {
     const grouped = {}
 
@@ -231,7 +369,6 @@ function StudentCalendar() {
       grouped[dateKey].push(event)
     })
 
-    // Sort by date
     return Object.keys(grouped)
       .sort()
       .map((date) => ({
@@ -248,8 +385,11 @@ function StudentCalendar() {
         <div className="p-4 border-b border-blue-200">
           <Button
             className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all"
-            onClick={() => setIsCreateModalOpen(true)}
-            disabled={isAddingEvent}
+            onClick={() => {
+              setEventToEdit(null)
+              setIsCreateModalOpen(true)
+            }}
+            disabled={isAddingEvent || isEditingEvent || isDeletingEvent}
           >
             {isAddingEvent ? "Creating..." : "+ Create Event"}
           </Button>
@@ -305,8 +445,12 @@ function StudentCalendar() {
                       return (
                         <Card
                           key={event.id}
-                          className="overflow-hidden border-l-4 hover:shadow-md transition-all"
+                          className="overflow-hidden border-l-4 hover:shadow-md transition-all cursor-pointer"
                           style={{ borderLeftColor: event.backgroundColor }}
+                          onClick={() => {
+                            setEventToEdit(event)
+                            setIsCreateModalOpen(true)
+                          }}
                         >
                           <CardContent className="p-3">
                             <div className="space-y-1">
@@ -399,9 +543,19 @@ function StudentCalendar() {
 
       <CreateEventModal
         open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open)
+          if (!open) {
+            setEventToEdit(null)
+          }
+        }}
         addEvent={addEvent}
+        editEvent={editEvent}
+        deleteEvent={deleteEvent}
+        eventToEdit={eventToEdit}
         isAddingEvent={isAddingEvent}
+        isEditingEvent={isEditingEvent}
+        isDeletingEvent={isDeletingEvent}
       />
     </div>
   )
