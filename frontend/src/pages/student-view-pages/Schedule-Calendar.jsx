@@ -23,7 +23,7 @@ function StudentCalendar() {
   const [totalEvents, setTotalEvents] = useState(0)
   const [isAddingEvent, setIsAddingEvent] = useState(false)
   const [isEditingEvent, setIsEditingEvent] = useState(false)
-  const [isDeletingEvent, setIsDeletingEvent] = useState(false) // Track deleting state
+  const [isDeletingEvent, setIsDeletingEvent] = useState(false)
   const [eventToEdit, setEventToEdit] = useState(null)
 
   const priorities = [
@@ -346,6 +346,43 @@ function StudentCalendar() {
     }
   }
 
+  // Handle event drop (drag-and-drop)
+  const handleEventDrop = async (info) => {
+    try {
+      const event = info.event;
+      const updatedEvent = {
+        id: event.id,
+        title: event.title,
+        start: event.start.toISOString(),
+        end: event.end ? event.end.toISOString() : event.start.toISOString(), // Ensure end time exists
+        backgroundColor: event.backgroundColor,
+      };
+
+      // Update the event on the backend
+      await editEvent(updatedEvent);
+
+      // Update the local state (already handled in editEvent, but ensure UI is in sync)
+      setEvents((prevEvents) =>
+        prevEvents.map((ev) =>
+          ev.id === event.id
+            ? {
+                ...ev,
+                start: event.start.toISOString(),
+                end: event.end ? event.end.toISOString() : event.start.toISOString(),
+              }
+            : ev
+        )
+      );
+
+      toast.success("Event rescheduled successfully!");
+    } catch (error) {
+      console.error("Error rescheduling event:", error.message);
+      toast.error(error.message || "Failed to reschedule event");
+      // Revert the drag if the update fails
+      info.revert();
+    }
+  }
+
   // Helper function to format date and time
   const formatEventTime = (dateString) => {
     const date = new Date(dateString)
@@ -524,6 +561,8 @@ function StudentCalendar() {
             height="100%"
             dayMaxEvents={true}
             eventDisplay="block"
+            editable={true} // Enable drag-and-drop
+            eventDrop={handleEventDrop} // Handle drop event
             eventContent={(arg) => (
               <EventHoverCard
                 event={arg}
