@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CourseCard from "@/components/admin-view/Course-Card";
-import DeleteDialog from "@/components/Dialog/DeleteDialog"; // Import the DeleteDialog component
+import DeleteDialog from "@/components/Dialog/DeleteDialog";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/pagination";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CourseModal from "@/components/professor-view/Add-Course-Modal";
-import { useCourseStore } from "@/store/courseStore"; // Assuming this is the correct store
+import { useCourseStore } from "@/store/courseStore";
 import { useNavigate } from "react-router-dom";
 
 const CoursesAdmin = () => {
@@ -24,6 +24,8 @@ const CoursesAdmin = () => {
   const itemsPerPage = 8;
   const [selectedLanguage, setSelectedLanguage] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false); // Track edit mode
+  const [editCourseData, setEditCourseData] = useState(null); // Store course data for editing
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // State for DeleteDialog
   const [courseIdToDelete, setCourseIdToDelete] = useState(null); // Track course to delete
@@ -50,8 +52,13 @@ const CoursesAdmin = () => {
 
   // Handlers for dropdown menu
   const handleEdit = (courseId) => {
-    console.log(`Editing course with ID: ${courseId}`);
-    navigate(`/edit-course/${courseId}`); // Navigate to edit page
+    const courseToEdit = courses.find((course) => course._id === courseId);
+    if (courseToEdit) {
+      console.log("courseToEdit in handleEdit:", courseToEdit); // Debug
+      setEditCourseData(courseToEdit);
+      setIsEditMode(true);
+      setIsModalOpen(true);
+    }
   };
 
   const handleDeleteCourse = (courseId) => {
@@ -82,6 +89,13 @@ const CoursesAdmin = () => {
     });
   };
 
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setIsEditMode(false); // Reset edit mode
+    setEditCourseData(null); // Clear edit data
+    fetchCoursesByProfessor(); // Refresh the course list
+  };
+
   const languageColors = {
     Javascript: { bg: "bg-yellow-100", text: "text-yellow-700" },
     Python: { bg: "bg-blue-100", text: "text-blue-700" },
@@ -100,7 +114,11 @@ const CoursesAdmin = () => {
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen} modal>
               <DialogTrigger asChild>
                 <Button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => {
+                    setIsEditMode(false); // Ensure create mode
+                    setEditCourseData(null); // Clear edit data
+                    setIsModalOpen(true);
+                  }}
                   className="bg-purple-700 hover:bg-purple-800 p-5 rounded-md sm:hidden"
                 >
                   <Plus className="w-5 h-5" />
@@ -108,7 +126,11 @@ const CoursesAdmin = () => {
               </DialogTrigger>
               <DialogTrigger asChild>
                 <Button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => {
+                    setIsEditMode(false); // Ensure create mode
+                    setEditCourseData(null); // Clear edit data
+                    setIsModalOpen(true);
+                  }}
                   className="hidden sm:flex items-center bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -116,10 +138,9 @@ const CoursesAdmin = () => {
                 </Button>
               </DialogTrigger>
               <CourseModal
-                onClose={() => {
-                  setIsModalOpen(false);
-                  fetchCoursesByProfessor();
-                }}
+                onClose={handleModalClose}
+                isEditMode={isEditMode}
+                courseData={editCourseData}
               />
             </Dialog>
           </div>

@@ -84,7 +84,10 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.put(`${API_URL}/${courseId}`, updatedData);
+      const response = await axios.put(
+        `${API_URL}/update/${courseId}`,
+        updatedData
+      );
       set((state) => ({
         courses: state.courses.map((course) =>
           course._id === courseId ? response.data.updatedCourse : course

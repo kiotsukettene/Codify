@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DialogContent,
@@ -29,7 +29,7 @@ const daysOfWeek = [
   "Sunday",
 ];
 
-const CourseModal = ({ onClose }) => {
+const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
   const [formValues, setFormValues] = useState({
     className: "",
     description: "",
@@ -55,13 +55,27 @@ const CourseModal = ({ onClose }) => {
   });
 
   // Get data and methods from stores
-  const { createCourse } = useCourseStore();
+  const { createCourse, updateCourse } = useCourseStore();
   const { professors, fetchProfessors, isLoading, error } = useprofAuthStore();
 
-  // Fetch professors when the modal mounts
+  // Fetch professors and prepopulate form if editing
   useEffect(() => {
     fetchProfessors();
-  }, [fetchProfessors]);
+    if (isEditMode && courseData) {
+      console.log("courseData received in CourseModal:", courseData); // Debug
+      setFormValues({
+        className: courseData.className || "",
+        description: courseData.description || "",
+        program: courseData.program || "",
+        year: courseData.year || "",
+        section: courseData.section || "",
+        professor: courseData.professorId || "",
+        programmingLanguage: courseData.language || "",
+        day: courseData.schedule?.day || "",
+        time: courseData.schedule?.time || "",
+      });
+    }
+  }, [fetchProfessors, isEditMode, courseData]);
 
   const validateForm = () => {
     let valid = true;
@@ -182,13 +196,13 @@ const CourseModal = ({ onClose }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      const courseData = {
+      const updatedCourseData = {
         className: formValues.className,
         description: formValues.description,
         program: formValues.program,
         year: formValues.year,
         section: formValues.section,
-        professorId: formValues.professor, // Now a valid ObjectId from store
+        professorId: formValues.professor,
         language: formValues.programmingLanguage,
         schedule: {
           day: formValues.day,
@@ -196,9 +210,18 @@ const CourseModal = ({ onClose }) => {
         },
       };
 
-      console.log("Sending courseData:", courseData); // Debug payload
+      console.log("Submitting updatedCourseData:", updatedCourseData);
       try {
-        await createCourse(courseData);
+        if (isEditMode) {
+          const courseId = courseData?._id; // Use the original courseData's _id
+          if (!courseId) {
+            throw new Error("Course ID is undefined in edit mode");
+          }
+          console.log("Calling updateCourse with ID:", courseId);
+          await updateCourse(courseId, updatedCourseData);
+        } else {
+          await createCourse(updatedCourseData);
+        }
         setFormValues({
           className: "",
           description: "",
@@ -212,7 +235,10 @@ const CourseModal = ({ onClose }) => {
         });
         onClose();
       } catch (error) {
-        console.error("Error creating course:", error);
+        console.error(
+          `Error ${isEditMode ? "updating" : "creating"} course:`,
+          error
+        );
       }
     }
   };
@@ -221,8 +247,17 @@ const CourseModal = ({ onClose }) => {
     <DialogContent className="max-w-[320px] sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <Plus className="h-5 w-5 text-purple-500" />
-          Create Course
+          {isEditMode ? (
+            <>
+              <Pencil className="h-5 w-5 text-purple-500" />
+              Edit Course
+            </>
+          ) : (
+            <>
+              <Plus className="h-5 w-5 text-purple-500" />
+              Create Course
+            </>
+          )}
         </DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -388,7 +423,8 @@ const CourseModal = ({ onClose }) => {
               Day
             </label>
             <Select
-              name="day"
+              name
+              W="day"
               value={formValues.day}
               onValueChange={handleSelectChange("day")}
             >
@@ -446,7 +482,7 @@ const CourseModal = ({ onClose }) => {
             className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:pointer-events-none text-sm sm:text-base"
             disabled={!isFormComplete || isLoading}
           >
-            Save
+            {isEditMode ? "Update" : "Save"}
           </Button>
         </div>
       </form>
