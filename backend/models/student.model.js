@@ -58,6 +58,41 @@ const studentSchema = new mongoose.Schema(
         codeSubmitted: String,
       }
     ],
+    events:[
+      {
+        id:{
+          type: String,
+          required: true,
+        },
+        title: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        start: {
+          type: Date,
+          required: true,
+        },
+        end: {
+          type: Date,
+          required: false, 
+        },
+        priority: {
+          type: String,
+          required: true,
+          enum: ["Low", "Medium", "High"],
+        },
+        allDay: {
+          type: Boolean,
+          default: false, 
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      }
+    ],
+    
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
     // verificationToken: String,
@@ -66,4 +101,6 @@ const studentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 studentSchema.index({ email: 1, institution: 1 }, { unique: true });
+
+studentSchema.index({"events.start": 1, "events.end": 1});
 export const Student = mongoose.model("Student", studentSchema);

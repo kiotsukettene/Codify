@@ -122,25 +122,7 @@ export function EventHoverCard({ event }) {
 
           <Separator className="bg-blue-100/50" />
 
-          {/*===================== Actions Button ======================*/}
-          <div className="flex justify-end gap-2">
-            {/* <Button
-              variant="outline"
-              size="sm"
-              className="text-sm hover:bg-blue-50 transition-colors"
-            >
-              Edit
-            </Button> */}
-            <Button
-              size="sm"
-              className="text-sm text-white bg-primary border-0"
-              onClick={() => {
-                event.event.setExtendedProp("completed", !isCompleted);
-              }}
-            >
-              {isCompleted ? "Completed ✨" : "Mark Complete"}
-            </Button>
-          </div>
+         
         </div>
       </HoverCardContent>
     </HoverCard>
