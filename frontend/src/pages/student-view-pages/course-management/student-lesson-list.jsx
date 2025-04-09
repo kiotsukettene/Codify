@@ -70,8 +70,8 @@ function StudentLessonListPage() {
             {/* Lesson Overview Card */}
             <Card className="bg-[#F5F5FF] shadow-none border-none rounded-sm py-4 px-6">
               <CardHeader className="text-header text-4xl font-semibold">
-                <Flower size={60} color="#1E87F0" />
-                <CardTitle className="text-4xl text-neutral-900">
+                <Flower size={60} color="#1E87F0" className="items-center flex justify-center mx-auto lg:items-start lg:justify-normal lg:mx-0" />
+                <CardTitle className="text-4xl text-neutral-900 text-center mx-auto font-semibold mt-4 lg:text-left lg:mx-0">
                   {currentCourse?.className}
                 </CardTitle>
                 <CardDescription className="font-normal mt-2 text-base text-justify">
@@ -79,7 +79,7 @@ function StudentLessonListPage() {
                 </CardDescription>
               </CardHeader>
 
-              <CardFooter className="flex w-full mx-auto gap-3 mt-4">
+              <CardFooter className="flex w-full mx-auto gap-3 mt-4 flex-col lg:flex-row ">
                 <Button onClick={handleAdventureClick}>
                   Start Your Learning Adventure 📚
                 </Button>
@@ -105,49 +105,49 @@ function StudentLessonListPage() {
 
             {/* Instructor Information */}
             <div className="mt-5">
-              <Card className="shadow-none border-none">
-                <div className="flex-row">
-                  <CardHeader className="flex">
-                    <div className="flex">
-                      <Avatar>
-                        <AvatarFallback />
-                      </Avatar>
-                      <div className="flex flex-col space-y-2 ml-3">
-                        <Label>Professor {currentCourse?.professorId?.firstName} {currentCourse?.professorId?.lastName || lessonOverview.professor.name}</Label>
-                        <Label className="font-light">
-                          Class Code: {currentCourse?.courseCode || lessonOverview.professor.courseCode}
-                        </Label>
-                      </div>
-                      <div className="flex ml-auto items-center text-center justify-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className="font-medium gap-2 bg-gray-100 text-gray-700 py-1"
-                        >
-                          <Star size={16} /> {lessonList.length || lessonOverview.stats.totalLessons}{" "}
-                          Lessons
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="font-medium gap-2 bg-gray-100 text-gray-700 py-1"
-                        >
-                          <GraduationCap size={16} />
-                          {currentCourse?.studentsEnrolled?.length || lessonOverview.stats.totalStudents} Students
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
+  <Card className="shadow-none border-none">
+    <div className="flex flex-col">
+      <CardHeader className="flex lg:flex-row lg:items-center lg:justify-between flex-col items-center">
+        <div className="flex flex-row items-center">
+          <Avatar>
+            <AvatarFallback />
+          </Avatar>
+          <div className="flex flex-col space-y-2 ml-3 items-center lg:items-start">
+            <Label>Professor {currentCourse?.professorId?.firstName} {currentCourse?.professorId?.lastName || lessonOverview.professor.name}</Label>
+            <Label className="font-light">
+              Class Code: {currentCourse?.courseCode || lessonOverview.professor.courseCode}
+            </Label>
+          </div>
+        </div>
 
-                  <CardContent>
-                    <CardTitle className="text-lg font-semibold text-neutral-900 mt-4">
-                      Course Description
-                    </CardTitle>
-                    <CardDescription className="text-md text-justify font-light mt-6 leading-relaxed">
-                      {currentCourse?.description || lessonOverview.description}
-                    </CardDescription>
-                  </CardContent>
-                </div>
-              </Card>
-            </div>
+        <div className="flex items-center gap-2 lg:gap-4 ">
+          <Badge
+            variant="outline"
+            className="font-medium gap-2 bg-gray-100 text-gray-700 py-1"
+          >
+            <Star size={16} /> {lessonList.length || lessonOverview.stats.totalLessons} Lessons
+          </Badge>
+          <Badge
+            variant="outline"
+            className="font-medium gap-2 bg-gray-100 text-gray-700 py-1"
+          >
+            <GraduationCap size={16} />
+            {currentCourse?.studentsEnrolled?.length || lessonOverview.stats.totalStudents} Students
+          </Badge>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <CardTitle className="text-lg font-semibold text-neutral-900 mt-2 text-center lg:mt-4 lg:text-left">
+          Course Description
+        </CardTitle>
+        <CardDescription className="lg:text-md font-light lg:mt-6 mt-2 leading-relaxed text-center lg:text-justify">
+          {currentCourse?.description || lessonOverview.description}
+        </CardDescription>
+      </CardContent>
+    </div>
+  </Card>
+</div>
           </div>
         </div>
 

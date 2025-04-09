@@ -7,24 +7,38 @@ import { Button } from "../ui/button";
 import { FolderClosed } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const StudentTaskCard = ({ subject, activity, dueDate, status, isCompleted, }) => {
+const StudentTaskCard = ({
+  subject,
+  activity,
+  dueDate,
+  status,
+  isCompleted,
+}) => {
+  const handleViewDetails = () => {
+    // Use activity title slugified or an ID; adjust based on your data
+    const activitySlug = activity.toLowerCase().replace(/\s+/g, "-");
+    navigate(`/student/activity/${activitySlug}`); // Redirect to StudentActivityPage
+  };
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return (
     <div className="bg-white py-4 px-6 rounded-xl">
       {/* =============== CARD HEADER (Icon & Status) ==================== */}
       <div className="flex items-center justify-between">
         <img src={planet} alt="" />
-       <Badge
-  className={`px-2 py-1 rounded-full text-xs font-medium 
-    ${isCompleted ? "bg-green-100 text-green-700" : 
-    status === "Missing" ? "bg-red-100 text-red-700" : 
-    "bg-gray-100 text-gray-700"}
+        <Badge
+          className={`px-2 py-1 rounded-full text-xs font-medium 
+    ${
+      isCompleted
+        ? "bg-green-100 text-green-700"
+        : status === "Missing"
+        ? "bg-red-100 text-red-700"
+        : "bg-gray-100 text-gray-700"
+    }
   `}
->
-  {status}
-</Badge>
-
+        >
+          {status}
+        </Badge>
       </div>
 
       {/* =============== SUBJECT, ACTIVITY, DEADLINE ==================== */}
@@ -38,7 +52,7 @@ const StudentTaskCard = ({ subject, activity, dueDate, status, isCompleted, }) =
 
       <div className="flex justify-end mt-3">
         <Button
-          onClick={() => navigate("/student/activity")}
+          onClick={handleViewDetails}
           variant="link"
           className="text-gray-600 hover:text-primary flex items-center"
         >

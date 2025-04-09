@@ -71,9 +71,9 @@ function StudentCalendar() {
   ];
   
   return (
-    <div className="flex h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
+    <div className="flex flex-col md:flex-row lg:flex-row h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
       {/* Left Sidebar */}
-      <div className="w-64 border-r border-blue-200 flex flex-col bg-white/50 backdrop-blur-sm">
+      <div className="w-auto border-r border-blue-200 flex flex-col bg-white/50 backdrop-blur-sm">
         <div className="p-4 border-b border-blue-200">
           <Button
             className="w-full bg-primary text-white"

@@ -21,45 +21,52 @@ import { useStudentStore } from "@/store/studentStore";
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
-  const { enrolledCourses, fetchEnrolledCourses, isLoading} = useStudentCourseStore();
+  const { enrolledCourses, fetchEnrolledCourses, isLoading } =
+    useStudentCourseStore();
   const { student } = useStudentStore();
-
 
   useEffect(() => {
     fetchEnrolledCourses();
-  }, [fetchEnrolledCourses])
+  }, [fetchEnrolledCourses]);
 
   console.log("Enrolled Courses:", enrolledCourses); // Debugging line
   return (
     <div className="mx-6 w-full py-4">
-      <Card className="h-[272px] w-full bg-[#ededff]  shadow-none border-none flex justify-between relative overflow-hidden rounded-xl">
+      <Card className="h-auto w-full bg-[#ededff]  shadow-none border-none flex lg:justify-between relative overflow-hidden rounded-xl">
         {/* Left Content */}
         <div className="z-10 p-8">
-          <CardHeader className="text-header text-3xl font-semibold">
+          <CardHeader className="text-header text-4xl font-semibold text-center md:text-left">
             Hi, {student.firstName} Ready to Learn?
-            <span className="text-base font-normal mt-1">
+            <span className="text-base font-normal mt-1 ">
               Continue your learning journey. Let’s go!
             </span>
           </CardHeader>
 
-          <CardContent className="flex gap-4 mt-4 text-header font-medium">
+          <CardContent className="flex flex-col items-left gap-4 mt-4 text-header font-medium md:flex-row ">
+            <div className="flex flex-row gap-4">
             <BookOpenCheck />
             <h4>{enrolledCourses.length} Courses</h4>
+            </div>
             <Separator orientation="vertical" />
-            <Users />
-            <h4>Multiple Professors</h4>
+           <div className="flex flex-row gap-4">
+           <Users />
+           <h4>Multiple Professors</h4>
+           </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className='items-center justify-center mt-4 md:items-start md:justify-start'>
             <Button onClick={() => setJoinCourse(true)}>Join Course 🚀</Button>
           </CardFooter>
 
           {/* ==============================================
             ============MODAL FOR JOIN COURSE CODE ===========
             ==================================================*/}
-          <JoinCourseModal isOpen={joinCourse} onClose={() => setJoinCourse(false)} />
+          <JoinCourseModal
+            isOpen={joinCourse}
+            onClose={() => setJoinCourse(false)}
+          />
         </div>
 
-        <div className="relative w-[50%] h-full ml-auto">
+        <div className=" w-auto h-full ml-auto opacity-10 lg:opacity-100 md:opacity-100">
           <img
             src={header}
             alt=""
@@ -68,7 +75,7 @@ function StudentCourseListPage() {
         </div>
       </Card>
 
-      <div className="flex px-8 text-center justify-between items-center">
+      <div className="flex flex-col px-8 text-center justify-between items-center mt-5 md:flex-row">
         <h1 className="text-header font-semibold text-4xl">My Courses</h1>
         <SearchForm />
       </div>
@@ -84,7 +91,11 @@ function StudentCourseListPage() {
               image={course.image || "https://via.placeholder.com/150"}
               title={course.className}
               professor={`${course.professorId?.firstName} ${course.professorId?.lastName}`}
-              schedule={`${course.schedule.day.charAt(0).toUpperCase()}${course.schedule.day.slice(1)} | ${course.schedule.time}`}
+              schedule={`${course.schedule.day
+                .charAt(0)
+                .toUpperCase()}${course.schedule.day.slice(1)} | ${
+                course.schedule.time
+              }`}
               tags={[course.program, course.language]}
               onClick={() => navigate(`/student/lesson-list/${course._id}`)}
             />
