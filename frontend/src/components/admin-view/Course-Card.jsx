@@ -25,23 +25,21 @@ export default function CourseCard({
   onDelete, // Prop for delete action
 }) {
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card className="overflow-hidden transition-all w-80 hover:shadow-md">
       <CardHeader className="bg-slate-50 pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-bold text-lg line-clamp-2">{title}</h3>
+            <h3 className="font-bold text-lg line-clamp-2  text-purple-700">
+              {title}
+            </h3>
             <p className="text-sm text-muted-foreground">
               {program} • Section {section}
             </p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white h-8 w-8 p-0"
-              >
-                <Ellipsis className="h-4 w-4" />
+              <Button className="bg-slate-50 pb-2 hover:bg-purple-50" size="sm">
+                <Ellipsis className="h-4 w-4 text-zinc-950" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -51,7 +49,7 @@ export default function CourseCard({
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className="pt-4 bg-slate-50 ">
         <div className="flex items-center gap-1 text-muted-foreground mb-3">
           <Book className="h-4 w-4" />
           <span className="text-sm">{lessonCount} Lessons</span>
