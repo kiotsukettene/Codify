@@ -34,6 +34,7 @@ import ProfessorList from "./pages/admin-view-pages/admin-professor/Professor";
 import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor";
 import StudentList from "./pages/admin-view-pages/admin-student/Student";
 import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
+import CoursesAdmin from "./pages/admin-view-pages/courses";
 
 // Professor Pages
 import { useprofAuthStore } from "@/store/profAuthStore";
@@ -106,6 +107,14 @@ function App() {
     <div>
       <Routes>
         <Route path="/battle" element={<CodeBattle />} />
+        <Route
+            path="/admin/payment-success"
+            element={
+              <ProtectedRouteInstitution>
+                <PaymentSuccess />
+              </ProtectedRouteInstitution>
+            }
+          />
 
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
@@ -164,14 +173,6 @@ function App() {
             element={
               <ProtectedRouteInstitution>
                 <PaymentSummary />
-              </ProtectedRouteInstitution>
-            }
-          />
-          <Route
-            path="/admin/payment-success"
-            element={
-              <ProtectedRouteInstitution>
-                <PaymentSuccess />
               </ProtectedRouteInstitution>
             }
           />
@@ -383,6 +384,14 @@ function App() {
             element={
               <ProtectedRouteInstitution>
                 <AddStudent />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="courses"
+            element={
+              <ProtectedRouteInstitution>
+                <CoursesAdmin />
               </ProtectedRouteInstitution>
             }
           />

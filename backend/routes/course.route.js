@@ -1,17 +1,17 @@
 import express from "express";
 import {
   createCourse,
-  getCoursesByProfessor,
+  getCoursesByInstitution,
   getCourseById,
   updateCourse,
   deleteCourse,
 } from "../controllers/course.controller.js";
-import { profVerifyToken } from "../middleware/professorVerifyToken.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-router.post("/create", profVerifyToken, createCourse);
-router.get("/courses", profVerifyToken, getCoursesByProfessor);
+router.post("/create", verifyToken, createCourse);
+router.get("/courses", verifyToken, getCoursesByInstitution);
 router.get("/course/:courseId", getCourseById);
 router.put("/update/:courseId", updateCourse);
 router.delete("/delete/:courseId", deleteCourse);

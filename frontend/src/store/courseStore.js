@@ -2,12 +2,10 @@ import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
   ? "http://localhost:3000/api/courses" // Local backend
   : `${import.meta.env.VITE_API_URL}/api/courses`; // Production backend
-
 
 axios.defaults.withCredentials = true;
 export const useCourseStore = create((set) => ({
@@ -51,7 +49,6 @@ export const useCourseStore = create((set) => ({
   // Create a new course
   createCourse: async (courseData) => {
     set({ isLoading: true, error: null });
-
     try {
       const response = await axios.post(`${API_URL}/create`, courseData);
       set((state) => ({
@@ -68,12 +65,29 @@ export const useCourseStore = create((set) => ({
     }
   },
 
+  fetchCoursesByInstitution: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/courses`);
+      set({ courses: response.data, isLoading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error fetching courses",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error fetching courses");
+    }
+  },
+
   // Update an existing course
   updateCourse: async (courseId, updatedData) => {
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.put(`${API_URL}/${courseId}`, updatedData);
+      const response = await axios.put(
+        `${API_URL}/update/${courseId}`,
+        updatedData
+      );
       set((state) => ({
         courses: state.courses.map((course) =>
           course._id === courseId ? response.data.updatedCourse : course
