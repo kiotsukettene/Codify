@@ -19,14 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import AppSidebar from "@/components/professor-view/Sidebar";
-import confetti from "canvas-confetti";
 import { isBefore, startOfToday } from "date-fns";
 import { toast } from "react-hot-toast";
 import {
@@ -236,8 +228,7 @@ const CreateActivity = () => {
   }
 
   return (
-
-          <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
+          <div className="w-full p-2">
             <div className="col-span-12 lg:col-span-9">
               <Card className="border-0 shadow-none">
                 <CardContent className="p-0">
@@ -263,7 +254,6 @@ const CreateActivity = () => {
                               <Button
                                 className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
                                 onClick={() => {
-                                  console.log("Button clicked"); // ✅ This should log when clicked
                                   handleSubmit();
                                 }}
                                 disabled={isUploading || !isFormValid}
@@ -291,27 +281,27 @@ const CreateActivity = () => {
 
                   {/* TITLE AND INSTRUCTION */}
                   <div className="space-y-2">
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                  <label className="block text-sm sm:text-base font-medium text-gray-700">
                        Title
                   </label>
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Title"
-                      className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 "
+                      className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 placeholder:text-sm "
                     />
-                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                     <label className="block text-sm sm:text-base font-medium text-gray-700">
                       Description
                   </label>
                     <Input
                       value={subtitle}
                       onChange={(e) => setSubtitle(e.target.value)}
                       placeholder="Activity Description"
-                      className="text-balance border-purple-100 px-4 focus-visible:ring-0"
+                      className="text-balance border-purple-100 px-4 focus-visible:ring-0 placeholder:text-sm"
                     />
 
                     <div className="space-y-2">
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                    <label className="block text-sm sm:text-base font-medium text-gray-700">
                       Instruction
                   </label>
                       <ToggleGroup
@@ -341,7 +331,7 @@ const CreateActivity = () => {
                         value={instruction}
                         onChange={(e) => setInstruction(e.target.value)}
                         placeholder="Instruction"
-                        className="min-h-[300px] border border-purple-100 px-4 focus-visible:ring-0 placeholder:text-gray-400 resize-none"
+                        className="min-h-[300px] border border-purple-100 px-4 focus-visible:ring-0 placeholder:text-gray-400 resize-none placeholder:text-sm"
                         style={{
                           fontWeight: textFormat.includes("bold")
                             ? "bold"

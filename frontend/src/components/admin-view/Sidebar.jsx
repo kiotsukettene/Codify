@@ -63,7 +63,7 @@ const data = {
 
 function AppSidebar() {
   return (
-    <Sidebar className="w-64 h-screen border-r mt-2  flex flex-col">
+    <Sidebar className="w-72 h-screen border-r flex flex-col mt-2">
       <SidebarHeader className="border-b border-gray-200 pl-6">
       <Link to="/admin/dashboard">
            <img src={Logo} className="w-26 h-auto" alt="Logo" />

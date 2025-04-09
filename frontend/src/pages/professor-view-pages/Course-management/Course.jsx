@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Card from "@/components/professor-view/Course-Card";
-import { Plus } from "lucide-react";
+import { Plus, BookX} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -10,16 +10,16 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import AppSidebar from "@/components/professor-view/Sidebar";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CourseModal from "@/components/professor-view/Add-Course-Modal";
 import { useCourseStore } from "@/store/courseStore";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
 
 const Courses = () => {
-  const { courses, fetchCoursesByProfessor, isLoading } = useCourseStore();
   const navigate = useNavigate();
+  const { courses, fetchCoursesByProfessor, isLoading } = useCourseStore();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [selectedLanguage, setSelectedLanguage] = useState([]);
@@ -63,7 +63,6 @@ const Courses = () => {
     "Java": { bg: 'bg-indigo-100', text: 'text-indigo-700' },
 };
 
-  
 
   // Navigate to course details page
   const handleCourseClick = (course) => {
@@ -72,7 +71,11 @@ const Courses = () => {
 
   return (
     <div className="w-full p-2 sm:p-6">
-    <div className="pb-10">
+    <motion.div 
+     initial={{ opacity: 0, y: 20 }}
+     animate={{ opacity: 1, y: 0 }}
+     transition={{ duration: 0.6, ease: "easeOut" }}
+     className="pb-10">
       <div className="w-full flex items-center justify-between mb-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">
           Courses
@@ -131,49 +134,57 @@ const Courses = () => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
     {/* Card Courses */}
 
-              <div
-                className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 transition-all duration-300 ${
-                  isSidebarOpen
-                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
-                }`}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center w-full min-h-[50vh]">
-                    <p className="text-gray-500 text-base text-center">
-                      Loading courses...
-                    </p>
-                  </div>
-                ) : currentCourses.length > 0 ? (
-                  currentCourses.map((course, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleCourseClick(course)}
-                      className="cursor-pointer transition duration-200"
-                    >
-                      <Card
-                        key={course._id}
-                        courseId={course._id} // ✅ Pass courseId here
-                        lessonCount={course.lessonCount || 0}
-                        languages={course.language}
-                        title={course.className}
-                        courseCode={course.courseCode}
-                        section={course.section}
-                        students={course.studentCount}
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <div className="flex items-center justify-center w-full min-h-[50vh]">
-                    <p className="text-gray-500 text-base text-center">
-                      No courses found.
-                    </p>
-                  </div>
-                )}
-              </div>
+    {isLoading ? (
+  <div className="flex items-center justify-center w-full min-h-[50vh]">
+    <p className="text-gray-500 text-base text-center">
+      Loading courses...
+    </p>
+  </div>
+) : currentCourses.length > 0 ? (
+  <motion.div
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+    className={`grid gap-8 sm:gap-12 transition-all duration-300 ${
+      isSidebarOpen
+        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
+    }`}
+  >
+    {currentCourses.map((course, index) => (
+      <div
+        key={index}
+        onClick={() => handleCourseClick(course)}
+        className="cursor-pointer transition duration-200"
+      >
+        <Card
+          key={course._id}
+          courseId={course._id}
+          lessonCount={course.lessonCount || 0}
+          languages={course.language}
+          title={course.className}
+          courseCode={course.courseCode}
+          section={course.section}
+          students={course.studentCount}
+        />
+      </div>
+    ))}
+  </motion.div>
+) : (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.4 }}
+    className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
+  >
+    <BookX size={60} className="text-gray-400 mb-2" />
+    <p className="text-gray-500 text-lg font-medium">No courses found.</p>
+  </motion.div>
+)}
+
               {/* Pagination */}
               <div className="flex justify-center mt-8">
                 <Pagination>

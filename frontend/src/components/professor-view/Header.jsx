@@ -1,25 +1,35 @@
+import { ssrImportKey } from "vite/module-runner";
 import { Button } from "../ui/button";
 import SearchBar from "./searchBar";
-import books from "@/assets/picture/random-background/bookprofheader.png";
+import ProfHeader from "@/assets/picture/random-background/ProfHeader.png";
 //import { useCourseStore } from "@/store/courseStore";
 import { useprofAuthStore } from "@/store/profAuthStore";
+import { motion } from "framer-motion";
+
+
 
 const Header = () => {
   const { professor } = useprofAuthStore();
-
   const professorName = professor ? professor.firstName : "professor";
+  
   return (
-    <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+    <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}   
+    className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
       {/* Left Section */}
       <div className="flex items-center text-left gap-4 w-full md:w-auto">
-        {/* <div className="p-2 bg-white rounded-lg flex-shrink-0">
-          <img
-            src={books}
-            alt="Professor"
-            className="w-20 h-20 object-cover rounded-lg md:w-32 md:h-32"
-          />
-        </div> */}
         <div>
+          <img
+            src={ProfHeader}
+            alt="Professor"
+            className="w-12 h-12 md:w-16 md:h-16"
+          />
+        </div>
+
+        <div>
+        
           <h1 className="text-xl md:text-2xl font-semibold">
             Welcome back, Prof. Irheil!
           </h1>
@@ -36,7 +46,7 @@ const Header = () => {
           Create New Course
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -174,11 +174,13 @@ function AddProfessor({ onClose }) {
                 value={formData.firstName}
                 onChange={handleChange}
               />
+               <div className="h-1">
               {errors.firstName && (
                 <p className="text-red-500 text-sm">{errors.firstName}</p>
               )}
+              </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2">
               <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
@@ -187,13 +189,15 @@ function AddProfessor({ onClose }) {
                 value={formData.lastName}
                 onChange={handleChange}
               />
+              <div className="h-1">
               {errors.lastName && (
                 <p className="text-red-500 text-sm">{errors.lastName}</p>
               )}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -202,8 +206,11 @@ function AddProfessor({ onClose }) {
               value={formData.email} // Fixed typo: was "vvalue"
               onChange={handleChange}
             />
+              <div className="h-1">
             {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            </div>
           </div>
+
 
           <div className="flex justify-end space-x-4 pt-4">
             <Button type="button" onClick={handleCancel} variant="outline">

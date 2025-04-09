@@ -19,6 +19,7 @@ import { useprofAuthStore } from "@/store/profAuthStore";
 import { toast } from "react-hot-toast";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import AddProfessor from "../admin-professor/Add-Professor";
+import { motion } from "framer-motion";
 
 function ProfessorList() {
   const { professors, fetchProfessors, deleteProfessor, isLoading, error } =
@@ -36,16 +37,25 @@ function ProfessorList() {
 
   return (
     <div className="flex flex-1 flex-col w-full h-full p-6 mt-4 bg-white rounded-lg">
+      <motion.div
+       initial={{ x: 50, opacity: 0 }}
+       animate={{ x: 0, opacity: 1 }}
+       transition={{ duration: 0.6, ease: "anticipate" }}
+      >
       <h1 className="text-3xl font-semibold text-neutral-900">
         Professors Management
       </h1>
-      <h4 className="pt-3 font-normal">
+      <h4 className="pb-6 pt-1 font-normal">
         Manage and view the list of professors.
       </h4>
+      </motion.div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
-        <main className="flex-1 w-full">
+      <motion.div 
+       initial={{ opacity: 0, y: 20 }}
+       animate={{ opacity: 1, y: 0 }}
+       transition={{ duration: 0.6, ease: "easeOut" }}
+      className="flex-1 flex flex-col w-full h-full overflow-auto">
           <Card className="w-full">
             <CardHeader>
               <CardDescription className="flex items-center gap-4 mx-auto w-full justify-end">
@@ -57,7 +67,7 @@ function ProfessorList() {
                   <DialogTrigger asChild>
                     <Button
                       onClick={() => setIsModalOpen(true)}
-                      className="bg-neutral-900 text-white hover:bg-neutral-700"
+                      className="bg-purple-600 text-white hover:bg-neutral-700"
                     >
                       <Plus /> Register New Professor
                     </Button>
@@ -129,8 +139,7 @@ function ProfessorList() {
               </>
             )}
           </Card>
-        </main>
-      </div>
+      </motion.div>
     </div>
   );
 }

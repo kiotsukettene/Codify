@@ -57,7 +57,7 @@ const CourseModal = ({ onClose }) => {
   });
 
   // Get createCourse function from the store
-  const createCourse = useCourseStore((state) => state.createCourse);
+const createCourse = useCourseStore((state) => state.createCourse);
 
   const validateForm = () => {
     let valid = true;

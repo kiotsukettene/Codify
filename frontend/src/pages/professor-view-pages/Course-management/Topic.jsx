@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Activity, ChevronRight, MessageSquare, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import lion from "@/assets/picture/Avatar/Lion.png";
-import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
@@ -103,7 +102,7 @@ const Topic = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 grid grid-cols-12 gap-6">
+    <div className="w-full p-4">
       <div className="col-span-12 lg:col-span-8 space-y-4">
         <div className="flex items-center gap-x-4">
           <Button
@@ -115,33 +114,8 @@ const Topic = () => {
           </Button>
           <h1 className="text-3xl font-bold">{lesson.title}</h1>
         </div>
-        <p className="text-base text-gray-700 dark:text-gray-300">{lesson.subTitle}</p>
-        {sections.map((section, index) => (
-          <section key={index} id={section.id || section._id} className="mb-8">
-            <h2 className="text-lg font-medium mb-2">{section.subTitle}</h2>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{section.description}</p>
-            {section.codeSnippets?.length > 0 && (
-              <div className="relative bg-[#1e1e1e] rounded-lg mb-6 overflow-hidden">
-                <pre className="p-4 pt-8 font-mono text-xs text-purple-200">
-                  <code>{section.codeSnippets.join("\n")}</code>
-                </pre>
-              </div>
-            )}
-            {section.notes?.length > 0 && (
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                <h3 className="font-semibold text-sm mb-2">Notes:</h3>
-                <ul className="list-disc list-inside text-xs text-gray-600 dark:text-gray-300">
-                  {section.notes.map((note, i) => (
-                    <li key={i}>{note}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-        ))}
-      </div>
 
-      <div className="col-span-12 lg:col-span-4 space-y-6">
+        <div className="col-span-12 lg:col-span-4 space-y-6">
         <Card className="transition-shadow duration-300">
           <CardContent className="p-6">
             <motion.div
@@ -265,6 +239,37 @@ const Topic = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      
+        <p className="text-base text-gray-700 dark:text-gray-300">{lesson.subTitle}</p>
+        {sections.map((section, index) => (
+          <section key={index} id={section.id || section._id} className="mb-8">
+            <h2 className="text-lg font-medium mb-2">{section.subTitle}</h2>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{section.description}</p>
+            {section.codeSnippets?.length > 0 && (
+              <div className="relative bg-[#1e1e1e] rounded-lg mb-6 overflow-hidden">
+                <pre className="p-4 pt-8 font-mono text-xs text-purple-200">
+                  <code>{section.codeSnippets.join("\n")}</code>
+                </pre>
+              </div>
+            )}
+            {section.notes?.length > 0 && (
+              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                <h3 className="font-semibold text-sm mb-2">Notes:</h3>
+                <ul className="list-disc list-inside text-xs text-gray-600 dark:text-gray-300">
+                  {section.notes.map((note, i) => (
+                    <li key={i}>{note}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        ))}
+      </div>
+
+    
+
+
     </div>
   );
 };

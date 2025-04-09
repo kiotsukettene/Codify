@@ -5,30 +5,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import useToggleVisibility from '@/hooks/use-toggle-visibility'
 import {  Eye, EyeOff, Loader } from 'lucide-react'
-import union from "@/assets/picture/random-background/Union.png"
-import pinkFlower from "@/assets/picture/random-background/pink-flower.png"
-import blueFlower from "@/assets/picture/random-background/blue-flower.png"
-import purpleFlower from "@/assets/picture/random-background/Purple-flower.png"
-import arrow from "@/assets/picture/random-background/arrow.png"
-import mascot from "@/assets/picture/random-background/Mascot.png"
-import { Form } from '@/components/ui/form'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStudentStore } from '@/store/studentStore'
 import { useState } from 'react'
 import axios from "axios";
 import toast from "react-hot-toast";
+import ProfBg1 from '@/components/Auth/Prof-Bg-1'
 
 function StudentLoginPage() {
     const [isVisible, toggleVisibility] = useToggleVisibility()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const navigate = useNavigate()
-
-
     const { login, isLoading, error, loginWithGoogle } = useStudentStore()
-
-
     const handleLogin = async (e) => {
 
       e.preventDefault()
@@ -39,65 +29,23 @@ function StudentLoginPage() {
     }
 
 
-
-
 const handleGoogleSignIn = async () => {
   await loginWithGoogle();
   navigate("/student/dashboard", { replace: true });
 };
 
 
-    
     return (
-        <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center pt-12 overflow-hidden p-4">
-    
-          {/* Background Images */}
-          
-          <img 
-            src={pinkFlower}
-            alt="Pink Flower" 
-            className="absolute top-16 lg:top-32 left-[-28px] w-16 lg:w-32 opacity-90"
-          />
-          <img 
-            src={purpleFlower}
-            alt="Purple Flower" 
-            className="absolute bottom-[100px] left-[-30px] w-20 lg:w-52 opacity-90"
-          />
-          <img 
-            src={blueFlower}
-            alt="Blue Flower" 
-            className="absolute top-[250px] right-[-30px] w-16 lg:w-56 opacity-90"
-          />
-          <img 
-            src={union}
-            alt="Star" 
-            className="absolute top-10 right-96 w-10 lg:w-52"
-          />
-          <img 
-            src={arrow}
-            alt="Arrow" 
-            className="absolute top-10 left-24 w-10 lg:w-52"
-          />
-          <img 
-            src={arrow}
-            alt="Arrow" 
-            className="absolute bottom-20 left-44 w-10 lg:w-52"
-          />
-          <img 
-            src={arrow}
-            alt="Arrow" 
-            className="absolute bottom-20 right-0 w-20 lg:w-72 rotate-180"
-          />
-          <img 
-            src={mascot}
-            alt="Mascot" 
-            className="absolute bottom-[-150px] right-[-100px] w-72 lg:w-96"
-          />
+        <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center pt-12 overflow-hidden p-4"> 
+          {/* Background Images */}        
+          <ProfBg1 />
     
         {/* Login Card */}
-        
-        <Form onSubmit={handleLogin}>
-        <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
+        <motion.form onSubmit={handleLogin} className="w-full max-w-[450px]" 
+         initial={{ y: -200, opacity: 0 }}
+         animate={{ y: 0, opacity: 1 }}
+         transition={{ type: "spring", stiffness: 120, damping: 10 }}>
+        <Card className="p-6 sm:p-10 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
             <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
               Sign in
@@ -186,7 +134,7 @@ const handleGoogleSignIn = async () => {
         
           </CardContent>
         </Card>
-        </Form>
+        </motion.form>
       </div>
       )
 }
