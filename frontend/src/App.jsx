@@ -107,6 +107,14 @@ function App() {
     <div>
       <Routes>
         <Route path="/battle" element={<CodeBattle />} />
+        <Route
+            path="/admin/payment-success"
+            element={
+              <ProtectedRouteInstitution>
+                <PaymentSuccess />
+              </ProtectedRouteInstitution>
+            }
+          />
 
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
@@ -165,14 +173,6 @@ function App() {
             element={
               <ProtectedRouteInstitution>
                 <PaymentSummary />
-              </ProtectedRouteInstitution>
-            }
-          />
-          <Route
-            path="/admin/payment-success"
-            element={
-              <ProtectedRouteInstitution>
-                <PaymentSuccess />
               </ProtectedRouteInstitution>
             }
           />
