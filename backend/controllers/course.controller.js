@@ -4,37 +4,72 @@ import slugify from "slugify";
 
 export const createCourse = async (req, res) => {
   try {
-    // Destructure only the course data from the request body
-    const { className, description, program, section, language, schedule } =
-      req.body;
+    console.log("Request body:", req.body); // Debug incoming data
+    console.log("Institution ID from token:", req.institutionId); // Debug token
 
-    // Get professorId from the token attached by the middleware
-    const professorId = req.professorId;
-
-    // Generate a unique course code
-    let courseCode;
-    let isUnique = false;
-    while (!isUnique) {
-      courseCode = generateCourseCode();
-      const existingCourse = await Course.findOne({ courseCode });
-      if (!existingCourse) isUnique = true;
-    }
-
-    const slug = slugify(className, { lower: true, strict: true });
-
-    // Create new course with professorId from the token
-    const course = new Course({
-      professorId,
+    const {
       className,
       description,
       program,
+      year,
       section,
+      professorId,
+      language,
+      schedule,
+    } = req.body;
+
+    const institutionId = req.institutionId;
+    if (
+      !institutionId ||
+      !className ||
+      !description ||
+      !program ||
+      !year ||
+      !section ||
+      !professorId ||
+      !language ||
+      !schedule ||
+      !schedule.day ||
+      !schedule.time
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    let courseCode;
+    let isUnique = false;
+    let attempts = 0;
+    const maxAttempts = 10; // Prevent infinite loop
+    while (!isUnique && attempts < maxAttempts) {
+      courseCode = generateCourseCode();
+      console.log("Generated courseCode:", courseCode); // Debug
+      const existingCourse = await Course.findOne({ courseCode });
+      if (!existingCourse) isUnique = true;
+      attempts++;
+    }
+    if (!isUnique) {
+      return res
+        .status(500)
+        .json({ message: "Failed to generate unique course code" });
+    }
+
+    const slug = slugify(String(className), { lower: true, strict: true });
+    console.log("Generated slug:", slug); // Debug
+
+    const course = new Course({
+      institutionId,
+      className,
+      description,
+      program,
+      year,
+      section,
+      professorId,
       language,
       schedule,
       courseCode,
       slug,
     });
 
+    console.log("Course object before save:", course); // Debug
     await course.save();
 
     res.status(201).json({
@@ -43,6 +78,7 @@ export const createCourse = async (req, res) => {
       course,
     });
   } catch (error) {
+    console.error("Error in createCourse:", error); // Detailed error log
     res.status(500).json({
       message: "Error creating course",
       error: error.message,
@@ -50,6 +86,20 @@ export const createCourse = async (req, res) => {
   }
 };
 
+export const getCoursesByInstitution = async (req, res) => {
+  try {
+    const institutionId = req.institutionId;
+    const courses = await Course.find({ institutionId }).populate(
+      "lessonCount"
+    );
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching courses",
+      error: error.message,
+    });
+  }
+};
 // export const getCoursesByProfessor = async (req, res) => {
 //   try {
 //     const { professorId } = req.params;
@@ -81,15 +131,21 @@ export const getCoursesByProfessor = async (req, res) => {
 export const getCourseById = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const course = await Course.findById(courseId).populate({
-      path: "professorId",
-      select: "firstName lastName email", // ✅ Select only necessary fields
-    });
+    const course = await Course.findById(courseId)
+      .populate({
+        path: "professorId",
+        select: "firstName lastName email", // ✅ Select only necessary fields
+      })
+      .populate({
+        path: "studentsEnrolled", // Populate Students
+        select: "firstName lastName email studentId",
+      });
 
     if (!course) return res.status(404).json({ message: "Course not found" });
 
     console.log("Course Data:", course); // ✅ Debugging log
     console.log("Professor Data:", course.professorId); // ✅ Should contain firstName & lastName
+    console.log("Students Enrolled:", course.studentsEnrolled);
 
     res.status(200).json(course);
   } catch (error) {

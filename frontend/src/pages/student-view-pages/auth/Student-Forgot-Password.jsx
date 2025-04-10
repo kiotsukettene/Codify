@@ -39,17 +39,11 @@ function StudentForgotPasswordPage() {
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
     <div>
       {/* Background Images */}
-         <Link to="/">
-                <img 
-                  src={logo}
-                  alt="Logo" 
-                  className="absolute top-7 left-24 lg:left-10 lg:w-28" 
-                />
-                </Link>
+         
       <img
         src={Astro}
         alt="Mascot"
-        className="absolute top-10 right-[-120px] w-60 lg:w-96 opacity-90 -rotate-12"
+        className="absolute top-14 right-[-120px] w-60 lg:w-96 opacity-90 -rotate-12"
       />
       <img
         src={FiveStar}

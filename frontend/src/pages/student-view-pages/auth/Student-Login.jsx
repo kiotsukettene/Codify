@@ -168,13 +168,13 @@ const handleGoogleSignIn = async () => {
     
         
            <div className="pt-4 space-y-3 w-full">
-           <motion.button onClick={handleLogin} className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#7C3AED] hover:bg-[#6D28D9] rounded-md text-white" 
+           <motion.button onClick={handleLogin} className="w-full h-10  justify-center items-center text-center  sm:h-12 text-sm sm:text-[15px] bg-[#7C3AED] hover:bg-[#6D28D9] rounded-md text-white" 
            disabled={isLoading} type="button" >
-                {isLoading ? <Loader className=" text-white text-center animate-spin" /> : "Login"}
+                {isLoading ? <Loader className=" text-white justify-center items-center text-center align-center animate-spin" /> : "Login"}
             </motion.button>
     
               <Button
-                onClick={handleGoogleSignIn} // ✅ Ensure this function is called onClick
+                onClick={handleGoogleSignIn} 
 
                 variant="outline"
                 className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white">

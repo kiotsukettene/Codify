@@ -15,45 +15,52 @@ function PaymentSummary() {
   const [paymongoReady, setPaymongoReady] = useState(false);
 
   useEffect(() => {
-  const checkPaymongo = () => {
-    if (window.Paymongo) {
-      setPaymongoReady(true);
-      console.log('Paymongo SDK loaded');
-    } else {
-      console.log('Paymongo SDK not loaded yet');
-      setTimeout(checkPaymongo, 100);
-    }
-  };
-  checkPaymongo();
+    const checkPaymongo = () => {
+      if (window.Paymongo) {
+        setPaymongoReady(true);
+        console.log('Paymongo SDK loaded');
+      } else {
+        console.log('Paymongo SDK not loaded yet');
+        setTimeout(checkPaymongo, 100);
+      }
+    };
+    checkPaymongo();
   }, []);
-  
+
   const handleLogout = () => {
     logout();
     navigate('/admin/login');
   };
 
   const handlePayment = async () => {
-  setLoading(true);
-  try {
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/initiate-payment`, {
-      institutionId: institution._id,
-    });
+    setLoading(true);
 
-    if (!response.data.success) {
-      throw new Error(response.data.message || 'Checkout initiation failed');
+    // Determine the base URL based on the environment
+    const baseUrl =
+      import.meta.env.MODE === 'development'
+        ? 'http://localhost:3000' // Adjust this to your local dev server URL
+        : import.meta.env.VITE_API_URL; // Production URL from .env
+
+    try {
+      const response = await axios.post(`${baseUrl}/api/auth/initiate-payment`, {
+        institutionId: institution._id,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Checkout initiation failed');
+      }
+
+      // Redirect to the PayMongo Checkout page
+      window.location.href = response.data.checkoutUrl;
+    } catch (error) {
+      toast.error('Checkout initiation failed: ' + error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Redirect to the PayMongo Checkout page
-    window.location.href = response.data.checkoutUrl;
-  } catch (error) {
-    toast.error('Checkout initiation failed: ' + error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-  
   return (
-    <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full  min-h-screen flex items-center justify-center py-12">
+    <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full min-h-screen flex items-center justify-center py-12">
       {/* Background Particles */}
       <div className="absolute inset-0 z-0">
         <Particles className="w-full h-full" quantity={300} ease={60} color="#8A2BE2" refresh />
@@ -62,7 +69,7 @@ function PaymentSummary() {
       {/* Centered Container */}
       <div className="w-full max-w-4xl relative z-10 flex justify-center">
         <Card className="overflow-hidden bg-white w-full max-w-2xl">
-          <div className="absolute inset-0  opacity-50" />
+          <div className="absolute inset-0 opacity-50" />
           
           {/* Header */}
           <CardHeader className="relative text-center">
@@ -83,41 +90,36 @@ function PaymentSummary() {
           <CardContent className="relative space-y-6">
             {/* Institution Details */}
             <div className="rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 p-6">
-  <div className=" space-y-2 gap-6">
-    {/* Left Column */}
-      <div className="flex justify-between">
-        <p className="text-sm font-medium text-gray-500">Billed To:</p>
-        <p className="font-semibold text-gray-700">{institution.name}</p>
-      </div>
-      <div className="flex justify-between">
-        <p className="text-sm font-medium text-gray-500">Email:</p>
-        <p className="font-semibold text-gray-700">{institution.email}</p>
-      </div>
-      <div className="flex justify-between">
-        <p className="text-sm font-medium text-gray-500">Institution:</p>
-        <p className="font-semibold text-gray-700">{institution.institutionName}</p>
-      </div>
-
-   
-      <div className="flex justify-between">
-        <p className="text-sm font-medium text-gray-500">Address:</p>
-        <p className="font-semibold text-gray-700">{institution.address}</p>
-      </div>
-      <div className="flex justify-between">
-        <p className="text-sm font-medium text-gray-500">Contact:</p>
-        <p className="font-semibold text-gray-700">{institution.phoneNumber}</p>
-      </div>
-      <div className="flex justify-between">
-        <p className="text-sm font-medium text-gray-500">Payment Method:</p>
-        <p className="font-semibold text-gray-700">{institution.paymentMethod}</p>
-      </div>
-  </div>
-</div>
-
+              <div className="space-y-2 gap-6">
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium text-gray-500">Billed To:</p>
+                  <p className="font-semibold text-gray-700">{institution.name}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium text-gray-500">Email:</p>
+                  <p className="font-semibold text-gray-700">{institution.email}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium text-gray-500">Institution:</p>
+                  <p className="font-semibold text-gray-700">{institution.institutionName}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium text-gray-500">Address:</p>
+                  <p className="font-semibold text-gray-700">{institution.address}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium text-gray-500">Contact:</p>
+                  <p className="font-semibold text-gray-700">{institution.phoneNumber}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium text-gray-500">Payment Method:</p>
+                  <p className="font-semibold text-gray-700">{institution.paymentMethod}</p>
+                </div>
+              </div>
+            </div>
 
             {/* Total Amount */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex justify-between">
-
               <p className="text-xl font-semibold text-gray-700">Total:</p>
               <p className="text-2xl font-bold text-primary text-blue-800">₱ {institution.amount.toLocaleString()}</p>
             </div>

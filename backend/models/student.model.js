@@ -20,7 +20,6 @@ const studentSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
     },
     course: {
       type: String,
@@ -66,5 +65,5 @@ const studentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
+studentSchema.index({ email: 1, institution: 1 }, { unique: true });
 export const Student = mongoose.model("Student", studentSchema);
