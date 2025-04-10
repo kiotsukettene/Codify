@@ -110,12 +110,7 @@ function App() {
       <Routes>
         <Route path="/battle" element={<CodeBattle />} />
         <Route path="/terms" element={<TermsAndCondition />} />
-
-
-
-
-
-
+        <Route path="/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess/></ProtectedRouteInstitution>} />
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
           <Route
