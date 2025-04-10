@@ -46,17 +46,22 @@ const data = {
       icon: UserPen,
       cursorNotAllowed: true,
       items: [
-        { 
-            label: "Professors",
-            icon: UserRoundPlus,
-            to: "/admin/professors",
+        {
+          label: "Professors",
+          icon: UserRoundPlus,
+          to: "/admin/professors",
         },
-        { 
+        {
           label: "Students",
           icon: UserRoundPlus,
           to: "/admin/students",
-      }
-    ],
+        },
+      ],
+    },
+    {
+      label: "Courses",
+      icon: Layers,
+      to: "/admin/courses",
     },
   ],
 };
@@ -65,9 +70,9 @@ function AppSidebar() {
   return (
     <Sidebar className="w-72 h-screen border-r flex flex-col mt-2">
       <SidebarHeader className="border-b border-gray-200 pl-6">
-      <Link to="/admin/dashboard">
-           <img src={Logo} className="w-26 h-auto" alt="Logo" />
-      </Link>
+        <Link to="/admin/dashboard">
+          <img src={Logo} className="w-26 h-auto" alt="Logo" />
+        </Link>
       </SidebarHeader>
 
       <SidebarMenu className="mt-4">

@@ -57,12 +57,11 @@ const Courses = () => {
   };
 
   const languageColors = {
-    "Javascript": { bg: 'bg-yellow-100', text: 'text-yellow-700'},
-    "Python": { bg: 'bg-blue-100', text: 'text-blue-700' },
-    "C++": { bg: 'bg-green-100', text: 'text-green-700' },  
-    "Java": { bg: 'bg-indigo-100', text: 'text-indigo-700' },
-};
-
+    Javascript: { bg: "bg-yellow-100", text: "text-yellow-700" },
+    Python: { bg: "bg-blue-100", text: "text-blue-700" },
+    "C++": { bg: "bg-green-100", text: "text-green-700" },
+    Java: { bg: "bg-indigo-100", text: "text-indigo-700" },
+  };
 
   // Navigate to course details page
   const handleCourseClick = (course) => {
@@ -110,15 +109,13 @@ const Courses = () => {
               }}
             />
           </Dialog>
+        </div> */}
         </div>
-      </div>
 
-
-      {/* Filter Tags */}
-      <div className="flex items-center justify-between w-full flex-wrap gap-2">
-        <div className="flex flex-wrap gap-2">
-          {["Javascript", "Python", "C++", "Java"].map(
-            (tag, index) => (
+        {/* Filter Tags */}
+        <div className="flex items-center justify-between w-full flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
+            {["Javascript", "Python", "C++", "Java"].map((tag, index) => (
               <Button
                 key={index}
                 className={`${
@@ -198,38 +195,36 @@ const Courses = () => {
                       />
                     </PaginationItem>
 
-          {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
-            <PaginationItem key={i}>
-              <PaginationLink
-                href="#"
-                onClick={() => setCurrentPage(i + 1)}
-                isActive={currentPage === i + 1}
-              >
-                {i + 1}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
+            {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  onClick={() => setCurrentPage(i + 1)}
+                  isActive={currentPage === i + 1}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
 
-          {totalPages > 3 && (
+            {totalPages > 3 && (
+              <PaginationItem>
+                <span className="px-2">...</span>
+              </PaginationItem>
+            )}
+
             <PaginationItem>
-              <span className="px-2">...</span>
+              <PaginationNext
+                href="#"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+              />
             </PaginationItem>
-          )}
-
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={() =>
-                setCurrentPage((prev) =>
-                  Math.min(prev + 1, totalPages)
-                )
-              }
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
-  </div>
   );
 };
 

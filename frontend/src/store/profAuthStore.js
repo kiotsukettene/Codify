@@ -22,7 +22,7 @@ export const useprofAuthStore = create((set) => ({
   message: null,
   clearError: () => set({ error: null }),
 
-   fetchProfessorById: async (professorId) => {
+  fetchProfessorById: async (professorId) => {
     set({ isLoading: true, error: null });
     try {
       // Assumes your GET endpoint returns { professor, courseCount }
@@ -90,7 +90,9 @@ export const useprofAuthStore = create((set) => ({
     try {
       await axios.delete(`${API_URL}/list/delete/${id}`);
       set((state) => ({
-        professors: state.professors.filter((professor) => professor._id !== id),
+        professors: state.professors.filter(
+          (professor) => professor._id !== id
+        ),
         isLoading: false,
       }));
     } catch (error) {
@@ -190,7 +192,7 @@ export const useprofAuthStore = create((set) => ({
       });
     }
   },
-    forgotPassword: async (email) => {
+  forgotPassword: async (email) => {
     set({
       isLoading: true,
       error: null,
@@ -280,7 +282,4 @@ export const useprofAuthStore = create((set) => ({
       toast.error("An error occurred during logout");
     }
   },
-
-
- 
 }));
