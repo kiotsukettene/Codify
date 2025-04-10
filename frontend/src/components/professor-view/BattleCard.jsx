@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import BattleCardBg from "@/assets/picture/random-background/BattleCardBg.png";
+import BattleCardBg from "@/assets/picture/random-background/battleCardBg.png";
 import { motion } from "framer-motion";
 
 
