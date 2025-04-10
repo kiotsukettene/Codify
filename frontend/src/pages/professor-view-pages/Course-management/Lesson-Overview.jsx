@@ -87,7 +87,7 @@ const LessonOverview = () => {
   }
 
   return (
-    <div className="p-2 sm:p-8 pt-2 space-y-4 sm:space-y-6 w-full">
+    <div className="space-y-2 sm:space-y-4 w-full">
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -116,19 +116,19 @@ const LessonOverview = () => {
           schedule: course?.schedule || currentCourse?.schedule
             ? `${course?.schedule?.day || currentCourse?.schedule?.day}, ${course?.schedule?.time || currentCourse?.schedule?.time}`
             : "No schedule available",
-          courseCode: course?.courseCode || currentCourse?.courseCode,
+          code: course?.courseCode || currentCourse?.courseCode,
           section: course?.section || currentCourse?.section,
         }}
       />
 
       <div className="w-full">
-        <div className="border-b mb-6 overflow-x-auto">
+        <div className="border-b mb-6 overflow-x-hidden">
           <div className="flex gap-1 sm:gap-2 min-w-[600px]">
             {tabs.map((tab) => (
               <motion.button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors relative
+                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-sm font-medium rounded-t-lg transition-colors relative
                   ${activeTab === tab.id ? "bg-violet-100 text-violet-600" : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"}`}
                 whileHover={{ y: -2 }}
                 whileTap={{ y: 0 }}

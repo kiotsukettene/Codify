@@ -21,13 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import AppSidebar from "@/components/professor-view/Sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +35,8 @@ import { useLessonStore } from "@/store/lessonStore"; // Import lesson store
 import { useParams, useNavigate } from "react-router-dom"; // For getting courseId & navigation
 import toast from "react-hot-toast"; // For notifications
 import { useCourseStore } from "@/store/courseStore"; // Import course store
+import { motion, AnimatePresence } from "framer-motion";
+
 
 const CreateLesson = () => {
   const { createLesson } = useLessonStore(); // Get function from store
@@ -59,6 +54,10 @@ const CreateLesson = () => {
     hasSubtitle: false,
     hasDescription: false,
   });
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  
 
   const addSection = (type) => {
     setSections((prev) => [
@@ -100,22 +99,29 @@ const CreateLesson = () => {
   // Update progress whenever content changes
   const updateProgress = () => {
     let completedSteps = 0;
-    if (title) completedSteps++;
-    if (subtitle) completedSteps++;
-    if (sections.some((s) => s.type === "description" && s.content))
-      completedSteps++;
-
-    setProgress((completedSteps / 3) * 100);
-
-    // Update achievements
+    const hasTitle = !!title.trim();
+    const hasSubtitle = !!subtitle.trim();
+    const hasDescription = sections.some(
+      (s) => s.type === "description" && s.content.trim()
+    );
+  
+    if (hasTitle) completedSteps++;
+    if (hasSubtitle) completedSteps++;
+    if (hasDescription) completedSteps++;
+  
+    const progressValue = (completedSteps / 3) * 100;
+    setProgress(progressValue);
+  
     setAchievements({
-      hasTitle: !!title,
-      hasSubtitle: !!subtitle,
-      hasDescription: sections.some(
-        (s) => s.type === "description" && s.content
-      ),
+      hasTitle,
+      hasSubtitle,
+      hasDescription,
     });
+  
+    // Set form validity
+    setIsFormValid(hasTitle && hasSubtitle && hasDescription);
   };
+  
 
   useEffect(() => {
     if (courses.length === 0) {
@@ -211,7 +217,7 @@ const CreateLesson = () => {
   };
 
   return (
-          <div className="w-full p-4">
+          <div className="w-full">
             <div className="flex items-center">
               <Button
                     variant="ghost"
@@ -281,6 +287,8 @@ const CreateLesson = () => {
                         variant="secondary"
                         className="ml-4a bg-purple-600 text-white hover:bg-purple-700"
                         onClick={handleSubmit}
+                        disabled={isUploading || !isFormValid}
+
                       >
                         Save
                       </Button>
@@ -290,8 +298,8 @@ const CreateLesson = () => {
 
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 
-                  <div className="space-y-4 flex-1">
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                  <div className="space-y-4 w-full">
+                  <label className="block text-sm sm:text-base font-medium text-gray-700">
                        Title
                   </label>
                     <Input
@@ -301,9 +309,9 @@ const CreateLesson = () => {
                         updateProgress();
                       }}
                       placeholder="Type title"
-                      className="border-purple-100 px-4 focus-visible:ring-0 bg-purple-100"
+                      className="border-purple-100 px-4 focus-visible:ring-0 bg-purple-100 placeholder:text-sm"
                     />
-                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                     <label className="block text-sm sm:text-base font-medium text-gray-700">
                       Description
                   </label>
                     <Textarea
@@ -318,7 +326,17 @@ const CreateLesson = () => {
                   </div>
                 </div>
 
+                <AnimatePresence>
                 {sections.map((section, index) => (
+                      <motion.div
+                      key={section.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="space-y-2 relative"
+                    >
+
                   <div key={section.id} className="space-y-2 relative">
                     
                     <div className="relative">
@@ -353,7 +371,7 @@ const CreateLesson = () => {
                             </ToggleGroupItem>
                           </ToggleGroup>
 
-                          <label className="block text-xs sm:text-sm font-medium text-gray-700 p-2">
+                          <label className="block text-sm sm:text-base font-medium text-gray-700 p-2">
                       Sub-topic
                   </label>
                           <Input
@@ -449,7 +467,10 @@ const CreateLesson = () => {
                       )}
                     </div>
                   </div>
+                  </motion.div>
+
                 ))}
+                </AnimatePresence>
 
                 {/* Separate add button section that's always visible */}
                 <div className="mt-4 flex justify-end gap-2">

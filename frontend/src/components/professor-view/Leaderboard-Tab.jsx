@@ -59,7 +59,7 @@ const Leaderboard = () => {
   };
 
   return (
-    <div className="w-full h-auto overflow-hidden">
+    <div className="w-full">
     <div className="mx-auto flex flex-col items-center">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -78,63 +78,6 @@ const Leaderboard = () => {
           transition={{ duration: 0.6 }}
           className="w-full flex flex-col md:flex-row justify-center items-center md:items-end gap-4 md:gap-4 lg:gap-16 mb-6 sm:mb-8 md:mb-10 lg:mb-12"
         >
-
-
-          {/* 2nd Place */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex flex-col items-center order-1 md:order-1 w-full md:w-1/3 max-w-[200px]"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              className="text-[#B088E0] text-2xl sm:text-3xl font-bold mb-1"
-            >
-              2<sup>nd</sup>
-            </motion.div>
-            <div className="relative">
-              <motion.div
-                whileHover={{ rotate: [0, -5, 5, -5, 0] }}
-                transition={{ duration: 0.5 }}
-                className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] relative"
-              >
-                <div className="absolute inset-0 bg-[#B088E0] rounded-full opacity-20 animate-pulse"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg width="100%" height="100%" viewBox="0 0 140 140" className="absolute">
-                    <path d="M70,10 C110,10 130,60 130,70 C130,110 110,130 70,130 C30,130 10,110 10,70 C10,30 30,10 70,10 Z" fill="#B088E0" />
-                    <path d="M70,20 C105,20 120,60 120,70 C120,105 105,120 70,120 C35,120 20,105 20,70 C20,35 35,20 70,20 Z" fill="#C9AEE9" />
-                  </svg>
-                  <div className="w-[70%] h-[70%] rounded-full overflow-hidden border-4 border-white z-10">
-                    <img 
-                      src={topThreeStudents[1]?.avatar} 
-                      alt={topThreeStudents[1]?.name} 
-                      className="w-full h-full object-cover" 
-                      onError={() => handleImageError(2)}
-                    />
-                  </div>
-                </div>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.4, type: "spring" }}
-                  className="absolute -top-3 sm:-top-4 md:-top-5 -right-1 sm:-right-2 z-20"
-                >
-                  <svg width="30" height="30" sm:width="35" sm:height="35" md:width="40" md:height="40" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#B088E0" stroke="#8A4FFF" strokeWidth="1" />
-                  </svg>
-                </motion.div>
-                <div className="absolute -bottom-2 right-0 bg-white rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium shadow-md z-20">
-                {topThreeStudents[1]?.xp}
-                    </div>
-              </motion.div>
-            </div>
-            <h3 className="text-[#B088E0] font-semibold text-sm sm:text-base md:text-lg mt-2 sm:mt-3 text-center truncate w-full">{topThreeStudents[1]?.name} </h3>
-            <p className="text-gray-600 text-xs sm:text-sm">{topThreeStudents[1]?.section}</p>
-          </motion.div>
-
-
 
           {/* 1st Place */}
           <motion.div
@@ -191,6 +134,60 @@ const Leaderboard = () => {
             <p className="text-gray-600 text-xs sm:text-sm">{topThreeStudents[0]?.section}</p>
           </motion.div>
 
+          {/* 2nd Place */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex flex-col items-center order-1 md:order-1 w-full md:w-1/3 max-w-[200px]"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              className="text-[#B088E0] text-2xl sm:text-3xl font-bold mb-1"
+            >
+              2<sup>nd</sup>
+            </motion.div>
+            <div className="relative">
+              <motion.div
+                whileHover={{ rotate: [0, -5, 5, -5, 0] }}
+                transition={{ duration: 0.5 }}
+                className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] md:w-[140px] md:h-[140px] relative"
+              >
+                <div className="absolute inset-0 bg-[#B088E0] rounded-full opacity-20 animate-pulse"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg width="100%" height="100%" viewBox="0 0 140 140" className="absolute">
+                    <path d="M70,10 C110,10 130,60 130,70 C130,110 110,130 70,130 C30,130 10,110 10,70 C10,30 30,10 70,10 Z" fill="#B088E0" />
+                    <path d="M70,20 C105,20 120,60 120,70 C120,105 105,120 70,120 C35,120 20,105 20,70 C20,35 35,20 70,20 Z" fill="#C9AEE9" />
+                  </svg>
+                  <div className="w-[70%] h-[70%] rounded-full overflow-hidden border-4 border-white z-10">
+                    <img 
+                      src={topThreeStudents[1]?.avatar} 
+                      alt={topThreeStudents[1]?.name} 
+                      className="w-full h-full object-cover" 
+                      onError={() => handleImageError(2)}
+                    />
+                  </div>
+                </div>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.4, type: "spring" }}
+                  className="absolute -top-3 sm:-top-4 md:-top-5 -right-1 sm:-right-2 z-20"
+                >
+                  <svg width="30" height="30" sm:width="35" sm:height="35" md:width="40" md:height="40" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#B088E0" stroke="#8A4FFF" strokeWidth="1" />
+                  </svg>
+                </motion.div>
+                <div className="absolute -bottom-2 right-0 bg-white rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium shadow-md z-20">
+                {topThreeStudents[1]?.xp}
+                    </div>
+              </motion.div>
+            </div>
+            <h3 className="text-[#B088E0] font-semibold text-sm sm:text-base md:text-lg mt-2 sm:mt-3 text-center truncate w-full">{topThreeStudents[1]?.name} </h3>
+            <p className="text-gray-600 text-xs sm:text-sm">{topThreeStudents[1]?.section}</p>
+          </motion.div>
+
           {/* 3rd Place */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -237,7 +234,7 @@ const Leaderboard = () => {
                   </svg>
                 </motion.div>
                 <div className="absolute -bottom-2 right-0 bg-white rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium shadow-md z-20">
-                {topThreeStudents[12]?.xp}
+                {topThreeStudents[1]?.xp}
                                 </div>
               </motion.div>
             </div>

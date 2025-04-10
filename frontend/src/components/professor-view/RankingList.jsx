@@ -3,6 +3,7 @@ import goldFrame from "@/assets/picture/frames/goldborder.png";
 import violetFrame from "@/assets/picture/frames/violetborder.png";
 import silverFrame from "@/assets/picture/frames/silverborder.png";
 import bronzeFrame from "@/assets/picture/frames/bronzeborder.png";
+import { motion } from "framer-motion";
 
 const RankingList = ({ rankingData }) => {
   const getRankFrame = (rank) => {
@@ -40,8 +41,12 @@ const RankingList = ({ rankingData }) => {
         </div>
 
         <div className="space-y-3 mb-4">
-          {rankingData.map((student) => (
-            <div
+          {rankingData.map((student, index) => (
+            <motion.div
+            initial={{ opacity: 0, x: -10 }} // Animation on load
+            animate={{ opacity: 1, x: 0 }} // Final position and opacity
+            transition={{ delay: 0.2 + index * 0.1 }} // Stagger the animations
+            whileHover={{ backgroundColor: "#f9f5ff" }} // Hover effect
               key={student.id}
               className={`flex items-center gap-3 rounded-full ${getRankColor(
                 student.rank
@@ -82,7 +87,7 @@ const RankingList = ({ rankingData }) => {
               >
                 {student.score.toLocaleString()} XP
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 

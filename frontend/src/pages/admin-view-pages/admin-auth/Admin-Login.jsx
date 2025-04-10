@@ -16,14 +16,8 @@ import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
 import useToggleVisibility from "@/hooks/use-toggle-visibility";
 import { Eye, EyeOff } from "lucide-react";
-
-
-import union from "@/assets/picture/random-background/Union.png"
-import pinkFlower from "@/assets/picture/random-background/pink-flower.png"
-import blueFlower from "@/assets/picture/random-background/blue-flower.png"
-import purpleFlower from "@/assets/picture/random-background/Purple-flower.png"
-import arrow from "@/assets/picture/random-background/arrow.png"
-import mascot from "@/assets/picture/random-background/Mascot.png"
+import ProfBg1 from "@/components/Auth/Prof-Bg-1";
+import { motion } from "framer-motion";
 
 
 function AdminLoginPage() {
@@ -65,57 +59,15 @@ function AdminLoginPage() {
   return (
     <div className="relative h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
        {/* Background Images */}
-                {/* <Link to="/">
-                  <img 
-                   src={logo}
-                   alt="Logo" 
-                   className="absolute top-7 left-24 lg:left-10 lg:w-28" 
-                   />
-                </Link> */}
-                <img 
-                  src={pinkFlower}
-                  alt="Pink Flower" 
-                  className="absolute top-16 lg:top-32 left-[-28px] w-16 lg:w-32 opacity-90"
-                />
-                <img 
-                  src={purpleFlower}
-                  alt="Purple Flower" 
-                  className="absolute bottom-[100px] left-[-30px] w-20 lg:w-52 opacity-90"
-                />
-                <img 
-                  src={blueFlower}
-                  alt="Blue Flower" 
-                  className="absolute top-[250px] right-[-30px] w-16 lg:w-56 opacity-90"
-                />
-                <img 
-                  src={union}
-                  alt="Star" 
-                  className="absolute top-10 right-96 w-10 lg:w-52"
-                />
-                <img 
-                  src={arrow}
-                  alt="Arrow" 
-                  className="absolute top-10 left-24 w-10 lg:w-52"
-                />
-                <img 
-                  src={arrow}
-                  alt="Arrow" 
-                  className="absolute bottom-20 left-44 w-10 lg:w-52"
-                />
-                <img 
-                  src={arrow}
-                  alt="Arrow" 
-                  className="absolute bottom-20 right-0 w-20 lg:w-72 rotate-180"
-                />
-                <img 
-                  src={mascot}
-                  alt="Mascot" 
-                  className="absolute bottom-[-150px] right-[-100px] w-72 lg:w-96"
-                />
+       <ProfBg1 />
 
-    
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-md">
+
+      <motion.div 
+        initial={{ y: -200, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 120, damping: 10 }}
+      className="w-full max-w-md mt-16">
         <form onSubmit={handleAdminLogin}>
           <Card>
             <CardHeader>
@@ -129,7 +81,7 @@ function AdminLoginPage() {
                 <h2 className="mb-2 text-center text-xl font-semibold text-violet-500">
                   Welcome to Codify Galaxy
                 </h2>
-                <p className="mb-8 text-center font-normal text-sm text-neutral-700">
+                <p className="mb-6 text-center font-normal text-sm text-neutral-700">
                   Sign in to explore the universe of learning
                 </p>
               </CardTitle>
@@ -217,7 +169,7 @@ function AdminLoginPage() {
             </CardContent>
           </Card>
         </form>
-      </div>
+      </motion.div>
     </div>
 
 

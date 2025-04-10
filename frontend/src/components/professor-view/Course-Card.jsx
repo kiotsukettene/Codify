@@ -116,7 +116,6 @@ const Card = ({
   )}
 </div>
 
-
             {/* Options */}
             <button
             style = {{transform: 'skewX(15deg)' }}
@@ -142,7 +141,7 @@ const Card = ({
 
           {/* Infos*/}
           <div style = {{transform: 'skewX(15deg)' }} >
-            <h3 className="text-sm sm:text-base font-semibold text-purple-700 mb-1 mt-3">
+            <h3 className="text-sm sm:text-base font-semibold text-purple-700 mb-1">
               {title}
             </h3>
             <p className="text-gray-400 text-[10px] sm:text-xs">
