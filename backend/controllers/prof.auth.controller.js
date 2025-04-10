@@ -158,7 +158,7 @@ export const ForgotPasswordProfessor = async (req, res) => {
     if (!professor) {
       return res.status(400).json({
         success: false,
-        message: "Account doesn't exist",
+        message: "Professor not found",
       });
     }
 

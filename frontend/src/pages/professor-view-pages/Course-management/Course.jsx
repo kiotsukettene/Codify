@@ -79,37 +79,6 @@ const Courses = () => {
         <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">
           Courses
         </h1>
-        <div className="flex">
-          <Dialog
-            open={isModalOpen}
-            onOpenChange={setIsModalOpen}
-            modal
-          >
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-purple-700 hover:bg-purple-800 p-5 rounded-md sm:hidden"
-              >
-                <Plus className="w-5 h-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => setIsModalOpen(true)}
-                className="hidden sm:flex items-center bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-lg"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Course
-              </Button>
-            </DialogTrigger>
-            <CourseModal
-              onClose={() => {
-                setIsModalOpen(false); // ✅ Close the modal
-                fetchCoursesByProfessor(); // ✅ Refresh the courses list
-              }}
-            />
-          </Dialog>
-        </div> */}
         </div>
 
         {/* Filter Tags */}
@@ -155,7 +124,7 @@ const Courses = () => {
       <div
         key={index}
         onClick={() => handleCourseClick(course)}
-        className="cursor-pointer transition duration-200"
+        className="cursor-pointer transition duration-200  items-center justify-center mx-auto align-middle"
       >
         <Card
           key={course._id}
