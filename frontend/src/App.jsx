@@ -80,6 +80,8 @@ import ProfessorLayout from "./Layout/ProfessorLayout";
 import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/student-codeBattle-overview";
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
+import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
+
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -107,15 +109,8 @@ function App() {
     <div>
       <Routes>
         <Route path="/battle" element={<CodeBattle />} />
-        <Route
-            path="/admin/payment-success"
-            element={
-              <ProtectedRouteInstitution>
-                <PaymentSuccess />
-              </ProtectedRouteInstitution>
-            }
-          />
-
+        <Route path="/terms" element={<TermsAndCondition />} />
+        <Route path="/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess/></ProtectedRouteInstitution>} />
         {/* Public Routes */}
         <Route path="/" element={<GuestLayout />}>
           <Route
