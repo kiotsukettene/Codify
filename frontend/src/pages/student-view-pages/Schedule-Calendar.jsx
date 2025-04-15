@@ -20,7 +20,7 @@ function StudentCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [events, setEvents] = useState([])
   const [completedEvents, setCompletedEvents] = useState(0)
-  const [totalEvents, setTotalEvents] = useState(0)
+  const [totalEvents, setTotalEvents] = useState(0) // not completed function wag po ito
   const [isAddingEvent, setIsAddingEvent] = useState(false)
   const [isEditingEvent, setIsEditingEvent] = useState(false)
   const [isDeletingEvent, setIsDeletingEvent] = useState(false)
