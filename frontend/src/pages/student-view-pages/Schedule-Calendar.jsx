@@ -294,7 +294,6 @@ function StudentCalendar() {
         )
       )
 
-      toast.success("Event updated successfully!")
     } catch (error) {
       console.error("Error updating event:", error.message)
       toast.error(error.message || "Failed to update event")
