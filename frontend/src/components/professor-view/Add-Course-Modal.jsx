@@ -147,6 +147,23 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
     });
   }, [courseFields]);
 
+  // Clear form fields when not in edit mode
+  useEffect(() => {
+    if (!isEditMode) {
+      setFormValues({
+        className: "",
+        description: "",
+        program: "",
+        year: "",
+        section: "",
+        professor: "",
+        programmingLanguage: "",
+        day: "",
+        time: "",
+      });
+    }
+  }, [isEditMode]);
+
   // Filter course fields by type and status
   const classNames = courseFields.filter(
     (field) => field.type === "ClassName" && field.status === "Active"
@@ -291,6 +308,20 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
       }
     }
   };
+
+  useEffect(() => {
+    setErrors({
+      className: "",
+      description: "",
+      program: "",
+      year: "",
+      section: "",
+      professor: "",
+      programmingLanguage: "",
+      day: "",
+      time: "",
+    });
+  }, [formValues]);
 
   return (
     <DialogContent className="max-w-[320px] sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
