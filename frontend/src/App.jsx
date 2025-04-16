@@ -108,7 +108,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path="/battle" element={<CodeBattle />} />
+        
         <Route path="/terms" element={<TermsAndCondition />} />
         <Route path="/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess/></ProtectedRouteInstitution>} />
         {/* Public Routes */}
@@ -448,6 +448,7 @@ function App() {
 
         <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
         <Route path="/main-arena" element={<MainArena />} />
+        <Route path="/professor/code-battle/battle" element={<CodeBattle />} />
 
         {/* Additional Routes */}
 

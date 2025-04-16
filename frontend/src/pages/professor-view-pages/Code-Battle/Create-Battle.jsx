@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import LoadingSpinner from '@/components/LoadingSpinner'
+import { useNavigate } from 'react-router-dom'
 
 const CreateBattle = () => {
   // State for form values
@@ -30,6 +31,7 @@ const CreateBattle = () => {
   const [sections, setSections] = useState([])
   const [players, setPlayers] = useState([])
   const [isOptionsLoading, setIsOptionsLoading] = useState(true)
+  const navigate = useNavigate();
 
   // Fetch dynamic options when component mounts.
   useEffect(() => {
@@ -63,7 +65,9 @@ const CreateBattle = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
     console.log(battleData)
+    navigate("/")
     // Here you can call your API to submit the battleData
   }
 
