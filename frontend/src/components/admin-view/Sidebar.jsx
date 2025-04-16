@@ -5,6 +5,7 @@ import {
   Sword,
   UserPen,
   UserRoundPlus,
+  Settings,
   Video,
 } from "lucide-react";
 import { CircleCheckBig, LayoutDashboard } from "lucide-react";
@@ -64,8 +65,8 @@ const data = {
       to: "/admin/courses",
     },
     {
-      label: "Course Settings",
-      icon: Layers,
+      label: "Settings",
+      icon: Settings,
       to: "/admin/course-settings",
     },
   ],
