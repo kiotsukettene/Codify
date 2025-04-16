@@ -1,13 +1,17 @@
 import * as React from "react";
-import { VideoResolution, ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
-
-
+import { ZegoUIKitPrebuilt,VideoResolution,} from '@zegocloud/zego-uikit-prebuilt';
 
 import Logo from '@/assets/picture/logos/logo.png';
+
+
+
+
+
+
 function randomID(len) {
-  let result = "";
+  let result = '';
   if (result) return result;
-  var chars = "12345qwertyuiopasdfgh67890jklmnbvcxzMNBVCZXASDQWERTYHGFUIOLKJP",
+  var chars = '12345qwertyuiopasdfgh67890jklmnbvcxzMNBVCZXASDQWERTYHGFUIOLKJP',
     maxPos = chars.length,
     i;
   len = len || 5;
@@ -17,8 +21,11 @@ function randomID(len) {
   return result;
 }
 
-export function getUrlParams(url = window.location.href) {
-  let urlStr = url.split("?")[1];
+
+export function getUrlParams(
+  url = window.location.href
+) {
+  let urlStr = url.split('?')[1];
   return new URLSearchParams(urlStr);
 }
 
@@ -26,6 +33,8 @@ export function getUrlParams(url = window.location.href) {
 export default function VideoConference() {
   const roomID = getUrlParams().get("roomID") || randomID(5);
   let myMeeting = async (element) => {
+
+    
     // generate Kit Token
     const appID = Number(process.env.REACT_APP_ZEGO_APP_ID);
     const serverSecret = process.env.ZEGO_SERVER_SECRET;
