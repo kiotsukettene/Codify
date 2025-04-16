@@ -63,7 +63,7 @@ const challenges = [
   {
   id: "2",
   title: "Add Two Numbers",
-  description: "Given two integers a and b, return their sum.",
+  description: "Given two whole numbers, a and b, add them together and return the result of their sum.",
   difficulty: "easy",
   examples: [
     { input: "a = 2, b = 3", output: "5", explanation: "2 + 3 = 5" },

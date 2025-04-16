@@ -14,8 +14,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-
-
 // Student Sidebar Menu Data
 const studentMenu = [
   { to: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -25,8 +23,6 @@ const studentMenu = [
   { to: "/student/code-battle", icon: Sword, label: "Code Battles" },
   { to: "/student/task-list", icon: CircleCheckBig, label: "Task" },
 ];
-
-
 function StudentSidebar() {
   const navigate = useNavigate();
   return (
@@ -37,28 +33,31 @@ function StudentSidebar() {
            <img src={Logo} className="w-26 h-auto" alt="Logo" />
            </Link>
           </SidebarHeader>
-
       {/* Sidebar Menu */}
       <SidebarMenu className="mt-4">
         {studentMenu.map((item) => (
-          <SidebarMenuItem key={item.label} className="py-2 px-4">
+          <SidebarMenuItem key={item.label} className="py-2 px-4 ">
             <SidebarMenuButton asChild>
-              <NavLink
+            <NavLink
                 to={item.to}
+                end // prevents partial matches if needed
                 className={({ isActive }) =>
-                  `flex items-center font-medium transition-all ${
-                    isActive ? "text-violet-700 font-semibold" : "text-gray-700"
-                  } hover:bg-violet-100 px-3 py-2 rounded-lg`
+                  `flex items-center font-medium transition-all px-3 py-2 rounded-lg hover:bg-violet-100 ${
+                    isActive
+                      ? "text-violet-700 font-semibold bg-violet-100"
+                      : "text-gray-700"
+                  }`
                 }
               >
                 <item.icon className="mr-2" />
                 {item.label}
               </NavLink>
+
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
+    
       </SidebarMenu>
-
       {/* Sidebar Footer */}
       <SidebarFooter className="mt-auto">
         <div className="relative flex justify-center items-center">
@@ -87,10 +86,8 @@ function StudentSidebar() {
           </div>
         </div>
       </SidebarFooter>
-
       <SidebarRail />
     </Sidebar>
   );
 }
-
 export default StudentSidebar;

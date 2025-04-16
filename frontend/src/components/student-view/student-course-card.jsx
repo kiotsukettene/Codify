@@ -3,7 +3,6 @@ import card1 from "@/assets/picture/courses/card1.png";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-
 function StudentCourseCard({ lessons, image, title, professor, category, tags = [], onClick, schedule }) {
   const badgeColors = {
     Networking: "bg-blue-200 text-blue-800",
@@ -15,10 +14,12 @@ function StudentCourseCard({ lessons, image, title, professor, category, tags = 
 
   return (
     <Card
-      className="w-full h-[22rem] max-w-sm mx-auto bg-red-200 rounded-xl shadow-sm border-none overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5 cursor-pointer"
+      className="w-full h-auto max-w-sm mx-auto rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 dark:bg-gray-950 p-5 cursor-pointer mb-7"
       onClick={onClick} // Add onClick to the Card
     >
       {/* Image Section */}
+     
+  
       <div className="relative">
         <img
           src={card1}
@@ -29,14 +30,12 @@ function StudentCourseCard({ lessons, image, title, professor, category, tags = 
           Lessons: {lessons}
         </span>
       </div>
-
       {/* Course Details */}
       <CardContent className="mt-6 space-y-2 p-0 flex-grow">
         <h3 className="text-lg font-medium text-gray-800">{title}</h3>
         <p className="text-sm text-purple-700 font-medium">Prof. {professor}</p>
         <p className="text-sm text-purple-500 font-medium">{schedule}</p>
       </CardContent>
-
       {/* Category Badge */}
       <div className="mt-auto pt-4 flex gap-2 flex-wrap">
         {tags.map((tag, index) => (
@@ -53,5 +52,4 @@ function StudentCourseCard({ lessons, image, title, professor, category, tags = 
     </Card>
   );
 }
-
 export default StudentCourseCard;

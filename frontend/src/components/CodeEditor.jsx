@@ -47,9 +47,11 @@ const CodeEditor = () => {
     setMaximizedPanel(maximizedPanel === panel ? null : panel);
   };
 
-  const getPanelWidth = (panel) => {
-    if (maximizedPanel === null) return "w-1/2";
-    return maximizedPanel === panel ? "w-full" : "w-0 hidden";
+  const getPanelStyles = (panel) => {
+    if (maximizedPanel === null) {
+      return "w-full md:w-1/2 h-[50vh] md:h-full"; // Stack vertically on mobile, side-by-side on medium+
+    }
+    return maximizedPanel === panel ? "w-full h-full" : "w-0 h-0 hidden";
   };
 
   const handleInputChange = (newInput) => {
@@ -85,13 +87,13 @@ const CodeEditor = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e] overflow-hidden">
-      <div className="flex items-center justify-between p-2 bg-[#2d2d2d] border-b border-gray-800">
-        <div>
+       <div className="flex lg:flex-row flex-col items-start justify-between p-2 bg-[#2d2d2d] border-b border-gray-800">
+        <div className="lg:mb-2 mb-4">
           <img
             src={Logo}
-            className="w-28 h-auto cursor-pointer" // Add cursor-pointer for visual feedback
+            className="w-24 h-auto cursor-pointer"
             alt="Logo"
-            onClick={handleLogoClick} // Add click handler
+            onClick={handleLogoClick}
           />
         </div>
 
@@ -123,14 +125,14 @@ const CodeEditor = () => {
 
 
           <LanguageSelector language={language} onSelect={handleSelect} />
-          <Button className="bg-primary text-white gap-2" onClick={runCode}>
-            <Play size={16} />
+          <Button className="bg-primary text-white gap-2 text-sm sm:text-base" onClick={runCode}>
+            <Play size={14} />
             Run Code
           </Button>
         </div>
       </div>
-      <div className="flex flex-1 overflow-hidden">
-        <div className={`${getPanelWidth("editor")} transition-all duration-300 border-r border-gray-800`}>
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <div className={`${getPanelStyles("editor")} transition-all duration-300 border-b md:border-r md:border-b-0 border-gray-800`}>
           <div className="flex justify-between items-center p-2 bg-[#2d2d2d] border-b border-gray-800">
             <span className="text-gray-300 text-sm">main</span>
             <Button
@@ -143,7 +145,7 @@ const CodeEditor = () => {
             </Button>
           </div>
           <Editor
-            height="calc(100vh - 120px)"
+            height="calc(100% - 40px)" // Adjust height to fit panel
             theme="vs-dark"
             language={language}
             onMount={onMount}
@@ -151,18 +153,18 @@ const CodeEditor = () => {
             value={value}
             onChange={(value) => setValue(value)}
             options={{
-              fontSize: 14,
+              fontSize: 12, // Smaller font for mobile
               lineNumbers: "on",
               minimap: { enabled: false },
               scrollBeyondLastLine: true,
               automaticLayout: true,
               fontFamily: "monospace",
               renderLineHighlight: "all",
-              lineHeight: 21,
+              lineHeight: 18, // Tighter line height for mobile
             }}
           />
         </div>
-        <div className={`${getPanelWidth("input")} transition-all duration-300`}>
+        <div className={`${getPanelStyles("input")} transition-all duration-300`}>
           <Input
             isMaximized={maximizedPanel === "input"}
             onToggleMaximize={() => toggleMaximize("input")}
