@@ -4,8 +4,8 @@ import toast from "react-hot-toast";
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
-  ? "http://localhost:3000/api/courseFields" // Local backend
-  : `${import.meta.env.VITE_API_URL}/api/courseFields`; // Production backend
+  ? "http://localhost:3000/api/courseFields"
+  : `${import.meta.env.VITE_API_URL}/api/courseFields`;
 
 axios.defaults.withCredentials = true;
 export const useCourseFieldStore = create((set) => ({
@@ -22,24 +22,37 @@ export const useCourseFieldStore = create((set) => ({
 
     try {
       const response = await axios.get(`${API_URL}/type/${type}`);
-      console.log("[Store] Fetch response:", {
+      console.log(`[Store] Fetch response for type ${type}:`, {
         status: response.status,
         data: response.data,
       });
-      set({ courseFields: response.data, isLoading: false });
-      console.log("[Store] Course fields updated in state:", response.data);
+      set((state) => {
+        // Filter out existing fields of the same type to avoid duplicates
+        const updatedFields = [
+          ...state.courseFields.filter((field) => field.type !== type),
+          ...response.data,
+        ];
+        console.log(
+          `[Store] Updated courseFields state for type ${type}:`,
+          updatedFields
+        );
+        return { courseFields: updatedFields, isLoading: false };
+      });
     } catch (error) {
-      console.error("[Store] Error fetching course fields:", {
+      console.error(`[Store] Error fetching course fields for type ${type}:`, {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
       });
       set({
-        error: error.response?.data?.message || "Error fetching course fields",
+        error:
+          error.response?.data?.message ||
+          `Error fetching course fields for ${type}`,
         isLoading: false,
       });
       toast.error(
-        error.response?.data?.message || "Error fetching course fields"
+        error.response?.data?.message ||
+          `Error fetching course fields for ${type}`
       );
     }
   },

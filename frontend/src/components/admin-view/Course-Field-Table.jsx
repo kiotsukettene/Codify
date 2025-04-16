@@ -45,7 +45,7 @@ export default function CourseFieldsTable({ type }) {
   const [currentField, setCurrentField] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
-    type: type || "", // Initialize with passed type
+    type: type || "",
     status: "Active",
   });
 
@@ -62,45 +62,55 @@ export default function CourseFieldsTable({ type }) {
   // Validate and fetch course fields for the given type
   useEffect(() => {
     if (!type) {
-      console.error("No type provided to CourseFieldsTable");
+      console.error("[CourseFieldsTable] No type provided");
       return;
     }
-    console.log(`Fetching course fields for type: ${type}`);
+    console.log(`[CourseFieldsTable] Fetching course fields for type: ${type}`);
     fetchCourseFieldsByType(type)
       .then(() => {
-        console.log("Fetch completed. Current store state:", {
-          courseFields,
-          isLoading,
-          error,
-          type,
-        });
+        console.log(
+          "[CourseFieldsTable] Fetch completed. Current store state:",
+          {
+            courseFields,
+            isLoading,
+            error,
+            type,
+          }
+        );
       })
       .catch((err) => {
-        console.error(`Fetch error for type ${type}:`, err);
+        console.error(`[CourseFieldsTable] Fetch error for type ${type}:`, err);
       });
   }, [type, fetchCourseFieldsByType]);
 
   // Log state changes for debugging
   useEffect(() => {
-    console.log("CourseFieldsTable state updated:", {
+    const typeFields = courseFields.filter((field) => field.type === type);
+    console.log("[CourseFieldsTable] State updated:", {
       type,
       courseFields,
+      typeFields,
       isLoading,
       error,
-      filteredFieldsLength: courseFields.filter((field) =>
+      filteredFieldsLength: typeFields.filter((field) =>
         field.name.toLowerCase().includes(searchQuery.toLowerCase())
       ).length,
     });
   }, [type, courseFields, isLoading, error, searchQuery]);
 
-  // Filter course fields based on search query
-  const filteredFields = courseFields.filter((field) =>
-    field.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter course fields by type and search query
+  const filteredFields = courseFields
+    .filter((field) => field.type === type && field.status === "Active")
+    .filter((field) =>
+      field.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   // Handle opening the modal for creating a new field
   const handleAddNew = () => {
-    console.log("Opening modal for new course field with type:", type);
+    console.log(
+      "[CourseFieldsTable] Opening modal for new course field with type:",
+      type
+    );
     setCurrentField(null);
     setFormData({ name: "", type: type || "", status: "Active" });
     setIsModalOpen(true);
@@ -108,7 +118,7 @@ export default function CourseFieldsTable({ type }) {
 
   // Handle opening the modal for editing an existing field
   const handleEdit = (field) => {
-    console.log("Opening modal for editing field:", field);
+    console.log("[CourseFieldsTable] Opening modal for editing field:", field);
     setCurrentField(field);
     setFormData({
       name: field.name,
@@ -121,47 +131,52 @@ export default function CourseFieldsTable({ type }) {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Form input changed: ${name} = ${value}`);
+    console.log(`[CourseFieldsTable] Form input changed: ${name} = ${value}`);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Handle select changes for type and status
   const handleSelectChange = (name, value) => {
-    console.log(`Select changed: ${name} = ${value}`);
+    console.log(`[CourseFieldsTable] Select changed: ${name} = ${value}`);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Handle form submission for creating or updating a field
   const handleSubmit = async () => {
-    console.log("Submitting form with data:", formData);
+    console.log("[CourseFieldsTable] Submitting form with data:", formData);
     if (!formData.name || !formData.type || !formData.status) {
-      console.warn("Form validation failed: Missing required fields");
+      console.warn(
+        "[CourseFieldsTable] Form validation failed: Missing required fields"
+      );
       alert("All fields are required");
       return;
     }
 
     try {
       if (currentField) {
-        console.log("Updating course field:", currentField._id);
+        console.log(
+          "[CourseFieldsTable] Updating course field:",
+          currentField._id
+        );
         await updateCourseField(currentField._id, formData);
       } else {
-        console.log("Creating new course field");
+        console.log("[CourseFieldsTable] Creating new course field");
         await createCourseField(formData);
       }
       setIsModalOpen(false);
     } catch (err) {
-      console.error("Error during form submission:", err);
+      console.error("[CourseFieldsTable] Error during form submission:", err);
     }
   };
 
   // Handle deleting a field
   const handleDelete = async (id) => {
-    console.log("Attempting to delete course field:", id);
+    console.log("[CourseFieldsTable] Attempting to delete course field:", id);
     if (window.confirm("Are you sure you want to delete this course field?")) {
       try {
         await deleteCourseField(id);
       } catch (err) {
-        console.error("Error deleting course field:", err);
+        console.error("[CourseFieldsTable] Error deleting course field:", err);
       }
     }
   };
@@ -325,7 +340,7 @@ export default function CourseFieldsTable({ type }) {
               <Select
                 value={formData.type}
                 onValueChange={(value) => handleSelectChange("type", value)}
-                disabled={!!type} // Disable type selection if type is passed
+                disabled={!!type}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select type" />

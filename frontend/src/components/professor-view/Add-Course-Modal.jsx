@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { useCourseStore } from "@/store/courseStore";
 import { useprofAuthStore } from "@/store/profAuthStore";
+import { useCourseFieldStore } from "@/store/courseFieldStore";
 import TimeField from "@/components/professor-view/Time-field";
 
 const daysOfWeek = [
@@ -56,13 +56,40 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
 
   // Get data and methods from stores
   const { createCourse, updateCourse } = useCourseStore();
-  const { professors, fetchProfessors, isLoading, error } = useprofAuthStore();
+  const {
+    professors,
+    fetchProfessors,
+    isLoading: profLoading,
+    error: profError,
+  } = useprofAuthStore();
+  const {
+    courseFields,
+    fetchCourseFieldsByType,
+    isLoading: fieldsLoading,
+    error: fieldsError,
+  } = useCourseFieldStore();
 
-  // Fetch professors and prepopulate form if editing
+  // Fetch professors, course fields, and prepopulate form if editing
   useEffect(() => {
     fetchProfessors();
+
+    // Fetch course fields for all types
+    const types = ["ClassName", "Program", "Year", "Section"];
+    const fetchAllFields = async () => {
+      for (const type of types) {
+        console.log(`[CourseModal] Initiating fetch for type: ${type}`);
+        try {
+          await fetchCourseFieldsByType(type);
+          console.log(`[CourseModal] Fetch completed for type: ${type}`);
+        } catch (error) {
+          console.error(`[CourseModal] Error fetching type ${type}:`, error);
+        }
+      }
+    };
+    fetchAllFields();
+
     if (isEditMode && courseData) {
-      console.log("courseData received in CourseModal:", courseData); // Debug
+      console.log("[CourseModal] courseData received:", courseData);
       setFormValues({
         className: courseData.className || "",
         description: courseData.description || "",
@@ -75,18 +102,71 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
         time: courseData.schedule?.time || "",
       });
     }
-  }, [fetchProfessors, isEditMode, courseData]);
+  }, [fetchProfessors, fetchCourseFieldsByType, isEditMode, courseData]);
+
+  // Debug courseFields and filtered fields
+  useEffect(() => {
+    console.log("[CourseModal] Raw courseFields state:", courseFields);
+    const classNames = courseFields.filter(
+      (field) => field.type === "ClassName" && field.status === "Active"
+    );
+    const programs = courseFields.filter(
+      (field) => field.type === "Program" && field.status === "Active"
+    );
+    const years = courseFields.filter(
+      (field) => field.type === "Year" && field.status === "Active"
+    );
+    const sections = courseFields.filter(
+      (field) => field.type === "Section" && field.status === "Active"
+    );
+    console.log("[CourseModal] Filtered fields:", {
+      classNames: classNames.map((f) => ({
+        _id: f._id,
+        name: f.name,
+        type: f.type,
+        status: f.status,
+      })),
+      programs: programs.map((f) => ({
+        _id: f._id,
+        name: f.name,
+        type: f.type,
+        status: f.status,
+      })),
+      years: years.map((f) => ({
+        _id: f._id,
+        name: f.name,
+        type: f.type,
+        status: f.status,
+      })),
+      sections: sections.map((f) => ({
+        _id: f._id,
+        name: f.name,
+        type: f.type,
+        status: f.status,
+      })),
+    });
+  }, [courseFields]);
+
+  // Filter course fields by type and status
+  const classNames = courseFields.filter(
+    (field) => field.type === "ClassName" && field.status === "Active"
+  );
+  const programs = courseFields.filter(
+    (field) => field.type === "Program" && field.status === "Active"
+  );
+  const years = courseFields.filter(
+    (field) => field.type === "Year" && field.status === "Active"
+  );
+  const sections = courseFields.filter(
+    (field) => field.type === "Section" && field.status === "Active"
+  );
 
   const validateForm = () => {
     let valid = true;
     const newErrors = { ...errors };
 
-    const classNameRegex = /^[a-zA-Z0-9\s\-()]+$/;
     if (!formValues.className.trim()) {
       newErrors.className = "Class name is required.";
-      valid = false;
-    } else if (!classNameRegex.test(formValues.className)) {
-      newErrors.className = "Invalid class name format.";
       valid = false;
     } else {
       newErrors.className = "";
@@ -145,40 +225,6 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
     return valid;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
-
-    const newErrors = { ...errors };
-    switch (name) {
-      case "className": {
-        const classNameRegex = /^[a-zA-Z0-9\s\-()]+$/;
-        if (!value.trim()) {
-          newErrors.className = "Class name is required.";
-        } else if (!classNameRegex.test(value)) {
-          newErrors.className = "Invalid class name format.";
-        } else {
-          newErrors.className = "";
-        }
-        break;
-      }
-      case "program": {
-        if (!value.trim()) {
-          newErrors.program = "Program is required.";
-        } else {
-          newErrors.program = "";
-        }
-        break;
-      }
-      default:
-        break;
-    }
-    setErrors(newErrors);
-  };
-
   const handleSelectChange = (name) => (value) => {
     setFormValues((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({
@@ -210,14 +256,17 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
         },
       };
 
-      console.log("Submitting updatedCourseData:", updatedCourseData);
+      console.log(
+        "[CourseModal] Submitting updatedCourseData:",
+        updatedCourseData
+      );
       try {
         if (isEditMode) {
-          const courseId = courseData?._id; // Use the original courseData's _id
+          const courseId = courseData?._id;
           if (!courseId) {
             throw new Error("Course ID is undefined in edit mode");
           }
-          console.log("Calling updateCourse with ID:", courseId);
+          console.log("[CourseModal] Calling updateCourse with ID:", courseId);
           await updateCourse(courseId, updatedCourseData);
         } else {
           await createCourse(updatedCourseData);
@@ -236,7 +285,7 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
         onClose();
       } catch (error) {
         console.error(
-          `Error ${isEditMode ? "updating" : "creating"} course:`,
+          `[CourseModal] Error ${isEditMode ? "updating" : "creating"} course:`,
           error
         );
       }
@@ -266,15 +315,48 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
             <label className="block text-sm sm:text-base font-medium text-gray-700">
               Class name <span className="text-red-500">*</span>
             </label>
-            <Input
+            <Select
               name="className"
-              placeholder="Class name"
               value={formValues.className}
-              onChange={handleChange}
-              className="w-full"
-            />
+              onValueChange={handleSelectChange("className")}
+              disabled={fieldsLoading || fieldsError}
+              onOpenChange={(open) => {
+                if (open) {
+                  console.log(
+                    "[CourseModal] ClassName Select options:",
+                    classNames.map((f) => ({ _id: f._id, name: f.name }))
+                  );
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose a class name" />
+              </SelectTrigger>
+              <SelectContent>
+                {fieldsLoading && (
+                  <SelectItem disabled value="loading">
+                    Loading...
+                  </SelectItem>
+                )}
+                {!fieldsLoading && classNames.length === 0 && (
+                  <SelectItem disabled value="no-data">
+                    No class names available
+                  </SelectItem>
+                )}
+                {classNames.map((field) => (
+                  <SelectItem key={field._id} value={field.name}>
+                    {field.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.className && (
               <p className="text-red-500 text-sm">{errors.className}</p>
+            )}
+            {fieldsError && (
+              <p className="text-red-500 text-sm">
+                Failed to load class names: {fieldsError}
+              </p>
             )}
           </div>
 
@@ -286,28 +368,44 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               name="program"
               value={formValues.program}
               onValueChange={handleSelectChange("program")}
+              disabled={fieldsLoading || fieldsError}
+              onOpenChange={(open) => {
+                if (open) {
+                  console.log(
+                    "[CourseModal] Program Select options:",
+                    programs.map((f) => ({ _id: f._id, name: f.name }))
+                  );
+                }
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose a program" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BSCS">
-                  Bachelor of Science in Computer Science (BSCS)
-                </SelectItem>
-                <SelectItem value="BSIT">
-                  Bachelor of Science in Information Technology (BSIT)
-                </SelectItem>
-                <SelectItem value="BSEMC">
-                  Bachelor of Science in Entertainment and Multimedia Computing
-                  (BSEMC)
-                </SelectItem>
-                <SelectItem value="BSIS">
-                  Bachelor of Science in Information System (BSIS)
-                </SelectItem>
+                {fieldsLoading && (
+                  <SelectItem disabled value="loading">
+                    Loading...
+                  </SelectItem>
+                )}
+                {!fieldsLoading && programs.length === 0 && (
+                  <SelectItem disabled value="no-data">
+                    No programs available
+                  </SelectItem>
+                )}
+                {programs.map((field) => (
+                  <SelectItem key={field._id} value={field.name}>
+                    {field.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {errors.program && (
               <p className="text-red-500 text-sm">{errors.program}</p>
+            )}
+            {fieldsError && (
+              <p className="text-red-500 text-sm">
+                Failed to load programs: {fieldsError}
+              </p>
             )}
           </div>
 
@@ -319,20 +417,44 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               name="year"
               value={formValues.year}
               onValueChange={handleSelectChange("year")}
+              disabled={fieldsLoading || fieldsError}
+              onOpenChange={(open) => {
+                if (open) {
+                  console.log(
+                    "[CourseModal] Year Select options:",
+                    years.map((f) => ({ _id: f._id, name: f.name }))
+                  );
+                }
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select year" />
               </SelectTrigger>
               <SelectContent>
-                {[1, 2, 3, 4].map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
+                {fieldsLoading && (
+                  <SelectItem disabled value="loading">
+                    Loading...
+                  </SelectItem>
+                )}
+                {!fieldsLoading && years.length === 0 && (
+                  <SelectItem disabled value="no-data">
+                    No years available
+                  </SelectItem>
+                )}
+                {years.map((field) => (
+                  <SelectItem key={field._id} value={field.name}>
+                    {field.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {errors.year && (
               <p className="text-red-500 text-sm">{errors.year}</p>
+            )}
+            {fieldsError && (
+              <p className="text-red-500 text-sm">
+                Failed to load years: {fieldsError}
+              </p>
             )}
           </div>
 
@@ -344,20 +466,44 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               name="section"
               value={formValues.section}
               onValueChange={handleSelectChange("section")}
+              disabled={fieldsLoading || fieldsError}
+              onOpenChange={(open) => {
+                if (open) {
+                  console.log(
+                    "[CourseModal] Section Select options:",
+                    sections.map((f) => ({ _id: f._id, name: f.name }))
+                  );
+                }
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select section" />
               </SelectTrigger>
               <SelectContent>
-                {["A", "B", "C"].map((section) => (
-                  <SelectItem key={section} value={section}>
-                    {section}
+                {fieldsLoading && (
+                  <SelectItem disabled value="loading">
+                    Loading...
+                  </SelectItem>
+                )}
+                {!fieldsLoading && sections.length === 0 && (
+                  <SelectItem disabled value="no-data">
+                    No sections available
+                  </SelectItem>
+                )}
+                {sections.map((field) => (
+                  <SelectItem key={field._id} value={field.name}>
+                    {field.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {errors.section && (
               <p className="text-red-500 text-sm">{errors.section}</p>
+            )}
+            {fieldsError && (
+              <p className="text-red-500 text-sm">
+                Failed to load sections: {fieldsError}
+              </p>
             )}
           </div>
 
@@ -369,12 +515,22 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               name="professor"
               value={formValues.professor}
               onValueChange={handleSelectChange("professor")}
-              disabled={isLoading || error}
+              disabled={profLoading || profError}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a professor" />
               </SelectTrigger>
               <SelectContent>
+                {profLoading && (
+                  <SelectItem disabled value="loading">
+                    Loading...
+                  </SelectItem>
+                )}
+                {!profLoading && professors.length === 0 && (
+                  <SelectItem disabled value="no-data">
+                    No professors available
+                  </SelectItem>
+                )}
                 {professors.map((prof) => (
                   <SelectItem key={prof._id} value={prof._id}>
                     {prof.firstName} {prof.lastName}
@@ -385,9 +541,9 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
             {errors.professor && (
               <p className="text-red-500 text-sm">{errors.professor}</p>
             )}
-            {error && (
+            {profError && (
               <p className="text-red-500 text-sm">
-                Failed to load professors: {error}
+                Failed to load professors: {profError}
               </p>
             )}
           </div>
@@ -423,8 +579,7 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               Day
             </label>
             <Select
-              name
-              W="day"
+              name="day"
               value={formValues.day}
               onValueChange={handleSelectChange("day")}
             >
@@ -464,7 +619,12 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
             name="description"
             placeholder="Enter course description..."
             value={formValues.description}
-            onChange={handleChange}
+            onChange={(e) => {
+              setFormValues((prev) => ({
+                ...prev,
+                description: e.target.value,
+              }));
+            }}
             className="w-full h-32 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
             rows="5"
           />
@@ -480,7 +640,7 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
           <Button
             type="submit"
             className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:pointer-events-none text-sm sm:text-base"
-            disabled={!isFormComplete || isLoading}
+            disabled={!isFormComplete || profLoading || fieldsLoading}
           >
             {isEditMode ? "Update" : "Save"}
           </Button>
