@@ -5,7 +5,7 @@ import {
 } from "@zegocloud/zego-uikit-prebuilt";
 import { ZegoSuperBoardManager } from "zego-superboard-web";
 
-import Logo from "@/assets/picture/logos/logo.png";
+import Logo from "@/assets/picture/logos/Logo.png";
 
 function randomID(len) {
   let result = "";
