@@ -63,6 +63,11 @@ const data = {
       icon: Layers,
       to: "/admin/courses",
     },
+    {
+      label: "Course Settings",
+      icon: Layers,
+      to: "/admin/course-settings",
+    },
   ],
 };
 
