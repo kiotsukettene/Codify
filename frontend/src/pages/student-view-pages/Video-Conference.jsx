@@ -1,9 +1,12 @@
 import * as React from "react";
-import { VideoResolution, ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import {
+  ZegoUIKitPrebuilt,
+  VideoResolution,
+} from "@zegocloud/zego-uikit-prebuilt";
+import { ZegoSuperBoardManager } from "zego-superboard-web";
 
+import Logo from "@/assets/picture/logos/logo.png";
 
-
-import Logo from '@/assets/picture/logos/Logo.png';
 function randomID(len) {
   let result = "";
   if (result) return result;
@@ -22,7 +25,6 @@ export function getUrlParams(url = window.location.href) {
   return new URLSearchParams(urlStr);
 }
 
-
 export default function VideoConference() {
   const roomID = getUrlParams().get("roomID") || randomID(5);
   let myMeeting = async (element) => {
@@ -40,7 +42,8 @@ export default function VideoConference() {
     // Create instance object from Kit Token.
     const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-    
+    zp.addPlugins({ ZegoSuperBoardManager });
+
     // start the call
     zp.joinRoom({
       container: element,
@@ -56,7 +59,7 @@ export default function VideoConference() {
             roomID,
         },
       ],
-      showRoomTimer:true,
+      showRoomTimer: true,
       videoResolutionDefault: VideoResolution,
       useFrontFacingCamera: true,
       scenario: {
@@ -72,29 +75,23 @@ export default function VideoConference() {
       branding: {
         logoURL: Logo,
         theme: {
-            primaryColor: "#FFD700", // Gold color for a premium look
-            secondaryColor: "#1E1E1E", // Dark background for a sleek feel
-            backgroundColor: "#0B0923", // Space-like dark theme
-          },
+          primaryColor: "#FFD700", // Gold color for a premium look
+          secondaryColor: "#1E1E1E", // Dark background for a sleek feel
+          backgroundColor: "#0B0923", // Space-like dark theme
+        },
       },
     });
- 
-
-    
-
-    
-
-    
   };
-  
 
   return (
-    <div
-      className="myCallContainer"
-      ref={myMeeting}
-      style={{ width: "100vw", height: "100vh" }}
-    >
-      
+    <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
+      <div
+        className="myCallContainer"
+        ref={myMeeting}
+        style={{ width: "100vw", height: "100vh" }}
+      ></div>
+
+     
     </div>
   );
 }
