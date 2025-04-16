@@ -9,12 +9,22 @@ import { useStudentStore } from "@/store/studentStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import useStudentCourseStore from "@/store/studentCourseStore";
+import { useActivityStore } from "@/store/activityStore";
 
 function StudentDashboard() {
   const navigate = useNavigate();
   const { student } = useStudentStore();
   const { enrolledCourses, fetchEnrolledCourses } = useStudentCourseStore();
+  const { activities, fetchStudentAllActivities } = useActivityStore();
   const studentName = student ? student.firstName : "Student";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchStudentAllActivities();
+      console.log("Fetched all activities:", data); // Debug log
+    };
+    fetchData();
+  }, [fetchStudentAllActivities]);
   const classes = [
     {
       initials: "SE",
@@ -154,7 +164,7 @@ function StudentDashboard() {
                   <div>
                     <p className="text-base font-medium text-pink-500">All</p>
                     <h1 className="text-4xl text-neutral-900 font-semibold">
-                      12
+                      {activities.length}
                     </h1>
                   </div>
                   <ActivityIcon color="#FF62A4" className="w-12 h-12" />
