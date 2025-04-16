@@ -176,6 +176,7 @@ const CoursesAdmin = () => {
                 courseCode={course.courseCode}
                 section={course.section}
                 program={course.program}
+                year={course.year}
                 onEdit={() => handleEdit(course._id)}
                 onDelete={() => handleDeleteCourse(course._id)} // Trigger DeleteDialog
               />
