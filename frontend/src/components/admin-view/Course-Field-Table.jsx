@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,8 +54,8 @@ export default function CourseFieldsTable() {
             </svg>
           </div>
         </div>
-        <Button className="bg-black hover:bg-gray-800">
-          <PlusIcon className="h-4 w-4 mr-2" />
+        <Button className="bg-purple-600 hover:bg-purple-500 text-white">
+          <PlusIcon className="h-4 w-4 mr-2 text-white" />
           Add New
         </Button>
       </div>
@@ -83,7 +81,7 @@ export default function CourseFieldsTable() {
           <tbody className="relative">
             {filteredFields.map((field) => (
               <tr key={field.id} className="border-b border-gray-200">
-                <td className="px-4 py-2 text-sm text-gray-900">
+                <td className="px-4 py-10 text-sm text-gray-900">
                   {field.name}
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-500">
