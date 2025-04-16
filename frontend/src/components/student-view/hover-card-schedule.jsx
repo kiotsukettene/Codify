@@ -6,7 +6,6 @@ import {
 import { Calendar, Clock, FileText, Trophy, Star, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 export function EventHoverCard({ event }) {
@@ -89,13 +88,6 @@ export function EventHoverCard({ event }) {
               {event.event.title}
             </h3>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Progress</span>
-                <span>{isCompleted ? "100%" : "0%"}</span>
-              </div>
-              <Progress value={isCompleted ? 100 : 0} className="h-1" />
-            </div>
           </div>
 
           {/* ===================Date and Time ====================*/}
@@ -122,25 +114,7 @@ export function EventHoverCard({ event }) {
 
           <Separator className="bg-blue-100/50" />
 
-          {/*===================== Actions Button ======================*/}
-          <div className="flex justify-end gap-2">
-            {/* <Button
-              variant="outline"
-              size="sm"
-              className="text-sm hover:bg-blue-50 transition-colors"
-            >
-              Edit
-            </Button> */}
-            <Button
-              size="sm"
-              className="text-sm text-white bg-primary border-0"
-              onClick={() => {
-                event.event.setExtendedProp("completed", !isCompleted);
-              }}
-            >
-              {isCompleted ? "Completed ✨" : "Mark Complete"}
-            </Button>
-          </div>
+         
         </div>
       </HoverCardContent>
     </HoverCard>
