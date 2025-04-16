@@ -9,11 +9,9 @@ export const createCourseField = async (req, res) => {
 
     // Validate required fields
     if (!name || !type || !status || !institutionId) {
-      return res
-        .status(400)
-        .json({
-          message: "Name, type, status, and institutionId are required",
-        });
+      return res.status(400).json({
+        message: "Name, type, status, and institutionId are required",
+      });
     }
 
     // Validate type against the enum defined in the schema
@@ -44,6 +42,11 @@ export const createCourseField = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in createCourseField:", error); // Detailed error log
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: `A course field with name "${req.body.name}" and type "${req.body.type}" already exists for this institution.`,
+      });
+    }
     res.status(500).json({
       message: "Error creating course field",
       error: error.message,
