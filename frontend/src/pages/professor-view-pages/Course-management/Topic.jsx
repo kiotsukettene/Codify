@@ -22,6 +22,7 @@ const Topic = () => {
   const [activeSection, setActiveSection] = useState(null);
   const [activeTopic, setActiveTopic] = useState(null);
   const [sections, setSections] = useState([]);
+  const [newComment, setNewComment] = useState("");
 
   const { courseSlug, lessonSlug } = useParams();
   const navigate = useNavigate();
@@ -101,8 +102,24 @@ const Topic = () => {
     }
   };
 
+  const handleAddComment = (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    
+    const newCommentObj = {
+      id: comments.length + 1,
+      author: "Professor Name", // You should get this from your auth context
+      message: newComment,
+      avatar: lion, // You might want to use professor's avatar
+      isProfessor: true
+    };
+    
+    comments.push(newCommentObj);
+    setNewComment("");
+  };
+
   return (
-      <div className="container mx-auto p-4 grid grid-cols-12 gap-6">
+      <div className="container mx-auto grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 space-y-4">
           <div className="flex items-center gap-x-4">
             <Button
@@ -239,6 +256,20 @@ const Topic = () => {
                   </div>
                 ))}
               </div>
+              <div className="mt-4 border-t pt-4">
+              <form onSubmit={handleAddComment} className="flex gap-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="flex-1 px-3 py-2 border rounded-md text-sm"
+                  placeholder="Type your reply..."
+                />
+                <Button type="submit" size="sm">
+                  Send
+                </Button>
+              </form>
+            </div>
             </CardContent>
           </Card>
         </div>
@@ -255,12 +286,35 @@ const Topic = () => {
                     <AvatarImage src={comment.avatar} />
                     <AvatarFallback>{comment.initials}</AvatarFallback>
                   </Avatar>
-                  <div>
-                    <div className="text-sm font-semibold text-gray-900">{comment.author}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {comment.author}
+                      </div>
+                      {comment.isProfessor && (
+                        <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded">
+                          Professor
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-600">{comment.message}</p>
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="mt-4 border-t pt-4">
+              <form onSubmit={handleAddComment} className="flex gap-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="flex-1 px-3 py-2 border rounded-md text-sm"
+                  placeholder="Type your reply..."
+                />
+                <Button type="submit" size="sm">
+                  Send
+                </Button>
+              </form>
             </div>
           </DialogContent>
         </Dialog>

@@ -115,7 +115,7 @@ export const useprofAuthStore = create((set) => ({
       set({
         professor: response.data.professor,
         isAuthenticated: true,
-        loading: false,
+        isLoading: false,
       });
     } catch (error) {
       set({
