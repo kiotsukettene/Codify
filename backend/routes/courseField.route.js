@@ -20,9 +20,9 @@ router.get("/type/:type", getCourseFieldsByType);
 router.get("/:id", getCourseFieldById);
 
 // Update a course field by ID
-router.put("/:id", updateCourseField);
+router.put("/update/:id", updateCourseField);
 
 // Delete a course field by ID
-router.delete("/:id", deleteCourseField);
+router.delete("/delete/:id", deleteCourseField);
 
 export default router;
