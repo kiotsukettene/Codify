@@ -6,15 +6,7 @@ const courseFieldSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: [
-        "ClassName",
-        "Program",
-        "Year",
-        "Section",
-        "ProgrammingLanguage",
-        "Day",
-        "TimeSlot",
-      ],
+      enum: ["ClassName", "Program", "Year", "Section"],
     },
     status: {
       type: String,

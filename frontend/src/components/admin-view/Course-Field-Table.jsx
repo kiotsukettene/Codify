@@ -20,6 +20,25 @@ import {
 } from "@/components/ui/select";
 import { useCourseFieldStore } from "@/store/courseFieldStore.js";
 
+const formatTypeForDisplay = (type) => {
+  return type
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
+};
+
+// Utility function to convert human-readable back to camelCase
+const formatTypeForBackend = (type) => {
+  return type
+    .split(" ")
+    .map((word, index) =>
+      index === 0
+        ? word.toLowerCase()
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join("");
+};
+
 export default function CourseFieldsTable({ type }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,6 +166,17 @@ export default function CourseFieldsTable({ type }) {
     }
   };
 
+  // Valid types for the dropdown
+  const validTypes = [
+    "ClassName",
+    "Program",
+    "Year",
+    "Section",
+    "ProgrammingLanguage",
+    "Day",
+    "TimeSlot",
+  ];
+
   return (
     <div className="flex flex-col h-full w-full p-4">
       <div className="flex justify-between items-center mb-4">
@@ -215,7 +245,7 @@ export default function CourseFieldsTable({ type }) {
                     {field.name}
                   </td>
                   <td className="px-4 py-2 text-sm text-gray-500">
-                    {field.type}
+                    {formatTypeForDisplay(field.type)}
                   </td>
                   <td className="px-4 py-2 text-sm text-gray-500">
                     {new Date(field.lastModified).toLocaleDateString("en-US", {
@@ -301,17 +331,9 @@ export default function CourseFieldsTable({ type }) {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[
-                    "ClassName",
-                    "Program",
-                    "Year",
-                    "Section",
-                    "ProgrammingLanguage",
-                    "Day",
-                    "TimeSlot",
-                  ].map((typeOption) => (
+                  {validTypes.map((typeOption) => (
                     <SelectItem key={typeOption} value={typeOption}>
-                      {typeOption}
+                      {formatTypeForDisplay(typeOption)}
                     </SelectItem>
                   ))}
                 </SelectContent>

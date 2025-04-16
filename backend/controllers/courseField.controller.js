@@ -15,15 +15,7 @@ export const createCourseField = async (req, res) => {
     }
 
     // Validate type against the enum defined in the schema
-    const validTypes = [
-      "ClassName",
-      "Program",
-      "Year",
-      "Section",
-      "ProgrammingLanguage",
-      "Day",
-      "TimeSlot",
-    ];
+    const validTypes = ["ClassName", "Program", "Year", "Section"];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ message: "Invalid type provided" });
     }
@@ -62,15 +54,7 @@ export const getCourseFieldsByType = async (req, res) => {
     console.log("Fetching course fields for type:", type); // Debug
 
     // Validate type
-    const validTypes = [
-      "ClassName",
-      "Program",
-      "Year",
-      "Section",
-      "ProgrammingLanguage",
-      "Day",
-      "TimeSlot",
-    ];
+    const validTypes = ["ClassName", "Program", "Year", "Section"];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ message: "Invalid type provided" });
     }

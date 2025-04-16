@@ -1,12 +1,23 @@
 import { useState } from "react";
 
+const formatTypeForDisplay = (type) => {
+  return type
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
+};
+
 export default function TabNavigation({ onTypeChange }) {
   const [activeTab, setActiveTab] = useState("ClassName");
 
   const tabs = ["ClassName", "Program", "Year", "Section"];
 
   const handleTabClick = (type) => {
-    console.log(`TabNavigation: Selected type ${type}`);
+    console.log(
+      `TabNavigation: Selected type ${type} (displayed as ${formatTypeForDisplay(
+        type
+      )})`
+    );
     setActiveTab(type);
     onTypeChange(type);
   };
@@ -23,7 +34,7 @@ export default function TabNavigation({ onTypeChange }) {
           }`}
           onClick={() => handleTabClick(type)}
         >
-          {type}
+          {formatTypeForDisplay(type)}
         </button>
       ))}
     </div>
