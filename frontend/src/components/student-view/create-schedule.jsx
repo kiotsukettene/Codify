@@ -152,6 +152,7 @@ const CreateEventModal = ({
           <DialogFooter className="mt-4">
             <Button
               type="button"
+              className='mt-2'
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
@@ -168,6 +169,7 @@ const CreateEventModal = ({
               </Button>
             )}
             <Button
+              className='my-3'
               type="submit"
               disabled={isAddingEvent || isEditingEvent || isDeletingEvent}
             >

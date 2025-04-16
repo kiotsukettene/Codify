@@ -32,12 +32,18 @@ function StudentTaskPage() {
 
   return (
     <div className="container mx-auto py-4">
-      <div className="flex flex-col lg:flex-row gap-4 h-full">
-        {/* Main Content - Tasks Section */}
-        <div className="flex-1 flex flex-col">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* To Do Tasks */}
-            <div className="space-y-3 bg-[#F5F5F5] rounded-xl p-4">
+    <div className="flex flex-col lg:flex-row gap-4 h-full">
+      
+      {/* Main Content - Tasks Section */}
+      <div className="flex-1 flex flex-col">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+
+
+
+           {/* ============================
+            // TO DO TASK
+            ============================ */}
+           <div className="space-y-3 bg-[#F5F5F5] rounded-xl p-4">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-orange-500" />
                 <h2 className="font-medium">To Do</h2>
@@ -104,7 +110,8 @@ function StudentTaskPage() {
         {/* Calendar & Summary */}
         <div className="w-full lg:w-80 flex-shrink-0 flex flex-col justify-between h-full">
           <div className="space-y-4">
-            <div className="w-full aspect-square rounded-2xl bg-[#5555A4] overflow-hidden">
+            {/* Space Computer Image */}
+            <div className="lg:w-full w-72 justify-center items-center mx-auto aspect-square rounded-2xl bg-[#5555A4] overflow-hidden">
               <img
                 src={calendarImg || "/placeholder.svg"}
                 alt="Space Computer"
@@ -114,7 +121,9 @@ function StudentTaskPage() {
             <Card className="border-none shadow-none flex justify-center items-center bg-transparent">
               <Calendar mode="single" selected={date} onSelect={setDate} />
             </Card>
-            <Card className="p-4 border-none shadow-none">
+
+            {/* Total Tasks */}
+            <Card className="p-4 border-none shadow-none lg:bg-white w-80 bg-[#F5F5F5] rounded-xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <svg className="w-6 h-6 text-purple-600" viewBox="0 0 24 24">
@@ -135,12 +144,10 @@ function StudentTaskPage() {
               </div>
             </Card>
           </div>
-          <div className="w-full aspect-square rounded-2xl overflow-hidden mt-4">
-            <img
-              src={wave || "/placeholder.svg"}
-              alt="Wave decoration"
-              className="w-full h-full object-cover"
-            />
+
+          {/* Wave Image */}
+          <div className="lg:w-full w-80  items-center justify-center mx-auto aspect-square rounded-2xl overflow-hidden mt-4">
+            <img src={wave || "/placeholder.svg"} alt="Wave decoration" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>

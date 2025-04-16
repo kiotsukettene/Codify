@@ -16,11 +16,15 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu"
+import NotificationCard from "./notification-card";
+import SupportPanel from "./support-panel";
 
 
 function StudentHeader() {
   const { logout } = useStudentStore()
   const navigate = useNavigate();
+  const [isSupportOpen, setIsSupportOpen] = useState(false)
+
 
   const handleLogout = async () => {
     await logout(); // ✅ Call the store logout function
@@ -41,12 +45,7 @@ function StudentHeader() {
       >
         {/* Notifications */}
         <div>
-          <Button variant="outline" size="icon" className="h-8 w-8 relative">
-            <BellRing className="h-4 w-4" />
-            <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-xs text-destructive-foreground flex items-center justify-center">
-              1
-            </span>
-          </Button>
+         <NotificationCard/>
         </div>
 
         {/* Achievement Badge */}
@@ -76,7 +75,7 @@ function StudentHeader() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/student/account-settings')}>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsSupportOpen(true)}>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
@@ -84,6 +83,8 @@ function StudentHeader() {
 
         
       </div>
+      <SupportPanel isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
+
     </div>
   );
 }

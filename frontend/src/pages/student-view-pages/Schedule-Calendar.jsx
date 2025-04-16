@@ -416,186 +416,189 @@ function StudentCalendar() {
   const groupedEvents = groupEventsByDate()
 
   return (
-    <div className="flex flex-col md:flex-row lg:flex-row h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
-      <div className="w-80 border-r border-blue-200 flex flex-col bg-white/50 backdrop-blur-sm">
-        <div className="p-4 border-b border-blue-200">
-          <Button
-            className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all"
-            onClick={() => {
-              setEventToEdit(null)
-              setIsCreateModalOpen(true)
-            }}
-            disabled={isAddingEvent || isEditingEvent || isDeletingEvent}
-          >
-            {isAddingEvent ? "Creating..." : "+ Create Event"}
+    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
+  {/* Sidebar */}
+  <div className="w-full md:w-80 border-r border-red-200 flex flex-col bg-white/50 backdrop-blur-sm">
+    <div className="p-4 border-b border-blue-200">
+      <Button
+        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all"
+        onClick={() => {
+          setEventToEdit(null)
+          setIsCreateModalOpen(true)
+        }}
+        disabled={isAddingEvent || isEditingEvent || isDeletingEvent}
+      >
+        {isAddingEvent ? "Creating..." : "+ Create Event"}
+      </Button>
+    </div>
+
+    <ScrollArea className="flex-1 overflow-auto">
+      <div className="p-4">
+        <div className="text-sm font-medium mb-4 text-blue-800 flex items-center gap-2">
+          <div className="h-6 w-1 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
+          Status
+        </div>
+        <div className="space-y-4 ">
+          {priorities.map((priority) => (
+            <div key={priority.label} className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: priority.color }} />
+                  <span className="text-sm font-medium">{priority.label}</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 pl-5">{priority.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {events.length > 0 && (
+        <div className="p-4 pt-2">
+          <Separator className="my-4" />
+          <div className="text-sm font-medium mb-4 text-blue-800 flex items-center gap-2">
+            <div className="h-6 w-1 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
+            Your Events
+          </div>
+
+          <div className="space-y-4 md:space-y-6">
+            {groupedEvents.map((group) => (
+              <div key={group.date} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-violet-500" />
+                  <span className="text-xs font-semibold text-gray-700">
+                    {new Date(group.date).toLocaleDateString([], {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                </div>
+
+                {group.events.map((event) => {
+                  const priorityObj = priorities.find((p) => p.value === event.extendedProps.priority)
+                  return (
+                    <Card
+                      key={event.id}
+                      className="overflow-hidden border-l-4 hover:shadow-md transition-all cursor-pointer w-full"
+                      style={{ borderLeftColor: event.backgroundColor }}
+                      onClick={() => {
+                        setEventToEdit(event)
+                        setIsCreateModalOpen(true)
+                      }}
+                    >
+                      <CardContent className="p-3 space-y-2">
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium text-sm break-words">{event.title}</h4>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-5"
+                              style={{ color: event.backgroundColor }}
+                            >
+                              {event.extendedProps.priority}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              {formatEventTime(event.start)} - {formatEventTime(event.end)}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </ScrollArea>
+  </div>
+
+  {/* Calendar Section */}
+  <div className="flex-1 flex flex-col">
+    <div className="flex items-center justify-between p-4 border-b border-blue-200 bg-white/50 backdrop-blur-sm">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="hover:bg-violet-100">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={handleNextMonth} className="hover:bg-violet-100">
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-
-        <ScrollArea className="flex-1">
-          <div className="p-4">
-            <div className="text-sm font-medium mb-4 text-blue-800 flex items-center gap-2">
-              <div className="h-6 w-1 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
-              Status
-            </div>
-            <div className="space-y-4">
-              {priorities.map((priority) => (
-                <div key={priority.label} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: priority.color }} />
-                      <span className="text-sm font-medium">{priority.label}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 pl-5">{priority.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Added Events Section */}
-          {events.length > 0 && (
-            <div className="p-4 pt-2">
-              <Separator className="my-4" />
-              <div className="text-sm font-medium mb-4 text-blue-800 flex items-center gap-2">
-                <div className="h-6 w-1 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
-                Your Events
-              </div>
-
-              <div className="space-y-4">
-                {groupedEvents.map((group) => (
-                  <div key={group.date} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-violet-500" />
-                      <span className="text-xs font-semibold text-gray-700">
-                        {new Date(group.date).toLocaleDateString([], {
-                          weekday: "long",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-
-                    {group.events.map((event) => {
-                      const priorityObj = priorities.find((p) => p.value === event.extendedProps.priority)
-
-                      return (
-                        <Card
-                          key={event.id}
-                          className="overflow-hidden border-l-4 hover:shadow-md transition-all cursor-pointer"
-                          style={{ borderLeftColor: event.backgroundColor }}
-                          onClick={() => {
-                            setEventToEdit(event)
-                            setIsCreateModalOpen(true)
-                          }}
-                        >
-                          <CardContent className="p-3">
-                            <div className="space-y-1">
-                              <div className="flex justify-between items-start">
-                                <h4 className="font-medium text-sm line-clamp-1">{event.title}</h4>
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] h-5"
-                                  style={{ color: event.backgroundColor }}
-                                >
-                                  {event.extendedProps.priority}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
-                                <Clock className="h-3 w-3" />
-                                <span>
-                                  {formatEventTime(event.start)} - {formatEventTime(event.end)}
-                                </span>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </ScrollArea>
+        <h2 className="text-xl font-semibold text-blue-900">
+          {currentDate.toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          })}
+        </h2>
       </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleToday}
+          className="border-violet-200 hover:bg-violet-100 hover:text-violet-700"
+        >
+          Today
+        </Button>
+      </div>
+    </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-blue-200 bg-white/50 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="hover:bg-violet-100">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleNextMonth} className="hover:bg-violet-100">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <h2 className="text-xl font-semibold text-blue-900">
-              {currentDate.toLocaleString("default", {
-                month: "long",
-                year: "numeric",
-              })}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleToday}
-              className="border-violet-200 hover:bg-violet-100 hover:text-violet-700"
-            >
-              Today
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex-1 p-4 overflow-auto">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={false}
-            events={events}
-            initialDate={currentDate}
-            key={currentDate.toISOString()}
-            height="100%"
-            dayMaxEvents={true}
-            eventDisplay="block"
-            editable={true} // Enable drag-and-drop
-            eventDrop={handleEventDrop} // Handle drop event
-            eventContent={(arg) => (
-              <EventHoverCard
-                event={arg}
-                onEventUpdate={(updatedEvent) => {
-                  setEvents(events.map((event) => (event.id === updatedEvent.id ? updatedEvent : event)))
-                }}
-              />
-            )}
-            eventTimeFormat={{
-              hour: "numeric",
-              minute: "2-digit",
-              meridiem: "short",
+    <div className="flex-1 p-4 overflow-auto max-w-full truncate">
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        headerToolbar={false}
+        events={events}
+        initialDate={currentDate}
+        key={currentDate.toISOString()}
+        height="100%"
+        dayMaxEvents={true}
+        eventDisplay="block"
+        editable={true}
+        eventDrop={handleEventDrop}
+        eventContent={(arg) => (
+          <EventHoverCard
+            className=''
+            event={arg}
+            onEventUpdate={(updatedEvent) => {
+              setEvents(events.map((event) => (event.id === updatedEvent.id ? updatedEvent : event)))
             }}
           />
-        </div>
-      </div>
-
-      <CreateEventModal
-        open={isCreateModalOpen}
-        onOpenChange={(open) => {
-          setIsCreateModalOpen(open)
-          if (!open) {
-            setEventToEdit(null)
-          }
+        )}
+        eventTimeFormat={{
+          hour: "numeric",
+          minute: "2-digit",
+          meridiem: "short",
         }}
-        addEvent={addEvent}
-        editEvent={editEvent}
-        deleteEvent={deleteEvent}
-        eventToEdit={eventToEdit}
-        isAddingEvent={isAddingEvent}
-        isEditingEvent={isEditingEvent}
-        isDeletingEvent={isDeletingEvent}
       />
     </div>
+  </div>
+
+  {/* Modal */}
+  <CreateEventModal
+    open={isCreateModalOpen}
+    onOpenChange={(open) => {
+      setIsCreateModalOpen(open)
+      if (!open) {
+        setEventToEdit(null)
+      }
+    }}
+    addEvent={addEvent}
+    editEvent={editEvent}
+    deleteEvent={deleteEvent}
+    eventToEdit={eventToEdit}
+    isAddingEvent={isAddingEvent}
+    isEditingEvent={isEditingEvent}
+    isDeletingEvent={isDeletingEvent}
+  />
+</div>
+
   )
 }
 

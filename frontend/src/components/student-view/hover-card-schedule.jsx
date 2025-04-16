@@ -47,10 +47,10 @@ export function EventHoverCard({ event }) {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <div className="group relative w-full">
+        <div className="group relative w-full max-w-full truncate">
           <div
             className={cn(
-              "flex items-center gap-2 px-2 py-1.5 border-md transition-all duration-300",
+              "flex items-center gap-2 px-2 py-1.5 border-md transition-all duration-300 truncate",
               "hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]",
               "border border-transparent hover:border-white",
               "backdrop-blur-sm bg-opacity-90 min-w-0",
