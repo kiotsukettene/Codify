@@ -11,6 +11,7 @@ import ProfBg1 from "@/components/Auth/Prof-Bg-1";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import LoaderOne from "@/components/ui/loader-one";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 const ProfessorLogin = () => {
   const [email, setEmail] = useState("");
@@ -49,7 +50,11 @@ const ProfessorLogin = () => {
 
       {/* Login Card */}
 
-      <form onSubmit={handleProfessorLogin} className="w-full max-w-[450px]">
+      <motion.form onSubmit={handleProfessorLogin} className="w-full max-w-[450px]"
+       initial={{ y: -200, opacity: 0 }}
+       animate={{ y: 0, opacity: 1 }}
+       transition={{ type: "spring", stiffness: 120, damping: 10 }}
+       >
         <Card className="p-6 sm:p-10 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
             <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
@@ -147,7 +152,7 @@ const ProfessorLogin = () => {
             </div>
           </CardContent>
         </Card>
-      </form>
+      </motion.form>
     </div>
   );
 };

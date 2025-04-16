@@ -1,18 +1,11 @@
-import React, { useState, useEffect } from "react";
-import Hearder from "@/components/professor-view/Header";
+import React, { useEffect } from "react";
+import Header from "@/components/professor-view/Header";
 import BattleCard from "@/components/professor-view/BattleCard";
 import RankingList from "@/components/professor-view/RankingList";
 import GradeTask from "@/components/professor-view/GradeTask";
 import StatsCard from "@/components/professor-view/StatsCard";
 import ScheduleList from "@/components/professor-view/ScheduleList";
 import { UsersRound, BookOpenText, ChartLine } from "lucide-react";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import AppSidebar from "@/components/professor-view/Sidebar";
-import { Separator } from "@/components/ui/separator";
 import { useprofAuthStore } from "@/store/profAuthStore";
 
 const mockStudentRankings = [
@@ -103,8 +96,20 @@ const mockSchedule = [
   },
 ];
 
-const ProfDashboard = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+// const information = {
+//   title: "Information",
+//   content: `Real-Time Code Execution: Students can write and run their code instantly, with results displayed in seconds. No page reloads, no fluff.
+
+// Multi-Language Support (optional based on your setup): Whether it’s JavaScript, Python, or C++, Codify handles it all. Flexibility for students, control for professors. 
+
+// Secure Sandboxed Environment: Every code submission runs in an isolated container or controlled backend environment, ensuring safety and preventing malicious code from affecting the system.
+
+// Auto-Grading & Output Comparison: Code output is automatically checked against test cases. Professors can define expected outputs, and Codify takes care of the validation.
+
+// Battle Mode Ready ⚔️: The compiler integrates directly with the Coding Battle feature, enabling timed and ranked submissions between students in real-time.`,
+// };
+
+const ProfDashboard = ({ title, content }) => {
   const { courseCount, isLoading, professorId } = useprofAuthStore();
 
   useEffect(() => {
@@ -118,7 +123,7 @@ const ProfDashboard = () => {
   return (
 <div className="w-full min-h-screen px-2 md:px-4">
       {/* Header */}
-      <Hearder />
+      <Header />
 
             {/* Main Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
@@ -138,7 +143,7 @@ const ProfDashboard = () => {
                   />
                   <StatsCard
                     title="Grading Queue"
-                    value="0"
+                    value="0" 
                     icon={<ChartLine size={24} />}
                   />
                 </div>

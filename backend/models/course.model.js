@@ -4,15 +4,21 @@ import generateCourseSlug from "../utils/sluggifyCourse.js";
 
 const CourseSchema = new mongoose.Schema(
   {
-    professorId: {
+    institutionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Professor",
+      ref: "Institution",
       required: true,
     },
     className: { type: String, required: true },
     description: { type: String, required: true },
     program: { type: String, required: true },
-    section: { type: String, required: true },
+    year: { type: String, required: true }, // Separate field for year
+    section: { type: String, required: true }, // Separate field for section letter
+    professorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Professor",
+      required: true,
+    },
     language: { type: String, required: true },
     schedule: {
       day: { type: String, required: true },
@@ -21,7 +27,7 @@ const CourseSchema = new mongoose.Schema(
     courseCode: {
       type: String,
       unique: true,
-      default: generateCourseCode, // Generate course code on creation
+      default: generateCourseCode,
     },
     slug: { type: String, unique: true, required: true },
     studentsEnrolled: {
@@ -36,18 +42,16 @@ CourseSchema.virtual("studentCount").get(function () {
   return this.studentsEnrolled.length;
 });
 
-// Define a virtual field to count lessons related to this course
 CourseSchema.virtual("lessonCount", {
-  ref: "Lesson", // The model to use
-  localField: "_id", // Find courses where `_id`
-  foreignField: "courseId", // is equal to the Lesson's `courseId`
-  count: true, // And only return the count of documents
+  ref: "Lesson",
+  localField: "_id",
+  foreignField: "courseId",
+  count: true,
 });
 
-CourseSchema.pre("save", generateCourseSlug); // Generate slug on save
+CourseSchema.pre("save", generateCourseSlug);
 CourseSchema.set("toObject", { virtuals: true });
 CourseSchema.set("toJSON", { virtuals: true });
-
 
 const Course = mongoose.model("Course", CourseSchema);
 export default Course;

@@ -19,6 +19,7 @@ export const useStudentStore = create((set) => ({
   isLoading: false,
   isCheckingStudentAuth: true, // Used to check authentication status on page load
   message: null,
+  clearError: () => set({ error: null }),
 
   // Fetch all students
   fetchStudents: async () => {
@@ -174,11 +175,13 @@ export const useStudentStore = create((set) => ({
         email,
       });
       set({ isLoading: false, message: response.data.message });
+      toast.success("Password reset email sent successfully");
     } catch (error) {
       set({
         isLoading: false,
         error: error.response?.data?.message || "Failed to send reset email",
       });
+      throw error;
     }
   },
 
@@ -217,9 +220,6 @@ export const useStudentStore = create((set) => ({
       set({ error: "Error logging out", isLoading: false });
     }
   },
-
-  // Clear error
-  clearError: () => set({ error: null }),
 
   //student update
   updateStudent: async (studentData) => {

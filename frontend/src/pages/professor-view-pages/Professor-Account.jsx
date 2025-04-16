@@ -4,12 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff } from "lucide-react"; // Import Eye Icons
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import AppSidebar from "@/components/professor-view/Sidebar";
 import toast from "react-hot-toast";
 import pic from "@/assets/picture/random-background/dashboard-img.png";
 import { motion } from "framer-motion";
@@ -87,7 +81,7 @@ const Account = () => {
   };
 
   return (
-    <div className="space-y-6 p-6 w-full">
+    <div className="space-y-6 p-2 w-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -151,7 +145,11 @@ const Account = () => {
 
       <Separator className="my-8" />
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      className="grid md:grid-cols-2 gap-8">
         <div className="flex flex-col justify-center">
           <h2 className="text-2xl font-bold text-gray-800">Change Password</h2>
           <p className="text-gray-500 mt-2 text-sm">
@@ -246,7 +244,7 @@ const Account = () => {
             </Button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };
