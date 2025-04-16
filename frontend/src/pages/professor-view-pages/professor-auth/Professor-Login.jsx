@@ -29,10 +29,8 @@ const ProfessorLogin = () => {
     e.preventDefault(); // ✅ Prevent page reload
 
     try {
-      await login(email, password); // ✅ Call Zustand store login function
+      await login(email, password); 
       toast.success("Login successful!");
-
-      // ✅ Navigate to admin dashboard
       navigate("/professor/dashboard", { replace: true });
     } catch (error) {
       console.log(error?.message || "Failed to login. Try again.");
@@ -41,8 +39,10 @@ const ProfessorLogin = () => {
 
   const handleGoogleLogin = async () => {
     await LoginWithGoogle();
-    navigate("/professor/dashboard");
-  };
+
+    navigate("/professor/dashboard", { replace: true });
+
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center pt-12 overflow-hidden p-4">
@@ -51,9 +51,9 @@ const ProfessorLogin = () => {
       {/* Login Card */}
 
       <motion.form onSubmit={handleProfessorLogin} className="w-full max-w-[450px]"
-       initial={{ y: -200, opacity: 0 }}
-       animate={{ y: 0, opacity: 1 }}
-       transition={{ type: "spring", stiffness: 120, damping: 10 }}
+       initial={{ opacity: 0, y: 20 }}
+       animate={{ opacity: 1, y: 0 }}
+       transition={{ duration: 0.5 }}
        >
         <Card className="p-6 sm:p-10 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
@@ -75,6 +75,12 @@ const ProfessorLogin = () => {
                 className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !isLoading) {
+                    e.preventDefault(); // Prevent any default behavior
+                    handleProfessorLogin(e); // Trigger form submission
+                  }
+                }}
               />
             </div>
 
@@ -85,8 +91,13 @@ const ProfessorLogin = () => {
                 className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !isLoading) {
+                    e.preventDefault(); // Prevent any default behavior
+                    handleProfessorLogin(e); // Trigger form submission
+                  }
+                }}
                 id="password"
-                disabled={isLoading}
               />
               <button
                 type="button"
@@ -130,7 +141,7 @@ const ProfessorLogin = () => {
                 Sign In
               </Button> */}
               <Button type="submit" className="w-full">
-                {isLoading ? <LoaderOne /> : "Login"}
+                {isLoading ? <LoaderOne  /> : "Login"}
               </Button>
 
               <Button
@@ -138,7 +149,6 @@ const ProfessorLogin = () => {
                   e.preventDefault(); // Prevent form submission
                   handleGoogleLogin();
                 }}
-                disabled={isLoading}
                 variant="outline"
                 className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white"
               >

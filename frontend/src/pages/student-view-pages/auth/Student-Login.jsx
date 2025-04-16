@@ -45,9 +45,10 @@ const handleGoogleSignIn = async () => {
     
         {/* Login Card */}
         <motion.form onSubmit={handleLogin} className="w-full max-w-[450px]" 
-         initial={{ y: -200, opacity: 0 }}
-         animate={{ y: 0, opacity: 1 }}
-         transition={{ type: "spring", stiffness: 120, damping: 10 }}>
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+         >
         <Card className="p-6 sm:p-10 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
             <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
@@ -60,7 +61,6 @@ const handleGoogleSignIn = async () => {
             </p>
           </CardHeader>
           <CardContent className="space-y-4 p-0 mt-6 sm:mt-8">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="space-y-3 sm:space-y-4 relative">
               <Input 
               type="email" 
@@ -99,38 +99,34 @@ const handleGoogleSignIn = async () => {
                     </button>
             </div>
             
-         
-    
+
             <div className="flex items-center justify-between pt-1">
-    
               <div className="flex items-center space-x-2">
-              </div>
-    
+              </div>   
                 <Link to="/student/forgot-password"className="px-0 text-[#4F46E5] hover:text-[#4338CA] font-normal text-xs sm:text-sm">
                   Forgot password?
                 </Link>
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
 
 
-    
-        
            <div className="pt-2 space-y-3 w-full">
-           <motion.button onClick={handleLogin} className="w-full h-10  justify-center items-center text-center  sm:h-12 text-sm sm:text-[15px] bg-[#7C3AED] hover:bg-[#6D28D9] rounded-md text-white" 
-           disabled={isLoading} type="button" >
-                {isLoading ? <Loader className=" text-white justify-center items-center text-center align-center animate-spin" /> : "Login"}
+           <motion.button onClick={handleLogin} 
+           className="w-full h-10  justify-center items-center text-center  sm:h-12 text-sm sm:text-[15px] bg-[#7C3AED] hover:bg-[#6D28D9] rounded-md text-white" 
+           disabled={isLoading} 
+           type="submit" >
+            {isLoading ? <Loader className=" text-white justify-center items-center text-center align-center animate-spin" /> : "Login"}
             </motion.button>
     
               <Button
                 onClick={handleGoogleSignIn} 
-
                 variant="outline"
                 className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white">
                 <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
                 Sign In with Google
               </Button>
             </div>
-    
-        
+
           </CardContent>
         </Card>
         </motion.form>
