@@ -18,7 +18,7 @@ import {
 const studentMenu = [
   { to: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/student/course-list", icon: Layers, label: "Course" },
-  { to: "/student/schedules", icon: Calendar, label: "Schedules" },
+  { to: "/student/events", icon: Calendar, label: "Events" },
   { to: "/student/challenges", icon: Gamepad2, label: "Challenges" },
   { to: "/student/code-battle", icon: Sword, label: "Code Battles" },
   { to: "/student/task-list", icon: CircleCheckBig, label: "Task" },

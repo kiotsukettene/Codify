@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { BadgePlus } from "lucide-react";
 
 const CreateEventModal = ({
   open,
@@ -82,6 +83,7 @@ const CreateEventModal = ({
     } else {
       addEvent(eventData);
     }
+    onOpenChange(false);
   };
 
   const handleDelete = () => {
@@ -95,7 +97,7 @@ const CreateEventModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{eventToEdit ? "Edit Event" : "Create Event"}</DialogTitle>
+          <DialogTitle className='bg-violet-100 p-4 rounded mt-3 flex items-center gap-3 text-neutral-900'> <BadgePlus/> {eventToEdit ? "Edit Event" :"Create Event"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -149,10 +151,10 @@ const CreateEventModal = ({
               </Select>
             </div>
           </div>
-          <DialogFooter className="mt-4">
+          <DialogFooter className="md:mt-4 mt-3">
             <Button
               type="button"
-              className='mt-2'
+              className='my-2 md:my-0'
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
@@ -169,7 +171,7 @@ const CreateEventModal = ({
               </Button>
             )}
             <Button
-              className='my-3'
+              className=''
               type="submit"
               disabled={isAddingEvent || isEditingEvent || isDeletingEvent}
             >
@@ -179,7 +181,7 @@ const CreateEventModal = ({
                   : "Creating..."
                 : eventToEdit
                 ? "Update Event"
-                : "Create Event"}
+                : "Save Event"}
             </Button>
           </DialogFooter>
         </form>

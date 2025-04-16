@@ -440,7 +440,7 @@ function App() {
             element={<StudentActivityPage />}
           />
           <Route path="task-list" element={<StudentTaskPage />} />
-          <Route path="schedules" element={<StudentCalendarPage />} />
+          <Route path="events" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings />} />
           <Route path="code-battle" element={<StudentCodeBattleOverview />} />
           {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}

@@ -290,6 +290,7 @@ function StudentCalendar() {
             : event
         )
       )
+      toast.success("Event updated successfully!")
 
     } catch (error) {
       console.error("Error updating event:", error.message)
@@ -334,6 +335,7 @@ function StudentCalendar() {
       setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId))
 
       toast.success("Event deleted successfully!")
+      
     } catch (error) {
       console.error("Error deleting event:", error.message)
       toast.error(error.message || "Failed to delete event")
@@ -546,7 +548,7 @@ function StudentCalendar() {
       </div>
     </div>
 
-    <div className="flex-1 p-4 overflow-auto max-w-full truncate">
+    <div className="flex-1 p-4 overflow-visible max-w-full truncate">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
