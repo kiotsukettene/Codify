@@ -1,4 +1,3 @@
-// controllers/courseField.controller.js
 import CourseField from "../models/courseField.model.js";
 
 export const createCourseField = async (req, res) => {
@@ -6,12 +5,15 @@ export const createCourseField = async (req, res) => {
     console.log("Request body:", req.body); // Debug incoming data
 
     const { name, type, status } = req.body;
+    const institutionId = req.institutionId; // From verifyToken middleware
 
     // Validate required fields
-    if (!name || !type || !status) {
+    if (!name || !type || !status || !institutionId) {
       return res
         .status(400)
-        .json({ message: "Name, type, and status are required" });
+        .json({
+          message: "Name, type, status, and institutionId are required",
+        });
     }
 
     // Validate type against the enum defined in the schema
@@ -29,6 +31,7 @@ export const createCourseField = async (req, res) => {
       name,
       type,
       status,
+      institutionId,
       lastModified: new Date(),
     });
 
@@ -51,6 +54,7 @@ export const createCourseField = async (req, res) => {
 export const getCourseFieldsByType = async (req, res) => {
   try {
     const { type } = req.params;
+    const institutionId = req.institutionId; // From verifyToken middleware
     console.log("Fetching course fields for type:", type); // Debug
 
     // Validate type
@@ -59,7 +63,7 @@ export const getCourseFieldsByType = async (req, res) => {
       return res.status(400).json({ message: "Invalid type provided" });
     }
 
-    const courseFields = await CourseField.find({ type });
+    const courseFields = await CourseField.find({ type, institutionId });
     res.status(200).json(courseFields);
   } catch (error) {
     console.error("Error fetching course fields:", error);
@@ -73,7 +77,8 @@ export const getCourseFieldsByType = async (req, res) => {
 export const getCourseFieldById = async (req, res) => {
   try {
     const { id } = req.params;
-    const courseField = await CourseField.findById(id);
+    const institutionId = req.institutionId; // From verifyToken middleware
+    const courseField = await CourseField.findOne({ _id: id, institutionId });
 
     if (!courseField) {
       return res.status(404).json({ message: "Course field not found" });
@@ -94,6 +99,7 @@ export const updateCourseField = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, status } = req.body;
+    const institutionId = req.institutionId; // From verifyToken middleware
 
     // Validate inputs
     if (!name || !status) {
@@ -104,8 +110,8 @@ export const updateCourseField = async (req, res) => {
       return res.status(400).json({ message: "Invalid status provided" });
     }
 
-    const updatedCourseField = await CourseField.findByIdAndUpdate(
-      id,
+    const updatedCourseField = await CourseField.findOneAndUpdate(
+      { _id: id, institutionId },
       { name, status, lastModified: new Date() },
       { new: true }
     );
@@ -130,7 +136,11 @@ export const updateCourseField = async (req, res) => {
 export const deleteCourseField = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedCourseField = await CourseField.findByIdAndDelete(id);
+    const institutionId = req.institutionId; // From verifyToken middleware
+    const deletedCourseField = await CourseField.findOneAndDelete({
+      _id: id,
+      institutionId,
+    });
 
     if (!deletedCourseField) {
       return res.status(404).json({ message: "Course field not found" });

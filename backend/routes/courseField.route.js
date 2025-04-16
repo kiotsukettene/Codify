@@ -1,4 +1,3 @@
-// routes/courseField.routes.js
 import express from "express";
 import {
   createCourseField,
@@ -7,8 +6,12 @@ import {
   updateCourseField,
   deleteCourseField,
 } from "../controllers/courseField.controller.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
+
+// Apply verifyToken middleware to all routes
+router.use(verifyToken);
 
 // Create a new course field
 router.post("/", createCourseField);

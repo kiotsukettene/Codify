@@ -14,13 +14,21 @@ const courseFieldSchema = new mongoose.Schema(
       enum: ["Active", "Inactive"],
       default: "Active",
     },
+    institutionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "Institution",
+    },
     lastModified: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
 
-// Add unique index on name and type
-courseFieldSchema.index({ name: 1, type: 1 }, { unique: true });
+// Add unique index on name, type, and institutionId
+courseFieldSchema.index(
+  { name: 1, type: 1, institutionId: 1 },
+  { unique: true }
+);
 
 export const CourseField = mongoose.model("CourseField", courseFieldSchema);
 export default CourseField;
