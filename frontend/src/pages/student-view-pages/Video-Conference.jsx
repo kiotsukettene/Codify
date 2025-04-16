@@ -36,8 +36,8 @@ export default function VideoConference() {
 
     
     // generate Kit Token
-    const appID = Number(process.env.REACT_APP_ZEGO_APP_ID);
-    const serverSecret = process.env.ZEGO_SERVER_SECRET;
+    const appID = Number(process.env.VITE_REACT_APP_ZEGO_APP_ID); 
+    const serverSecret = process.env.VITE_ZEGO_SERVER_SECRET;
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
