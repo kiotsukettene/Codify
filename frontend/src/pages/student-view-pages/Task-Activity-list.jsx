@@ -11,6 +11,8 @@ function StudentTaskPage() {
   const { activities, fetchStudentAllActivities, isLoading } =
     useActivityStore();
 
+    console.log("activities",activities)
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchStudentAllActivities();
