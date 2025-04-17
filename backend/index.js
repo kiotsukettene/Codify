@@ -15,6 +15,7 @@ import emailRoutes from "./routes/email.route.js"; // Import email routes
 import session from "express-session";
 import passport from "passport";
 import studentEventRoutes from "./routes/studentEvent.route.js"; 
+import battleRoutes from "./routes/battle.route.js"; // Import battle routes
 dotenv.config();
 
 const app = express();
@@ -60,6 +61,8 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/students/courses", studentCourseRoutes);
 app.use("/api/students/challenges", challengeRoutes);
 app.use("/api/events", studentEventRoutes);
+app.use("/api/battles", battleRoutes); // Use battle routes
+
 
 // Use email routes
 app.use("/api/guest", emailRoutes);

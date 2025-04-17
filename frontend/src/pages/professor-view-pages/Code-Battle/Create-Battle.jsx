@@ -1,343 +1,444 @@
-import React, { useState, useEffect } from 'react'
-import { Calendar, GamepadIcon as GameController, Shield, Swords, ScrollText, Trophy, Plus } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import LoadingSpinner from '@/components/LoadingSpinner'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect } from 'react';
+import {
+  Calendar,
+  GamepadIcon as GameController,
+  Shield,
+  Swords,
+  ScrollText,
+  Trophy,
+  Plus,
+  HelpCircle,
+  X,
+  ChevronsUpDown,
+  Check,
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import useBattleStore from '@/store/battleStore';
+import { useCourseStore } from '@/store/courseStore';
 
 const CreateBattle = () => {
-  // State for form values
-  const [battleData, setBattleData] = useState({
-    title: "",
-    description: "",
-    duration: "",
-    commencement: "",
-    course: "",
-    section: "",
-    player1: "",
-    player2: "",
-    problemTitle: "",
-    problemDescription: "",
-    inputConstraints: "",
-    expectedOutput: "",
-    rules: "",
-  })
+  const {
+    battleData,
+    selectedCourse,
+    selectedProgram,
+    selectedSection,
+    open,
+    courseValue,
+    isSubmitting,
+    setBattleData,
+    addChallenge,
+    updateChallenge,
+    removeChallenge,
+    selectCourse,
+    selectProgram,
+    selectSection,
+    setOpen,
+    submitBattle,
+    getAvailablePlayers,
+  } = useBattleStore();
 
-  // State for dynamic options
-  const [courses, setCourses] = useState([])
-  const [sections, setSections] = useState([])
-  const [players, setPlayers] = useState([])
-  const [isOptionsLoading, setIsOptionsLoading] = useState(true)
-  const navigate = useNavigate();
+  const { courses, isLoading: isCoursesLoading, fetchCoursesByProfessor } = useCourseStore();
 
-  // Fetch dynamic options when component mounts.
   useEffect(() => {
-    const fetchOptions = async () => {
-      // Simulate an API delay
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      // These values would be fetched from your API
-      const fetchedCourses = [
-        { id: "programming", name: "Programming Languages" },
-        { id: "web", name: "Web Development" },
-        { id: "data", name: "Data Structures" },
-      ]
-      const fetchedSections = [
-        { id: "cs3a", name: "CS3A" },
-        { id: "cs3b", name: "CS3B" },
-        { id: "cs3c", name: "CS3C" },
-      ]
-      const fetchedPlayers = [
-        { id: "antang", name: "Antang, Irheil Mae" },
-        { id: "bae", name: "Bae, Catherine" },
-        { id: "doe", name: "Doe, John" },
-      ]
+    fetchCoursesByProfessor();
+  }, [fetchCoursesByProfessor]);
 
-      setCourses(fetchedCourses)
-      setSections(fetchedSections)
-      setPlayers(fetchedPlayers)
-      setIsOptionsLoading(false)
-    }
-    fetchOptions()
-  }, [])
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await submitBattle();
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    console.log(battleData)
-    navigate("/")
-    // Here you can call your API to submit the battleData
-  }
+  const isPlayerSelectionEnabled = selectedCourse && selectedProgram && selectedSection;
+  const canAddChallenge = battleData.challenges.length < 3;
 
   return (
-    <div className=" bg-gray-50 p-4 md:p-8 w-full">
-      <div>
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <Trophy className="h-12 w-12 text-[#7C3AED]" />
-          <div>
-            <h1 className="text-2xl font-bold">Create Your Epic Code Battle Arena</h1>
-            <p className="text-gray-600">
-              Design an exciting coding challenge and let your students compete for glory!
-            </p>
+    <div className="w-full">
+      <div className="flex gap-3 justify-between pt-4 pb-4">
+        <div className="flex gap-4">
+          <Trophy className="h-8 w-8 text-[#7C3AED]" />
+          <h1 className="text-2xl font-bold">Create Your Epic Code Battle Arena</h1>
+        </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon" className="h-6 w-6 rounded-full border-muted-foreground/30">
+              <HelpCircle className="h-3 w-3" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="w-full max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-purple-600">Code Compiler Information</DialogTitle>
+              <DialogDescription>
+                Each section of the interface plays a specific role in the process of code development and testing. Below is a detailed description of each component:<br /><br />
+                <b>Main</b> <br /> This is where users type their source code in the selected programming language.<br /><br />
+                <b>Input</b> <br /> This section accepts user-provided input values for code execution.<br /><br />
+                <b>Output</b> <br /> This displays the results of code execution.<br /><br />
+                <b>Language Selector</b> <br /> This dropdown allows choosing a programming language.<br /><br />
+                <b>Run Code</b> <br /> This executes the code in the main panel.<br /><br />
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#7C3AED]">
+              <GameController className="h-5 w-5" />
+              Battle Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Battle Title</label>
+              <Input
+                placeholder="Enter an epic battle title"
+                value={battleData.title}
+                onChange={(e) => setBattleData({ title: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Battle Description</label>
+              <Input
+                placeholder="Describe the battle objectives and goals"
+                value={battleData.description}
+                onChange={(e) => setBattleData({ description: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Battle Duration (minutes)
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Enter duration"
+                  value={battleData.duration}
+                  onChange={(e) => setBattleData({ duration: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Battle Commencement
+                </label>
+                <Input
+                  type="date"
+                  value={battleData.commencement}
+                  onChange={(e) => setBattleData({ commencement: e.target.value })}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#7C3AED]">
+              <Shield className="h-5 w-5" />
+              Champions & Challengers
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-12">
+              <div className="space-y-2 col-span-6">
+                <label className="text-sm font-medium">Course</label>
+                {isCoursesLoading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-full justify-between"
+                      >
+                        {courseValue
+                          ? courses.find((course) => course._id === courseValue)?.className
+                          : 'Select course...'}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search course..." />
+                        <CommandEmpty>No course found.</CommandEmpty>
+                        <CommandGroup>
+                          {[...new Set(courses.map((course) => course.className))].map((className) => {
+                            const course = courses.find((c) => c.className === className);
+                            return (
+                              <CommandItem
+                                key={course._id}
+                                value={course._id}
+                                onSelect={() => selectCourse(course._id, courses)}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    courseValue === course._id ? 'opacity-100' : 'opacity-0'
+                                  )}
+                                />
+                                {className}
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+              <div className="space-y-2 col-span-4">
+                <label className="text-sm font-medium">Program</label>
+                <Select
+                  onValueChange={selectProgram}
+                  value={selectedProgram}
+                  disabled={!selectedCourse}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={selectedCourse ? 'Select program...' : 'Select a course first'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedCourse?.programs.map((program) => (
+                      <SelectItem key={program} value={program}>
+                        {program}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 col-span-2">
+                <label className="text-sm font-medium">Section</label>
+                <Select
+                  onValueChange={selectSection}
+                  value={selectedSection}
+                  disabled={!selectedCourse || !selectedProgram}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={selectedCourse && selectedProgram ? 'Select section...' : 'Select a program first'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedCourse?.sections.map((section) => (
+                      <SelectItem key={section} value={section}>
+                        {section}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Player 1</label>
+                <Select
+                  onValueChange={(value) => setBattleData({ player1: value })}
+                  value={battleData.player1}
+                  disabled={!isPlayerSelectionEnabled}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isPlayerSelectionEnabled ? 'Select Player 1' : 'Select course, program, and section first'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailablePlayers('player1')(useBattleStore.getState()).map((player) => (
+                      <SelectItem key={player.id} value={player.id}>
+                        {player.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Player 2</label>
+                <Select
+                  onValueChange={(value) => setBattleData({ player2: value })}
+                  value={battleData.player2}
+                  disabled={!isPlayerSelectionEnabled}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isPlayerSelectionEnabled ? 'Select Player 2' : 'Select course, program, and section first'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailablePlayers('player2')(useBattleStore.getState()).map((player) => (
+                      <SelectItem key={player.id} value={player.id}>
+                        {player.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="justify-between flex text-2xl font-semibold">
+          <div className="text-[#7C3AED] flex items-center gap-2">
+            <Swords className="h-5 w-5" />
+            Battle Challenges
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Battle Configuration */}
-          <Card>
+        {battleData.challenges.map((challenge, index) => (
+          <Card key={index}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-[#7C3AED]">
-                <GameController className="h-5 w-5" />
-                Battle Configuration
-              </CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2 text-[#7C3AED] text-base">
+                  Challenge No. {index + 1}
+                </CardTitle>
+                {battleData.challenges.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeChallenge(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Battle Title</label>
-                <Input
-                  placeholder="Enter an epic battle title"
-                  value={battleData.title}
-                  onChange={(e) => setBattleData({ ...battleData, title: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Battle Description</label>
-                <Input
-                  placeholder="Describe the battle objectives and goals"
-                  value={battleData.description}
-                  onChange={(e) => setBattleData({ ...battleData, description: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium">
-                    <Calendar className="h-4 w-4" />
-                    Battle Duration (minutes)
-                  </label>
-                  <Input
-                    placeholder="Enter duration"
-                    value={battleData.duration}
-                    onChange={(e) => setBattleData({ ...battleData, duration: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium">
-                    <Calendar className="h-4 w-4" />
-                    Battle Commencement
-                  </label>
-                  <Input
-                    type="date"
-                    placeholder="DD/MM/YYYY"
-                    value={battleData.commencement}
-                    onChange={(e) => setBattleData({ ...battleData, commencement: e.target.value })}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Champions & Challengers */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-[#7C3AED]">
-                <Shield className="h-5 w-5" />
-                Champions & Challengers
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium">Course</label>
-                  {isOptionsLoading ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <Select
-                      onValueChange={(value) => setBattleData({ ...battleData, course: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Course" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {courses.map((course) => (
-                          <SelectItem key={course.id} value={course.id}>
-                            {course.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Section</label>
-                  {isOptionsLoading ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <Select
-                      onValueChange={(value) => setBattleData({ ...battleData, section: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Section" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sections.map((section) => (
-                          <SelectItem key={section.id} value={section.id}>
-                            {section.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium">Player 1</label>
-                  {isOptionsLoading ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <Select
-                      onValueChange={(value) => setBattleData({ ...battleData, player1: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Player 1" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {players.map((player) => (
-                          <SelectItem key={player.id} value={player.id}>
-                            {player.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Player 2</label>
-                  {isOptionsLoading ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <Select
-                      onValueChange={(value) => setBattleData({ ...battleData, player2: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Player 2" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {players.map((player) => (
-                          <SelectItem key={player.id} value={player.id}>
-                            {player.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Battle Challenges */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-[#7C3AED]">
-                <div className="flex items-center gap-2">
-                  <Swords className="h-5 w-5" />
-                  Battle Challenges
-                </div>
-                <Button variant="ghost" size="icon">
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Problem Title</label>
                 <Input
-                  value={battleData.problemTitle}
-                  onChange={(e) =>
-                    setBattleData({ ...battleData, problemTitle: e.target.value })
-                  }
+                  value={challenge.problemTitle}
+                  onChange={(e) => updateChallenge(index, 'problemTitle', e.target.value)}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Description</label>
                 <Textarea
                   className="min-h-[100px]"
-                  value={battleData.problemDescription}
-                  onChange={(e) =>
-                    setBattleData({ ...battleData, problemDescription: e.target.value })
-                  }
+                  value={challenge.problemDescription}
+                  onChange={(e) => updateChallenge(index, 'problemDescription', e.target.value)}
                 />
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium">Input Constraints</label>
-                  <Textarea
-                    className="min-h-[100px]"
-                    value={battleData.inputConstraints}
-                    onChange={(e) =>
-                      setBattleData({ ...battleData, inputConstraints: e.target.value })
-                    }
-                  />
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Input Constraints (Test Cases)</label>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {[0, 1, 2].map((testCaseIndex) => (
+                    <div key={testCaseIndex} className="space-y-1">
+                      <label className="text-xs font-medium">Test Case {testCaseIndex + 1}</label>
+                      <Textarea
+                        className="min-h-[80px]"
+                        value={challenge.inputConstraints[testCaseIndex] || ''}
+                        onChange={(e) =>
+                          updateChallenge(index, 'inputConstraints', {
+                            ...challenge.inputConstraints,
+                            [testCaseIndex]: e.target.value,
+                          })
+                        }
+                        placeholder={`Input for test case ${testCaseIndex + 1}`}
+                      />
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Expected Output</label>
-                  <Textarea
-                    className="min-h-[100px]"
-                    value={battleData.expectedOutput}
-                    onChange={(e) =>
-                      setBattleData({ ...battleData, expectedOutput: e.target.value })
-                    }
-                  />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Expected Output (Test Cases)</label>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {[0, 1, 2].map((testCaseIndex) => (
+                    <div key={testCaseIndex} className="space-y-1">
+                      <label className="text-xs font-medium">Test Case {testCaseIndex + 1}</label>
+                      <Textarea
+                        className="min-h-[80px]"
+                        value={challenge.expectedOutput[testCaseIndex] || ''}
+                        onChange={(e) =>
+                          updateChallenge(index, 'expectedOutput', {
+                            ...challenge.expectedOutput,
+                            [testCaseIndex]: e.target.value,
+                          })
+                        }
+                        placeholder={`Output for test case ${testCaseIndex + 1}`}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
           </Card>
+        ))}
 
-          {/* Battle Rules */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-[#7C3AED]">
-                <ScrollText className="h-5 w-5" />
-                Battle Rules
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder="Add additional rules"
-                className="min-h-[100px]"
-                value={battleData.rules}
-                onChange={(e) =>
-                  setBattleData({ ...battleData, rules: e.target.value })
-                }
-              />
-            </CardContent>
-          </Card>
+        <div className="flex justify-end mt-4">
+          <Button
+            variant="ghost"
+            onClick={addChallenge}
+            disabled={!canAddChallenge}
+            className={`flex items-center gap-1 text-white hover:bg-purple-500 hover:text-gray-100 bg-purple-600 ${
+              !canAddChallenge ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            <Plus className="h-4 w-4" /> Add Challenge
+          </Button>
+        </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Need help mastering the art of battle?{" "}
-              <a href="#" className="text-[#7C3AED] hover:underline">
-                Consult the Battle Manual
-              </a>
-            </p>
-            <div className="flex gap-3">
-              <Button variant="outline" type="button">
-                Save
-              </Button>
-              <Button className="bg-[#7C3AED] hover:bg-[#6D28D9]" type="submit">
-                Commence Now
-              </Button>
-            </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#7C3AED]">
+              <ScrollText className="h-5 w-5" />
+              Battle Rules <p className="text-sm text-gray-400">(Optional)</p>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              placeholder="Add additional rules"
+              className="min-h-[100px]"
+              value={battleData.rules}
+              onChange={(e) => setBattleData({ rules: e.target.value })}
+            />
+          </CardContent>
+        </Card>
+
+        <div className="flex items-center justify-between">
+          <div className="flex gap-3">
+            <Button variant="outline" type="button" disabled={isSubmitting}>
+              Save
+            </Button>
+            <Button
+              className="bg-[#7C3AED] hover:bg-[#6D28D9]"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Commence Now'}
+            </Button>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
-  )
-}
+  );
+};
 
-export default CreateBattle
+export default CreateBattle;
