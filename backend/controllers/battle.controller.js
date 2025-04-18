@@ -15,6 +15,7 @@ export const createBattle = async (req, res) => {
       player2,
       challenges,
       rules,
+      status = "pending", // Default to pending
     } = req.body;
 
     const professorId = req.professorId;
@@ -38,17 +39,18 @@ export const createBattle = async (req, res) => {
 
     // Validate challenges
     if (
-      challenges.some(challenge => 
-        !Array.isArray(challenge.inputConstraints) ||
-        !Array.isArray(challenge.expectedOutput) ||
-        challenge.inputConstraints.length !== 3 ||
-        challenge.expectedOutput.length !== 3 ||
-        challenge.inputConstraints.some(tc => typeof tc !== 'string' || tc.trim() === '') ||
-        challenge.expectedOutput.some(tc => typeof tc !== 'string' || tc.trim() === '')
+      challenges.some(
+        (challenge) =>
+          !Array.isArray(challenge.inputConstraints) ||
+          !Array.isArray(challenge.expectedOutput) ||
+          challenge.inputConstraints.length !== 3 ||
+          challenge.expectedOutput.length !== 3 ||
+          challenge.inputConstraints.some((tc) => typeof tc !== "string" || tc.trim() === "") ||
+          challenge.expectedOutput.some((tc) => typeof tc !== "string" || tc.trim() === "")
       )
     ) {
-      return res.status(400).json({ 
-        message: "Each challenge must have exactly 3 non-empty string input constraints and expected outputs" 
+      return res.status(400).json({
+        message: "Each challenge must have exactly 3 non-empty string input constraints and expected outputs",
       });
     }
 
@@ -63,10 +65,7 @@ export const createBattle = async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    if (
-      !course.studentsEnrolled.includes(player1) ||
-      !course.studentsEnrolled.includes(player2)
-    ) {
+    if (!course.studentsEnrolled.includes(player1) || !course.studentsEnrolled.includes(player2)) {
       return res.status(400).json({ message: "Selected players must be enrolled in the course" });
     }
 
@@ -75,12 +74,23 @@ export const createBattle = async (req, res) => {
       return res.status(400).json({ message: "Program or section does not match the course" });
     }
 
+    // Validate commencement date for pending battles
+    let finalCommencement = new Date(commencement);
+    if (status === "pending" && finalCommencement <= new Date()) {
+      return res.status(400).json({ message: "Commencement date must be in the future for scheduled battles" });
+    }
+
+    // For immediate battles, set commencement to now
+    if (status === "active") {
+      finalCommencement = new Date();
+    }
+
     // Create the battle
     const battle = new Battle({
       title,
       description,
       duration,
-      commencement,
+      commencement: finalCommencement,
       courseId,
       program,
       section,
@@ -89,20 +99,21 @@ export const createBattle = async (req, res) => {
       challenges,
       rules,
       createdBy: professorId,
+      status,
     });
 
     await battle.save();
 
     res.status(201).json({
-      message: "Battle created successfully!",
+      message: status === "active" ? "Battle commenced successfully!" : "Battle scheduled successfully!",
       battle,
     });
   } catch (error) {
     console.error("Error in createBattle:", error);
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       return res.status(400).json({
         message: "Validation failed",
-        errors: Object.values(error.errors).map(err => err.message),
+        errors: Object.values(error.errors).map((err) => err.message),
       });
     }
     res.status(500).json({
@@ -141,6 +152,201 @@ export const getCoursesForBattle = async (req, res) => {
     console.error("Error in getCoursesForBattle:", error);
     res.status(500).json({
       message: "Error fetching courses",
+      error: error.message,
+    });
+  }
+};
+
+export const getBattlesByProfessor = async (req, res) => {
+  try {
+    const professorId = req.professorId;
+
+    const battles = await Battle.find({ createdBy: professorId })
+      .populate("player1", "firstName lastName _id")
+      .populate("player2", "firstName lastName _id")
+      .populate("courseId", "className program section");
+
+    const formattedBattles = battles.map((battle) => {
+      // Calculate progress (placeholder: based on results or challenges)
+      const progress1 = battle.results?.player1Score
+        ? Math.round((battle.results.player1Score / battle.challenges.reduce((sum, c) => sum + c.points, 0)) * 100)
+        : 0;
+      const progress2 = battle.results?.player2Score
+        ? Math.round((battle.results.player2Score / battle.challenges.reduce((sum, c) => sum + c.points, 0)) * 100)
+        : 0;
+
+      return {
+        id: battle._id,
+        challenge: battle.title, // Maps to challenge in CodeBattleTab
+        description: `${battle.courseId.className} | ${battle.courseId.program} ${battle.courseId.section} | ${battle.duration} minutes`,
+        time: new Date(battle.commencement).toLocaleString(), // For scheduled battles
+        challengers: [
+          { name: `${battle.player1.firstName} ${battle.player1.lastName}`, progress: progress1 },
+          { name: `${battle.player2.firstName} ${battle.player2.lastName}`, progress: progress2 },
+        ],
+        course: {
+          id: battle.courseId._id,
+          name: battle.courseId.className,
+          program: battle.courseId.program,
+          section: battle.courseId.section,
+        },
+        status: battle.status,
+        commencement: battle.commencement,
+        createdAt: battle.createdAt,
+      };
+    });
+
+    res.status(200).json(formattedBattles);
+  } catch (error) {
+    console.error("Error in getBattlesByProfessor:", error);
+    res.status(500).json({
+      message: "Error fetching battles",
+      error: error.message,
+    });
+  }
+};
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    const professorId = req.professorId;
+
+    const battles = await Battle.find({ createdBy: professorId })
+      .populate("player1", "firstName lastName _id")
+      .populate("player2", "firstName lastName _id");
+
+    // Fetch courses to get section information
+    const courses = await Course.find({ professorId }).select("studentsEnrolled program section");
+
+    // Map student IDs to their section
+    const studentSections = {};
+    courses.forEach((course) => {
+      course.studentsEnrolled.forEach((studentId) => {
+        studentSections[studentId.toString()] = `${course.program} ${course.section}`;
+      });
+    });
+
+    // Aggregate scores
+    const studentScores = {};
+    battles.forEach((battle) => {
+      if (battle.results) {
+        const player1Id = battle.player1._id.toString();
+        const player2Id = battle.player2._id.toString();
+
+        if (!studentScores[player1Id]) {
+          studentScores[player1Id] = {
+            id: player1Id,
+            name: `${battle.player1.firstName} ${battle.player1.lastName}`,
+            section: studentSections[player1Id] || "Unknown",
+            totalPoints: 0,
+            battlesPlayed: 0,
+          };
+        }
+        if (!studentScores[player2Id]) {
+          studentScores[player2Id] = {
+            id: player2Id,
+            name: `${battle.player2.firstName} ${battle.player2.lastName}`,
+            section: studentSections[player2Id] || "Unknown",
+            totalPoints: 0,
+            battlesPlayed: 0,
+          };
+        }
+
+        studentScores[player1Id].totalPoints += battle.results.player1Score || 0;
+        studentScores[player1Id].battlesPlayed += 1;
+        studentScores[player2Id].totalPoints += battle.results.player2Score || 0;
+        studentScores[player2Id].battlesPlayed += 1;
+      }
+    });
+
+    const leaderboard = Object.values(studentScores)
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+      .map((entry, index) => ({
+        ...entry,
+        id: index + 1, // Rank-based ID for UI
+      }));
+
+    res.status(200).json(leaderboard);
+  } catch (error) {
+    console.error("Error in getLeaderboard:", error);
+    res.status(500).json({
+      message: "Error fetching leaderboard",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteBattle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const professorId = req.professorId;
+
+    const battle = await Battle.findOneAndDelete({
+      _id: id,
+      createdBy: professorId,
+    });
+
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found or not authorized" });
+    }
+
+    res.status(200).json({ message: "Battle deleted successfully" });
+  } catch (error) {
+    console.error("Error in deleteBattle:", error);
+    res.status(500).json({
+      message: "Error deleting battle",
+      error: error.message,
+    });
+  }
+};
+
+export const updateBattle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const professorId = req.professorId;
+    const updates = req.body;
+
+    // Prevent updating results or status directly
+    delete updates.results;
+    delete updates.status;
+
+    const battle = await Battle.findOneAndUpdate(
+      { _id: id, createdBy: professorId },
+      { $set: updates },
+      { new: true, runValidators: true }
+    )
+      .populate("player1", "firstName lastName _id")
+      .populate("player2", "firstName lastName _id")
+      .populate("courseId", "className program section");
+
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found or not authorized" });
+    }
+
+    const formattedBattle = {
+      id: battle._id,
+      challenge: battle.title,
+      description: `${battle.courseId.className} | ${battle.courseId.program} ${battle.courseId.section} | ${battle.duration} minutes`,
+      time: new Date(battle.commencement).toLocaleString(),
+      challengers: [
+        { name: `${battle.player1.firstName} ${battle.player1.lastName}`, progress: 0 },
+        { name: `${battle.player2.firstName} ${battle.player2.lastName}`, progress: 0 },
+      ],
+      course: {
+        id: battle.courseId._id,
+        name: battle.courseId.className,
+        program: battle.courseId.program,
+        section: battle.courseId.section,
+      },
+      status: battle.status,
+      commencement: battle.commencement,
+      createdAt: battle.createdAt,
+    };
+
+    res.status(200).json(formattedBattle);
+  } catch (error) {
+    console.error("Error in updateBattle:", error);
+    res.status(500).json({
+      message: "Error updating battle",
       error: error.message,
     });
   }

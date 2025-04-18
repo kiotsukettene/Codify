@@ -1,18 +1,36 @@
 import mongoose from "mongoose";
 
 const ChallengeSchema = new mongoose.Schema({
+  challengeId: { 
+    type: String, 
+    required: true,
+    default: () => Math.random().toString(36).substr(2, 9)
+  },
   problemTitle: { type: String, required: true },
-  problemDescription: { type: String, required: true },
-  inputConstraints: [{ type: String }], // Changed to array of strings
-  expectedOutput: [{ type: String }], // Changed to array of strings
+  problemDescription: { 
+    type: String, 
+    required: true,
+    content: String,
+
+  },
+  points: { type: Number, required: true, default: 100 },
+  inputConstraints: [{ type: String }],
+  expectedOutput: [{ type: String }],
 });
 
 const BattleSchema = new mongoose.Schema(
   {
+    battleId: {
+      type: String,
+      required: true,
+      unique: true,
+      default: () => Math.random().toString(36).substr(2, 9)
+    },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    duration: { type: Number, required: true }, // Duration in minutes
+    duration: { type: Number, required: true },
     commencement: { type: Date, required: true },
+    totalPoints: { type: Number, default: 0 },
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
@@ -37,9 +55,24 @@ const BattleSchema = new mongoose.Schema(
       ref: "Professor",
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["pending", "active", "completed"], // Add status field
+      default: "pending",
+    },
+    results: {
+      player1Score: { type: Number, default: 0 },
+      player2Score: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );
+
+// Calculate total points before saving
+BattleSchema.pre('save', function(next) {
+  this.totalPoints = this.challenges.reduce((sum, challenge) => sum + challenge.points, 0);
+  next();
+});
 
 const Battle = mongoose.model("Battle", BattleSchema);
 export default Battle;

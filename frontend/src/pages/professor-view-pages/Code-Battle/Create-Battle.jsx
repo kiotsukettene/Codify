@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   Calendar,
   GamepadIcon as GameController,
@@ -11,19 +11,19 @@ import {
   X,
   ChevronsUpDown,
   Check,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import LoadingSpinner from '@/components/LoadingSpinner';
+} from "@/components/ui/select";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import {
   Dialog,
   DialogContent,
@@ -31,24 +31,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import useBattleStore from '@/store/battleStore';
-import { useCourseStore } from '@/store/courseStore';
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import useBattleStore from "@/store/battleStore";
+import { useCourseStore } from "@/store/courseStore";
 
-const CreateBattle = () => {
+const CreateBattle = ({ isEditMode = false, battleId}) => {
   const {
     battleData,
     selectedCourse,
@@ -65,8 +65,10 @@ const CreateBattle = () => {
     selectProgram,
     selectSection,
     setOpen,
+    saveBattle, // Add saveBattle
     submitBattle,
     getAvailablePlayers,
+    editBattle,
   } = useBattleStore();
 
   const { courses, isLoading: isCoursesLoading, fetchCoursesByProfessor } = useCourseStore();
@@ -77,7 +79,15 @@ const CreateBattle = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await submitBattle();
+    if (isEditMode) {
+      await editBattle(battleId, battleData);
+    } else {
+      await submitBattle();
+    }
+  };
+
+  const handleSave = async () => {
+    await saveBattle();
   };
 
   const isPlayerSelectionEnabled = selectedCourse && selectedProgram && selectedSection;
@@ -92,7 +102,11 @@ const CreateBattle = () => {
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="h-6 w-6 rounded-full border-muted-foreground/30">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-6 w-6 rounded-full border-muted-foreground/30"
+            >
               <HelpCircle className="h-3 w-3" />
             </Button>
           </DialogTrigger>
@@ -100,12 +114,26 @@ const CreateBattle = () => {
             <DialogHeader>
               <DialogTitle className="text-purple-600">Code Compiler Information</DialogTitle>
               <DialogDescription>
-                Each section of the interface plays a specific role in the process of code development and testing. Below is a detailed description of each component:<br /><br />
-                <b>Main</b> <br /> This is where users type their source code in the selected programming language.<br /><br />
-                <b>Input</b> <br /> This section accepts user-provided input values for code execution.<br /><br />
-                <b>Output</b> <br /> This displays the results of code execution.<br /><br />
-                <b>Language Selector</b> <br /> This dropdown allows choosing a programming language.<br /><br />
-                <b>Run Code</b> <br /> This executes the code in the main panel.<br /><br />
+                Each section of the interface plays a specific role in the process of code development
+                and testing. Below is a detailed description of each component:
+                <br />
+                <br />
+                <b>Main</b> <br /> This is where users type their source code in the selected
+                programming language.
+                <br />
+                <br />
+                <b>Input</b> <br /> This section accepts user-provided input values for code execution.
+                <br />
+                <br />
+                <b>Output</b> <br /> This displays the results of code execution.
+                <br />
+                <br />
+                <b>Language Selector</b> <br /> This dropdown allows choosing a programming language.
+                <br />
+                <br />
+                <b>Run Code</b> <br /> This executes the code in the main panel.
+                <br />
+                <br />
               </DialogDescription>
             </DialogHeader>
           </DialogContent>
@@ -156,7 +184,7 @@ const CreateBattle = () => {
                   Battle Commencement
                 </label>
                 <Input
-                  type="date"
+                  type="datetime-local" // Changed to datetime-local for precise scheduling
                   value={battleData.commencement}
                   onChange={(e) => setBattleData({ commencement: e.target.value })}
                 />
@@ -189,7 +217,7 @@ const CreateBattle = () => {
                       >
                         {courseValue
                           ? courses.find((course) => course._id === courseValue)?.className
-                          : 'Select course...'}
+                          : "Select course..."}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -208,8 +236,8 @@ const CreateBattle = () => {
                               >
                                 <Check
                                   className={cn(
-                                    'mr-2 h-4 w-4',
-                                    courseValue === course._id ? 'opacity-100' : 'opacity-0'
+                                    "mr-2 h-4 w-4",
+                                    courseValue === course._id ? "opacity-100" : "opacity-0"
                                   )}
                                 />
                                 {className}
@@ -230,7 +258,9 @@ const CreateBattle = () => {
                   disabled={!selectedCourse}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={selectedCourse ? 'Select program...' : 'Select a course first'} />
+                    <SelectValue
+                      placeholder={selectedCourse ? "Select program..." : "Select a course first"}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {selectedCourse?.programs.map((program) => (
@@ -249,7 +279,13 @@ const CreateBattle = () => {
                   disabled={!selectedCourse || !selectedProgram}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={selectedCourse && selectedProgram ? 'Select section...' : 'Select a program first'} />
+                    <SelectValue
+                      placeholder={
+                        selectedCourse && selectedProgram
+                          ? "Select section..."
+                          : "Select a program first"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {selectedCourse?.sections.map((section) => (
@@ -270,14 +306,24 @@ const CreateBattle = () => {
                   disabled={!isPlayerSelectionEnabled}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={isPlayerSelectionEnabled ? 'Select Player 1' : 'Select course, program, and section first'} />
+                    <SelectValue
+                      placeholder={
+                        isPlayerSelectionEnabled
+                          ? "Select Player 1"
+                          : "Select course, program, and section first"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {getAvailablePlayers('player1')(useBattleStore.getState()).map((player) => (
-                      <SelectItem key={player.id} value={player.id}>
-                        {player.name}
-                      </SelectItem>
-                    ))}
+                    {getAvailablePlayers("player1")(useBattleStore.getState()).length === 0 ? (
+                      <SelectItem disabled>No students available</SelectItem>
+                    ) : (
+                      getAvailablePlayers("player1")(useBattleStore.getState()).map((player) => (
+                        <SelectItem key={player.id} value={player.id}>
+                          {player.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -289,14 +335,24 @@ const CreateBattle = () => {
                   disabled={!isPlayerSelectionEnabled}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={isPlayerSelectionEnabled ? 'Select Player 2' : 'Select course, program, and section first'} />
+                    <SelectValue
+                      placeholder={
+                        isPlayerSelectionEnabled
+                          ? "Select Player 2"
+                          : "Select course, program, and section first"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {getAvailablePlayers('player2')(useBattleStore.getState()).map((player) => (
-                      <SelectItem key={player.id} value={player.id}>
-                        {player.name}
-                      </SelectItem>
-                    ))}
+                    {getAvailablePlayers("player2")(useBattleStore.getState()).length === 0 ? (
+                      <SelectItem disabled>No students available</SelectItem>
+                    ) : (
+                      getAvailablePlayers("player2")(useBattleStore.getState()).map((player) => (
+                        <SelectItem key={player.id} value={player.id}>
+                          {player.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -335,15 +391,27 @@ const CreateBattle = () => {
                 <label className="text-sm font-medium">Problem Title</label>
                 <Input
                   value={challenge.problemTitle}
-                  onChange={(e) => updateChallenge(index, 'problemTitle', e.target.value)}
+                  onChange={(e) => updateChallenge(index, "problemTitle", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Description</label>
-                <Textarea
+                <Input
                   className="min-h-[100px]"
                   value={challenge.problemDescription}
-                  onChange={(e) => updateChallenge(index, 'problemDescription', e.target.value)}
+                  onChange={(e) => updateChallenge(index, "problemDescription", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Points</label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={challenge.points}
+                  onChange={(e) =>
+                    updateChallenge(index, "points", parseInt(e.target.value) || 0)
+                  }
+                  placeholder="Enter points for this challenge"
                 />
               </div>
               <div className="space-y-2">
@@ -354,11 +422,13 @@ const CreateBattle = () => {
                       <label className="text-xs font-medium">Test Case {testCaseIndex + 1}</label>
                       <Textarea
                         className="min-h-[80px]"
-                        value={challenge.inputConstraints[testCaseIndex] || ''}
+                        value={challenge.inputConstraints[testCaseIndex] || ""}
                         onChange={(e) => {
-                          const newInputConstraints = [...(challenge.inputConstraints || ['', '', ''])];
+                          const newInputConstraints = [
+                            ...(challenge.inputConstraints || ["", "", ""]),
+                          ];
                           newInputConstraints[testCaseIndex] = e.target.value;
-                          updateChallenge(index, 'inputConstraints', newInputConstraints);
+                          updateChallenge(index, "inputConstraints", newInputConstraints);
                         }}
                         placeholder={`Input for test case ${testCaseIndex + 1}`}
                       />
@@ -374,11 +444,13 @@ const CreateBattle = () => {
                       <label className="text-xs font-medium">Test Case {testCaseIndex + 1}</label>
                       <Textarea
                         className="min-h-[80px]"
-                        value={challenge.expectedOutput[testCaseIndex] || ''}
+                        value={challenge.expectedOutput[testCaseIndex] || ""}
                         onChange={(e) => {
-                          const newExpectedOutput = [...(challenge.expectedOutput || ['', '', ''])];
+                          const newExpectedOutput = [
+                            ...(challenge.expectedOutput || ["", "", ""]),
+                          ];
                           newExpectedOutput[testCaseIndex] = e.target.value;
-                          updateChallenge(index, 'expectedOutput', newExpectedOutput);
+                          updateChallenge(index, "expectedOutput", newExpectedOutput);
                         }}
                         placeholder={`Output for test case ${testCaseIndex + 1}`}
                       />
@@ -392,11 +464,12 @@ const CreateBattle = () => {
 
         <div className="flex justify-end mt-4">
           <Button
+            type="button"
             variant="ghost"
             onClick={addChallenge}
             disabled={!canAddChallenge}
             className={`flex items-center gap-1 text-white hover:bg-purple-500 hover:text-gray-100 bg-purple-600 ${
-              !canAddChallenge ? 'opacity-50 cursor-not-allowed' : ''
+              !canAddChallenge ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             <Plus className="h-4 w-4" /> Add Challenge
@@ -422,15 +495,20 @@ const CreateBattle = () => {
 
         <div className="flex items-center justify-between">
           <div className="flex gap-3">
-            <Button variant="outline" type="button" disabled={isSubmitting}>
-              Save
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleSave} // Wire to handleSave
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Schedule Battle"}
             </Button>
             <Button
               className="bg-[#7C3AED] hover:bg-[#6D28D9]"
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating...' : 'Commence Now'}
+              {isSubmitting ? "Commencing..." : "Commence Now"}
             </Button>
           </div>
         </div>

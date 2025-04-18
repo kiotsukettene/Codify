@@ -53,6 +53,7 @@ import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle
 import Account from "./pages/professor-view-pages/Professor-Account";
 import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
 import EditActivity from "./pages/professor-view-pages/Course-management/Edit-Activity";
+import EditBattle from "./pages/professor-view-pages/Code-Battle/Edit-Battle";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -330,6 +331,7 @@ function App() {
               </ProtectedRouteProfessors>
             }
           />
+          <Route path="/professor/code-battle/edit/:id" element={<ProtectedRouteProfessors><EditBattle /></ProtectedRouteProfessors>} />
           <Route
             path="account"
             element={
