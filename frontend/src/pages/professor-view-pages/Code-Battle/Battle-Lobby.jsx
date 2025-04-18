@@ -5,13 +5,31 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Bear from "@/assets/picture/Avatar/Bear.png";
+import { useParams } from 'react-router-dom';
+import useBattleStore from '@/store/battleStore';
 
-const BattleLobby = ({ battle }) => {
+const BattleLobby = () => {
+  const { battleId } = useParams();
+  const { battles, fetchBattles } = useBattleStore();
+  const [battle, setBattle] = useState(null);
   const [players, setPlayers] = useState({
     player1: { joined: false, ready: false },
     player2: { joined: false, ready: false }
   });
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+
+  useEffect(() => {
+    fetchBattles();
+  }, [fetchBattles]);
+
+  useEffect(() => {
+    if (battles.length > 0) {
+      const currentBattle = battles.find(b => b.id === battleId);
+      if (currentBattle) {
+        setBattle(currentBattle);
+      }
+    }
+  }, [battles, battleId]);
 
   useEffect(() => {
     // Simulated player joining - replace with actual WebSocket logic
@@ -97,6 +115,14 @@ const BattleLobby = ({ battle }) => {
     </motion.div>
   );
 
+  if (!battle) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-8 flex items-center justify-center">
+        <p className="text-purple-600">Loading battle details...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-8">
       <motion.div
@@ -127,8 +153,8 @@ const BattleLobby = ({ battle }) => {
                 <Shield className="h-5 w-5" />
                 <h2 className="font-semibold">Battle Details</h2>
               </div>
-              <p className="text-lg font-bold">{battle?.title}</p>
-              <p className="text-sm text-gray-600">{battle?.description}</p>
+              <p className="text-lg font-bold">{battle.challenge}</p>
+              <p className="text-sm text-gray-600">{battle.description}</p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-purple-700">
@@ -144,13 +170,13 @@ const BattleLobby = ({ battle }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <PlayerCard
-            player={{ name: battle?.player1Name || 'Player 1' }}
+            player={battle.challengers[0]}
             isJoined={players.player1.joined}
             isReady={players.player1.ready}
             position="left"
           />
           <PlayerCard
-            player={{ name: battle?.player2Name || 'Player 2' }}
+            player={battle.challengers[1]}
             isJoined={players.player2.joined}
             isReady={players.player2.ready}
             position="right"

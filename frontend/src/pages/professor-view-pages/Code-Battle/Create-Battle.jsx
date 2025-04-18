@@ -47,6 +47,7 @@ import {
 import { cn } from "@/lib/utils";
 import useBattleStore from "@/store/battleStore";
 import { useCourseStore } from "@/store/courseStore";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 const CreateBattle = ({ isEditMode = false, battleId}) => {
   const {
@@ -73,16 +74,24 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
 
   const { courses, isLoading: isCoursesLoading, fetchCoursesByProfessor } = useCourseStore();
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     fetchCoursesByProfessor();
   }, [fetchCoursesByProfessor]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isEditMode) {
-      await editBattle(battleId, battleData);
-    } else {
-      await submitBattle();
+    try {
+      if (isEditMode) {
+        await editBattle(battleId, battleData);
+      } else {
+        const response = await submitBattle();
+        navigate(`/professor/code-battle/lobby/${response.battle.battleId}`);
+      }
+    } catch (error) {
+      // Error is already handled by the store
+      console.error("Failed to handle battle:", error);
     }
   };
 
