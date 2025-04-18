@@ -104,7 +104,7 @@ const CoursesAdmin = () => {
   };
 
   return (
-    <div className="w-full p-2 sm:p-6">
+    <div className="w-full p-6 sm:p-8">
       <div className="pb-10">
         <div className="w-full flex items-center justify-between mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">
@@ -148,7 +148,7 @@ const CoursesAdmin = () => {
       </div>
       {/* Card Courses */}
       <div
-        className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 transition-all duration-300 ${
+        className={`grid place-items-center sm:place-items-start gap-20 transition-all duration-300 ${
           isSidebarOpen
             ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
@@ -176,6 +176,7 @@ const CoursesAdmin = () => {
                 courseCode={course.courseCode}
                 section={course.section}
                 program={course.program}
+                year={course.year}
                 onEdit={() => handleEdit(course._id)}
                 onDelete={() => handleDeleteCourse(course._id)} // Trigger DeleteDialog
               />
@@ -205,6 +206,9 @@ const CoursesAdmin = () => {
               <PaginationPrevious
                 href="#"
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
               />
             </PaginationItem>
             {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
@@ -228,6 +232,11 @@ const CoursesAdmin = () => {
                 href="#"
                 onClick={() =>
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
                 }
               />
             </PaginationItem>

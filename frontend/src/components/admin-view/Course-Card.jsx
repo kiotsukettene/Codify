@@ -19,6 +19,7 @@ export default function CourseCard({
   languages,
   title,
   courseCode,
+  year,
   section,
   program,
   onEdit, // Prop for edit action
@@ -29,11 +30,12 @@ export default function CourseCard({
       <CardHeader className="bg-slate-50 pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-bold text-lg line-clamp-2  text-purple-700">
+            <h3 className="font-bold text-lg line-clamp-2 text-purple-700">
               {title}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {program} • Section {section}
+              {program} • {year}
+              {section}
             </p>
           </div>
           <DropdownMenu>
