@@ -21,17 +21,20 @@ const studentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    course: {
-      type: String,
+    program: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "CourseField",
     },
     year: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "CourseField",
     },
     section: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "CourseField",
     },
     password: {
       type: String,
@@ -56,11 +59,11 @@ const studentSchema = new mongoose.Schema(
         title: String,
         difficulty: String,
         codeSubmitted: String,
-      }
+      },
     ],
-    events:[
+    events: [
       {
-        id:{
+        id: {
           type: String,
           required: true,
         },
@@ -75,7 +78,7 @@ const studentSchema = new mongoose.Schema(
         },
         end: {
           type: Date,
-          required: false, 
+          required: false,
         },
         priority: {
           type: String,
@@ -84,13 +87,13 @@ const studentSchema = new mongoose.Schema(
         },
         allDay: {
           type: Boolean,
-          default: false, 
+          default: false,
         },
         createdAt: {
           type: Date,
           default: Date.now,
         },
-      }
+      },
     ],
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
@@ -101,5 +104,5 @@ const studentSchema = new mongoose.Schema(
 );
 studentSchema.index({ email: 1, institution: 1 }, { unique: true });
 
-studentSchema.index({"events.start": 1, "events.end": 1});
+studentSchema.index({ "events.start": 1, "events.end": 1 });
 export const Student = mongoose.model("Student", studentSchema);
