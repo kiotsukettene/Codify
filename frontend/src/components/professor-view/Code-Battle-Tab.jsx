@@ -20,7 +20,6 @@ const CodeBattleTab = () => {
     battlesError,
     fetchBattles,
     deleteBattle,
-    editBattle,
   } = useBattleStore();
   const navigate = useNavigate();
 
@@ -37,7 +36,6 @@ const CodeBattleTab = () => {
 
   const handleEditBattle = async (id) => {
     navigate(`/professor/code-battle/edit/${id}`);
-    // Edit form can reuse Create-Battle.jsx with pre-filled data
   };
 
   const handleDeleteBattle = async (id) => {
@@ -46,6 +44,17 @@ const CodeBattleTab = () => {
     } catch (error) {
       // Error toast is handled in battleStore
     }
+  };
+
+  // Calculate total points for a battle and challenger progress
+  const calculateBattleStats = (battle) => {
+    const totalPoints = battle.challenges.reduce((sum, challenge) => sum + (challenge.points || 0), 0);
+    const challengersWithProgress = battle.challengers.map((challenger) => {
+      const pointsEarned = challenger.pointsEarned || 0; // Adjust based on your data structure
+      const progress = totalPoints > 0 ? (pointsEarned / totalPoints) * 100 : 0;
+      return { ...challenger, progress: Math.round(progress) };
+    });
+    return { totalPoints, challengers: challengersWithProgress };
   };
 
   if (isLoadingBattles) {
@@ -128,58 +137,63 @@ const CodeBattleTab = () => {
               {activeBattles.length === 0 ? (
                 <p className="text-center text-gray-500">No active battles.</p>
               ) : (
-                activeBattles.map((battle, index) => (
-                  <motion.div
-                    key={battle.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    whileHover={{ scale: 1.02 }}
-                    className="transition-all duration-300"
-                  >
-                    <Card className="overflow-hidden bg-white border shadow-sm hover:shadow-md transition-all">
-                      <div className="flex flex-col sm:flex-row">
-                        <div className="relative h-[120px] w-full sm:w-[160px] bg-gradient-to-br from-gray-500 to-black flex items-center justify-center">
-                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                            <Button
-                              variant="ghost"
-                              className="text-red-600 hover:bg-gray-800/50 hover:text-white flex items-center gap-2"
-                              onClick={() => navigate(`/professor/code-battle/watch/${battle.id}`)}
-                            >
-                              <Play className="h-4 w-4" />
-                              Watch Live
-                            </Button>
-                          </motion.div>
-                        </div>
-                        <div className="flex-1 p-4">
-                          <h3 className="text-lg font-semibold">{battle.challenge}</h3>
-                          <p className="mb-4 text-sm text-gray-500">{battle.description}</p>
-                          <div className="space-y-4">
-                            {battle.challengers.map((challenger, idx) => (
-                              <div key={idx}>
-                                <div className="mb-1.5 flex items-center justify-between text-sm">
-                                  <span className="font-medium">{challenger.name}</span>
-                                  <span className="flex items-center gap-1 text-purple-600">
-                                    <Rocket className="h-4 w-4" />
-                                    {challenger.progress}%
-                                  </span>
+                activeBattles.map((battle, index) => {
+                  const { totalPoints, challengers } = calculateBattleStats(battle);
+                  return (
+                    <motion.div
+                      key={battle.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      whileHover={{ scale: 1.02 }}
+                      className="transition-all duration-300"
+                    >
+                      <Card className="overflow-hidden bg-white border shadow-sm hover:shadow-md transition-all">
+                        <div className="flex flex-col sm:flex-row">
+                          <div className="relative h-[120px] w-full sm:w-[160px] bg-gradient-to-br from-gray-500 to-black flex items-center justify-center">
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                              <Button
+                                variant="ghost"
+                                className="text-red-600 hover:bg-gray-800/50 hover:text-white flex items-center gap-2"
+                                onClick={() => navigate(`/professor/code-battle/watch/${battle.id}`)}
+                              >
+                                <Play className="h-4 w-4" />
+                                Watch Live
+                              </Button>
+                            </motion.div>
+                          </div>
+                          <div className="flex-1 p-4">
+                            <h3 className="text-lg font-semibold">{battle.challenge}</h3>
+                            <p className="mb-4 text-sm text-gray-500">
+                              {battle.description}
+                            </p>
+                            <div className="space-y-4">
+                              {challengers.map((challenger, idx) => (
+                                <div key={idx}>
+                                  <div className="mb-1.5 flex items-center justify-between text-sm">
+                                    <span className="font-medium">{challenger.name}</span>
+                                    <span className="flex items-center gap-1 text-purple-600">
+                                      <Rocket className="h-4 w-4" />
+                                      {challenger.pointsEarned}/{totalPoints} ({challenger.progress}%)
+                                    </span>
+                                  </div>
+                                  <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <motion.div
+                                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full"
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${challenger.progress}%` }}
+                                      transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
+                                    ></motion.div>
+                                  </div>
                                 </div>
-                                <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                                  <motion.div
-                                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${challenger.progress}%` }}
-                                    transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
-                                  ></motion.div>
-                                </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Card>
-                  </motion.div>
-                ))
+                      </Card>
+                    </motion.div>
+                  );
+                })
               )}
             </AnimatePresence>
           </div>
@@ -205,48 +219,53 @@ const CodeBattleTab = () => {
                   {scheduledBattles.length === 0 ? (
                     <p className="text-center text-gray-500">No scheduled battles.</p>
                   ) : (
-                    scheduledBattles.map((battle, index) => (
-                      <motion.div
-                        key={battle.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 + index * 0.1 }}
-                        whileHover={{ backgroundColor: "#f9f5ff" }}
-                        className="flex items-center justify-between p-3 rounded-md transition-all duration-300"
-                      >
-                        <div className="flex items-center gap-3">
-                          <motion.div
-                            animate={{ height: ["24px", "16px", "24px"] }}
-                            transition={{ repeat: Infinity, duration: 2, repeatDelay: index }}
-                            className="w-1 bg-purple-600 rounded-full"
-                          ></motion.div>
-                          <div>
-                            <h3 className="font-medium">{battle.challenge}</h3>
-                            <p className="text-sm text-gray-500">{battle.time}</p>
+                    scheduledBattles.map((battle, index) => {
+                      const { totalPoints } = calculateBattleStats(battle);
+                      return (
+                        <motion.div
+                          key={battle.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 + index * 0.1 }}
+                          whileHover={{ backgroundColor: "#f9f5ff" }}
+                          className="flex items-center justify-between p-3 rounded-md transition-all duration-300"
+                        >
+                          <div className="flex items-center gap-3">
+                            <motion.div
+                              animate={{ height: ["24px", "16px", "24px"] }}
+                              transition={{ repeat: Infinity, duration: 2, repeatDelay: index }}
+                              className="w-1 bg-purple-600 rounded-full"
+                            ></motion.div>
+                            <div>
+                              <h3 className="font-medium">{battle.challenge}</h3>
+                              <p className="text-sm text-gray-500">
+                                {battle.time} | Total Points: {totalPoints}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditBattle(battle.id)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteBattle(battle.id)}
-                              className="text-red-500 focus:text-red-500"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </motion.div>
-                    ))
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditBattle(battle.id)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteBattle(battle.id)}
+                                className="text-red-500 focus:text-red-500"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </motion.div>
+                      );
+                    })
                   )}
                 </AnimatePresence>
               </div>

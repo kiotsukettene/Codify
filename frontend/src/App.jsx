@@ -55,6 +55,7 @@ import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
 import EditActivity from "./pages/professor-view-pages/Course-management/Edit-Activity";
 import EditBattle from "./pages/professor-view-pages/Code-Battle/Edit-Battle";
 
+
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
 import StudentForgotPasswordPage from "./pages/student-view-pages/auth/Student-Forgot-Password";
@@ -331,7 +332,7 @@ function App() {
               </ProtectedRouteProfessors>
             }
           />
-          <Route path="/professor/code-battle/edit/:id" element={<ProtectedRouteProfessors><EditBattle /></ProtectedRouteProfessors>} />
+          <Route path="code-battle/edit/:id" element={<ProtectedRouteProfessors><EditBattle /></ProtectedRouteProfessors>} />
           <Route
             path="account"
             element={
@@ -450,7 +451,7 @@ function App() {
 
         <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
         <Route path="/main-arena" element={<MainArena />} />
-        <Route path="/professor/code-battle/battle" element={<CodeBattle />} />
+        <Route path="/professor/code-battle/battle/:battleId" element={<ProtectedRouteProfessors><CodeBattle /></ProtectedRouteProfessors>} />
 
         {/* Additional Routes */}
 

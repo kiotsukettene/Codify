@@ -167,22 +167,29 @@ export const getBattlesByProfessor = async (req, res) => {
       .populate("courseId", "className program section");
 
     const formattedBattles = battles.map((battle) => {
-      // Calculate progress (placeholder: based on results or challenges)
       const progress1 = battle.results?.player1Score
-        ? Math.round((battle.results.player1Score / battle.challenges.reduce((sum, c) => sum + c.points, 0)) * 100)
+        ? Math.round((battle.results.player1Score / battle.totalPoints) * 100)
         : 0;
       const progress2 = battle.results?.player2Score
-        ? Math.round((battle.results.player2Score / battle.challenges.reduce((sum, c) => sum + c.points, 0)) * 100)
+        ? Math.round((battle.results.player2Score / battle.totalPoints) * 100)
         : 0;
 
       return {
         id: battle._id,
-        challenge: battle.title, // Maps to challenge in CodeBattleTab
+        challenge: battle.title,
         description: `${battle.courseId.className} | ${battle.courseId.program} ${battle.courseId.section} | ${battle.duration} minutes`,
-        time: new Date(battle.commencement).toLocaleString(), // For scheduled battles
+        time: new Date(battle.commencement).toLocaleString(),
         challengers: [
-          { name: `${battle.player1.firstName} ${battle.player1.lastName}`, progress: progress1 },
-          { name: `${battle.player2.firstName} ${battle.player2.lastName}`, progress: progress2 },
+          { 
+            id: battle.player1._id,
+            name: `${battle.player1.firstName} ${battle.player1.lastName}`, 
+            progress: progress1 
+          },
+          { 
+            id: battle.player2._id,
+            name: `${battle.player2.firstName} ${battle.player2.lastName}`, 
+            progress: progress2 
+          },
         ],
         course: {
           id: battle.courseId._id,
@@ -192,7 +199,9 @@ export const getBattlesByProfessor = async (req, res) => {
         },
         status: battle.status,
         commencement: battle.commencement,
-        createdAt: battle.createdAt,
+        challenges: battle.challenges,
+        rules: battle.rules,
+        duration: battle.duration
       };
     });
 
