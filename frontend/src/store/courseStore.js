@@ -4,22 +4,22 @@ import toast from "react-hot-toast";
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
-  ? "http://localhost:3000/api/courses" // Local backend
-  : `${import.meta.env.VITE_API_URL}/api/courses`; // Production backend
+  ? "http://localhost:3000/api/courses"
+  : `${import.meta.env.VITE_API_URL}/api/courses`;
 
 axios.defaults.withCredentials = true;
+
 export const useCourseStore = create((set) => ({
   courses: [],
   course: null,
+  uniqueStudentCount: 0, // Initialize uniqueStudentCount
   isLoading: false,
   error: null,
 
-  // Fetch all courses by professor ID
   fetchCoursesByProfessor: async () => {
     set({ isLoading: true, error: null });
-
     try {
-      const response = await axios.get(`${API_URL}/courses`);
+      const response = await axios.get(`${API_URL}/professor/courses`);
       set({ courses: response.data, isLoading: false });
     } catch (error) {
       set({
@@ -30,10 +30,34 @@ export const useCourseStore = create((set) => ({
     }
   },
 
-  // Fetch a single course by ID
+  fetchUniqueStudentCountByProfessor: async (filters = {}) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Handle query parameters for filtering (e.g., year, section, program)
+      const queryParams = new URLSearchParams(filters).toString();
+      const url = queryParams
+        ? `${API_URL}/professor/unique-student-count?${queryParams}`
+        : `${API_URL}/professor/unique-student-count`;
+      const response = await axios.get(url);
+      set({
+        uniqueStudentCount: response.data.uniqueStudentCount,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error:
+          error.response?.data?.message ||
+          "Error fetching unique student count",
+        isLoading: false,
+      });
+      toast.error(
+        error.response?.data?.message || "Error fetching unique student count"
+      );
+    }
+  },
+
   fetchCourseById: async (courseId) => {
     set({ isLoading: true, error: null });
-
     try {
       const response = await axios.get(`${API_URL}/course/${courseId}`);
       set({ course: response.data, isLoading: false });
@@ -46,7 +70,6 @@ export const useCourseStore = create((set) => ({
     }
   },
 
-  // Create a new course
   createCourse: async (courseData) => {
     set({ isLoading: true, error: null });
     try {
@@ -79,10 +102,8 @@ export const useCourseStore = create((set) => ({
     }
   },
 
-  // Update an existing course
   updateCourse: async (courseId, updatedData) => {
     set({ isLoading: true, error: null });
-
     try {
       const response = await axios.put(
         `${API_URL}/update/${courseId}`,
@@ -104,10 +125,8 @@ export const useCourseStore = create((set) => ({
     }
   },
 
-  // Delete a course
   deleteCourse: async (courseId) => {
     set({ isLoading: true, error: null });
-
     try {
       await axios.delete(`${API_URL}/delete/${courseId}`);
       set((state) => ({

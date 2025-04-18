@@ -82,7 +82,7 @@ const mockSchedule = [
     subject: "Software Engineering",
     class: "BSCS 3A",
     time: "7:00am - 10:00am",
-    day: "Friday", // Added for consistency with course schedule format
+    day: "Friday",
   },
   {
     id: 2,
@@ -108,6 +108,7 @@ const ProfDashboard = ({ title, content }) => {
   } = useprofAuthStore();
   const {
     courses,
+    uniqueStudentCount,
     isLoading: courseLoading,
     error: courseError,
   } = useCourseStore();
@@ -123,12 +124,16 @@ const ProfDashboard = ({ title, content }) => {
       console.log("Fetching data for professorId:", professorId);
       useprofAuthStore.getState().fetchProfessorById(professorId);
       useCourseStore.getState().fetchCoursesByProfessor();
+      useCourseStore.getState().fetchUniqueStudentCountByProfessor({
+        year: "3",
+        section: "B",
+        program: "BSCS",
+      });
     } else {
       console.warn("professorId is undefined");
     }
   }, [professorId]);
 
-  // Get current day of the week
   const currentDate = new Date();
   const daysOfWeek = [
     "sunday",
@@ -139,14 +144,12 @@ const ProfDashboard = ({ title, content }) => {
     "friday",
     "saturday",
   ];
-  const currentDay = daysOfWeek[currentDate.getDay()]; // "friday" for April 18, 2025
+  const currentDay = daysOfWeek[currentDate.getDay()];
 
-  // Filter courses for the current day
   const todaysCourses = courses.filter(
     (course) => course.schedule?.day.toLowerCase() === currentDay
   );
 
-  // Map today's courses to match the format expected by ScheduleList
   const todaysCoursesFormatted = todaysCourses.map((course, index) => ({
     id: index + 1,
     subject: course.className,
@@ -155,13 +158,20 @@ const ProfDashboard = ({ title, content }) => {
     day: course.schedule.day,
   }));
 
-  // Fallback to mockSchedule if no courses are scheduled for today
   const displaySchedule =
     todaysCoursesFormatted.length > 0
       ? todaysCoursesFormatted
       : mockSchedule.filter(
           (schedule) => schedule.day.toLowerCase() === currentDay
         );
+
+  console.log("Professor:", professor);
+  console.log("Professor ID:", professorId);
+  console.log("Courses:", courses);
+  console.log("Today's Courses:", todaysCourses);
+  console.log("Display Schedule:", displaySchedule);
+  console.log("Unique Student Count:", uniqueStudentCount);
+  console.log("Auth error:", profError);
 
   if (profError) {
     return <div>Error: {profError}</div>;
@@ -170,7 +180,10 @@ const ProfDashboard = ({ title, content }) => {
     return <div>Error fetching courses: {courseError}</div>;
   }
 
-  const displayedCourseCount = courses.length;
+  const displayedCourseCount =
+    profLoading || courseLoading ? "Loading..." : courses.length;
+  const displayedStudentCount =
+    profLoading || courseLoading ? "Loading..." : uniqueStudentCount || 0; // Fallback to 0
 
   return (
     <div className="w-full min-h-screen px-2 md:px-4">
@@ -180,7 +193,7 @@ const ProfDashboard = ({ title, content }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
             <StatsCard
               title="Total Students"
-              value="0"
+              value={displayedStudentCount}
               icon={<UsersRound size={24} />}
             />
             <StatsCard
