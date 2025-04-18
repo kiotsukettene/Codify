@@ -177,8 +177,7 @@ const ProfDashboard = ({ title, content }) => {
     return <div>Error fetching courses: {courseError}</div>;
   }
 
-  const displayedCourseCount =
-    profLoading || courseLoading ? "Loading..." : courses.length;
+  const displayedCourseCount = courses.length;
 
   return (
     <div className="w-full min-h-screen px-2 md:px-4">
