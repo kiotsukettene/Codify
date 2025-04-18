@@ -5,19 +5,21 @@ import { Avatar, AvatarImage } from "../ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useCourseStore } from "@/store/courseStore";
 import { toast } from "react-hot-toast";
-import DeleteDialog from "../Dialog/DeleteDialog"; // ✅ Import DeleteDialog
+import DeleteDialog from "../Dialog/DeleteDialog";
 
 const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
   const navigate = useNavigate();
-
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // ✅ Manage dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const languageColors = {
     javascript: { bg: "bg-yellow-100", text: "text-yellow-700" },
     python: { bg: "bg-blue-100", text: "text-blue-700" },
-    "C++": { bg: "bg-green-100", text: "text-green-700" },
+    "c++": { bg: "bg-green-100", text: "text-green-700" },
     java: { bg: "bg-orange-100", text: "text-orange-700" },
+    default: { bg: "bg-gray-100", text: "text-gray-700" },
   };
+
+  const normalizeLanguage = (lang) => (lang ? lang.toLowerCase() : "");
 
   return (
     <div className="w-[230px] sm:w-[240px] h-[320px] transform hover:scale-105 transition-transform duration-300">
@@ -33,7 +35,6 @@ const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
         }}
       >
         <div className="h-[60%] bg-purple-100 p-0 relative">
-          {/* Lessons count with desktop icon */}
           <div
             className="absolute left-0 w-full h-[30px] flex items-center justify-center bg-white bg-opacity-20"
             style={{
@@ -46,7 +47,6 @@ const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
               className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600"
               style={{ transform: "skewX(15deg)" }}
             />
-
             <span
               className="text-xs sm:text-sm font-medium text-purple-600 pl-1"
               style={{ transform: "skewX(15deg)" }}
@@ -54,9 +54,6 @@ const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
               {lessonCount} Lessons
             </span>
           </div>
-
-          {/* Pics */}
-
           <div
             className="absolute bottom-2 right-3 flex -space-x-2"
             style={{ transform: "skewX(15deg)" }}
@@ -72,39 +69,23 @@ const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
             </Avatar>
           </div>
         </div>
-        {/* Bottom section */}
         <div className="h-[10%] bg-white p-2 sm:p-3 relative text-center">
           <div className="flex justify-between items-start bg-white">
-            {/* Language tags */}
             <div className="flex gap-2" style={{ transform: "skewX(15deg)" }}>
-              {Array.isArray(languages)
-                ? languages.map((lang, index) => {
-                    const color =
-                      languageColors[lang] || languageColors["No language"];
-                    return (
-                      <span
-                        key={index}
-                        className={`px-2 py-1 rounded-full text-xs ${color.bg} ${color.text}`}
-                      >
-                        {lang}
-                      </span>
-                    );
-                  })
-                : (() => {
-                    const color =
-                      languageColors[languages] ||
-                      languageColors["No language"];
-                    return (
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${color.bg} ${color.text}`}
-                      >
-                        {languages || "No Language"}
-                      </span>
-                    );
-                  })()}
+              {languages.map((lang, index) => {
+                const normalizedLang = normalizeLanguage(lang);
+                const color =
+                  languageColors[normalizedLang] || languageColors.default;
+                return (
+                  <span
+                    key={index}
+                    className={`px-2 py-1 rounded-full text-xs ${color.bg} ${color.text}`}
+                  >
+                    {lang || "No Language"}
+                  </span>
+                );
+              })}
             </div>
-
-            {/* Options */}
             <button
               style={{ transform: "skewX(15deg)" }}
               className="p-2 hover:bg-gray-100 rounded-full"
@@ -125,8 +106,6 @@ const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
               </svg>
             </button>
           </div>
-
-          {/* Infos*/}
           <div style={{ transform: "skewX(15deg)" }}>
             <h3 className="text-sm sm:text-base font-semibold text-purple-700 mb-1">
               {title}
@@ -136,8 +115,6 @@ const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
             </p>
           </div>
         </div>
-
-        {/* Cuts */}
         <div
           className="absolute bottom-0 left-0 w-12 h-12 bg-purple-200"
           style={{
@@ -150,12 +127,13 @@ const Card = ({ lessonCount, languages, title, courseCode, section, year }) => {
 };
 
 Card.propTypes = {
-  courseId: PropTypes.string.isRequired, // ✅ Ensure courseId is a prop
+  courseId: PropTypes.string.isRequired,
   lessonCount: PropTypes.number.isRequired,
-  languages: PropTypes.array.isRequired,
+  languages: PropTypes.arrayOf(PropTypes.string).isRequired,
   title: PropTypes.string.isRequired,
   courseCode: PropTypes.string.isRequired,
   section: PropTypes.string.isRequired,
+  year: PropTypes.string,
 };
 
 export default Card;

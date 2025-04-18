@@ -75,8 +75,9 @@ const Courses = () => {
   const languageColors = {
     javascript: { bg: "bg-yellow-100", text: "text-yellow-700" },
     python: { bg: "bg-blue-100", text: "text-blue-700" },
-    "C++": { bg: "bg-green-100", text: "text-green-700" },
-    java: { bg: "bg-orange-100", text: "text-orange-700" },
+    "c++": { bg: "bg-green-100", text: "text-green-700" },
+    java: { bg: "bg-pink-100", text: "text-pink-700" },
+    default: { bg: "bg-gray-100", text: "text-gray-700" },
   };
 
   // Navigate to course details page
@@ -149,7 +150,11 @@ const Courses = () => {
                 key={course._id}
                 courseId={course._id}
                 lessonCount={course.lessonCount || 0}
-                languages={course.language}
+                languages={
+                  Array.isArray(course.language)
+                    ? course.language
+                    : [course.language]
+                }
                 title={course.className}
                 courseCode={course.courseCode}
                 section={course.section}
