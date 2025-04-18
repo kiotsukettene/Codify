@@ -17,7 +17,7 @@ import { useCourseStore } from "@/store/courseStore";
 import { useNavigate } from "react-router-dom";
 
 const CoursesAdmin = () => {
-  const { courses, fetchCoursesByProfessor, isLoading, deleteCourse } =
+  const { courses, fetchCoursesByInstitution, isLoading, deleteCourse } =
     useCourseStore();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,8 +32,8 @@ const CoursesAdmin = () => {
 
   // Fetch courses when the component mounts
   useEffect(() => {
-    fetchCoursesByProfessor();
-  }, [fetchCoursesByProfessor]);
+    fetchCoursesByInstitution();
+  }, [fetchCoursesByInstitution]);
 
   console.log("Courses:", courses); // Log the courses to check if they are fetched correctly
 
