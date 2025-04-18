@@ -78,14 +78,14 @@ export const loginProfessor = async (req, res) => {
 export const logoutProfessor = async (req, res) => {
   try {
     res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  });
-  res.status(200).json({
-    success: true, // Fixed typo: "sucess" -> "success"
-    message: "Logged out successfully",
-  });
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    res.status(200).json({
+      success: true, // Fixed typo: "sucess" -> "success"
+      message: "Logged out successfully",
+    });
   } catch (error) {
     console.log("Error logging out professor", error);
     res.status(400).json({
@@ -101,7 +101,9 @@ export const getProfessorById = async (req, res) => {
   console.log("Professor ID:", professorId);
 
   try {
-    const professor = await Professor.findById(professorId);
+    const professor = await Professor.findById(professorId).populate(
+      "courseCount"
+    );
 
     if (!professor) {
       return res.status(404).json({ message: "Professor not found" });
@@ -297,7 +299,10 @@ export const registerProfessor = async (req, res) => {
     }
 
     // Check if professor already exists
-    const existingProfessor = await Professor.findOne({ email, institution: institutionId });
+    const existingProfessor = await Professor.findOne({
+      email,
+      institution: institutionId,
+    });
     if (existingProfessor) {
       return res
         .status(400)
@@ -314,17 +319,19 @@ export const registerProfessor = async (req, res) => {
       email,
       password: hashedPassword,
       institution: institution._id,
+    });
 
-    })
-
-    const savedProfessor = await Professor.findById(newProfessor._id).populate("institution", "institutionName");
+    const savedProfessor = await Professor.findById(newProfessor._id).populate(
+      "institution",
+      "institutionName"
+    );
 
     await sendProfessorWelcomeEmail(
       savedProfessor.email,
       savedProfessor.firstName,
       savedProfessor.lastName,
       plainPassword,
-      savedProfessor.institution.institutionName,
+      savedProfessor.institution.institutionName
     );
 
     res.status(201).json({
@@ -333,9 +340,8 @@ export const registerProfessor = async (req, res) => {
       professor: {
         ...savedProfessor._doc,
         password: undefined, // Hide password from response
-      }, 
-    })
-    
+      },
+    });
   } catch (error) {
     console.error("Error in registerProfessor:", error.message);
     res.status(500).json({ success: false, message: "Server error" });
