@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { Confetti } from '../ui/confetti';
-import { Check, Loader2 } from 'lucide-react'; // Import Loader2
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { Confetti } from "../ui/confetti";
+import { Check, Loader2 } from "lucide-react"; // Import Loader2
 
 function PaymentSuccess() {
   const navigate = useNavigate();
@@ -12,51 +12,77 @@ function PaymentSuccess() {
   const [hasRun, setHasRun] = useState(false); // Flag to prevent multiple runs
 
   useEffect(() => {
-    console.log('PaymentSuccess useEffect triggered'); // Debug log
+    if (institution?.email && institution?.name) {
+      const baseUrl =
+        import.meta.env.MODE === "development"
+          ? "http://localhost:3000"
+          : import.meta.env.VITE_API_URL;
+
+      axios
+        .post(`${baseUrl}/api/send-welcome-email`, {
+          email: institution.email,
+          name: institution.name,
+        })
+        .then(() => {
+          console.log("Welcome email sent");
+          toast.success("Welcome email sent!");
+        })
+        .catch((error) => {
+          console.error("Failed to send welcome email:", error);
+          toast.error("Failed to send welcome email");
+        });
+    }
+  }, [institution]);
+
+  useEffect(() => {
+    console.log("PaymentSuccess useEffect triggered"); // Debug log
 
     const updatePaymentStatus = async () => {
       if (!institution) {
-        console.log('No institution found');
-        toast.error('No institution found. Please log in and try again.');
-        navigate('/admin/payment-summary');
+        console.log("No institution found");
+        toast.error("No institution found. Please log in and try again.");
+        navigate("/admin/payment-summary");
         return;
       }
 
       if (hasRun) {
-        console.log('Already ran, skipping');
+        console.log("Already ran, skipping");
         return;
       }
 
       try {
-        console.log('Making POST request to mark-as-paid');
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/mark-as-paid`, {
-          institutionId: institution._id,
-        });
+        console.log("Making POST request to mark-as-paid");
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/auth/mark-as-paid`,
+          {
+            institutionId: institution._id,
+          }
+        );
 
         if (response.data.success) {
-          console.log('Payment marked as successful');
-          toast.success('Payment confirmed! Subscription activated.');
-          if (typeof setInstitution === 'function') {
+          console.log("Payment marked as successful");
+          toast.success("Payment confirmed! Subscription activated.");
+          if (typeof setInstitution === "function") {
             setInstitution({ ...institution, isPaid: true });
           } else {
-            console.error('setInstitution is not a function');
+            console.error("setInstitution is not a function");
           }
           setHasRun(true); // Mark as executed
 
           // Automatically redirect to /admin/dashboard after 3 seconds
           setTimeout(() => {
-            console.log('Redirecting to /admin/dashboard');
-            navigate('/admin/dashboard');
+            console.log("Redirecting to /admin/dashboard");
+            navigate("/admin/dashboard");
           }, 3000); // 3000ms = 3 seconds
         } else {
-          console.log('Payment verification failed:', response.data.message);
-          toast.error('Payment verification failed.');
-          navigate('/admin/payment-summary');
+          console.log("Payment verification failed:", response.data.message);
+          toast.error("Payment verification failed.");
+          navigate("/admin/payment-summary");
         }
       } catch (error) {
-        console.error('Error updating payment status:', error);
-        toast.error('Error confirming payment.');
-        navigate('/admin/payment-summary');
+        console.error("Error updating payment status:", error);
+        toast.error("Error confirming payment.");
+        navigate("/admin/payment-summary");
       }
     };
 
@@ -64,11 +90,11 @@ function PaymentSuccess() {
   }, []); // Empty dependency array: runs once on mount
 
   if (!institution || !institution.isPaid) {
-    console.log('Rendering null due to no institution or not paid');
+    console.log("Rendering null due to no institution or not paid");
     return null; // Or a loading spinner
   }
 
-  console.log('Rendering PaymentSuccess UI');
+  console.log("Rendering PaymentSuccess UI");
   return (
     <div className="flex items-center min-h-screen p-6">
       <div className="relative mx-auto max-w-md">
@@ -88,19 +114,27 @@ function PaymentSuccess() {
               <span className="absolute -right-8 -top-4 text-2xl">🪐</span>
               <span className="absolute -right-12 top-2 text-2xl">💫</span>
             </h1>
-            <p className="text-lg font-medium text-gray-900">Payment Successful!</p>
-            <p className="text-sm text-gray-500 mt-2">Redirecting to dashboard in 3 seconds...</p>
+            <p className="text-lg font-medium text-gray-900">
+              Payment Successful!
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Redirecting to dashboard in 3 seconds...
+            </p>
           </div>
 
           {/* What's Next Section */}
           <div className="mb-8 grid gap-8">
             <div>
-              <h2 className="mb-4 text-sm font-medium text-gray-500">What's Next</h2>
+              <h2 className="mb-4 text-sm font-medium text-gray-500">
+                What's Next
+              </h2>
               <div className="space-y-4">
                 <div className="flex gap-3">
                   🌠
                   <div>
-                    <h3 className="font-semibold text-gray-900">Email Instructions</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      Email Instructions
+                    </h3>
                     <p className="text-sm text-gray-500">
                       Check your email for admin login details and setup guide.
                     </p>
@@ -109,9 +143,12 @@ function PaymentSuccess() {
                 <div className="flex gap-3">
                   🌠
                   <div>
-                    <h3 className="font-semibold text-gray-900">School & Professor Registration</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      School & Professor Registration
+                    </h3>
                     <p className="text-sm text-gray-500">
-                      Your LMS is now active! Start by registering your school and professors in the Admin Dashboard.
+                      Your LMS is now active! Start by registering your school
+                      and professors in the Admin Dashboard.
                     </p>
                   </div>
                 </div>
@@ -121,7 +158,7 @@ function PaymentSuccess() {
 
           {/* Action Button with Loading Spinner */}
           <button
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate("/admin/dashboard")}
             className="group relative w-full overflow-hidden rounded-xl bg-primary px-6 py-3 text-white transition-all hover:shadow-lg hover:shadow-violet-200 disabled:opacity-50"
             disabled={isLoading}
           >
@@ -133,7 +170,8 @@ function PaymentSuccess() {
                 </>
               ) : (
                 <>
-                  Redirecting you to dashboard... <span className="ml-2">→</span>
+                  Redirecting you to dashboard...{" "}
+                  <span className="ml-2">→</span>
                 </>
               )}
             </span>
