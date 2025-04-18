@@ -297,11 +297,12 @@ export default function CodeBattle() {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showNextChallengeButton, setShowNextChallengeButton] = useState(false)
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false)
 
   // Collapsible panel states
-  const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(true)
+  const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(false)
   const [isProgressPanelOpen, setIsProgressPanelOpen] = useState(false)
-  const [isOutputPanelOpen, setIsOutputPanelOpen] = useState(true)
+  const [isOutputPanelOpen, setIsOutputPanelOpen] = useState(false)
   const [isChallenge3Open, setIsChallenge3Open] = useState(false)
 
   // Refs for scrollable elements
@@ -411,10 +412,21 @@ export default function CodeBattle() {
     // Simulate processing delay
     setTimeout(() => {
       // Update test results
-      const updatedResults = testResults.map((test) => ({
-        ...test,
-        status: Math.random() > 0.3 ? "passed" : "failed", // Randomly pass/fail for demo
-      }))
+      let updatedResults
+
+      // For Challenge 3, ensure at least one test fails
+      if (currentChallengeIndex === 2) {
+        updatedResults = testResults.map((test, index) => ({
+          ...test,
+          // Make sure at least test #2 fails for Challenge 3
+          status: index === 1 ? "failed" : Math.random() > 0.3 ? "passed" : "failed",
+        }))
+      } else {
+        updatedResults = testResults.map((test) => ({
+          ...test,
+          status: Math.random() > 0.3 ? "passed" : "failed", // Randomly pass/fail for demo
+        }))
+      }
 
       setTestResults(updatedResults)
 
@@ -474,16 +486,33 @@ export default function CodeBattle() {
       timeSpent: currentChallenge.timeLimit - timeLeft,
     }
 
-    setChallengeResults([...challengeResults, result])
-    setCompletedChallenges([...completedChallenges, currentChallenge.id])
+    // Only add to challenge results if all tests passed
+    if (passedCount === totalCount) {
+      setChallengeResults([...challengeResults, result])
+    }
 
-    // Unlock next challenge if available
-    if (currentChallengeIndex < challengesData.length - 1) {
-      const nextChallengeId = challengesData[currentChallengeIndex + 1].id
-      if (!unlockedChallenges.includes(nextChallengeId)) {
-        setUnlockedChallenges([...unlockedChallenges, nextChallengeId])
+    // Special case for Challenge 3 (index 2) - Always show error
+    if (currentChallengeIndex === 2) {
+      setIsErrorModalOpen(true)
+      return
+    }
+
+    // Check if all tests passed before allowing to proceed
+    if (passedCount === totalCount) {
+      // Add to completed challenges
+      setCompletedChallenges([...completedChallenges, currentChallenge.id])
+
+      // Unlock next challenge if available
+      if (currentChallengeIndex < challengesData.length - 1) {
+        const nextChallengeId = challengesData[currentChallengeIndex + 1].id
+        if (!unlockedChallenges.includes(nextChallengeId)) {
+          setUnlockedChallenges([...unlockedChallenges, nextChallengeId])
+        }
+        setShowNextChallengeButton(true)
       }
-      setShowNextChallengeButton(true)
+    } else {
+      // Show error modal if not all tests passed
+      setIsErrorModalOpen(true)
     }
 
     // Mock API call to submit challenge
@@ -1265,7 +1294,7 @@ export default function CodeBattle() {
                 </li>
                 <li className="flex items-start gap-2 text-sm">
                   <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span>You'll be able to proceed to the next challenge</span>
+                  <span>You'll be able to proceed to the next challenge if all tests pass</span>
                 </li>
               </ul>
             </div>
@@ -1281,6 +1310,40 @@ export default function CodeBattle() {
             </Button>
             <Button onClick={handleFinalizeSubmission} className="bg-[#E94560] hover:bg-[#E94560]/80 text-white">
               <CheckSquare className="h-4 w-4 mr-1" /> Finalize Submission
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Modal */}
+      <Dialog open={isErrorModalOpen} onOpenChange={setIsErrorModalOpen}>
+        <DialogContent className="bg-[#18122B] border border-[#2B1F4A] text-[#F5F5F5] max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <Lock className="h-5 w-5 text-red-400" />🛑 Challenge Locked!
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="bg-[#0D0A1A] rounded-lg p-4 border border-red-500/30">
+              <p className="text-lg text-center font-bold mb-2">🕹️Fix the Error to Continue</p>
+              <p className="text-center text-sm mb-2">You've hit a roadblock — there's still an error in this challenge.</p>
+              <p className="text-center text-sm text-yellow-400">
+                🧩 Solve it to unlock the next level and keep progressing on your quest!
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setIsErrorModalOpen(false)
+                setIsEditorReadOnly(false)
+                setIsSubmitted(false)
+              }}
+              className="bg-[#E94560] hover:bg-[#E94560]/80 text-white w-full"
+            >
+              Try Again
             </Button>
           </DialogFooter>
         </DialogContent>
