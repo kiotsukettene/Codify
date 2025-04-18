@@ -44,16 +44,16 @@ function StudentCourseListPage() {
 
           <CardContent className="flex flex-col items-left gap-4 mt-4 text-header font-medium md:flex-row ">
             <div className="flex flex-row gap-4">
-            <BookOpenCheck />
-            <h4>{enrolledCourses.length} Courses</h4>
+              <BookOpenCheck />
+              <h4>{enrolledCourses.length} Courses</h4>
             </div>
             <Separator orientation="vertical" />
-           <div className="flex flex-row gap-4">
-           <Users />
-           <h4>Multiple Professors</h4>
-           </div>
+            <div className="flex flex-row gap-4">
+              <Users />
+              <h4>Multiple Professors</h4>
+            </div>
           </CardContent>
-          <CardFooter className='items-center justify-center mt-4 md:items-start md:justify-start'>
+          <CardFooter className="items-center justify-center mt-4 md:items-start md:justify-start">
             <Button onClick={() => setJoinCourse(true)}>Join Course 🚀</Button>
           </CardFooter>
 
@@ -87,16 +87,25 @@ function StudentCourseListPage() {
           {enrolledCourses.map((course) => (
             <StudentCourseCard
               key={course._id}
-              lessons={course.lessonCount || 0} // Adjust if lessons are fetched separately
+              lessons={course.lessonCount || 0}
               image={course.image || "https://via.placeholder.com/150"}
               title={course.className}
-              professor={`${course.professorId?.firstName} ${course.professorId?.lastName}`}
-              schedule={`${course.schedule.day
-                .charAt(0)
-                .toUpperCase()}${course.schedule.day.slice(1)} | ${
-                course.schedule.time
-              }`}
-              tags={[course.program, course.language]}
+              professor={
+                course.professorId
+                  ? `${course.professorId.firstName} ${course.professorId.lastName}`
+                  : "Unknown Professor"
+              }
+              schedule={
+                course.schedule
+                  ? `${
+                      course.schedule.day
+                        ? course.schedule.day.charAt(0).toUpperCase() +
+                          course.schedule.day.slice(1)
+                        : "N/A"
+                    } | ${course.schedule.time || "N/A"}`
+                  : "Schedule Unavailable"
+              }
+              tags={[course.program, course.language].filter(Boolean)}
               onClick={() => navigate(`/student/lesson-list/${course._id}`)}
             />
           ))}
