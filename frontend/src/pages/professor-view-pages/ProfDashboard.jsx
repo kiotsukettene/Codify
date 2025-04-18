@@ -96,21 +96,8 @@ const mockSchedule = [
   },
 ];
 
-// const information = {
-//   title: "Information",
-//   content: `Real-Time Code Execution: Students can write and run their code instantly, with results displayed in seconds. No page reloads, no fluff.
-
-// Multi-Language Support (optional based on your setup): Whether it’s JavaScript, Python, or C++, Codify handles it all. Flexibility for students, control for professors. 
-
-// Secure Sandboxed Environment: Every code submission runs in an isolated container or controlled backend environment, ensuring safety and preventing malicious code from affecting the system.
-
-// Auto-Grading & Output Comparison: Code output is automatically checked against test cases. Professors can define expected outputs, and Codify takes care of the validation.
-
-// Battle Mode Ready ⚔️: The compiler integrates directly with the Coding Battle feature, enabling timed and ranked submissions between students in real-time.`,
-// };
-
 const ProfDashboard = ({ title, content }) => {
-  const { courseCount, isLoading, professorId } = useprofAuthStore();
+  const { professor, courseCount, isLoading, professorId } = useprofAuthStore();
 
   useEffect(() => {
     if (professorId) {
@@ -118,56 +105,55 @@ const ProfDashboard = ({ title, content }) => {
     }
   }, [professorId]);
 
+  console.log("Professor ID:", professorId);
+
   const displayedCourseCount = isLoading ? "Loading..." : courseCount ?? 0;
 
   return (
-<div className="w-full min-h-screen px-2 md:px-4">
+    <div className="w-full min-h-screen px-2 md:px-4">
       {/* Header */}
-      <Header />
+      <Header ProfName={professor.firstName} />
 
-            {/* Main Grid Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-              {/* Left Section: Stats Cards and Battle Card */}
-              <div className="space-y-6 md:col-span-2 lg:col-span-3">
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
-                  <StatsCard
-                    title="Total Students"
-                    value="0"
-                    icon={<UsersRound size={24} />}
-                  />
-                  <StatsCard
-                    title="Total Courses"
-                    value={displayedCourseCount}
-                    icon={<BookOpenText size={24} />}
-                  />
-                  <StatsCard
-                    title="Grading Queue"
-                    value="0" 
-                    icon={<ChartLine size={24} />}
-                  />
-                </div>
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        {/* Left Section: Stats Cards and Battle Card */}
+        <div className="space-y-6 md:col-span-2 lg:col-span-3">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
+            <StatsCard
+              title="Total Students"
+              value="0"
+              icon={<UsersRound size={24} />}
+            />
+            <StatsCard
+              title="Total Courses"
+              value={displayedCourseCount}
+              icon={<BookOpenText size={24} />}
+            />
+            <StatsCard
+              title="Grading Queue"
+              value="0"
+              icon={<ChartLine size={24} />}
+            />
+          </div>
 
-                {/* Battle Card */}
-                <BattleCard />
-              </div>
+          {/* Battle Card */}
+          <BattleCard />
+        </div>
 
-              {/* Today's Schedule - Remains beside the stats & battle card */}
-                  <ScheduleList scheduleData={mockSchedule} />
-            </div>
+        {/* Today's Schedule - Remains beside the stats & battle card */}
+        <ScheduleList scheduleData={mockSchedule} />
+      </div>
 
-            {/* Bottom Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-              {/* Rankings */}
-              <RankingList rankingData={mockStudentRankings} />
+      {/* Bottom Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+        {/* Rankings */}
+        <RankingList rankingData={mockStudentRankings} />
 
         {/* To-Grade Tasks */}
         <GradeTask activityData={mockToGradeTasks} />
       </div>
-      </div>
-
-    
-
+    </div>
   );
 };
 
