@@ -355,12 +355,11 @@ const CreateBattle = () => {
                       <Textarea
                         className="min-h-[80px]"
                         value={challenge.inputConstraints[testCaseIndex] || ''}
-                        onChange={(e) =>
-                          updateChallenge(index, 'inputConstraints', {
-                            ...challenge.inputConstraints,
-                            [testCaseIndex]: e.target.value,
-                          })
-                        }
+                        onChange={(e) => {
+                          const newInputConstraints = [...(challenge.inputConstraints || ['', '', ''])];
+                          newInputConstraints[testCaseIndex] = e.target.value;
+                          updateChallenge(index, 'inputConstraints', newInputConstraints);
+                        }}
                         placeholder={`Input for test case ${testCaseIndex + 1}`}
                       />
                     </div>
@@ -376,12 +375,11 @@ const CreateBattle = () => {
                       <Textarea
                         className="min-h-[80px]"
                         value={challenge.expectedOutput[testCaseIndex] || ''}
-                        onChange={(e) =>
-                          updateChallenge(index, 'expectedOutput', {
-                            ...challenge.expectedOutput,
-                            [testCaseIndex]: e.target.value,
-                          })
-                        }
+                        onChange={(e) => {
+                          const newExpectedOutput = [...(challenge.expectedOutput || ['', '', ''])];
+                          newExpectedOutput[testCaseIndex] = e.target.value;
+                          updateChallenge(index, 'expectedOutput', newExpectedOutput);
+                        }}
                         placeholder={`Output for test case ${testCaseIndex + 1}`}
                       />
                     </div>

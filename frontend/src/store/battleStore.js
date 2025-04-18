@@ -24,8 +24,8 @@ const useBattleStore = create((set) => ({
     challenges: [{
       problemTitle: '',
       problemDescription: '',
-      inputConstraints: '',
-      expectedOutput: '',
+      inputConstraints: ['', '',''],
+      expectedOutput: ['', '',''],
     }],
     rules: '',
   },
@@ -50,8 +50,8 @@ const useBattleStore = create((set) => ({
       challenges: [...state.battleData.challenges, {
         problemTitle: '',
         problemDescription: '',
-        inputConstraints: '',
-        expectedOutput: '',
+        inputConstraints: ['', '',''],
+        expectedOutput: ['', '',''],
       }],
     },
   })),
@@ -156,7 +156,30 @@ const useBattleStore = create((set) => ({
   submitBattle: async () => {
     set({ isSubmitting: true, error: null });
     try {
-      const response = await axios.post(`${API_URL}/create`, useBattleStore.getState().battleData);
+      const state = useBattleStore.getState();
+      
+      // Validate challenges
+      const challenges = state.battleData.challenges;
+      for (let i = 0; i < challenges.length; i++) {
+        const challenge = challenges[i];
+        
+        // Check if all required fields are filled
+        if (!challenge.problemTitle || !challenge.problemDescription) {
+          throw new Error(`Challenge ${i + 1} is missing title or description`);
+        }
+        
+        // Validate input constraints and expected outputs
+        if (!Array.isArray(challenge.inputConstraints) || 
+            !Array.isArray(challenge.expectedOutput) ||
+            challenge.inputConstraints.length !== 3 ||
+            challenge.expectedOutput.length !== 3 ||
+            challenge.inputConstraints.some(input => !input || input.trim() === '') ||
+            challenge.expectedOutput.some(output => !output || output.trim() === '')) {
+          throw new Error(`Challenge ${i + 1} must have exactly 3 non-empty input constraints and expected outputs`);
+        }
+      }
+
+      const response = await axios.post(`${API_URL}/create`, state.battleData);
       toast.success('Battle created successfully!');
       set({
         battleData: {
@@ -172,8 +195,8 @@ const useBattleStore = create((set) => ({
           challenges: [{
             problemTitle: '',
             problemDescription: '',
-            inputConstraints: '',
-            expectedOutput: '',
+            inputConstraints: ['', '', ''],
+            expectedOutput: ['', '', ''],
           }],
           rules: '',
         },
@@ -185,7 +208,7 @@ const useBattleStore = create((set) => ({
       });
       return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error creating battle';
+      const errorMessage = error.response?.data?.message || error.message || 'Error creating battle';
       set({ error: errorMessage, isSubmitting: false });
       toast.error(errorMessage);
       throw error;

@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const ChallengeSchema = new mongoose.Schema({
   problemTitle: { type: String, required: true },
   problemDescription: { type: String, required: true },
-  inputConstraints: { type: String, required: true },
-  expectedOutput: { type: String, required: true },
+  inputConstraints: [{ type: String }], // Changed to array of strings
+  expectedOutput: [{ type: String }], // Changed to array of strings
 });
 
 const BattleSchema = new mongoose.Schema(

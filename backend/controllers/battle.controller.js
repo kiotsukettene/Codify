@@ -36,6 +36,22 @@ export const createBattle = async (req, res) => {
       return res.status(400).json({ message: "All required fields must be provided" });
     }
 
+    // Validate challenges
+    if (
+      challenges.some(challenge => 
+        !Array.isArray(challenge.inputConstraints) ||
+        !Array.isArray(challenge.expectedOutput) ||
+        challenge.inputConstraints.length !== 3 ||
+        challenge.expectedOutput.length !== 3 ||
+        challenge.inputConstraints.some(tc => typeof tc !== 'string' || tc.trim() === '') ||
+        challenge.expectedOutput.some(tc => typeof tc !== 'string' || tc.trim() === '')
+      )
+    ) {
+      return res.status(400).json({ 
+        message: "Each challenge must have exactly 3 non-empty string input constraints and expected outputs" 
+      });
+    }
+
     // Verify that player1 and player2 are different
     if (player1 === player2) {
       return res.status(400).json({ message: "Player 1 and Player 2 must be different students" });
@@ -83,6 +99,12 @@ export const createBattle = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in createBattle:", error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: Object.values(error.errors).map(err => err.message),
+      });
+    }
     res.status(500).json({
       message: "Error creating battle",
       error: error.message,
