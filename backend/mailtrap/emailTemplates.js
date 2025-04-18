@@ -46,6 +46,10 @@ If you didn't create an account with us, please ignore this email.
               <p style="color: #333333; font-size: 14px; margin-bottom: 5px; padding-top:60px; ">Best regards,</p>
                 <p style="color: #333333; font-size: 14px; font-weight: bold;">The Codify Team</p>
 
+                 <p style="font-size: 12px; color: #888; margin-top: 20px;">
+  <strong>Disclaimer:</strong> This email is intended only for the recipient. If you received it by mistake, please delete it. Unauthorized use or sharing is not allowed.
+</p>
+
             </td>
         </tr>
 
@@ -142,6 +146,9 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
 
                 <p style="color: #333333; font-size: 14px; margin-bottom: 5px;">Best regards,</p>
                 <p style="color: #333333; font-size: 14px; font-weight: bold;">The Codify Team</p>
+                 <p style="font-size: 12px; color: #888; margin-top: 20px;">
+  <strong>Disclaimer:</strong> This email is intended only for the recipient. If you received it by mistake, please delete it. Unauthorized use or sharing is not allowed.
+</p>
 
             </td>
         </tr>
@@ -199,6 +206,9 @@ export const WELCOME_EMAIL_STUDENT_TEMPLATE = `<!DOCTYPE html>
 
               <p style="color: #333333; font-size: 14px; margin-bottom: 5px; padding-top:30px; ">Best regards,</p>
                 <p style="color: #333333; font-size: 14px; font-weight: bold;">The Codify Team</p>
+                 <p style="font-size: 12px; color: #888; margin-top: 20px;">
+  <strong>Disclaimer:</strong> This email is intended only for the recipient. If you received it by mistake, please delete it. Unauthorized use or sharing is not allowed.
+</p>
 
             </td>
         </tr>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Mail, Loader } from "lucide-react";
+import { Mail, Loader, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useprofAuthStore } from "@/store/profAuthStore";
@@ -63,9 +63,9 @@ const ProfForgotPassword = () => {
           <ProfPasswordResetConfirmation />
         </div>
       ) : (
-        <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
+        <Card className="w-full max-w-[450px] p-8 sm:p-9 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
-            <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
+            <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight mt-4">
               Forgot Password?
             </h1>
             <p className="text-sm sm:text-[15px] text-muted-foreground">
@@ -96,7 +96,7 @@ const ProfForgotPassword = () => {
                     <p className="text-red-500 text-sm">{error}</p>
                   )}
                 </div>
-                <p className="text-xs py-2 text-gray-500 text-center">
+                <p className="text-xs text-gray-500 text-center">
                   A password reset link will be sent to the provided email
                   address.
                 </p>
@@ -118,6 +118,13 @@ const ProfForgotPassword = () => {
               Go back to login
             </Link>
           </div>
+
+          <div className="mt-3 text-justify">
+          <p className="text-xs flex text-gray-500"> <Info className=" mr-1 w-4 h-4" />
+              Please check your Spam bin if the email is not in your inbox.</p>
+          </div>
+
+
         </Card>
       )}
     </div>

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
@@ -203,8 +203,15 @@ useEffect(() => {
                     : "Resend Verification Code"}
                 </Button>
               </p>
+
+              <div className="text-justify">
+          <p className="text-xs flex text-gray-500"> <Info className=" mr-1 w-4 h-4" />
+              Please check your Spam bin if the email is not in your inbox.</p>
+          </div>
             </form>
           </CardContent>
+         
+
         </Card>
       </div>
     </div>

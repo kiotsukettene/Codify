@@ -119,9 +119,13 @@ const Topic = () => {
   };
 
   return (
-      <div className="container mx-auto grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 space-y-4">
-          <div className="flex items-center gap-x-4">
+      <div className="container mx-auto grid grid-cols-12 gap-6 ">
+        <motion.div
+         initial={{ opacity: 0, y: 20 }}
+         animate={{ opacity: 1, y: 0 }}
+         transition={{ duration: 0.6, ease: "easeOut" }}
+        className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="flex items-center gap-x-4 ">
             <Button
               variant="ghost"
               size="icon"
@@ -155,9 +159,13 @@ const Topic = () => {
               )}
             </section>
           ))}
-        </div>
+        </motion.div>
   
-        <div className="col-span-12 lg:col-span-4 space-y-6">
+        <motion.div 
+        initial={{ x: -50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="col-span-12 lg:col-span-4 space-y-6">
           <Card className="transition-shadow duration-300">
             <CardContent className="p-6">
               <motion.div
@@ -272,7 +280,7 @@ const Topic = () => {
             </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
   
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-md">
