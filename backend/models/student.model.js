@@ -26,7 +26,7 @@ const studentSchema = new mongoose.Schema(
       required: true,
     },
     year: {
-      type: Number,
+      type: String,
       required: true,
     },
     section: {
@@ -56,7 +56,7 @@ const studentSchema = new mongoose.Schema(
         title: String,
         difficulty: String,
         codeSubmitted: String,
-      }
+      },
     ],
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
