@@ -19,7 +19,7 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await axios.get(`${API_URL}/courses`);
+      const response = await axios.get(`${API_URL}/professor/courses`);
       set({ courses: response.data, isLoading: false });
     } catch (error) {
       set({
