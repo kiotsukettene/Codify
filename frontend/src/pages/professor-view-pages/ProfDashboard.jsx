@@ -82,18 +82,21 @@ const mockSchedule = [
     subject: "Software Engineering",
     class: "BSCS 3A",
     time: "7:00am - 10:00am",
+    day: "Friday", // Added for consistency with course schedule format
   },
   {
     id: 2,
     subject: "Soft Eng",
     class: "BSCS 3B",
     time: "10:00am - 1:00pm",
+    day: "Friday",
   },
   {
     id: 3,
     subject: "Web System",
     class: "BSCS 3B",
     time: "3:00pm - 6:00pm",
+    day: "Monday",
   },
 ];
 
@@ -125,9 +128,46 @@ const ProfDashboard = ({ title, content }) => {
     }
   }, [professorId]);
 
+  // Get current day of the week
+  const currentDate = new Date();
+  const daysOfWeek = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const currentDay = daysOfWeek[currentDate.getDay()]; // "friday" for April 18, 2025
+
+  // Filter courses for the current day
+  const todaysCourses = courses.filter(
+    (course) => course.schedule?.day.toLowerCase() === currentDay
+  );
+
+  // Map today's courses to match the format expected by ScheduleList
+  const todaysCoursesFormatted = todaysCourses.map((course, index) => ({
+    id: index + 1,
+    subject: course.className,
+    class: `${course.program} ${course.year}${course.section}`,
+    time: course.schedule.time,
+    day: course.schedule.day,
+  }));
+
+  // Fallback to mockSchedule if no courses are scheduled for today
+  const displaySchedule =
+    todaysCoursesFormatted.length > 0
+      ? todaysCoursesFormatted
+      : mockSchedule.filter(
+          (schedule) => schedule.day.toLowerCase() === currentDay
+        );
+
   console.log("Professor:", professor);
   console.log("Professor ID:", professorId);
   console.log("Courses:", courses);
+  console.log("Today's Courses:", todaysCourses);
+  console.log("Display Schedule:", displaySchedule);
   console.log("Auth error:", profError);
 
   if (profError) {
@@ -164,7 +204,7 @@ const ProfDashboard = ({ title, content }) => {
           </div>
           <BattleCard />
         </div>
-        <ScheduleList scheduleData={mockSchedule} />
+        <ScheduleList scheduleData={displaySchedule} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
         <RankingList rankingData={mockStudentRankings} />
