@@ -9,11 +9,27 @@ const CourseSchema = new mongoose.Schema(
       ref: "Institution",
       required: true,
     },
-    className: { type: String, required: true },
+    className: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "className",
+    },
     description: { type: String, required: true },
-    program: { type: String, required: true },
-    year: { type: String, required: true }, // Separate field for year
-    section: { type: String, required: true }, // Separate field for section letter
+    program: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "CourseField",
+    },
+    year: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "CourseField",
+    },
+    section: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "CourseField",
+    },
     professorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Professor",
