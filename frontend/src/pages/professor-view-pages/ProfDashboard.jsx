@@ -163,13 +163,6 @@ const ProfDashboard = ({ title, content }) => {
           (schedule) => schedule.day.toLowerCase() === currentDay
         );
 
-  console.log("Professor:", professor);
-  console.log("Professor ID:", professorId);
-  console.log("Courses:", courses);
-  console.log("Today's Courses:", todaysCourses);
-  console.log("Display Schedule:", displaySchedule);
-  console.log("Auth error:", profError);
-
   if (profError) {
     return <div>Error: {profError}</div>;
   }
