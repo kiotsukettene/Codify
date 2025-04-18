@@ -50,7 +50,7 @@ export const useCourseStore = create((set) => ({
   createCourse: async (courseData) => {
     set({ isLoading: true, error: null });
     try {
-      // Check for duplicate course
+      // Check for duplicate course with exact combination of className, program, year, and section
       const { className, program, year, section, professorId, institutionId } =
         courseData;
       const responseCheck = await axios.get(`${API_URL}/courses`, {
@@ -59,18 +59,23 @@ export const useCourseStore = create((set) => ({
           program,
           year,
           section,
-          professorId,
-          institutionId,
         },
       });
 
-      if (responseCheck.data.length > 0) {
-        set({ isLoading: false });
-        toast.error("A course with these details already exists!");
-        return;
+      // Check if there's an exact match for all four fields
+      const isDuplicate = responseCheck.data.some(
+        (course) =>
+          course.className === className &&
+          course.program === program &&
+          course.year === year &&
+          course.section === section
+      );
+
+      if (isDuplicate) {
+        throw new Error("Course already exists!");
       }
 
-      // Proceed with course creation if no duplicates
+      // Proceed with course creation only if no duplicates
       const response = await axios.post(`${API_URL}/create`, courseData);
       set((state) => ({
         courses: [...state.courses, response.data.course],
@@ -79,10 +84,10 @@ export const useCourseStore = create((set) => ({
       toast.success("Course created successfully!");
     } catch (error) {
       set({
-        error: error.response?.data?.message || "Error creating course",
+        error: error.message || "Error creating course",
         isLoading: false,
       });
-      toast.error(error.response?.data?.message || "Error creating course");
+      throw error; // Re-throw the error to be handled by the caller
     }
   },
 

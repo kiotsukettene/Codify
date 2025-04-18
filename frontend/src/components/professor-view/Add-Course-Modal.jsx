@@ -69,27 +69,32 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
     error: fieldsError,
   } = useCourseFieldStore();
 
-  // Fetch professors, course fields, and prepopulate form if editing
+  // Reset form when modal opens in create mode
+  useEffect(() => {
+    if (!isEditMode) {
+      resetForm();
+    }
+  }, [isEditMode]);
+
+  // Fetch professors and course fields
   useEffect(() => {
     fetchProfessors();
-
-    // Fetch course fields for all types
     const types = ["ClassName", "Program", "Year", "Section"];
     const fetchAllFields = async () => {
       for (const type of types) {
-        console.log(`[CourseModal] Initiating fetch for type: ${type}`);
         try {
           await fetchCourseFieldsByType(type);
-          console.log(`[CourseModal] Fetch completed for type: ${type}`);
         } catch (error) {
           console.error(`[CourseModal] Error fetching type ${type}:`, error);
         }
       }
     };
     fetchAllFields();
+  }, [fetchProfessors, fetchCourseFieldsByType]);
 
+  // Populate form for edit mode
+  useEffect(() => {
     if (isEditMode && courseData) {
-      console.log("[CourseModal] courseData received:", courseData);
       setFormValues({
         className: courseData.className || "",
         description: courseData.description || "",
@@ -101,56 +106,7 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
         day: courseData.schedule?.day || "",
         time: courseData.schedule?.time || "",
       });
-    }
-  }, [fetchProfessors, fetchCourseFieldsByType, isEditMode, courseData]);
-
-  // Debug courseFields and filtered fields
-  useEffect(() => {
-    console.log("[CourseModal] Raw courseFields state:", courseFields);
-    const classNames = courseFields.filter(
-      (field) => field.type === "ClassName" && field.status === "Active"
-    );
-    const programs = courseFields.filter(
-      (field) => field.type === "Program" && field.status === "Active"
-    );
-    const years = courseFields.filter(
-      (field) => field.type === "Year" && field.status === "Active"
-    );
-    const sections = courseFields.filter(
-      (field) => field.type === "Section" && field.status === "Active"
-    );
-    console.log("[CourseModal] Filtered fields:", {
-      classNames: classNames.map((f) => ({
-        _id: f._id,
-        name: f.name,
-        type: f.type,
-        status: f.status,
-      })),
-      programs: programs.map((f) => ({
-        _id: f._id,
-        name: f.name,
-        type: f.type,
-        status: f.status,
-      })),
-      years: years.map((f) => ({
-        _id: f._id,
-        name: f.name,
-        type: f.type,
-        status: f.status,
-      })),
-      sections: sections.map((f) => ({
-        _id: f._id,
-        name: f.name,
-        type: f.type,
-        status: f.status,
-      })),
-    });
-  }, [courseFields]);
-
-  // Clear form fields when not in edit mode
-  useEffect(() => {
-    if (!isEditMode) {
-      setFormValues({
+      setErrors({
         className: "",
         description: "",
         program: "",
@@ -162,7 +118,7 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
         time: "",
       });
     }
-  }, [isEditMode]);
+  }, [isEditMode, courseData]);
 
   // Filter course fields by type and status
   const classNames = courseFields.filter(
@@ -249,6 +205,14 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
       [name]: !value
         ? `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`
         : "",
+      // Clear className error when relevant fields change
+      className:
+        name === "className" ||
+        name === "program" ||
+        name === "year" ||
+        name === "section"
+          ? ""
+          : prev.className,
     }));
   };
 
@@ -273,43 +237,56 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
         },
       };
 
-      console.log(
-        "[CourseModal] Submitting updatedCourseData:",
-        updatedCourseData
-      );
       try {
         if (isEditMode) {
           const courseId = courseData?._id;
           if (!courseId) {
             throw new Error("Course ID is undefined in edit mode");
           }
-          console.log("[CourseModal] Calling updateCourse with ID:", courseId);
           await updateCourse(courseId, updatedCourseData);
         } else {
           await createCourse(updatedCourseData);
         }
-        setFormValues({
-          className: "",
-          description: "",
-          program: "",
-          year: "",
-          section: "",
-          professor: "",
-          programmingLanguage: "",
-          day: "",
-          time: "",
-        });
+        resetForm();
         onClose();
       } catch (error) {
         console.error(
           `[CourseModal] Error ${isEditMode ? "updating" : "creating"} course:`,
           error
         );
+        if (
+          error.message.includes(
+            "A course with this exact combination of Class Name, Program, Year, and Section already exists!"
+          )
+        ) {
+          setErrors((prev) => ({
+            ...prev,
+            className:
+              "A course with this combination of Class Name, Program, Year, and Section already exists.",
+          }));
+          resetForm();
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            className: error.message || "Error creating course",
+          }));
+        }
       }
     }
   };
 
-  useEffect(() => {
+  const resetForm = () => {
+    setFormValues({
+      className: "",
+      description: "",
+      program: "",
+      year: "",
+      section: "",
+      professor: "",
+      programmingLanguage: "",
+      day: "",
+      time: "",
+    });
     setErrors({
       className: "",
       description: "",
@@ -321,7 +298,7 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
       day: "",
       time: "",
     });
-  }, [formValues]);
+  };
 
   return (
     <DialogContent className="max-w-[320px] sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
@@ -351,14 +328,6 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               value={formValues.className}
               onValueChange={handleSelectChange("className")}
               disabled={fieldsLoading || fieldsError}
-              onOpenChange={(open) => {
-                if (open) {
-                  console.log(
-                    "[CourseModal] ClassName Select options:",
-                    classNames.map((f) => ({ _id: f._id, name: f.name }))
-                  );
-                }
-              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose a class name" />
@@ -400,14 +369,6 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               value={formValues.program}
               onValueChange={handleSelectChange("program")}
               disabled={fieldsLoading || fieldsError}
-              onOpenChange={(open) => {
-                if (open) {
-                  console.log(
-                    "[CourseModal] Program Select options:",
-                    programs.map((f) => ({ _id: f._id, name: f.name }))
-                  );
-                }
-              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose a program" />
@@ -449,14 +410,6 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               value={formValues.year}
               onValueChange={handleSelectChange("year")}
               disabled={fieldsLoading || fieldsError}
-              onOpenChange={(open) => {
-                if (open) {
-                  console.log(
-                    "[CourseModal] Year Select options:",
-                    years.map((f) => ({ _id: f._id, name: f.name }))
-                  );
-                }
-              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select year" />
@@ -498,14 +451,6 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
               value={formValues.section}
               onValueChange={handleSelectChange("section")}
               disabled={fieldsLoading || fieldsError}
-              onOpenChange={(open) => {
-                if (open) {
-                  console.log(
-                    "[CourseModal] Section Select options:",
-                    sections.map((f) => ({ _id: f._id, name: f.name }))
-                  );
-                }
-              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select section" />
@@ -671,7 +616,12 @@ const CourseModal = ({ onClose, isEditMode = false, courseData = null }) => {
           <Button
             type="submit"
             className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:pointer-events-none text-sm sm:text-base"
-            disabled={!isFormComplete || profLoading || fieldsLoading}
+            disabled={
+              !isFormComplete ||
+              profLoading ||
+              fieldsLoading ||
+              !!errors.className
+            }
           >
             {isEditMode ? "Update" : "Save"}
           </Button>
