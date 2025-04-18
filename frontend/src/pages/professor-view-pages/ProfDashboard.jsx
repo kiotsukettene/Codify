@@ -7,6 +7,7 @@ import StatsCard from "@/components/professor-view/StatsCard";
 import ScheduleList from "@/components/professor-view/ScheduleList";
 import { UsersRound, BookOpenText, ChartLine } from "lucide-react";
 import { useprofAuthStore } from "@/store/profAuthStore";
+import { useCourseStore } from "@/store/courseStore";
 
 const mockStudentRankings = [
   {
@@ -97,28 +98,53 @@ const mockSchedule = [
 ];
 
 const ProfDashboard = ({ title, content }) => {
-  const { professor, courseCount, isLoading, professorId } = useprofAuthStore();
+  const {
+    professor,
+    isLoading: profLoading,
+    error: profError,
+  } = useprofAuthStore();
+  const {
+    courses,
+    isLoading: courseLoading,
+    error: courseError,
+  } = useCourseStore();
+  const professorId = professor?._id;
+
+  useEffect(() => {
+    console.log("Checking professor auth");
+    useprofAuthStore.getState().checkProfAuth();
+  }, []);
 
   useEffect(() => {
     if (professorId) {
+      console.log("Fetching data for professorId:", professorId);
       useprofAuthStore.getState().fetchProfessorById(professorId);
+      useCourseStore.getState().fetchCoursesByProfessor();
+    } else {
+      console.warn("professorId is undefined");
     }
   }, [professorId]);
 
+  console.log("Professor:", professor);
   console.log("Professor ID:", professorId);
+  console.log("Courses:", courses);
+  console.log("Auth error:", profError);
 
-  const displayedCourseCount = isLoading ? "Loading..." : courseCount ?? 0;
+  if (profError) {
+    return <div>Error: {profError}</div>;
+  }
+  if (courseError) {
+    return <div>Error fetching courses: {courseError}</div>;
+  }
+
+  const displayedCourseCount =
+    profLoading || courseLoading ? "Loading..." : courses.length;
 
   return (
     <div className="w-full min-h-screen px-2 md:px-4">
-      {/* Header */}
-      <Header ProfName={professor.firstName} />
-
-      {/* Main Grid Layout */}
+      <Header ProfName={professor?.firstName ?? "Loading..."} />
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-        {/* Left Section: Stats Cards and Battle Card */}
         <div className="space-y-6 md:col-span-2 lg:col-span-3">
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
             <StatsCard
               title="Total Students"
@@ -136,21 +162,12 @@ const ProfDashboard = ({ title, content }) => {
               icon={<ChartLine size={24} />}
             />
           </div>
-
-          {/* Battle Card */}
           <BattleCard />
         </div>
-
-        {/* Today's Schedule - Remains beside the stats & battle card */}
         <ScheduleList scheduleData={mockSchedule} />
       </div>
-
-      {/* Bottom Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-        {/* Rankings */}
         <RankingList rankingData={mockStudentRankings} />
-
-        {/* To-Grade Tasks */}
         <GradeTask activityData={mockToGradeTasks} />
       </div>
     </div>
