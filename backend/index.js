@@ -63,7 +63,7 @@ app.use("/api/students/challenges", challengeRoutes);
 app.use("/api/events", studentEventRoutes);
 
 // Use email routes
-app.use("/api/guest", emailRoutes);
+app.use("/api", emailRoutes);
 
 app.listen(PORT, () => {
   connectDB();

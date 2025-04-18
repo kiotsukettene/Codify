@@ -3,6 +3,7 @@ import {
   PASSWORD_RESET_SUCCESS_TEMPLATE,
   VERIFICATION_EMAIL_TEMPLATE,
   WELCOME_EMAIL_STUDENT_TEMPLATE,
+  WELCOME_EMAIL_INSTITUTION_TEMPLATE,
 } from "./emailTemplates.js";
 import { mailtrapClient, sender } from "./mailtrap.config.js";
 
@@ -35,11 +36,9 @@ export const sendWelcomeEmail = async (email, name) => {
     const response = await mailtrapClient.send({
       from: sender,
       to: recipient,
-      template_uuid: "491f2852-bb55-4485-bb27-c08a45bbea09",
-      template_variables: {
-        company_info_name: "Codify",
-        name: name,
-      },
+      subject: "Welcome to Codify",
+      html: WELCOME_EMAIL_INSTITUTION_TEMPLATE, // Use the new template
+      category: "Welcome Email",
     });
 
     console.log("Email sent successfully", response);
@@ -158,9 +157,9 @@ export const sendProfessorWelcomeEmail = async (
 export const sendInquiryEmail = async ({ name, email, message }) => {
   try {
     const response = await mailtrapClient.send({
-      from: sender, // e.g., codify.dev2025@gmail.com
+      from: sender,
       to: [{ email: "codify.dev2025@gmail.com" }],
-      reply_to: { email }, // <-- this allows you to hit "Reply" and email the user directly
+      reply_to: { email },
       subject: `New Inquiry Message from ${name}`,
       html: `
         <h2>New Contact Message</h2>
