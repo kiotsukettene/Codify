@@ -4,8 +4,8 @@ import slugify from "slugify";
 
 export const createCourse = async (req, res) => {
   try {
-    console.log("Request body:", req.body); // Debug incoming data
-    console.log("Institution ID from token:", req.institutionId); // Debug token
+    console.log("Request body:", req.body);
+    console.log("Institution ID from token:", req.institutionId);
 
     const {
       className,
@@ -38,10 +38,10 @@ export const createCourse = async (req, res) => {
     let courseCode;
     let isUnique = false;
     let attempts = 0;
-    const maxAttempts = 10; // Prevent infinite loop
+    const maxAttempts = 10;
     while (!isUnique && attempts < maxAttempts) {
       courseCode = generateCourseCode();
-      console.log("Generated courseCode:", courseCode); // Debug
+      console.log("Generated courseCode:", courseCode);
       const existingCourse = await Course.findOne({ courseCode });
       if (!existingCourse) isUnique = true;
       attempts++;
@@ -53,7 +53,7 @@ export const createCourse = async (req, res) => {
     }
 
     const slug = slugify(String(className), { lower: true, strict: true });
-    console.log("Generated slug:", slug); // Debug
+    console.log("Generated slug:", slug);
 
     const course = new Course({
       institutionId,
@@ -69,7 +69,7 @@ export const createCourse = async (req, res) => {
       slug,
     });
 
-    console.log("Course object before save:", course); // Debug
+    console.log("Course object before save:", course);
     await course.save();
 
     res.status(201).json({
@@ -78,7 +78,7 @@ export const createCourse = async (req, res) => {
       course,
     });
   } catch (error) {
-    console.error("Error in createCourse:", error); // Detailed error log
+    console.error("Error in createCourse:", error);
     res.status(500).json({
       message: "Error creating course",
       error: error.message,
@@ -89,40 +89,42 @@ export const createCourse = async (req, res) => {
 export const getCoursesByInstitution = async (req, res) => {
   try {
     const institutionId = req.institutionId;
-    const courses = await Course.find({ institutionId }).populate(
-      "lessonCount"
-    );
+    console.log("Fetching courses for institutionId:", institutionId); // Debug log
+    const courses = await Course.find({ institutionId })
+      .populate({
+        path: "studentsEnrolled",
+        select: "firstName lastName _id",
+      })
+      .select("className program section studentsEnrolled _id courseCode");
+    console.log("Fetched courses:", courses); // Debug log
     res.status(200).json(courses);
   } catch (error) {
+    console.error("Error in getCoursesByInstitution:", error);
     res.status(500).json({
       message: "Error fetching courses",
       error: error.message,
     });
   }
 };
-// export const getCoursesByProfessor = async (req, res) => {
-//   try {
-//     const { professorId } = req.params;
-//     const courses = await Course.find({ professorId });
-
-//     res.status(200).json(courses);
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ message: "Error fetching courses", error: error.message });
-//   }
-// };
 
 export const getCoursesByProfessor = async (req, res) => {
   try {
-    // Use professorId from the token (attached to req by profVerifyToken middleware)
-    const professorId = req.professorId;
-    const courses = await Course.find({ professorId }).populate("lessonCount");
+    const professorId = req.professorId; // Extracted from JWT via profVerifyToken
+    console.log("Fetching courses for professorId:", professorId);
 
+    const courses = await Course.find({ professorId })
+      .populate({
+        path: "studentsEnrolled",
+        select: "firstName lastName _id",
+      })
+      .select("className program section studentsEnrolled _id courseCode slug language");
+
+    console.log("Fetched courses:", courses);
     res.status(200).json(courses);
   } catch (error) {
+    console.error("Error in getCoursesByProfessor:", error);
     res.status(500).json({
-      message: "Error fetching courses",
+      message: "Error fetching professor courses",
       error: error.message,
     });
   }
@@ -131,20 +133,21 @@ export const getCoursesByProfessor = async (req, res) => {
 export const getCourseById = async (req, res) => {
   try {
     const { courseId } = req.params;
+    console.log("Fetching course with ID:", courseId); // Debug log
     const course = await Course.findById(courseId)
       .populate({
         path: "professorId",
-        select: "firstName lastName email", // ✅ Select only necessary fields
+        select: "firstName lastName email",
       })
       .populate({
-        path: "studentsEnrolled", // Populate Students
+        path: "studentsEnrolled",
         select: "firstName lastName email studentId",
       });
 
     if (!course) return res.status(404).json({ message: "Course not found" });
 
-    console.log("Course Data:", course); // ✅ Debugging log
-    console.log("Professor Data:", course.professorId); // ✅ Should contain firstName & lastName
+    console.log("Course Data:", course);
+    console.log("Professor Data:", course.professorId);
     console.log("Students Enrolled:", course.studentsEnrolled);
 
     res.status(200).json(course);
@@ -159,6 +162,7 @@ export const getCourseById = async (req, res) => {
 export const updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
+    console.log("Updating course with ID:", courseId); // Debug log
     const updatedCourse = await Course.findByIdAndUpdate(courseId, req.body, {
       new: true,
     });
@@ -171,6 +175,7 @@ export const updateCourse = async (req, res) => {
       updatedCourse,
     });
   } catch (error) {
+    console.error("Error in updateCourse:", error);
     res
       .status(500)
       .json({ message: "Error updating course", error: error.message });
@@ -180,6 +185,7 @@ export const updateCourse = async (req, res) => {
 export const deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
+    console.log("Deleting course with ID:", courseId); // Debug log
     const deletedCourse = await Course.findByIdAndDelete(courseId);
 
     if (!deletedCourse)
@@ -187,6 +193,7 @@ export const deleteCourse = async (req, res) => {
 
     res.status(200).json({ message: "Course deleted successfully!" });
   } catch (error) {
+    console.error("Error in deleteCourse:", error);
     res
       .status(500)
       .json({ message: "Error deleting course", error: error.message });

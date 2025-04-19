@@ -53,6 +53,8 @@ import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle
 import Account from "./pages/professor-view-pages/Professor-Account";
 import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
 import EditActivity from "./pages/professor-view-pages/Course-management/Edit-Activity";
+import EditBattle from "./pages/professor-view-pages/Code-Battle/Edit-Battle";
+import BattleLobby from "./pages/professor-view-pages/Code-Battle/Battle-Lobby";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -108,7 +110,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path="/battle" element={<CodeBattle />} />
+        
         <Route path="/terms" element={<TermsAndCondition />} />
         <Route path="/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess/></ProtectedRouteInstitution>} />
         {/* Public Routes */}
@@ -330,6 +332,8 @@ function App() {
               </ProtectedRouteProfessors>
             }
           />
+          <Route path="code-battle/edit/:id" element={<ProtectedRouteProfessors><EditBattle /></ProtectedRouteProfessors>} />
+          <Route path="code-battle/lobby/:battleId" element={<ProtectedRouteProfessors><BattleLobby /></ProtectedRouteProfessors>} />
           <Route
             path="account"
             element={
@@ -448,6 +452,7 @@ function App() {
 
         <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
         <Route path="/main-arena" element={<MainArena />} />
+        <Route path="/professor/code-battle/battle/:battleId" element={<ProtectedRouteProfessors><CodeBattle /></ProtectedRouteProfessors>} />
 
         {/* Additional Routes */}
 
