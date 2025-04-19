@@ -450,8 +450,8 @@ function App() {
           {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}
         </Route>
 
-        <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
-        <Route path="/main-arena" element={<MainArena />} />
+        <Route path="/student/arena-dashboard" element={<ProtectedRouteStudents><ArenaDashboardPage /></ProtectedRouteStudents>} />
+        <Route path="/student/main-arena" element={<ProtectedRouteStudents><MainArena /></ProtectedRouteStudents>} />
         <Route path="/professor/code-battle/battle/:battleId" element={<ProtectedRouteProfessors><CodeBattle /></ProtectedRouteProfessors>} />
 
         {/* Additional Routes */}

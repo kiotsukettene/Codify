@@ -9,9 +9,11 @@ import LiveNowBG from "@/assets/picture/random-background/LiveNow-BG.png";
 import { Cover } from "@/components/ui/cover";
 import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import JoinBattleModal from "@/components/student-view/join-battle-modal";
 
 const ArenaDashboardPage = () => {
   const navigate = useNavigate()
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const cards = [
     {
       id: 1,
@@ -118,7 +120,7 @@ const ArenaDashboardPage = () => {
       <div className="flex justify-between items-center">
         <img src={Logo} alt="" />
 
-        <Button>Back to Home</Button>
+        <Button onClick={() => navigate("/student/code-battle")}>Back to Home</Button>
       </div>
 
       <div className="w-full max-w-7xl mx-auto items-center flex justify-center">
@@ -166,7 +168,7 @@ const ArenaDashboardPage = () => {
 
       {/* Join Battle Button (Only for Upcoming Battles) */}
       {card.id === 1 && (
-        <button onClick={()=> navigate('/main-arena')}  className="mt-4 w-full bg-white text-neutral-900 font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
+        <button onClick={() => setIsJoinModalOpen(true)} className="mt-4 w-full bg-white text-neutral-900 font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
           Join Battle
         </button>
       )}
@@ -221,6 +223,11 @@ const ArenaDashboardPage = () => {
           ))}
         </InfiniteSlider>
       </div>
+
+      <JoinBattleModal 
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+      />
     </div>
   );
 };
