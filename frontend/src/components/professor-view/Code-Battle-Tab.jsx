@@ -155,7 +155,7 @@ const CodeBattleTab = () => {
                               <Button
                                 variant="ghost"
                                 className="text-red-600 hover:bg-gray-800/50 hover:text-white flex items-center gap-2"
-                                onClick={() => navigate(`/professor/code-battle/watch/${battle.id}`)}
+                                onClick={() => navigate(`/professor/code-battle/lobby/${battle.id}`)}
                               >
                                 <Play className="h-4 w-4" />
                                 Watch Live
