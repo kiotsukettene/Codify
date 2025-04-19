@@ -52,7 +52,7 @@ const StudentCodeBattleOverview = () => {
           >
         
 
-            <Button onClick={() => navigate('/arena-dashboard')} className=' px-8 py-6 text-lg font-medium bg-primary rounded-full'>
+            <Button onClick={() => navigate('/student/arena-dashboard')} className=' px-8 py-6 text-lg font-medium bg-primary rounded-full'>
             Enter Arena
             </Button>
           
