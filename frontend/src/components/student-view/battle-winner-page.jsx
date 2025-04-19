@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Confetti } from "../ui/confetti"
 import WinnerDesign from "@/assets/picture/random-background/WinnerDesign.png"
+import { WarpBackground } from "../ui/warp-background"
+import { SpaceBackground } from "./space-animation-bg"
 
 // Format time from seconds to minutes and seconds
 const formatTimeDetailed = (seconds) => {
@@ -23,18 +25,11 @@ export default function BattleWinnerPage({
   timeUsed,
   onViewResults,
 }) {
-  const [showConfetti, setShowConfetti] = useState(false)
-
-  // Show confetti animation when page loads
-  useEffect(() => {
-    setShowConfetti(true)
-    const timer = setTimeout(() => setShowConfetti(false), 5000)
-    return () => clearTimeout(timer)
-  }, [])
 
   return (
-    <div className="flex items-center justify-center p-6 w-full">
-      <Card className="w-full max-w-md p-0 overflow-hidden bg-white rounded-2xl shadow-xl border-0">
+   <SpaceBackground>
+      <div className="flex items-center justify-center p-6 w-full min-h-screen">
+      <Card className="w-full max-w-lg p-0 overflow-hidden bg-white rounded-2xl shadow-xl border-0">
         {/* Space-themed header image */}
         <div className="w-full h-[220px] overflow-hidden">
           <img src={WinnerDesign || "/placeholder.svg"} alt="Rockets in space" className="w-full h-full object-cover" />
@@ -46,16 +41,16 @@ export default function BattleWinnerPage({
             <h2 className="text-3xl font-bold text-primary">CONGRATULATIONS!</h2>
 
             <h3 className="text-xl font-bold flex items-center justify-center gap-2">
-              <span className="text-purple-600 bg-purple-100 p-2 rounded-sm">{winner}</span> is the Winner!
+              <span className="text-purple-600 bg-purple-100 p-2 rounded-sm">Name{winner}</span> is the Winner!
             </h3>
           </div>
 
           {/* Winning condition */}
           <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
             <h4 className="text-sm text-purple-700 mb-2 flex items-center justify-center gap-1">
-              <CheckCircle className="h-4 w-4 text-green-500" /> Winning Condition
+              <CheckCircle className="h-4 w-4 text-green-500" /> Result
             </h4>
-            <p className="text-base text-gray-700">{winningCondition}</p>
+            <p className="text-base text-gray-700">{winningCondition}example of Result: Player solved 3/3 challenges faster</p>
           </div>
 
           {/* Stats */}
@@ -87,5 +82,7 @@ export default function BattleWinnerPage({
         </CardContent>
       </Card>
     </div>
+   </SpaceBackground>
+   
   )
 }

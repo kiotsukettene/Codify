@@ -81,6 +81,9 @@ import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/st
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
+import BattleResults from "./pages/student-view-pages/code-battle/battle-result";
+import BattleWinnerPage from "./components/student-view/battle-winner-page";
+import BattleLostPage from "./pages/student-view-pages/code-battle/lost-player";
 
 
 function App() {
@@ -448,6 +451,10 @@ function App() {
 
         <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
         <Route path="/main-arena" element={<MainArena />} />
+        <Route path="/battle-result" element={<BattleResults/>}/>
+        <Route path="/modal-demo" element={<BattleLostPage/>} />
+        
+        
 
         {/* Additional Routes */}
 
