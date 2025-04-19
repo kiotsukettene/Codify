@@ -1,6 +1,31 @@
 import Battle from "../models/battle.model.js";
 import Course from "../models/course.model.js";
 
+const sendBattleNotification = async (req, players, battle) => {
+  const io = req.app.get("io");
+  const connectedUsers = req.app.get("connectedUsers");
+
+  console.log("Sending notifications to players:", players, "Connected Users:", [...connectedUsers]);
+
+  const notification = {
+    type: "challenge",
+    title: battle.status === "active" ? "New Battle Challenge!" : "Upcoming Battle",
+    message: `You've been selected for ${battle.status === "active" ? "an immediate" : "an upcoming"} code battle: ${battle.title}`,
+    time: "Just now",
+    battleId: battle.battleId,
+  };
+
+  players.forEach((playerId) => {
+    const socketId = connectedUsers.get(playerId.toString());
+    console.log(`Sending notification to player ${playerId}, socket ${socketId}`);
+    if (socketId) {
+      io.to(socketId).emit("battleNotification", notification);
+      console.log(`Notification sent to player ${playerId}`);
+    } else {
+      console.warn(`Player ${playerId} is not connected`);
+    }
+  });
+};
 export const createBattle = async (req, res) => {
   try {
     const {
@@ -103,6 +128,9 @@ export const createBattle = async (req, res) => {
     });
 
     await battle.save();
+
+    // Send notifications to selected players
+    await sendBattleNotification(req, [player1, player2], battle);
 
     res.status(201).json({
       message: status === "active" ? "Battle commenced successfully!" : "Battle scheduled successfully!",

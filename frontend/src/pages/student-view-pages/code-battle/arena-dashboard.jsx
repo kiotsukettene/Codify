@@ -1,8 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
 import Logo from "@/assets/picture/logos/Logo.png";
-import header from "@/assets/picture/random-background/code-battle-header-2.png";
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import LiveNowBG from "@/assets/picture/random-background/LiveNow-BG.png";
@@ -10,10 +7,12 @@ import { Cover } from "@/components/ui/cover";
 import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import JoinBattleModal from "@/components/student-view/join-battle-modal";
+import NotificationCard from "@/components/student-view/notification-card";
 
 const ArenaDashboardPage = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+
   const cards = [
     {
       id: 1,
@@ -21,7 +20,6 @@ const ArenaDashboardPage = () => {
       description: "Join the next coding challenges and prepare your skills",
       color: "from-red-500 to-red-600",
       tagText: "NEW",
-      
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -39,11 +37,10 @@ const ArenaDashboardPage = () => {
         </svg>
       ),
     },
-
     {
       id: 2,
       title: "Total of Battles",
-      description: "All coding battles completed ",
+      description: "All coding battles completed",
       color: "from-indigo-500 to-indigo-600",
       tagText: "STATS",
       count: "42",
@@ -116,20 +113,22 @@ const ArenaDashboardPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#151135]  text-white p-6 px-7">
+    <div className="min-h-screen bg-[#151135] text-white p-6 px-7">
       <div className="flex justify-between items-center">
         <img src={Logo} alt="" />
-
-        <Button onClick={() => navigate("/student/code-battle")}>Back to Home</Button>
+        <div className="flex items-center gap-4">
+          <NotificationCard />
+          <Button onClick={() => navigate("/student/code-battle")}>
+            Back to Home
+          </Button>
+        </div>
       </div>
-
       <div className="w-full max-w-7xl mx-auto items-center flex justify-center">
         <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-purple-500 rounded-3xl">
-          <div className="p-8 ">
-            <p className=" md:text-4xl lg:text-6xl font-semibold space-y-4  text-white leading-tight  z-20 py-6 md:py-6 bg-clip-text bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
+          <div className="p-8">
+            <p className="md:text-4xl lg:text-6xl font-semibold space-y-4 text-white leading-tight z-20 py-6 md:py-6 bg-clip-text bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
               Step Into the Arena and <Cover>Prove Your Skills!</Cover>
             </p>
-
             <p className="text-white/80 text-sm md:text-base max-w-md">
               Compete against other coders in real-time coding battles. Enter
               your unique battle code to join and showcase your problem-solving
@@ -140,81 +139,58 @@ const ArenaDashboardPage = () => {
       </div>
 
       <div className="w-full max-w-7xl mx-auto p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-  {cards.map((card) => (
-    <div
-      key={card.id}
-      className={`relative p-6 rounded-xl bg-gradient-to-br ${card.color} text-white shadow-lg w-full`}
-    >
-      {/* Tag Label */}
-      <div className="absolute top-4 left-4 flex items-center bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
-        {card.icon}
-        <span className="ml-1">{card.tagText}</span>
-      </div>
-
-      {/* Title & Count */}
-      <h3 className="text-3xl font-bold mt-8">{card.title}</h3>
-      <p className="text-5xl font-extrabold mt-2">{card.count}</p>
-
-      {/* Description */}
-      <p className="mt-2 text-white/80 text-lg">{card.description}</p>
-
-      {/* Display Scheduled Battle Time */}
-      {card.id === 1 && (
-        <p className="mt-4 text-md font-medium bg-white/20 text-white px-3 py-2 rounded-md flex gap-2 items-center">
-          <Calendar/> Schedule: March 20, 2025 - 3:00 PM
-        </p>
-      )}
-
-      {/* Join Battle Button (Only for Upcoming Battles) */}
-      {card.id === 1 && (
-        <button onClick={() => setIsJoinModalOpen(true)} className="mt-4 w-full bg-white text-neutral-900 font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
-          Join Battle
-        </button>
-      )}
-
-
-       {/* View History for 2nd Card */}
-       {card.id === 2 && (
-        <button className="mt-4 w-full bg-white/20 text-white font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
-        View History
-      </button>
-      )}
-
-    </div>
-  ))}
-</div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          {cards.map((card) => (
+            <div
+              key={card.id}
+              className={`relative p-6 rounded-xl bg-gradient-to-br ${card.color} text-white shadow-lg w-full`}
+            >
+              <div className="absolute top-4 left-4 flex items-center bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
+                {card.icon}
+                <span className="ml-1">{card.tagText}</span>
+              </div>
+              <h3 className="text-3xl font-bold mt-8">{card.title}</h3>
+              <p className="text-5xl font-extrabold mt-2">{card.count}</p>
+              <p className="mt-2 text-white/80 text-lg">{card.description}</p>
+              {card.id === 1 && (
+                <p className="mt-4 text-md font-medium bg-white/20 text-white px-3 py-2 rounded-md flex gap-2 items-center">
+                  <Calendar /> Schedule: March 20, 2025 - 3:00 PM
+                </p>
+              )}
+              {card.id === 1 && (
+                <button
+                  onClick={() => setIsJoinModalOpen(true)}
+                  className="mt-4 w-full bg-white text-neutral-900 font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all"
+                >
+                  Join Battle
+                </button>
+              )}
+              {card.id === 2 && (
+                <button className="mt-4 w-full bg-white/20 text-white font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
+                  View History
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="w-full max-w-7xl mx-auto p-6 rounded-lg">
-        <h2 className="text-4xl font-bold  text-white mb-6">Live now</h2>
-
+        <h2 className="text-4xl font-bold text-white mb-6">Live now</h2>
         <InfiniteSlider durationOnHover={75} gap={24}>
-          {professors.map((prof, index) => (
+          {professors.map((prof) => (
             <div
               key={prof.id}
-              className="w-[250px] h-[200px] rounded-lg p-4 flex flex-col items-center justify-center 
-        bg-cover bg-center relative overflow-hidden shadow-lg hover:scale-105 transition-transform"
+              className="w-[250px] h-[200px] rounded-lg p-4 flex flex-col items-center justify-center bg-cover bg-center relative overflow-hidden shadow-lg hover:scale-105 transition-transform"
               style={{
                 backgroundImage: `url(${LiveNowBG})`,
               }}
             >
-              {/* Overlay for readability */}
               <div className="absolute inset-0 bg-black/70 rounded-lg"></div>
-
-              {/* Content */}
               <div className="relative flex flex-col items-center text-white">
-                {/* Professor Icon */}
                 <div className="text-4xl drop-shadow-lg">{prof.icon}</div>
-
-                {/* Professor Name */}
                 <h3 className="mt-3 text-lg font-bold">{prof.name}</h3>
-
-                {/* Subject */}
                 <p className="text-sm text-white/80">{prof.subject}</p>
-
-                {/* Live Now Label */}
                 <p className="mt-2 px-3 py-1 text-sm bg-green-500/90 text-white font-semibold rounded-full shadow-lg">
                   Live Now
                 </p>
@@ -224,11 +200,12 @@ const ArenaDashboardPage = () => {
         </InfiniteSlider>
       </div>
 
-      <JoinBattleModal 
+      <JoinBattleModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
       />
     </div>
   );
 };
+
 export default ArenaDashboardPage;

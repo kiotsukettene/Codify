@@ -9,6 +9,16 @@ const API_URL = isDev
 
 axios.defaults.withCredentials = true;
 
+const loadNotificationsFromStorage = () => {
+  const stored = localStorage.getItem("notifications");
+  return stored ? JSON.parse(stored) : [];
+};
+
+const loadUnreadCountFromStorage = () => {
+  const stored = localStorage.getItem("unreadNotifications");
+  return stored ? parseInt(stored, 10) : 0;
+};
+
 const useBattleStore = create((set) => ({
   // Form data
   battleData: {
@@ -49,6 +59,10 @@ const useBattleStore = create((set) => ({
   isLoadingLeaderboard: false,
   battlesError: null,
   leaderboardError: null,
+
+  // Add new state for notifications
+  notifications: loadNotificationsFromStorage(),
+  unreadNotifications: loadUnreadCountFromStorage(),
 
   // Actions
   setBattleData: (updates) => set((state) => ({
@@ -164,6 +178,55 @@ const useBattleStore = create((set) => ({
 
   setOpen: (value) => set({ open: value }),
 
+  // Add new actions for notifications
+  addNotification: (notification) => set((state) => {
+    const newNotification = {
+      id: Date.now(),
+      type: "challenge",
+      title: notification.title || "New Battle Challenge",
+      message: notification.message || "You've been selected for a code battle!",
+      time: "Just now",
+      read: false,
+      battleId: notification.battleId,
+    };
+    console.log("Adding notification:", newNotification);
+    const updatedNotifications = [newNotification, ...state.notifications];
+    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+    localStorage.setItem("unreadNotifications", state.unreadNotifications + 1);
+    return {
+      notifications: updatedNotifications,
+      unreadNotifications: state.unreadNotifications + 1,
+    };
+  }),
+
+  markNotificationAsRead: (notificationId) => set((state) => {
+    const updatedNotifications = state.notifications.map((n) =>
+      n.id === notificationId ? { ...n, read: true } : n
+    );
+    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+    localStorage.setItem("unreadNotifications", Math.max(0, state.unreadNotifications - 1));
+    return {
+      notifications: updatedNotifications,
+      unreadNotifications: Math.max(0, state.unreadNotifications - 1),
+    };
+  }),
+
+  dismissNotification: (notificationId) => set((state) => {
+    const isUnread = state.notifications.find((n) => n.id === notificationId && !n.read);
+    const updatedNotifications = state.notifications.filter((n) => n.id !== notificationId);
+    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+    localStorage.setItem(
+      "unreadNotifications",
+      isUnread ? Math.max(0, state.unreadNotifications - 1) : state.unreadNotifications
+    );
+    return {
+      notifications: updatedNotifications,
+      unreadNotifications: isUnread
+        ? Math.max(0, state.unreadNotifications - 1)
+        : state.unreadNotifications,
+    };
+  }),
+
   saveBattle: async () => {
     set({ isSubmitting: true, error: null });
     try {
@@ -221,6 +284,14 @@ const useBattleStore = create((set) => ({
         ...state.battleData,
         status: "pending",
       });
+
+      // Add notifications for selected players
+      state.addNotification({
+        title: `Scheduled Battle: ${state.battleData.title}`,
+        message: `You've been selected for an upcoming code battle on ${new Date(state.battleData.commencement).toLocaleString()}`,
+        battleId: response.data.battle.battleId,
+      });
+
       toast.success(`Battle scheduled for ${new Date(state.battleData.commencement).toLocaleString()}!`);
       set({
         battleData: {
@@ -309,8 +380,16 @@ const useBattleStore = create((set) => ({
       const response = await axios.post(`${API_URL}/create`, {
         ...state.battleData,
         status: "active",
-        commencement: new Date().toISOString(), // Override commencement to now
+        commencement: new Date().toISOString(),
       });
+
+      // Add notifications for selected players
+      state.addNotification({
+        title: `New Battle: ${state.battleData.title}`,
+        message: `You've been selected for a code battle: ${state.battleData.description}`,
+        battleId: response.data.battle.battleId,
+      });
+
       toast.success("Battle commenced successfully!");
       set({
         battleData: {
@@ -449,7 +528,5 @@ const useBattleStore = create((set) => ({
     }
   },
 }));
-
-
 
 export default useBattleStore;
