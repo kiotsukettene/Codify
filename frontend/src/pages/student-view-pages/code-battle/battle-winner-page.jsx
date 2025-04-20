@@ -4,10 +4,8 @@ import { useState, useEffect } from "react"
 import { CheckCircle, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Confetti } from "../ui/confetti"
 import WinnerDesign from "@/assets/picture/random-background/WinnerDesign.png"
-import { WarpBackground } from "../ui/warp-background"
-import { SpaceBackground } from "./space-animation-bg"
+import { SpaceBackground } from "@/components/student-view/space-animation-bg"
 
 // Format time from seconds to minutes and seconds
 const formatTimeDetailed = (seconds) => {
