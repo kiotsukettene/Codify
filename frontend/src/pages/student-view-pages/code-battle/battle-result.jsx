@@ -147,16 +147,6 @@ export default function BattleResults({ scenario = "winner" }) {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="bg-[#231b3d] border border-[#2B1F4A] px-3 py-1 rounded text-sm flex items-center gap-1">
-            <Clock className="h-3 w-3 text-[#E94560]" />
-            <span className="font-mono text-sm">{formatTime(battleResults.timeUsed)}</span>
-          </div>
-          <div className="bg-[#231b3d] border border-[#2B1F4A] px-3 py-1 rounded text-sm flex items-center gap-1">
-            <Users className="h-3 w-3 text-[#C2C2DD]" />
-            <span className="text-sm">{battleResults.players.length}</span>
-          </div>
-        </div>
       </header>
 
       <main className="flex-1 container max-w-5xl mx-auto py-6 px-4">
