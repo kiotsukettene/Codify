@@ -227,6 +227,39 @@ const useBattleStore = create((set) => ({
     };
   }),
 
+  fetchNotifications: async () => {
+    try {
+      const response = await axios.get(`${API_URL}/student`);
+      const battles = response.data;
+      const newNotifications = battles
+        .filter((battle) => battle.status === "pending" || battle.status === "active")
+        .map((battle) => ({
+          id: Date.now() + Math.random(),
+          type: "challenge",
+          title: battle.status === "active" ? "New Battle Challenge!" : "Upcoming Battle",
+          message: `You've been selected for ${battle.status === "active" ? "an immediate" : "an upcoming"} code battle: ${battle.challenge}`,
+          time: "Just now",
+          read: false,
+          battleId: battle.id,
+        }));
+
+      set((state) => {
+        const existingIds = new Set(state.notifications.map((n) => n.battleId));
+        const filteredNotifications = newNotifications.filter((n) => !existingIds.has(n.battleId));
+        const updatedNotifications = [...filteredNotifications, ...state.notifications];
+        localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+        localStorage.setItem("unreadNotifications", state.unreadNotifications + filteredNotifications.length);
+        return {
+          notifications: updatedNotifications,
+          unreadNotifications: state.unreadNotifications + filteredNotifications.length,
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      toast.error("Error loading notifications");
+    }
+  },
+
   saveBattle: async () => {
     set({ isSubmitting: true, error: null });
     try {

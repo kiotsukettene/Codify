@@ -83,6 +83,7 @@ import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/st
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
+import StudentBattleLobby from "./pages/student-view-pages/code-battle/student-battle-lobby";
 
 
 function App() {
@@ -453,7 +454,8 @@ function App() {
         <Route path="/student/arena-dashboard" element={<ProtectedRouteStudents><ArenaDashboardPage /></ProtectedRouteStudents>} />
         <Route path="/student/main-arena" element={<ProtectedRouteStudents><MainArena /></ProtectedRouteStudents>} />
         <Route path="/professor/code-battle/battle/:battleId" element={<ProtectedRouteProfessors><CodeBattle /></ProtectedRouteProfessors>} />
-
+        <Route path="/battle-lobby" element={<StudentBattleLobby/>}/> 
+ 
         {/* Additional Routes */}
 
         <Route path="/video-conference" element={<VideoConference />} />
