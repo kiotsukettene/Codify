@@ -24,6 +24,8 @@ export default function NotificationCard() {
   // Add debug log to confirm component rendering
   console.log("NotificationCard rendered, unread count:", unreadNotifications);
   const navigate = useNavigate();
+  const [joining, setJoining] = useState(null);
+
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -53,6 +55,23 @@ export default function NotificationCard() {
       navigate(`/student/code-battle/lobby/${notification.battleId}`);
     }
   };
+  
+  const handleJoinBattle = async (battleId, notificationId) => {
+    setJoining(battleId);
+    try {
+      const response = await axios.post(`http://localhost:3000/api/battles/join/${battleId}`, {}, {
+        withCredentials: true,
+      });
+      markNotificationAsRead(notificationId);
+      toast.success("Joined battle successfully!");
+      navigate(`/student/code-battle/lobby/${battleId}`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error joining battle");
+    } finally {
+      setJoining(null);
+    }
+  };
+
 
   return (
     <Popover>

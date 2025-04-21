@@ -6,9 +6,11 @@ import {
   getLeaderboard,
   deleteBattle,
   updateBattle,
+  joinBattle,
+  getStudentBattles,
 } from "../controllers/battle.controller.js";
-import { verifyToken } from "../middleware/verifyToken.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js";
+import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
 
 
 const router = express.Router();
@@ -19,5 +21,9 @@ router.get("/professor", profVerifyToken, getBattlesByProfessor); // New endpoin
 router.get("/leaderboard", profVerifyToken, getLeaderboard); // New endpoint
 router.delete("/:id", profVerifyToken, deleteBattle);
 router.put("/:id", profVerifyToken, updateBattle);
+router.post("/join/:battleId", StudentVerifyToken, joinBattle);
+router.get("/student", StudentVerifyToken, getStudentBattles);
+
+
 
 export default router;

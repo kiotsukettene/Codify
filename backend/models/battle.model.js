@@ -11,7 +11,6 @@ const ChallengeSchema = new mongoose.Schema({
     type: String, 
     required: true,
     content: String,
-
   },
   points: { type: Number, required: true, default: 100 },
   inputConstraints: [{ type: String }],
@@ -48,6 +47,11 @@ const BattleSchema = new mongoose.Schema(
       ref: "Student",
       required: true,
     },
+    joinedPlayers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
+      default: []
+    }],
     challenges: [ChallengeSchema],
     rules: { type: String, default: "" },
     createdBy: {
@@ -57,7 +61,7 @@ const BattleSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "active", "completed"], // Add status field
+      enum: ["pending", "active", "completed"],
       default: "pending",
     },
     results: {

@@ -26,6 +26,7 @@ const sendBattleNotification = async (req, players, battle) => {
     }
   });
 };
+
 export const createBattle = async (req, res) => {
   try {
     const {
@@ -40,7 +41,7 @@ export const createBattle = async (req, res) => {
       player2,
       challenges,
       rules,
-      status = "pending", // Default to pending
+      status = "pending",
     } = req.body;
 
     const professorId = req.professorId;
@@ -146,6 +147,133 @@ export const createBattle = async (req, res) => {
     }
     res.status(500).json({
       message: "Error creating battle",
+      error: error.message,
+    });
+  }
+};
+
+export const joinBattle = async (req, res) => {
+  try {
+    const { battleId } = req.params;
+    const studentId = req.studentId;
+
+    const battle = await Battle.findOne({ battleId }).populate("courseId");
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found" });
+    }
+
+    // Validate student is enrolled in the course
+    const course = battle.courseId;
+    if (!course.studentsEnrolled.includes(studentId)) {
+      return res.status(403).json({ message: "You are not enrolled in this course" });
+    }
+
+    // Validate student is one of the selected players
+    if (![battle.player1.toString(), battle.player2.toString()].includes(studentId)) {
+      return res.status(403).json({ message: "You are not a selected player for this battle" });
+    }
+
+    // Check if battle is joinable
+    if (battle.status !== "pending" && battle.status !== "active") {
+      return res.status(400).json({ message: "Battle is not joinable" });
+    }
+
+    // Check if battle already has two players
+    if (battle.joinedPlayers.length >= 2) {
+      return res.status(400).json({ message: "Battle is already full" });
+    }
+
+    // Prevent duplicate joining
+    if (battle.joinedPlayers.includes(studentId)) {
+      return res.status(400).json({ message: "You have already joined this battle" });
+    }
+
+    // Add student to joinedPlayers
+    battle.joinedPlayers.push(studentId);
+    await battle.save();
+
+    // Emit Socket.IO event to update professor and opponent
+    const io = req.app.get("io");
+    const connectedUsers = req.app.get("connectedUsers");
+    const studentSocketId = connectedUsers.get(studentId.toString());
+    const professorSocketId = connectedUsers.get(battle.createdBy.toString());
+
+    io.to(professorSocketId).emit("playerJoined", {
+      battleId,
+      studentId,
+      message: `Student ${studentId} joined battle ${battleId}`,
+    });
+
+    // Notify the other player if they are connected
+    const otherPlayerId = battle.player1.toString() === studentId ? battle.player2.toString() : battle.player1.toString();
+    const otherPlayerSocketId = connectedUsers.get(otherPlayerId);
+    if (otherPlayerSocketId) {
+      io.to(otherPlayerSocketId).emit("opponentJoined", {
+        battleId,
+        studentId,
+        message: `Your opponent has joined battle ${battleId}`,
+      });
+    }
+
+    res.status(200).json({ message: "Successfully joined battle", battle });
+  } catch (error) {
+    console.error("Error in joinBattle:", error);
+    res.status(500).json({ message: "Error joining battle", error: error.message });
+  }
+};
+
+export const getStudentBattles = async (req, res) => {
+  try {
+    const studentId = req.studentId;
+
+    const battles = await Battle.find({
+      $or: [{ player1: studentId }, { player2: studentId }],
+    })
+      .populate("player1", "firstName lastName _id")
+      .populate("player2", "firstName lastName _id")
+      .populate("courseId", "className program section");
+
+    const formattedBattles = battles.map((battle) => {
+      const progress1 = battle.results?.player1Score
+        ? Math.round((battle.results.player1Score / battle.totalPoints) * 100)
+        : 0;
+      const progress2 = battle.results?.player2Score
+        ? Math.round((battle.results.player2Score / battle.totalPoints) * 100)
+        : 0;
+
+      return {
+        id: battle.battleId,
+        challenge: battle.title,
+        description: `${battle.courseId.className} | ${battle.courseId.program} ${battle.courseId.section} | ${battle.duration} minutes`,
+        time: new Date(battle.commencement).toLocaleString(),
+        challengers: [
+          {
+            id: battle.player1._id,
+            name: `${battle.player1.firstName} ${battle.player1.lastName}`,
+            progress: progress1,
+          },
+          {
+            id: battle.player2._id,
+            name: `${battle.player2.firstName} ${battle.player2.lastName}`,
+            progress: progress2,
+          },
+        ],
+        course: {
+          id: battle.courseId._id,
+          name: battle.courseId.className,
+          program: battle.courseId.program,
+          section: battle.courseId.section,
+        },
+        status: battle.status,
+        commencement: battle.commencement,
+      };
+    });
+
+    res.status(200).json(formattedBattles);
+  } catch (error) {
+    console.error("Error in getStudentBattles:", error);
+    res.status(500).json({
+      message: "Error fetching battles",
       error: error.message,
     });
   }
@@ -299,7 +427,7 @@ export const getLeaderboard = async (req, res) => {
       .sort((a, b) => b.totalPoints - a.totalPoints)
       .map((entry, index) => ({
         ...entry,
-        id: index + 1, // Rank-based ID for UI
+        id: index + 1,
       }));
 
     res.status(200).json(leaderboard);

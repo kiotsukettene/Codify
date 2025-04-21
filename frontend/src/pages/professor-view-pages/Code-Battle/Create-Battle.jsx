@@ -12,7 +12,7 @@ import {
   ChevronsUpDown,
   Check,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,9 +47,9 @@ import {
 import { cn } from "@/lib/utils";
 import useBattleStore from "@/store/battleStore";
 import { useCourseStore } from "@/store/courseStore";
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const CreateBattle = ({ isEditMode = false, battleId}) => {
+const CreateBattle = ({ isEditMode = false, battleId }) => {
   const {
     battleData,
     selectedCourse,
@@ -59,26 +59,36 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
     courseValue,
     isSubmitting,
     setBattleData,
-    addChallenge,
     updateChallenge,
-    removeChallenge,
     selectCourse,
     selectProgram,
     selectSection,
     setOpen,
-    saveBattle, // Add saveBattle
+    saveBattle,
     submitBattle,
     getAvailablePlayers,
     editBattle,
   } = useBattleStore();
 
   const { courses, isLoading: isCoursesLoading, fetchCoursesByProfessor } = useCourseStore();
-
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCoursesByProfessor();
-  }, [fetchCoursesByProfessor]);
+
+    // Initialize with exactly 3 challenges if not already set
+    if (battleData.challenges.length !== 3) {
+      setBattleData({
+        challenges: Array(3).fill().map(() => ({
+          problemTitle: "",
+          problemDescription: "",
+          points: 100,
+          inputConstraints: ["", "", ""],
+          expectedOutput: ["", "", ""],
+        })),
+      });
+    }
+  }, [fetchCoursesByProfessor, setBattleData, battleData.challenges.length]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,7 +100,6 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
         navigate(`/professor/code-battle/lobby/${response.battle.battleId}`);
       }
     } catch (error) {
-      // Error is already handled by the store
       console.error("Failed to handle battle:", error);
     }
   };
@@ -100,7 +109,6 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
   };
 
   const isPlayerSelectionEnabled = selectedCourse && selectedProgram && selectedSection;
-  const canAddChallenge = battleData.challenges.length < 3;
 
   return (
     <div className="w-full">
@@ -193,7 +201,7 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
                   Battle Commencement
                 </label>
                 <Input
-                  type="datetime-local" // Changed to datetime-local for precise scheduling
+                  type="datetime-local"
                   value={battleData.commencement}
                   onChange={(e) => setBattleData({ commencement: e.target.value })}
                 />
@@ -379,27 +387,15 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
         {battleData.challenges.map((challenge, index) => (
           <Card key={index}>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2 text-[#7C3AED] text-base">
-                  Challenge No. {index + 1}
-                </CardTitle>
-                {battleData.challenges.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeChallenge(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+              <CardTitle className="flex items-center gap-2 text-[#7C3AED] text-base">
+                Challenge No. {index + 1}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Problem Title</label>
                 <Input
-                  value={challenge.problemTitle}
+                  value={challenge.problemTitle || ""}
                   onChange={(e) => updateChallenge(index, "problemTitle", e.target.value)}
                 />
               </div>
@@ -407,7 +403,7 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
                 <label className="text-sm font-medium">Description</label>
                 <Input
                   className="min-h-[100px]"
-                  value={challenge.problemDescription}
+                  value={challenge.problemDescription || ""}
                   onChange={(e) => updateChallenge(index, "problemDescription", e.target.value)}
                 />
               </div>
@@ -416,7 +412,7 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
                 <Input
                   type="number"
                   min="0"
-                  value={challenge.points}
+                  value={challenge.points || 100}
                   onChange={(e) =>
                     updateChallenge(index, "points", parseInt(e.target.value) || 0)
                   }
@@ -433,9 +429,7 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
                         className="min-h-[80px]"
                         value={challenge.inputConstraints[testCaseIndex] || ""}
                         onChange={(e) => {
-                          const newInputConstraints = [
-                            ...(challenge.inputConstraints || ["", "", ""]),
-                          ];
+                          const newInputConstraints = [...challenge.inputConstraints];
                           newInputConstraints[testCaseIndex] = e.target.value;
                           updateChallenge(index, "inputConstraints", newInputConstraints);
                         }}
@@ -455,9 +449,7 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
                         className="min-h-[80px]"
                         value={challenge.expectedOutput[testCaseIndex] || ""}
                         onChange={(e) => {
-                          const newExpectedOutput = [
-                            ...(challenge.expectedOutput || ["", "", ""]),
-                          ];
+                          const newExpectedOutput = [...challenge.expectedOutput];
                           newExpectedOutput[testCaseIndex] = e.target.value;
                           updateChallenge(index, "expectedOutput", newExpectedOutput);
                         }}
@@ -471,20 +463,6 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
           </Card>
         ))}
 
-        <div className="flex justify-end mt-4">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={addChallenge}
-            disabled={!canAddChallenge}
-            className={`flex items-center gap-1 text-white hover:bg-purple-500 hover:text-gray-100 bg-purple-600 ${
-              !canAddChallenge ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <Plus className="h-4 w-4" /> Add Challenge
-          </Button>
-        </div>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#7C3AED]">
@@ -496,7 +474,7 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
             <Textarea
               placeholder="Add additional rules"
               className="min-h-[100px]"
-              value={battleData.rules}
+              value={battleData.rules || ""}
               onChange={(e) => setBattleData({ rules: e.target.value })}
             />
           </CardContent>
@@ -507,7 +485,7 @@ const CreateBattle = ({ isEditMode = false, battleId}) => {
             <Button
               variant="outline"
               type="button"
-              onClick={handleSave} // Wire to handleSave
+              onClick={handleSave}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Saving..." : "Schedule Battle"}
