@@ -83,6 +83,9 @@ import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/st
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
+import BattleResults from "./pages/student-view-pages/code-battle/battle-result";
+import BattleWinnerPage from "./pages/student-view-pages/code-battle/battle-winner-page";
+
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -459,7 +462,7 @@ function App() {
             element={<StudentActivityPage />}
           />
           <Route path="task-list" element={<StudentTaskPage />} />
-          <Route path="schedules" element={<StudentCalendarPage />} />
+          <Route path="events" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings />} />
           <Route path="code-battle" element={<StudentCodeBattleOverview />} />
           {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}
@@ -467,6 +470,10 @@ function App() {
 
         <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
         <Route path="/main-arena" element={<MainArena />} />
+        <Route path="/battle-result" element={<BattleResults/>}/>
+        <Route path="/modal-demo" element={<BattleWinnerPage/>} />
+        
+        
 
         {/* Additional Routes */}
 

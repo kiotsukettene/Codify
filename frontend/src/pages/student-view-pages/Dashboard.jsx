@@ -1,6 +1,6 @@
 import Typewriter from "@/components/fancy/typewriter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ActivityIcon, LibraryBig, NotebookTabs, Trophy } from "lucide-react";
+import { ActivityIcon, BookHeart, LibraryBig, NotebookTabs, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import dashboardImage from "@/assets/picture/random-background/dashboard-img.png";
 import StudentHeader from "@/components/student-view/Header";
@@ -118,7 +118,6 @@ function StudentDashboard() {
               "Let's keep things organized!",
               "Keep shining 🌟",
               "Stay on top of everything!",
-              "panget mo lol!!",
             ]}
             speed={70}
             className="text-primary font-semibold"
@@ -240,7 +239,10 @@ function StudentDashboard() {
                 </div>
               ))}
               {enrolledCourses.length === 0 && (
-                <p className="text-gray-500">No enrolled courses yet</p>
+                <div className="text-gray-500  text-center  px-auto space-x-2 mt-5  flex flex-col h-full justify-center items-center bg-white">
+                <BookHeart className="w-9 h-9"/>
+                <p className=" text-lg">No enrolled courses yet</p>
+              </div>
               )}
             </div>
           </div>
@@ -253,9 +255,9 @@ function StudentDashboard() {
               <h2 className="text-xl font-semibold text-gray-900">
                 Upcoming Class
               </h2>
-              <Button variant="link" className="text-primary font-normal">
+              {/* <Button variant="link" className="text-primary font-normal">
                 See All
-              </Button>
+              </Button> */}
             </div>
             <div className="h-[500px] overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {todaysCourses.length > 0 ? (
@@ -292,9 +294,12 @@ function StudentDashboard() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 p-4">
-                  No classes scheduled for today
-                </p>
+                
+                <div className="text-gray-500  text-center  px-auto space-x-2  flex flex-col h-full justify-center items-center">
+                  <BookHeart className="w-9 h-9"/>
+                  <p className=" text-lg">No classes scheduled for today</p>
+                </div>
+
               )}
             </div>
           </div>

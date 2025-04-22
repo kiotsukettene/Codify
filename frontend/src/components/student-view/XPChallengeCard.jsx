@@ -12,17 +12,7 @@ function XPChallengeCard() {
     >
 
       {/* Floating Decorative Stars Inside the Card */}
-
-    
-          
-            
-    
-
-          
-          Expand Down
-    
-    
-  
+ 
       <Sparkles className="absolute top-4 left-4 w-5 h-5 text-white opacity-70 animate-pulse" />
       <Star className="absolute bottom-4 right-4 w-5 h-5 text-blue-500 opacity-50 animate-bounce" />
       <Star className="absolute bottom-4 left-10 w-4 h-4 text-purple-400 opacity-60 animate-spin-slow" />

@@ -33,7 +33,9 @@ const NavBar = () => {
     location.pathname.includes("/admin/login") ||
     location.pathname.includes("/student/login") ||
     location.pathname.includes("/professor/login") ||
-    location.pathname.includes("/student/forgot-password") ;
+    location.pathname.includes("/student/forgot-password") ||
+    location.pathname.includes("/professor/forgot-password") || 
+    location.pathname.includes("/professor/reset-password") ;
 
     return (
       <div className="fixed top-0 left-0 right-0 flex justify-center p-4 z-50 bg-transparent">
