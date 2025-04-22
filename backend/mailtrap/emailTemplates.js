@@ -158,7 +158,9 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
 </html>
 
 `;
-export const WELCOME_EMAIL_STUDENT_TEMPLATE = `<!DOCTYPE html>
+
+export const WELCOME_EMAIL_STUDENT_TEMPLATE = `
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -214,5 +216,46 @@ export const WELCOME_EMAIL_STUDENT_TEMPLATE = `<!DOCTYPE html>
         </tr>
 
     </table>
+</body>
+</html>`;
+
+export const WELCOME_EMAIL_INSTITUTION_TEMPLATE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Codify</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #ffffff;">
+    
+    <table cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: white; padding: 40px;">
+        
+        <tr>
+            <td style="text-align: left;">
+                <img src="https://i.imgur.com/TfDZDNE.png" alt="Codify" style="width: 120px; height: auto;">
+            </td>
+        </tr>
+
+        <tr>
+            <td style="background-color: #f5f5f5; padding: 20px;">
+                <h1 style="color: #8257E6; font-size: 28px; margin-bottom: 10px;">Welcome to Codify!</h1>
+
+                <p style="color: #333333; font-size: 14px; line-height: 2;">
+                    Hey there! 👋 <br><br>
+
+                    We’re thrilled to have you on board with Codify! Whether you're here to code, collaborate, or create, you're now part of a community that’s all about making development easier and more efficient. <br><br>
+
+                    Get started by exploring our features, setting up your workspace, and diving into your first project. If you ever need help, we’ve got your back! <br><br>
+
+                    Let’s turn ideas into reality—one line of code at a time. 💡💻
+                </p>
+
+                <p style="color: #333333; font-size: 14px;">We're excited to have you on board!</p>
+
+                <p style="color: #333333; font-size: 14px; font-weight: bold; margin-top: 50px;">Best regards,<br>The Codify Team</p>
+            </td>
+        </tr>
+    </table>
+
 </body>
 </html>`;
