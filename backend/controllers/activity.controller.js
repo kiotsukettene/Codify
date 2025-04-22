@@ -48,30 +48,6 @@ export const createActivity = async (req, res) => {
   }
 };
 
-// export const createActivity = async (activityData) => {
-//   try {
-//     const response = await fetch("/api/activities", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify(activityData),
-//     });
-
-//     const data = await response.json();
-//     console.log("API Response:", data); // ✅ Debugging
-
-//     if (!data || !data._id) {
-//       throw new Error("Activity creation failed: Missing _id");
-//     }
-
-//     return data;
-//   } catch (error) {
-//     console.error("Error creating activity:", error);
-//     return null;
-//   }
-// };
-
 export const getActivityBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
@@ -168,25 +144,6 @@ export const getActivityById = async (req, res) => {
   }
 };
 
-// export const getActivityById = async (req, res) => {
-//   try {
-//     const { activityId } = req.params;
-
-//     // Find the activity by ID
-//     const activity = await Activity.findById(activityId);
-
-//     if (!activity) {
-//       return res.status(404).json({ message: "Activity not found" });
-//     }
-
-//     res.status(200).json(activity);
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ message: "Error fetching activity", error: error.message });
-//   }
-// };
-
 // ✅ UPDATE ACTIVITY
 export const updateActivity = async (req, res) => {
   try {
@@ -246,7 +203,6 @@ export const deleteActivity = async (req, res) => {
   }
 };
 
-// In activity.controller.js
 // export const getStudentAllActivities = async (req, res) => {
 //   try {
 //     if (!req.studentId) {
@@ -545,5 +501,71 @@ export const unsubmitActivity = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error unsubmitting activity", error: error.message });
+  }
+};
+
+export const getSubmissionsByActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+
+    // Validate activity exists
+    const activity = await Activity.findById(activityId);
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+
+    // Fetch all submissions for this activity and populate student details
+    const submissions = await Submission.find({ activityId }).populate({
+      path: "studentId",
+      select: "firstName lastName email studentId",
+    });
+
+    // Transform submissions to include file URL if applicable
+    const formattedSubmissions = submissions.map((submission) => {
+      let fileUrl = null;
+      if (submission.file) {
+        const fileName = submission.file.replace(/^uploads[\\/]/, "");
+        fileUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
+      }
+      return { ...submission._doc, file: fileUrl };
+    });
+
+    res.status(200).json(formattedSubmissions);
+  } catch (error) {
+    console.error("Error fetching submissions:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching submissions", error: error.message });
+  }
+};
+
+export const updateSubmission = async (req, res) => {
+  try {
+    const { submissionId } = req.params;
+    const { score, comment } = req.body;
+
+    const submission = await Submission.findById(submissionId);
+    if (!submission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+
+    if (score !== undefined) {
+      submission.score = Math.min(Math.max(0, Number(score)), 100);
+    }
+    if (comment !== undefined) {
+      submission.comment = comment;
+    }
+
+    const updatedSubmission = await submission.save();
+
+    res.status(200).json({
+      message: "Submission updated successfully",
+      submission: updatedSubmission,
+    });
+  } catch (error) {
+    console.error("Error updating submission:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating submission", error: error.message });
   }
 };

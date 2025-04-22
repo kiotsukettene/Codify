@@ -11,6 +11,8 @@ import {
   getStudentAllActivities,
   getSubmission,
   unsubmitActivity,
+  getSubmissionsByActivity,
+  updateSubmission,
 } from "../controllers/activity.controller.js";
 import upload from "../middleware/multerConfig.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js"; // Adjust path
@@ -36,6 +38,14 @@ router.post(
   upload.single("file"), // Use multer to handle file upload
   createSubmission
 );
+
+router.get(
+  "/submissions/:activityId",
+  profVerifyToken,
+  getSubmissionsByActivity
+);
+
+router.put("/submissions/:submissionId", profVerifyToken, updateSubmission);
 
 router.get(
   "/student/all-activities",
