@@ -19,6 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import AppSidebar from "@/components/professor-view/Sidebar";
+import confetti from "canvas-confetti";
 import { isBefore, startOfToday } from "date-fns";
 import { toast } from "react-hot-toast";
 import {
@@ -81,33 +89,46 @@ const CreateActivity = () => {
     console.log("Received lessonSlug from URL:", lessonSlug);
   }, [lessonSlug]);
 
+  // const dueDateTime =
+  //   date && time
+  //     ? `${format(date, "yyyy-MM-dd")}T${
+  //         /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
+  //       }:00.000Z`
+  //     : null;
+
   const dueDateTime =
-    date && time
-      ? `${format(date, "yyyy-MM-dd")}T${
-          /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
-        }:00.000Z`
-      : null;
+  date && time
+    ? new Date(`${format(date, "yyyy-MM-dd")}T${
+        /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
+      }:00`).toISOString()
+    : null;
 
   const handleSubmit = async () => {
     const lessonIdConverted = getLessonIdFromSlug(lessonSlug);
-    if (!lessonIdConverted || lessonIdConverted.length !== 24) {
-      console.error("Invalid lessonId:", lessonIdConverted);
-      toast.error("Invalid lessonId");
+    
+    // Validate lesson ID
+    if (!lessonIdConverted) {
+      console.error("No lesson found for slug:", lessonSlug);
+      toast.error("No lesson found. Please try again.");
+      return;
+    }
+
+    // Validate lesson exists in the current lessons array
+    const lessonExists = lessons.some(lesson => lesson._id === lessonIdConverted);
+    if (!lessonExists) {
+      console.error("Lesson not found in current lessons:", lessonIdConverted);
+      toast.error("Lesson not found. Please refresh the page and try again.");
       return;
     }
 
     const newActivity = {
       lessonId: lessonIdConverted,
       title,
-      subTitle: subtitle,
-      instructions: instruction,
-      dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null, // Ensure ISO string
+      subTitle: subtitle || "",
+      instructions: instruction || "",
+      dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null,
       points: 100,
     };
-
-    if (dueDateTime) {
-      newActivity.dueDate = new Date(dueDateTime).toISOString();
-    }
 
     try {
       console.log("Sending activity data:", newActivity);
@@ -115,7 +136,6 @@ const CreateActivity = () => {
       console.log("Created Activity Response:", createdActivity);
 
       if (createdActivity && createdActivity._id && createdActivity.slug) {
-        toast.success("Activity created successfully! 🎉");
         navigate(
           `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${createdActivity.slug}`
         );
@@ -124,31 +144,26 @@ const CreateActivity = () => {
           "Activity creation failed or slug is missing",
           createdActivity
         );
-        toast.error("Failed to create activity. Check server logs.");
+        toast.error("Failed to create activity. Please try again.");
       }
     } catch (error) {
       console.error("Error creating activity:", error);
-      toast.error("Error creating activity. Check console logs.");
+      toast.error("Error creating activity. Please try again.");
     }
   };
 
+  useEffect(() => {
+    const hasTitle = title.trim() !== "";
+    const hasTime = time !== "";
+    setIsFormValid(hasTitle && hasTime);
+  }, [title, time]);
+
   React.useEffect(() => {
     let progress = 0;
-    if (title) progress += 33.33;
-    if (subtitle) progress += 33.33;
-    if (instruction) progress += 33.34;
-
+    if (title) progress += 50;
+    if (time) progress += 50;
     setActivityProgress(Math.round(progress));
-  });
-
-  useEffect(() => {
-    const hasContent =
-      title.trim() !== "" ||
-      subtitle.trim() !== "" ||
-      instruction.trim() !== "" ||
-      files.length > 0;
-    setIsFormValid(hasContent);
-  }, [title, subtitle, instruction, files]);
+  }, [title, time]);
 
   const addSection = (type) => {
     const newSection = {
@@ -228,7 +243,8 @@ const CreateActivity = () => {
   }
 
   return (
-          <div className="w-full p-2">
+
+          <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-9">
               <Card className="border-0 shadow-none">
                 <CardContent className="p-0">
@@ -254,6 +270,7 @@ const CreateActivity = () => {
                               <Button
                                 className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
                                 onClick={() => {
+                                  console.log("Button clicked"); // ✅ This should log when clicked
                                   handleSubmit();
                                 }}
                                 disabled={isUploading || !isFormValid}
@@ -281,27 +298,27 @@ const CreateActivity = () => {
 
                   {/* TITLE AND INSTRUCTION */}
                   <div className="space-y-2">
-                  <label className="block text-sm sm:text-base font-medium text-gray-700">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
                        Title
                   </label>
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Title"
-                      className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 placeholder:text-sm "
+                      className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 "
                     />
-                     <label className="block text-sm sm:text-base font-medium text-gray-700">
+                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
                       Description
                   </label>
                     <Input
                       value={subtitle}
                       onChange={(e) => setSubtitle(e.target.value)}
                       placeholder="Activity Description"
-                      className="text-balance border-purple-100 px-4 focus-visible:ring-0 placeholder:text-sm"
+                      className="text-balance border-purple-100 px-4 focus-visible:ring-0"
                     />
 
                     <div className="space-y-2">
-                    <label className="block text-sm sm:text-base font-medium text-gray-700">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">
                       Instruction
                   </label>
                       <ToggleGroup
@@ -331,7 +348,7 @@ const CreateActivity = () => {
                         value={instruction}
                         onChange={(e) => setInstruction(e.target.value)}
                         placeholder="Instruction"
-                        className="min-h-[300px] border border-purple-100 px-4 focus-visible:ring-0 placeholder:text-gray-400 resize-none placeholder:text-sm"
+                        className="min-h-[300px] border border-purple-100 px-4 focus-visible:ring-0 placeholder:text-gray-400 resize-none"
                         style={{
                           fontWeight: textFormat.includes("bold")
                             ? "bold"
@@ -397,7 +414,7 @@ const CreateActivity = () => {
                   <div className="text-sm text-muted-foreground mt-1 ml-2">
                     {date && format(date, "PPP")}
                     {time && ` at ${format(parse(time, "HH:mm", new Date()), "hh:mm a")}`}
-                  </div>
+                                      </div>
                 )}
               </p>
 

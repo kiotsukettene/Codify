@@ -159,8 +159,18 @@ const LessonOverview = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
             >
-              {activeTab === "overview" && (
-                <OverviewTab lessons={lessons || []} course={course || currentCourse} />
+             {activeTab === "overview" && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key="overview"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <OverviewTab lessons={lessons || []} course={course || currentCourse} />
+                  </motion.div>
+                </AnimatePresence>
               )}
               {activeTab === "activities" && (
                 <AnimatePresence mode="wait">
@@ -196,7 +206,7 @@ const LessonOverview = () => {
                         className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
                       >
                         <ClipboardX size={60} className="text-gray-400 mb-2" />
-                        <p className="text-gray-500 text-lg font-medium">No Activities</p>
+                        <p className="text-gray-500 text-lg font-medium">This course has no activities yet</p>
                       </motion.div>
                     )}
                   </motion.div>

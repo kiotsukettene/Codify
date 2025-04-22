@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.post("/create", verifyToken, createCourse);
 router.get("/courses", verifyToken, getCoursesByInstitution);
-router.get("/professor/courses", profVerifyToken, getCoursesByProfessor);
+router.get("/professor-courses", profVerifyToken, getCoursesByProfessor);
 router.get(
   "/professor/unique-student-count",
   profVerifyToken,
