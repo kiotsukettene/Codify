@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 const formatTypeForDisplay = (type) => {
   return type
@@ -23,7 +24,11 @@ export default function TabNavigation({ onTypeChange }) {
   };
 
   return (
-    <div className="flex space-x-4 border-b border-gray-200">
+    <motion.div 
+       initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+    className="flex space-x-4 border-b border-gray-200">
       {tabs.map((type) => (
         <button
           key={type}
@@ -37,6 +42,6 @@ export default function TabNavigation({ onTypeChange }) {
           {formatTypeForDisplay(type)}
         </button>
       ))}
-    </div>
+    </motion.div>
   );
 }

@@ -168,19 +168,7 @@ const LessonOverview = () => {
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {lessons.length > 0 ? (
-                      <OverviewTab lessons={lessons || []} course={course || currentCourse} />
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.4 }}
-                        className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
-                      >
-                        <ClipboardX size={60} className="text-gray-400 mb-2" />
-                        <p className="text-gray-500 text-lg font-medium">This course has no lessons yet</p>
-                      </motion.div>
-                    )}
+                    <OverviewTab lessons={lessons || []} course={course || currentCourse} />
                   </motion.div>
                 </AnimatePresence>
               )}

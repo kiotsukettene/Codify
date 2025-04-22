@@ -13,6 +13,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Book, Ellipsis } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function CourseCard({
   lessonCount,
@@ -26,7 +27,11 @@ export default function CourseCard({
   onDelete, // Prop for delete action
 }) {
   return (
-    <Card className="overflow-hidden transition-all w-80 hover:shadow-md">
+    <motion.Card 
+    initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 9, y: 0}}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+    className="overflow-hidden transition-all w-80 h-72 hover:shadow-md flex flex-col">
       <CardHeader className="bg-slate-50 pb-2">
         <div className="flex justify-between items-start">
           <div>
@@ -34,7 +39,7 @@ export default function CourseCard({
               {title}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {program} • {year}
+              {program} • <span className="mr-1">{year}</span>
               {section}
             </p>
           </div>
@@ -51,7 +56,7 @@ export default function CourseCard({
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent className="pt-4 bg-slate-50 ">
+      <CardContent className="pt-4 pb-8 bg-slate-50 flex-grow ">
         <div className="flex items-center gap-1 text-muted-foreground mb-3">
           <Book className="h-4 w-4" />
           <span className="text-sm">{lessonCount} Lessons</span>
@@ -67,6 +72,6 @@ export default function CourseCard({
       <CardFooter className="bg-slate-50 border-t text-xs text-muted-foreground pt-5">
         <p>Course Code: {courseCode}</p>
       </CardFooter>
-    </Card>
+    </motion.Card>
   );
 }
