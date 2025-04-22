@@ -6,23 +6,57 @@ import { useNavigate, useParams } from "react-router-dom";
 import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
 import { useActivityStore } from "@/store/activityStore";
+import { useCourseStore } from "@/store/courseStore";
 
 const ActivityPage = () => {
   const { courseSlug, lessonSlug, activitySlug } = useParams();
-  const { activity, fetchActivityBySlug, isLoading, error } =
-    useActivityStore();
+  const {
+    activity,
+    fetchActivityBySlug,
+    isLoading: isActivityLoading,
+    error: activityError,
+  } = useActivityStore();
+  const {
+    course,
+    fetchCourseById,
+    isLoading: isCourseLoading,
+    error: courseError,
+  } = useCourseStore();
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
+  // Fetch activity first
   useEffect(() => {
     if (activitySlug) {
       fetchActivityBySlug(activitySlug);
     }
   }, [activitySlug, fetchActivityBySlug]);
 
-  if (isLoading) return <p>Loading activity...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
+  // Fetch course using courseId from activity
+  useEffect(() => {
+    if (activity && activity.courseId) {
+      fetchCourseById(activity.courseId);
+    }
+  }, [activity, fetchCourseById]);
+
+  if (isActivityLoading || isCourseLoading) return <p>Loading...</p>;
+  if (activityError)
+    return <p className="text-red-500">Activity Error: {activityError}</p>;
+  if (courseError)
+    return <p className="text-red-500">Course Error: {courseError}</p>;
   if (!activity) return <p>No activity found</p>;
+  if (!course) return <p>No course found</p>;
+
+  // Transform studentsEnrolled to match ActivityOutput's expected format
+  const students =
+    course.studentsEnrolled.map((student) => ({
+      id: student._id,
+      name: `${student.firstName} ${student.lastName}`,
+      avatar: student.avatar || "",
+      submitted: student.submitted || "",
+      score: student.score || 0,
+      comment: student.comment || "",
+    })) || [];
 
   return (
     <div className="w-full px-4">
@@ -40,7 +74,6 @@ const ActivityPage = () => {
           </Button>
           <h1 className="text-xl font-semibold">{activity.title}</h1>
         </div>
-        {/* Removed Actions Dropdown */}
       </div>
 
       {/* Tabs */}
