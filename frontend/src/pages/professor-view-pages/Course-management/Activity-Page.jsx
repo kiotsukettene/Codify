@@ -13,6 +13,8 @@ const ActivityPage = () => {
   const {
     activity,
     fetchActivityBySlug,
+    submissions,
+    fetchSubmissionsByActivity,
     isLoading: isActivityLoading,
     error: activityError,
   } = useActivityStore();
@@ -25,19 +27,37 @@ const ActivityPage = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
-  // Fetch activity first
+  // Fetch activity
   useEffect(() => {
     if (activitySlug) {
       fetchActivityBySlug(activitySlug);
     }
   }, [activitySlug, fetchActivityBySlug]);
 
-  // Fetch course using courseId from activity
+  // Fetch course and submissions
   useEffect(() => {
-    if (activity && activity.courseId) {
-      fetchCourseById(activity.courseId);
+    if (activity) {
+      // Fetch course using lessonId to get courseId
+      const fetchCourse = async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/api/lessons/${activity.lessonId}`
+          );
+          const lesson = await response.json();
+          if (lesson && lesson.courseId) {
+            fetchCourseById(lesson.courseId);
+          } else {
+            throw new Error("Course not found for this lesson");
+          }
+        } catch (error) {
+          console.error("Error fetching lesson:", error);
+        }
+      };
+
+      fetchCourse();
+      fetchSubmissionsByActivity(activity._id); // Fetch submissions for this activity
     }
-  }, [activity, fetchCourseById]);
+  }, [activity, fetchCourseById, fetchSubmissionsByActivity]);
 
   if (isActivityLoading || isCourseLoading) return <p>Loading...</p>;
   if (activityError)
@@ -47,16 +67,23 @@ const ActivityPage = () => {
   if (!activity) return <p>No activity found</p>;
   if (!course) return <p>No course found</p>;
 
-  // Transform studentsEnrolled to match ActivityOutput's expected format
+  // Merge studentsEnrolled with submissions
   const students =
-    course.studentsEnrolled.map((student) => ({
-      id: student._id,
-      name: `${student.firstName} ${student.lastName}`,
-      avatar: student.avatar || "",
-      submitted: student.submitted || "",
-      score: student.score || 0,
-      comment: student.comment || "",
-    })) || [];
+    course.studentsEnrolled.map((student) => {
+      const submission = submissions.find(
+        (sub) => sub.studentId._id.toString() === student._id.toString()
+      );
+      return {
+        id: student._id,
+        name: `${student.firstName} ${student.lastName}`,
+        avatar: student.avatar || "",
+        submitted: submission
+          ? new Date(submission.createdAt).toLocaleString()
+          : "",
+        score: submission ? submission.score : 0,
+        comment: submission ? submission.comment : "",
+      };
+    }) || [];
 
   return (
     <div className="w-full px-4">
