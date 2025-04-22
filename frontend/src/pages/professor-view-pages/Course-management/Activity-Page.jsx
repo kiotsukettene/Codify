@@ -7,17 +7,10 @@ import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
 import { useActivityStore } from "@/store/activityStore";
 
-const students = [
-  { id: "1", name: "All students", score: 0 },
-  { id: "2", name: "Dela Cruz, Momo W.", score: 0, avatar: "/placeholder.svg" },
-  { id: "3", name: "Antang, JunMar H.", score: 100, submitted: "11:58 PM", avatar: "/placeholder.svg", comment: "Ma'am sorry, namail ng pasa po kanina" },
-  { id: "4", name: "Dela Cruz, Momo W.", score: 0, avatar: "/placeholder.svg" },
-  { id: "5", name: "Caps, Elle B.", score: 0, avatar: "/placeholder.svg" },
-];
-
 const ActivityPage = () => {
   const { courseSlug, lessonSlug, activitySlug } = useParams();
-  const { activity, fetchActivityBySlug, isLoading, error } = useActivityStore();
+  const { activity, fetchActivityBySlug, isLoading, error } =
+    useActivityStore();
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
@@ -39,7 +32,9 @@ const ActivityPage = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}`)}
+            onClick={() =>
+              navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}`)
+            }
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -57,7 +52,9 @@ const ActivityPage = () => {
               onClick={() => setActiveTab(tab)}
               className={cn(
                 "pb-2 relative transition-colors",
-                activeTab === tab ? "text-purple-600 font-medium" : "text-gray-600 hover:text-gray-900"
+                activeTab === tab
+                  ? "text-purple-600 font-medium"
+                  : "text-gray-600 hover:text-gray-900"
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -74,9 +71,17 @@ const ActivityPage = () => {
         <ActivityOverview
           fileName={activity.file}
           activityId={activity._id}
-          dueDate={activity.dueDate ? new Date(activity.dueDate).toLocaleString() : "No due date"}
+          dueDate={
+            activity.dueDate
+              ? new Date(activity.dueDate).toLocaleString()
+              : "No due date"
+          }
           points={activity.points || 0}
-          instructions={Array.isArray(activity.instructions) ? activity.instructions : [activity.instructions || "No instructions available"]}
+          instructions={
+            Array.isArray(activity.instructions)
+              ? activity.instructions
+              : [activity.instructions || "No instructions available"]
+          }
         />
       ) : (
         <div>
