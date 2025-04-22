@@ -11,12 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 
 const DeleteDialog = ({ title, description, onConfirm, onCancel, isOpen }) => {
+
   return (
-    <Dialog open={isOpen} onOpenChange={onCancel}>
-      {" "}
+
+    <Dialog open={isOpen} onOpenChange={onCancel}>        
+    {" "}
       {/* ✅ Ensure Dialog is controlled */}
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent onInteractOutside={(e) => e.preventDefault()}>
+                <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>

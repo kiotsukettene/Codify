@@ -35,12 +35,14 @@ import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor
 import StudentList from "./pages/admin-view-pages/admin-student/Student";
 import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
 import CoursesAdmin from "./pages/admin-view-pages/courses";
+import CourseSetting from "./pages/admin-view-pages/Course-Settings";
 
 // Professor Pages
 import { useprofAuthStore } from "@/store/profAuthStore";
 import ProfessorLogin from "./pages/professor-view-pages/professor-auth/Professor-Login";
 import ProfForgotPassword from "./pages/professor-view-pages/professor-auth/Professor-Forgot-Password";
 import ProfNewPassword from "./pages/professor-view-pages/professor-auth/Professor-New-Password";
+import ProfSuccessPassword from "./pages/professor-view-pages/professor-auth/Professor-Success";
 import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-Overview";
 import Courses from "./pages/professor-view-pages/Course-management/Course";
 import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
@@ -110,8 +112,7 @@ function App() {
   }
   return (
     <div>
-      <Routes>
-        <Route path="/battle" element={<CodeBattle />} />
+      <Routes>  
         <Route path="/terms" element={<TermsAndCondition />} />
         <Route path="/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess/></ProtectedRouteInstitution>} />
         {/* Public Routes */}
@@ -243,6 +244,10 @@ function App() {
                 <ProfNewPassword />
               </RedirectAuthenticatedProfessor>
             }
+          />
+          <Route
+            path="/professor/success-reset"
+            element={<ProfSuccessPassword />}
           />
         </Route>
 
@@ -390,6 +395,14 @@ function App() {
             element={
               <ProtectedRouteInstitution>
                 <CoursesAdmin />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="course-settings"
+            element={
+              <ProtectedRouteInstitution>
+                <CourseSetting />
               </ProtectedRouteInstitution>
             }
           />

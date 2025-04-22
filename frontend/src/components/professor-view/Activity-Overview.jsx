@@ -13,6 +13,7 @@ import { useActivityStore } from "@/store/activityStore";
 import toast from "react-hot-toast";
 import { format, parseISO } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
+import DeleteDialog from "../Dialog/DeleteDialog";
 
 const ActivityOverview = ({
   activityId,
@@ -25,6 +26,7 @@ const ActivityOverview = ({
   const [dueDate, setDueDate] = useState(initialDueDate || "No due date");
   const { updateActivity, deleteActivity } = useActivityStore();
   const { courseSlug, lessonSlug, activitySlug } = useParams();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleOpenModal = () => setIsModalOpen(true);
@@ -56,18 +58,15 @@ const ActivityOverview = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (activityId && window.confirm("Are you sure you want to delete this activity?")) {
-      try {
-        await deleteActivity(activityId);
-        toast.success("Activity deleted successfully!");
-        navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}`);
-      } catch (error) {
-        toast.error("Error deleting activity.");
-        console.error(error);
-      }
-    }
+
+
+  const handleDelete = () => {
+    console.log("[ActivityOverview] Opening delete dialog for activity:", activityId);
+    setIsDeleteDialogOpen(true);
   };
+
+
+
 
   return (
     <motion.div
@@ -190,6 +189,23 @@ const ActivityOverview = ({
         </ol>
       </motion.div>
 
+      <DeleteDialog
+       isOpen={isDeleteDialogOpen}
+        title="Delete Confirmation"
+        description="Are you sure you want to delete this activity? This action cannot be undone."
+        onConfirm={async () => {
+        try {
+         await deleteActivity(activityId);
+          navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}`);
+            } catch (error) {
+          toast.error("Error deleting activity.");
+          console.error(error);
+            }
+          setIsDeleteDialogOpen(false);
+          }}
+          onCancel={() => setIsDeleteDialogOpen(false)}
+          />
+
       <UpdateDueDate
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -197,6 +213,8 @@ const ActivityOverview = ({
         initialDate={dueDate}
       />
     </motion.div>
+
+    
   );
 };
 

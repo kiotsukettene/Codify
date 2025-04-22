@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Eye, FileText, Trophy, Users, Rocket } from "lucide-react";
+import { Eye, FileText, Trophy, Users, Rocket, ClipboardX } from "lucide-react";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -159,8 +159,18 @@ const LessonOverview = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
             >
-              {activeTab === "overview" && (
-                <OverviewTab lessons={lessons || []} course={course || currentCourse} />
+             {activeTab === "overview" && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key="overview"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <OverviewTab lessons={lessons || []} course={course || currentCourse} />
+                  </motion.div>
+                </AnimatePresence>
               )}
               {activeTab === "activities" && (
                 <AnimatePresence mode="wait">
@@ -189,7 +199,15 @@ const LessonOverview = () => {
                         </motion.div>
                       ))
                     ) : (
-                      <p className="text-gray-500">No activities available for this course.</p>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
+                      >
+                        <ClipboardX size={60} className="text-gray-400 mb-2" />
+                        <p className="text-gray-500 text-lg font-medium">This course has no activities yet</p>
+                      </motion.div>
                     )}
                   </motion.div>
                 </AnimatePresence>

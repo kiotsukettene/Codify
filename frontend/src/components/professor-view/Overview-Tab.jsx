@@ -5,7 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Rocket, Star, MoreVertical, ScrollText } from "lucide-react";
+import { Rocket, Star, MoreVertical, ScrollText, ClipboardX } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { formatDate } from "@/utils/formatDate";
 import DeleteDialog from "../Dialog/DeleteDialog";
 import { useActivityStore } from "@/store/activityStore";
+import { motion } from "framer-motion";
 
 const OverviewTab = ({ lessons = [] }) => {
   const navigate = useNavigate();
@@ -125,6 +126,21 @@ const OverviewTab = ({ lessons = [] }) => {
       />
 
       {/* ✅ Control Accordion with openLesson state */}
+
+
+      {lessons.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
+        >
+          <ClipboardX size={60} className="text-gray-400 mb-2" />
+          <p className="text-gray-500 text-lg font-medium">
+            This course has no lessons yet
+          </p>
+        </motion.div>
+      ) :
       <Accordion
         type="single"
         collapsible
@@ -226,7 +242,9 @@ const OverviewTab = ({ lessons = [] }) => {
           </AccordionItem>
         ))}
       </Accordion>
+}
     </div>
+    
   );
 };
 
