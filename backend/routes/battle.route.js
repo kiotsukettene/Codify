@@ -8,6 +8,7 @@ import {
   updateBattle,
   joinBattle,
   getStudentBattles,
+  getBattleById,
 } from "../controllers/battle.controller.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
@@ -23,7 +24,7 @@ router.delete("/:id", profVerifyToken, deleteBattle);
 router.put("/:id", profVerifyToken, updateBattle);
 router.post("/join/:battleId", StudentVerifyToken, joinBattle);
 router.get("/student", StudentVerifyToken, getStudentBattles);
-
+router.get("/:battleId", StudentVerifyToken, getBattleById); // Add new route
 
 
 export default router;

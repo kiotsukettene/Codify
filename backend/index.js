@@ -53,7 +53,7 @@ io.use((socket, next) => {
   // Fallback to cookie if token is not in auth
   if (!token && socket.handshake.headers.cookie) {
     const cookies = cookie.parse(socket.handshake.headers.cookie);
-    token = cookies.token; // Adjust 'token' to match your cookie name
+    token = cookies.token;
     console.log("Socket.IO auth attempt - Token from cookie:", token ? "Provided" : "Missing");
   }
 
@@ -76,7 +76,6 @@ io.use((socket, next) => {
     next(new Error("Authentication error: Invalid token"));
   }
 });
-
 // Store connected users
 const connectedUsers = new Map();
 
@@ -84,6 +83,11 @@ io.on("connection", (socket) => {
   const userId = socket.userId;
   connectedUsers.set(userId, socket.id);
   console.log("User connected:", userId, "Socket ID:", socket.id, "Connected Users:", [...connectedUsers]);
+
+  socket.on("joinBattleRoom", (battleId) => {
+    socket.join(battleId);
+    console.log(`User ${userId} joined battle room ${battleId}`);
+  });
 
   socket.on("disconnect", () => {
     connectedUsers.delete(userId);

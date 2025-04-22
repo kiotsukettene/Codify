@@ -57,7 +57,8 @@ export default function NotificationCard() {
       return;
     }
     markNotificationAsRead(notification.id);
-    navigate(`/student/code-battle/lobby/${notification.battleId}`);
+    const navigationPath = `/student/code-battle/lobby/${notification.battleId}`;
+    navigate(navigationPath, { replace: true });
   };
 
   const handleJoinBattle = async (battleId, notificationId) => {
@@ -82,50 +83,38 @@ export default function NotificationCard() {
         { withCredentials: true }
       );
       console.log("Join response:", response.data);
+      
+      // Show the response message
+      toast(response.data.message);
+      
+      // Mark notification as read
       markNotificationAsRead(notificationId);
-      toast.success("Joined battle successfully!");
       
-      // Fetch battle details before navigation
-      const battleResponse = await axios.get(
-        `http://localhost:3000/api/battles/${battleId}`,
-        { withCredentials: true }
-      );
+      // Navigate to battle lobby
+      const navigationPath = `/student/code-battle/lobby/${battleId}`;
+      console.log("Attempting navigation to:", navigationPath);
+      navigate(navigationPath, { replace: true });
       
-      // Navigate to battle lobby with battle data
-      navigate(`/student/code-battle/lobby/${battleId}`, {
-        state: {
-          battle: battleResponse.data,
-          player1: battleResponse.data.player1,
-          player2: battleResponse.data.player2
-        }
-      });
     } catch (error) {
       console.error("Join battle error:", {
         status: error.response?.status,
         message: error.response?.data?.message,
         error,
       });
-      const errorMessage = error.response?.data?.message || "Error joining battle";
-      toast.error(errorMessage);
-      if (errorMessage === "You have already joined this battle") {
-        // If already joined, fetch battle details and navigate
-        try {
-          const battleResponse = await axios.get(
-            `http://localhost:3000/api/battles/${battleId}`,
-            { withCredentials: true }
-          );
-          markNotificationAsRead(notificationId);
-          navigate(`/student/code-battle/lobby/${battleId}`, {
-            state: {
-              battle: battleResponse.data,
-              player1: battleResponse.data.player1,
-              player2: battleResponse.data.player2
-            }
-          });
-        } catch (fetchError) {
-          console.error("Error fetching battle details:", fetchError);
-          toast.error("Error loading battle details");
-        }
+      
+      // If battle is not accepting players but can be viewed
+      if (error.response?.data?.message === "Successfully join!") {
+        // Mark notification as read
+        markNotificationAsRead(notificationId);
+        
+        // Navigate to battle lobby in view-only mode
+        const navigationPath = `/student/code-battle/lobby/${battleId}`;
+        console.log("Attempting navigation to lobby (view-only):", navigationPath);
+        navigate(navigationPath, { replace: true });
+      } else {
+        // For other errors, show the error message
+        const errorMessage = error.response?.data?.message || "Error joining battle";
+        toast.error(errorMessage);
       }
     } finally {
       setJoining(null);

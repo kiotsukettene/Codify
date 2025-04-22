@@ -60,7 +60,7 @@ const useBattleStore = create((set) => ({
   battlesError: null,
   leaderboardError: null,
 
-  // Add new state for notifications
+  // State for notifications
   notifications: loadNotificationsFromStorage(),
   unreadNotifications: loadUnreadCountFromStorage(),
 
@@ -155,7 +155,7 @@ const useBattleStore = create((set) => ({
       selectedSection: "",
       battleData: {
         ...state.battleData,
-        program,
+        program: program,
         section: "",
         player1: "",
         player2: "",
@@ -169,7 +169,7 @@ const useBattleStore = create((set) => ({
       selectedSection: section,
       battleData: {
         ...state.battleData,
-        section,
+        section: section,
         player1: "",
         player2: "",
       },
@@ -178,7 +178,7 @@ const useBattleStore = create((set) => ({
 
   setOpen: (value) => set({ open: value }),
 
-  // Add new actions for notifications
+  // Notification actions
   addNotification: (notification) => set((state) => {
     const newNotification = {
       id: Date.now(),
@@ -260,6 +260,20 @@ const useBattleStore = create((set) => ({
     }
   },
 
+  // New action for joining a battle
+  joinBattle: async (battleId) => {
+    try {
+      const response = await axios.post(`${API_URL}/join/${battleId}`, {}, {
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error joining battle";
+      console.error("Join battle error:", errorMessage);
+      throw new Error(errorMessage);
+    }
+  },
+
   saveBattle: async () => {
     set({ isSubmitting: true, error: null });
     try {
@@ -290,11 +304,9 @@ const useBattleStore = create((set) => ({
       const challenges = state.battleData.challenges;
       for (let i = 0; i < challenges.length; i++) {
         const challenge = challenges[i];
-
         if (!challenge.problemTitle.trim() || !challenge.problemDescription.trim()) {
           throw new Error(`Challenge ${i + 1} is missing title or description`);
         }
-
         if (
           !Array.isArray(challenge.inputConstraints) ||
           !Array.isArray(challenge.expectedOutput) ||
@@ -307,7 +319,6 @@ const useBattleStore = create((set) => ({
             `Challenge ${i + 1} must have exactly 3 non-empty input constraints and expected outputs`
           );
         }
-
         if (!challenge.points || challenge.points <= 0) {
           throw new Error(`Challenge ${i + 1} must have valid points (greater than 0)`);
         }
@@ -318,7 +329,6 @@ const useBattleStore = create((set) => ({
         status: "pending",
       });
 
-      // Add notifications for selected players
       state.addNotification({
         title: `Scheduled Battle: ${state.battleData.title}`,
         message: `You've been selected for an upcoming code battle on ${new Date(state.battleData.commencement).toLocaleString()}`,
@@ -387,11 +397,9 @@ const useBattleStore = create((set) => ({
       const challenges = state.battleData.challenges;
       for (let i = 0; i < challenges.length; i++) {
         const challenge = challenges[i];
-
         if (!challenge.problemTitle.trim() || !challenge.problemDescription.trim()) {
           throw new Error(`Challenge ${i + 1} is missing title or description`);
         }
-
         if (
           !Array.isArray(challenge.inputConstraints) ||
           !Array.isArray(challenge.expectedOutput) ||
@@ -404,7 +412,6 @@ const useBattleStore = create((set) => ({
             `Challenge ${i + 1} must have exactly 3 non-empty input constraints and expected outputs`
           );
         }
-
         if (!challenge.points || challenge.points <= 0) {
           throw new Error(`Challenge ${i + 1} must have valid points (greater than 0)`);
         }
@@ -416,7 +423,6 @@ const useBattleStore = create((set) => ({
         commencement: new Date().toISOString(),
       });
 
-      // Add notifications for selected players
       state.addNotification({
         title: `New Battle: ${state.battleData.title}`,
         message: `You've been selected for a code battle: ${state.battleData.description}`,
@@ -490,7 +496,6 @@ const useBattleStore = create((set) => ({
     return state;
   }),
 
-  // Fetch battles
   fetchBattles: async () => {
     set({ isLoadingBattles: true, battlesError: null });
     try {
@@ -509,7 +514,6 @@ const useBattleStore = create((set) => ({
     }
   },
 
-  // Delete battle
   deleteBattle: async (id) => {
     try {
       await axios.delete(`${API_URL}/${id}`);
@@ -524,7 +528,6 @@ const useBattleStore = create((set) => ({
     }
   },
 
-  // Edit battle
   editBattle: async (id, updates) => {
     try {
       const response = await axios.put(`${API_URL}/${id}`, updates);
@@ -542,7 +545,6 @@ const useBattleStore = create((set) => ({
     }
   },
 
-  // Fetch leaderboard
   fetchLeaderboard: async () => {
     set({ isLoadingLeaderboard: true, leaderboardError: null });
     try {

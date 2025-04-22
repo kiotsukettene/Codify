@@ -448,13 +448,21 @@ function App() {
           <Route path="events" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings />} />
           <Route path="code-battle" element={<StudentCodeBattleOverview />} />
-          {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}
+          
         </Route>
+        <Route 
+            path="/student/code-battle/lobby/:battleId" 
+            element={
+              <ProtectedRouteStudents>
+                <StudentBattleLobby />
+              </ProtectedRouteStudents>
+            } 
+          />
 
         <Route path="/student/arena-dashboard" element={<ProtectedRouteStudents><ArenaDashboardPage /></ProtectedRouteStudents>} />
         <Route path="/student/main-arena" element={<ProtectedRouteStudents><MainArena /></ProtectedRouteStudents>} />
         <Route path="/professor/code-battle/battle/:battleId" element={<ProtectedRouteProfessors><CodeBattle /></ProtectedRouteProfessors>} />
-        <Route path="/battle-lobby" element={<StudentBattleLobby/>}/> 
+      
  
         {/* Additional Routes */}
 

@@ -27,6 +27,61 @@ const sendBattleNotification = async (req, players, battle) => {
   });
 };
 
+export const getBattleById = async (req, res) => {
+  try {
+    const { battleId } = req.params;
+    const studentId = req.studentId;
+
+    const battle = await Battle.findOne({ battleId })
+      .populate("player1", "firstName lastName _id")
+      .populate("player2", "firstName lastName _id")
+      .populate("courseId", "className program section");
+
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found" });
+    }
+
+    // Ensure the student is a participant
+    if (![battle.player1._id.toString(), battle.player2._id.toString()].includes(studentId)) {
+      return res.status(403).json({ message: "You are not a participant in this battle" });
+    }
+
+    // Format the response data
+    const formattedBattle = {
+      battleId: battle.battleId,
+      title: battle.title,
+      description: battle.description,
+      duration: battle.duration,
+      commencement: battle.commencement,
+      status: battle.status,
+      challenges: battle.challenges,
+      joinedPlayers: battle.joinedPlayers || [],
+      player1: {
+        id: battle.player1._id,
+        name: `${battle.player1.firstName} ${battle.player1.lastName}`,
+      },
+      player2: {
+        id: battle.player2._id,
+        name: `${battle.player2.firstName} ${battle.player2.lastName}`,
+      },
+      course: {
+        id: battle.courseId._id,
+        name: battle.courseId.className,
+        program: battle.courseId.program,
+        section: battle.courseId.section
+      }
+    };
+
+    res.status(200).json(formattedBattle);
+  } catch (error) {
+    console.error("Error in getBattleById:", error);
+    res.status(500).json({
+      message: "Error fetching battle",
+      error: error.message,
+    });
+  }
+};
+
 export const createBattle = async (req, res) => {
   try {
     const {
@@ -157,67 +212,58 @@ export const joinBattle = async (req, res) => {
     const { battleId } = req.params;
     const studentId = req.studentId;
 
-    const battle = await Battle.findOne({ battleId }).populate("courseId");
+    console.log("Join battle attempt:", { battleId, studentId });
+
+    const battle = await Battle.findOne({ battleId });
     if (!battle) {
+      console.log("Battle not found:", battleId);
       return res.status(404).json({ message: "Battle not found" });
     }
 
-    // Validate student is enrolled in the course
-    const course = battle.courseId;
-    if (!course.studentsEnrolled.includes(studentId)) {
-      return res.status(403).json({ message: "You are not enrolled in this course" });
+    // Check if the student is a participant
+    const isParticipant = [battle.player1.toString(), battle.player2.toString()].includes(studentId);
+    if (!isParticipant) {
+      console.log("Student not authorized for battle:", { battleId, studentId });
+      return res.status(403).json({ message: "You are not authorized to join this battle" });
     }
 
-    // Validate student is one of the selected players
-    if (![battle.player1.toString(), battle.player2.toString()].includes(studentId)) {
-      return res.status(403).json({ message: "You are not a selected player for this battle" });
+    // Check if the student has already joined
+    if (battle.joinedPlayers.includes(studentId)) {
+      console.log("Student already joined:", { battleId, studentId });
+      return res.status(200).json({ message: "You have already joined this battle" });
     }
 
-    // Check if battle is joinable
-    if (battle.status !== "pending" && battle.status !== "active") {
-      return res.status(400).json({ message: "Battle is not joinable" });
+    // Check battle status for new joins
+    if (battle.status !== "pending") {
+      console.log("Battle not joinable:", { battleId, status: battle.status });
+      // If the student is a participant, allow them to proceed to the lobby
+      if (isParticipant) {
+        return res.status(200).json({ message: "Successfully join!" });
+      }
+      return res.status(400).json({ message: "Battle is not accepting players" });
     }
 
-    // Check if battle already has two players
+    // Check if the battle is full
     if (battle.joinedPlayers.length >= 2) {
+      console.log("Battle is full:", battleId);
       return res.status(400).json({ message: "Battle is already full" });
     }
 
-    // Prevent duplicate joining
-    if (battle.joinedPlayers.includes(studentId)) {
-      return res.status(400).json({ message: "You have already joined this battle" });
-    }
-
-    // Add student to joinedPlayers
+    // Join the battle
     battle.joinedPlayers.push(studentId);
     await battle.save();
 
-    // Emit Socket.IO event to update professor and opponent
-    const io = req.app.get("io");
-    const connectedUsers = req.app.get("connectedUsers");
-    const studentSocketId = connectedUsers.get(studentId.toString());
-    const professorSocketId = connectedUsers.get(battle.createdBy.toString());
+    const socketRoom = io.to(battleId);
+    socketRoom.emit("playerJoined", { battleId, studentId });
 
-    io.to(professorSocketId).emit("playerJoined", {
-      battleId,
-      studentId,
-      message: `Student ${studentId} joined battle ${battleId}`,
-    });
-
-    // Notify the other player if they are connected
-    const otherPlayerId = battle.player1.toString() === studentId ? battle.player2.toString() : battle.player1.toString();
-    const otherPlayerSocketId = connectedUsers.get(otherPlayerId);
-    if (otherPlayerSocketId) {
-      io.to(otherPlayerSocketId).emit("opponentJoined", {
-        battleId,
-        studentId,
-        message: `Your opponent has joined battle ${battleId}`,
-      });
+    if (battle.joinedPlayers.length === 2) {
+      socketRoom.emit("opponentJoined", { battleId, studentId });
     }
 
-    res.status(200).json({ message: "Successfully joined battle", battle });
+    console.log("Join successful:", { battleId, studentId });
+    res.status(200).json({ message: "Joined battle successfully" });
   } catch (error) {
-    console.error("Error in joinBattle:", error);
+    console.error("Error joining battle:", error);
     res.status(500).json({ message: "Error joining battle", error: error.message });
   }
 };
