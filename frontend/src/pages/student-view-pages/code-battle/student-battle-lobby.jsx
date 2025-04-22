@@ -1,147 +1,211 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Rocket, Clock, ArrowLeft, CheckCircle, AlertCircle, Trophy, Loader } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-
-// Sample player data
-const samplePlayers = [
-  {
-    id: "player1",
-    name: "Commander Alex",
-    avatar: "/placeholder.svg?height=80&width=80",
-    status: "ready", // ready, waiting, loading
-    isYou: true,
-  },
-  {
-    id: "player2",
-    name: "Pilot Jordan",
-    avatar: "/placeholder.svg?height=80&width=80",
-    status: "waiting",
-    isYou: false,
-  },
-]
-
-// Sample battle data
-const battleData = {
-  id: "battle-123",
-  title: "Algorithmic Space Odyssey",
-  description: "Solve 3 algorithm challenges in this cosmic coding battle!",
-  challenges: 3,
-  estimatedTime: "30 minutes",
-}
-
-// Sample chat messages
-const initialChatMessages = [
-  {
-    id: 1,
-    playerId: "player1",
-    playerName: "Commander Alex",
-    message: "Hey, ready for the battle?",
-    timestamp: new Date(Date.now() - 120000).toISOString(),
-  },
-  {
-    id: 2,
-    playerId: "player2",
-    playerName: "Pilot Jordan",
-    message: "Almost! Just reviewing some algorithms first.",
-    timestamp: new Date(Date.now() - 60000).toISOString(),
-  },
-]
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Rocket, Clock, ArrowLeft, CheckCircle, AlertCircle, Trophy, Loader } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { io } from "socket.io-client";
+import { useStudentStore } from "@/store/studentStore";
+import { toast } from "react-hot-toast";
 
 export default function StudentBattleLobby() {
-  const [players, setPlayers] = useState(samplePlayers)
-  const [chatMessages, setChatMessages] = useState(initialChatMessages)
-  const [newMessage, setNewMessage] = useState("")
-  const [countdownActive, setCountdownActive] = useState(false)
-  const [countdown, setCountdown] = useState(10)
+    console.log("StudentBattleLobby rendered for battleId:", useParams().battleId);
+  const { battleId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { student } = useStudentStore();
+
+  const [battle, setBattle] = useState(location.state?.battle || null);
+  const [players, setPlayers] = useState([]);
+  const [countdownActive, setCountdownActive] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [socket, setSocket] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Fetch battle and player data if not passed from notification
+  useEffect(() => {
+    const fetchBattleData = async () => {
+      if (!battleId) {
+        setError("Invalid battle ID.");
+        return;
+      }
+      if (!student?._id) {
+        setError("Please log in to access the battle lobby.");
+        navigate("/student/login");
+        return;
+      }
+
+      try {
+        // Only fetch if battle data wasn't passed from notification
+        if (!battle) {
+          const battleResponse = await axios.get(`http://localhost:3000/api/battles/${battleId}`, {
+            withCredentials: true,
+          });
+          setBattle(battleResponse.data);
+        }
+
+        // Fetch player details
+        const playerIds = [battle?.player1, battle?.player2].filter(Boolean);
+        const playerPromises = playerIds.map(async (id) => {
+          try {
+            const response = await axios.get(`http://localhost:3000/api/students/${id}`, {
+              withCredentials: true,
+            });
+            return {
+              id,
+              name: response.data.name || "Unknown Player",
+              avatar: response.data.avatar || "/placeholder.svg?height=80&width=80",
+              status: battle?.joinedPlayers?.includes(id) ? "ready" : "waiting",
+              isYou: id === student._id,
+            };
+          } catch (error) {
+            console.error(`Error fetching player ${id}:`, error);
+            return {
+              id,
+              name: "Unknown Player",
+              avatar: "/placeholder.svg?height=80&width=80",
+              status: battle?.joinedPlayers?.includes(id) ? "ready" : "waiting",
+              isYou: id === student._id,
+            };
+          }
+        });
+
+        const fetchedPlayers = await Promise.all(playerPromises);
+        setPlayers(fetchedPlayers);
+      } catch (error) {
+        console.error("Error fetching battle data:", error);
+        setError(error.response?.data?.message || "Failed to load battle data.");
+      }
+    };
+
+    fetchBattleData();
+  }, [battleId, student._id, navigate, battle]);
+
+  // Set up Socket.IO
+  useEffect(() => {
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+    if (!token) {
+      setError("Authentication required. Please log in.");
+      navigate("/student/login");
+      return;
+    }
+
+    const newSocket = io("http://localhost:3000", {
+      auth: { token },
+    });
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+      newSocket.emit("joinBattleRoom", battleId);
+    });
+
+    newSocket.on("connect_error", (err) => {
+      console.error("Socket.IO connection error:", err.message);
+      setError("Failed to connect to the battle room. Please try again.");
+    });
+
+    newSocket.on("playerJoined", (data) => {
+      if (data.battleId === battleId) {
+        setPlayers((prevPlayers) =>
+          prevPlayers.map((player) =>
+            player.id === data.studentId ? { ...player, status: "ready" } : player
+          )
+        );
+      }
+    });
+
+    newSocket.on("opponentJoined", (data) => {
+      if (data.battleId === battleId) {
+        setPlayers((prevPlayers) =>
+          prevPlayers.map((player) =>
+            player.id === data.studentId ? { ...player, status: "ready" } : player
+          )
+        );
+        const allReady = prevPlayers.every((p) => p.status === "ready" || p.id === data.studentId);
+        if (allReady) {
+          setCountdownActive(true);
+        }
+      }
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [battleId]);
 
   // Get current player (you)
-  const currentPlayer = players.find((p) => p.isYou)
-  const otherPlayer = players.find((p) => !p.isYou)
+  const currentPlayer = players.find((p) => p.isYou);
+  const otherPlayer = players.find((p) => !p.isYou);
 
   // Check if all players are ready
-  const allPlayersReady = players.every((player) => player.status === "ready")
+  const allPlayersReady = players.every((player) => player.status === "ready");
 
   // Toggle ready status for current player
-  const toggleReady = () => {
-    setPlayers(
-      players.map((player) =>
-        player.isYou ? { ...player, status: player.status === "ready" ? "waiting" : "ready" } : player,
-      ),
-    )
-  }
+  const toggleReady = async () => {
+    if (!currentPlayer) return;
+
+    try {
+      if (currentPlayer.status === "waiting") {
+        await axios.post(
+          `http://localhost:3000/api/battles/join/${battleId}`,
+          {},
+          { withCredentials: true }
+        );
+        setPlayers((prev) =>
+          prev.map((player) =>
+            player.isYou ? { ...player, status: "ready" } : player
+          )
+        );
+        toast.success("You are ready for the battle!");
+      }
+    } catch (error) {
+      console.error("Error toggling ready status:", error);
+      toast.error(error.response?.data?.message || "Error marking as ready.");
+    }
+  };
 
   // Start battle countdown
   const startBattle = () => {
     if (allPlayersReady) {
-      setCountdownActive(true)
+      setCountdownActive(true);
     }
-  }
+  };
 
   // Handle countdown
   useEffect(() => {
-    let timer
+    let timer;
     if (countdownActive && countdown > 0) {
       timer = setTimeout(() => {
-        setCountdown(countdown - 1)
-      }, 1000)
+        setCountdown(countdown - 1);
+      }, 1000);
     } else if (countdown === 0) {
-      // Navigate to battle page
-      console.log("Starting battle...")
-      // In a real app, you would navigate to the battle page
-      // router.push('/battle')
+      navigate(`/student/code-battle/${battleId}`);
     }
-
-    return () => clearTimeout(timer)
-  }, [countdownActive, countdown])
+    return () => clearTimeout(timer);
+  }, [countdownActive, countdown, battleId, navigate]);
 
   // Add screen shake effect for countdown
   useEffect(() => {
     if (countdownActive && countdown <= 3) {
-      // Play a tick sound effect here if needed
-
-      // Create screen shake effect
-      const mainElement = document.querySelector("main")
+      const mainElement = document.querySelector("main");
       if (mainElement) {
-        mainElement.classList.add("screen-shake")
-
+        mainElement.classList.add("screen-shake");
         setTimeout(() => {
-          mainElement.classList.remove("screen-shake")
-        }, 300)
+          mainElement.classList.remove("screen-shake");
+        }, 300);
       }
     }
-  }, [countdown, countdownActive])
-
-  // Add this useEffect for sound effects
-  useEffect(() => {
-    if (countdownActive) {
-      // This is where you would implement the sound effects
-      // Since we can't actually play sounds in this environment, I'm adding comments
-
-      // Example implementation:
-      // const tickVolume = countdown <= 3 ? 0.8 : countdown <= 5 ? 0.5 : 0.3;
-      // const tickRate = countdown <= 3 ? 1.5 : 1;
-      // playTickSound(tickVolume, tickRate);
-
-      // For the final blast:
-      // if (countdown === 0) {
-      //   playBlastOffSound();
-      // }
-
-      console.log(`Countdown tick: ${countdown} - Would play sound at volume: ${countdown <= 3 ? "high" : "normal"}`)
-    }
-  }, [countdown, countdownActive])
+  }, [countdown, countdownActive]);
 
   // Format timestamp
   const formatTime = (timestamp) => {
-    const date = new Date(timestamp)
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  }
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
 
   // Get status badge
   const getStatusBadge = (status) => {
@@ -154,7 +218,7 @@ export default function StudentBattleLobby() {
               Systems Online
             </span>
           </Badge>
-        )
+        );
       case "waiting":
         return (
           <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500">
@@ -163,7 +227,7 @@ export default function StudentBattleLobby() {
               Awaiting Launch
             </span>
           </Badge>
-        )
+        );
       case "loading":
         return (
           <Badge className="bg-blue-500/20 text-blue-400 border-blue-500">
@@ -172,10 +236,37 @@ export default function StudentBattleLobby() {
               Calibrating
             </span>
           </Badge>
-        )
+        );
       default:
-        return null
+        return null;
     }
+  };
+
+  // Display error message if there's an error
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#0D0A1A] text-[#F5F5F5]">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
+          <p className="text-lg mb-4">{error}</p>
+          <Button
+            onClick={() => navigate("/student/dashboard")}
+            className="bg-[#B689F4] hover:bg-[#9F71E0] text-white"
+          >
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Display loading state while fetching data
+  if (!battle || players.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#0D0A1A] text-[#F5F5F5]">
+        <Loader className="h-8 w-8 animate-spin text-[#B689F4]" />
+      </div>
+    );
   }
 
   return (
@@ -196,23 +287,24 @@ export default function StudentBattleLobby() {
             <Button
               variant="ghost"
               className="p-1 h-8 w-8 hover:bg-[#2B1F4A] rounded-full text-[#C2C2DD] hover:text-[#F5F5F5]"
+              onClick={() => navigate("/student/dashboard")}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-base font-bold flex items-center gap-1 truncate font-['Orbitron']">
               <Rocket className="h-4 w-4 text-[#B689F4]" />
-              <span className="truncate">{battleData.title}</span>
+              <span className="truncate">{battle.title}</span>
             </h1>
           </div>
 
           <div className="flex items-center gap-2">
             <div className="bg-[#231b3d]/80 backdrop-blur-md border border-[#2B1F4A] px-3 py-1 rounded text-sm flex items-center gap-1">
               <Trophy className="h-3 w-3 text-yellow-400" />
-              <span className="text-sm">{battleData.challenges} Challenges</span>
+              <span className="text-sm">{battle.challenges} Challenges</span>
             </div>
             <div className="bg-[#231b3d]/80 backdrop-blur-md border border-[#2B1F4A] px-3 py-1 rounded text-sm flex items-center gap-1">
               <Clock className="h-3 w-3 text-[#E94560]" />
-              <span className="text-sm">{battleData.estimatedTime}</span>
+              <span className="text-sm">{battle.estimatedTime}</span>
             </div>
           </div>
         </header>
@@ -224,7 +316,7 @@ export default function StudentBattleLobby() {
             <h1 className="text-3xl font-bold mb-2 text-[#B689F4] font-['Orbitron'] tracking-wider">
               MISSION BRIEFING
             </h1>
-            <p className="text-[#C2C2DD] max-w-2xl mx-auto">{battleData.description}</p>
+            <p className="text-[#C2C2DD] max-w-2xl mx-auto">{battle.description}</p>
           </div>
 
           {/* Cinematic Countdown overlay */}
@@ -284,12 +376,12 @@ export default function StudentBattleLobby() {
                     {countdown > 5
                       ? "T-MINUS LAUNCH SEQUENCE"
                       : countdown > 3
-                        ? "MISSION LOCKED. NO TURNING BACK."
-                        : countdown > 1
-                          ? "PRESSURE LEVELS RISING..."
-                          : countdown > 0
-                            ? "GOING LIVE..."
-                            : "BLAST OFF!"}
+                      ? "MISSION LOCKED. NO TURNING BACK."
+                      : countdown > 1
+                      ? "PRESSURE LEVELS RISING..."
+                      : countdown > 0
+                      ? "GOING LIVE..."
+                      : "BLAST OFF!"}
                   </motion.h2>
 
                   {/* Main countdown number */}
@@ -303,7 +395,7 @@ export default function StudentBattleLobby() {
                     }}
                     exit={{ scale: 1.5, opacity: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="relative "
+                    className="relative"
                   >
                     <motion.div
                       animate={{
@@ -319,38 +411,37 @@ export default function StudentBattleLobby() {
                       {countdown > 0 ? (
                         <div
                           className={`text-[27rem] font-bold text-primary mb-3 relative
-                  ${
-                    countdown === 5
-                      ? "font-mono"
-                      : countdown === 4
-                        ? "font-serif"
-                        : countdown === 3
-                          ? "font-['Orbitron']"
-                          : countdown === 2
-                            ? "font-sans italic"
-                            : countdown === 1
-                              ? "font-['Impact']"
-                              : "font-mono"
-                  }`}
-                        >
-                          {countdown}
-
-                          {/* Glow effect */}
-                          <div
-                            className={`absolute inset-0 text-[27rem]font-bold text-primary blur-md opacity-70 z-[-1]
-                    ${
-                      countdown === 5
-                        ? "font-mono"
-                        : countdown === 4
-                          ? "font-serif"
-                          : countdown === 3
-                            ? "font-['Orbitron']"
-                            : countdown === 2
-                              ? "font-sans italic"
-                              : countdown === 1
+                            ${
+                              countdown === 5
+                                ? "font-mono"
+                                : countdown === 4
+                                ? "font-serif"
+                                : countdown === 3
+                                ? "font-['Orbitron']"
+                                : countdown === 2
+                                ? "font-sans italic"
+                                : countdown === 1
                                 ? "font-['Impact']"
                                 : "font-mono"
-                    }`}
+                            }`}
+                        >
+                          {countdown}
+                          {/* Glow effect */}
+                          <div
+                            className={`absolute inset-0 text-[27rem] font-bold text-primary blur-md opacity-70 z-[-1]
+                              ${
+                                countdown === 5
+                                  ? "font-mono"
+                                  : countdown === 4
+                                  ? "font-serif"
+                                  : countdown === 3
+                                  ? "font-['Orbitron']"
+                                  : countdown === 2
+                                  ? "font-sans italic"
+                                  : countdown === 1
+                                  ? "font-['Impact']"
+                                  : "font-mono"
+                              }`}
                           >
                             {countdown}
                           </div>
@@ -436,8 +527,8 @@ export default function StudentBattleLobby() {
                     {countdown <= 0
                       ? "MISSION COMMENCING"
                       : countdown <= 3
-                        ? "CRITICAL SYSTEMS ENGAGED"
-                        : "PREPARE FOR CODING BATTLE"}
+                      ? "CRITICAL SYSTEMS ENGAGED"
+                      : "PREPARE FOR CODING BATTLE"}
                   </motion.p>
 
                   {/* Horizontal scan line effect */}
@@ -513,7 +604,7 @@ export default function StudentBattleLobby() {
                         } bg-[#0D0A1A]`}
                       >
                         <img
-                          src={player.avatar || "/placeholder.svg"}
+                          src={player.avatar}
                           alt={player.name}
                           className="h-full w-full object-cover"
                         />
@@ -527,10 +618,16 @@ export default function StudentBattleLobby() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg font-bold font-['Orbitron']">{player.name}</h3>
-                        {player.isYou && <Badge className="bg-[#B689F4]/20 text-[#B689F4] border-[#B689F4]">You</Badge>}
+                        {player.isYou && (
+                          <Badge className="bg-[#B689F4]/20 text-[#B689F4] border-[#B689F4]">
+                            You
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm text-[#C2C2DD]">{player.isYou ? "Commander" : "Pilot"}</span>
+                        <span className="text-sm text-[#C2C2DD]">
+                          {player.isYou ? "Commander" : "Pilot"}
+                        </span>
                         {getStatusBadge(player.status)}
                       </div>
                     </div>
@@ -541,14 +638,20 @@ export default function StudentBattleLobby() {
                     <div className="mt-4 space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-[#C2C2DD]">Mission Status:</span>
-                        <span className={`text-sm ${player.status === "ready" ? "text-green-400" : "text-yellow-400"}`}>
+                        <span
+                          className={`text-sm ${
+                            player.status === "ready" ? "text-green-400" : "text-yellow-400"
+                          }`}
+                        >
                           {player.status === "ready" ? "Ready for Launch" : "Preparing Systems"}
                         </span>
                       </div>
                       <div className="h-1 w-full bg-[#0D0A1A] rounded-full overflow-hidden">
                         <div
                           className={`h-full ${
-                            player.status === "ready" ? "bg-green-500 w-full" : "bg-yellow-500 w-1/2 animate-pulse"
+                            player.status === "ready"
+                              ? "bg-green-500 w-full"
+                              : "bg-yellow-500 w-1/2 animate-pulse"
                           }`}
                         ></div>
                       </div>
@@ -559,6 +662,7 @@ export default function StudentBattleLobby() {
                             ? "bg-[#2B1F4A] hover:bg-[#3B2F5A] text-[#C2C2DD]"
                             : "bg-green-600 hover:bg-green-700 text-white"
                         }`}
+                        disabled={player.status === "ready"}
                       >
                         {player.status === "ready" ? (
                           <>
@@ -578,14 +682,20 @@ export default function StudentBattleLobby() {
                     <div className="mt-4 space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-[#C2C2DD]">Mission Status:</span>
-                        <span className={`text-sm ${player.status === "ready" ? "text-green-400" : "text-yellow-400"}`}>
+                        <span
+                          className={`text-sm ${
+                            player.status === "ready" ? "text-green-400" : "text-yellow-400"
+                          }`}
+                        >
                           {player.status === "ready" ? "Ready for Launch" : "Preparing Systems"}
                         </span>
                       </div>
                       <div className="h-1 w-full bg-[#0D0A1A] rounded-full overflow-hidden">
                         <div
                           className={`h-full ${
-                            player.status === "ready" ? "bg-green-500 w-full" : "bg-yellow-500 w-1/2 animate-pulse"
+                            player.status === "ready"
+                              ? "bg-green-500 w-full"
+                              : "bg-yellow-500 w-1/2 animate-pulse"
                           }`}
                         ></div>
                       </div>
@@ -616,11 +726,11 @@ export default function StudentBattleLobby() {
             <div className="grid md:grid-cols-3 gap-6">
               <div>
                 <h3 className="text-sm text-[#C2C2DD] mb-1">Challenges</h3>
-                <p className="font-medium">{battleData.challenges} coding challenges</p>
+                <p className="font-medium">{battle.challenges} coding challenges</p>
               </div>
               <div>
                 <h3 className="text-sm text-[#C2C2DD] mb-1">Estimated Time</h3>
-                <p className="font-medium">{battleData.estimatedTime}</p>
+                <p className="font-medium">{battle.estimatedTime}</p>
               </div>
             </div>
 
@@ -628,8 +738,9 @@ export default function StudentBattleLobby() {
 
             <div className="text-sm text-[#C2C2DD]">
               <p>
-                Prepare for an interstellar coding challenge! You'll face {battleData.challenges} algorithmic puzzles
-                that will test your problem-solving skills. Work quickly and efficiently to outperform your opponent.
+                Prepare for an interstellar coding challenge! You'll face {battle.challenges} algorithmic
+                puzzles that will test your problem-solving skills. Work quickly and efficiently to
+                outperform your opponent.
               </p>
             </div>
           </motion.div>
@@ -664,6 +775,7 @@ export default function StudentBattleLobby() {
             <Button
               variant="outline"
               className="border-[#E94560] text-[#E94560] hover:bg-[#E94560]/20 hover:text-[#E94560] font-['Orbitron']"
+              onClick={() => navigate("/student/dashboard")}
             >
               ABORT MISSION
             </Button>
@@ -678,14 +790,16 @@ export default function StudentBattleLobby() {
           50% { opacity: 1; }
           100% { opacity: 0.2; }
         }
-        
+
         @keyframes float {
           0% { transform: translateY(0px); }
           50% { transform: translateY(-10px); }
           100% { transform: translateY(0px); }
         }
-        
-        .stars-small, .stars-medium, .stars-large {
+
+        .stars-small,
+        .stars-medium,
+        .stars-large {
           position: absolute;
           top: 0;
           left: 0;
@@ -693,38 +807,38 @@ export default function StudentBattleLobby() {
           bottom: 0;
           pointer-events: none;
         }
-        
+
         .stars-small {
           background-image: radial-gradient(1px 1px at 50px 160px, #ffffff, rgba(0,0,0,0)),
-                            radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0,0,0,0)),
-                            radial-gradient(1px 1px at 130px 80px, #ffffff, rgba(0,0,0,0)),
-                            radial-gradient(1px 1px at 160px 120px, #ffffff, rgba(0,0,0,0));
+            radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+            radial-gradient(1px 1px at 130px 80px, #ffffff, rgba(0,0,0,0)),
+            radial-gradient(1px 1px at 160px 120px, #ffffff, rgba(0,0,0,0));
           background-repeat: repeat;
           background-size: 200px 200px;
           animation: twinkle 4s ease-in-out infinite;
           opacity: 0.3;
         }
-        
+
         .stars-medium {
           background-image: radial-gradient(1.5px 1.5px at 50px 160px, #ffffff, rgba(0,0,0,0)),
-                            radial-gradient(1.5px 1.5px at 90px 40px, #ffffff, rgba(0,0,0,0)),
-                            radial-gradient(1.5px 1.5px at 130px 80px, #ffffff, rgba(0,0,0,0));
+            radial-gradient(1.5px 1.5px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+            radial-gradient(1.5px 1.5px at 130px 80px, #ffffff, rgba(0,0,0,0));
           background-repeat: repeat;
           background-size: 300px 300px;
           animation: twinkle 6s ease-in-out infinite;
           opacity: 0.4;
         }
-        
+
         .stars-large {
           background-image: radial-gradient(2px 2px at 100px 50px, #ffffff, rgba(0,0,0,0)),
-                            radial-gradient(2px 2px at 200px 150px, #ffffff, rgba(0,0,0,0)),
-                            radial-gradient(2px 2px at 300px 250px, #ffffff, rgba(0,0,0,0));
+            radial-gradient(2px 2px at 200px 150px, #ffffff, rgba(0,0,0,0)),
+            radial-gradient(2px 2px at 300px 250px, #ffffff, rgba(0,0,0,0));
           background-repeat: repeat;
           background-size: 400px 400px;
           animation: twinkle 8s ease-in-out infinite;
           opacity: 0.5;
         }
-        
+
         .nebula {
           position: absolute;
           top: 0;
@@ -732,7 +846,7 @@ export default function StudentBattleLobby() {
           right: 0;
           bottom: 0;
           background: radial-gradient(ellipse at top right, rgba(182, 137, 244, 0.1) 0%, rgba(0,0,0,0) 60%),
-                      radial-gradient(ellipse at bottom left, rgba(233, 69, 96, 0.1) 0%, rgba(0,0,0,0) 60%);
+            radial-gradient(ellipse at bottom left, rgba(233, 69, 96, 0.1) 0%, rgba(0,0,0,0) 60%);
           pointer-events: none;
         }
 
@@ -761,5 +875,5 @@ export default function StudentBattleLobby() {
         }
       `}</style>
     </div>
-  )
+  );
 }

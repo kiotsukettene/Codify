@@ -1,15 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BellRing, Paperclip, Rocket, Star, X, Zap } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import useBattleStore from "@/store/battleStore"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { BellRing, Paperclip, Rocket, Star, X, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import useBattleStore from "@/store/battleStore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import axios from "axios";
+import { useStudentStore } from "@/store/studentStore";
 
 export default function NotificationCard() {
   const {
@@ -18,60 +21,116 @@ export default function NotificationCard() {
     markNotificationAsRead,
     dismissNotification,
   } = useBattleStore();
+  const { student } = useStudentStore();
 
-  console.log("Notifications in NotificationCard:", notifications); // Existing log
-
-  // Add debug log to confirm component rendering
+  console.log("Notifications in NotificationCard:", notifications);
   console.log("NotificationCard rendered, unread count:", unreadNotifications);
+
   const navigate = useNavigate();
   const [joining, setJoining] = useState(null);
-
 
   const getNotificationIcon = (type) => {
     switch (type) {
       case "challenge":
-        return <Rocket className="h-4 w-4 text-white" />
+        return <Rocket className="h-4 w-4 text-white" />;
       case "reminder":
-        return <Zap className="h-4 w-4 text-white" />
+        return <Zap className="h-4 w-4 text-white" />;
       default:
-        return <Paperclip className="h-4 w-4 text-white" />
+        return <Paperclip className="h-4 w-4 text-white" />;
     }
-  }
+  };
 
   const getIconBgColor = (type) => {
     switch (type) {
       case "challenge":
-        return "bg-indigo-500"
+        return "bg-indigo-500";
       case "reminder":
-        return "bg-amber-500"
+        return "bg-amber-500";
       default:
-        return "bg-gray-500"
-    }
-  }
-
-  const handleNotificationClick = (notification) => {
-    markNotificationAsRead(notification.id);
-    if (notification.battleId) {
-      navigate(`/student/code-battle/lobby/${notification.battleId}`);
+        return "bg-gray-500";
     }
   };
-  
+
+  const handleNotificationClick = (notification) => {
+    if (!notification?.battleId) {
+      toast.error("No battle associated with this notification.");
+      return;
+    }
+    markNotificationAsRead(notification.id);
+    navigate(`/student/code-battle/lobby/${notification.battleId}`);
+  };
+
   const handleJoinBattle = async (battleId, notificationId) => {
+    console.log("handleJoinBattle triggered:", { battleId, notificationId, studentId: student?._id });
+    if (!battleId) {
+      console.error("Invalid battle ID");
+      toast.error("Invalid battle ID.");
+      return;
+    }
+    if (!student?._id) {
+      console.error("No student logged in");
+      toast.error("Please log in to join the battle.");
+      navigate("/student/login");
+      return;
+    }
     setJoining(battleId);
     try {
-      const response = await axios.post(`http://localhost:3000/api/battles/join/${battleId}`, {}, {
-        withCredentials: true,
-      });
+      console.log("Sending join request to:", `http://localhost:3000/api/battles/join/${battleId}`);
+      const response = await axios.post(
+        `http://localhost:3000/api/battles/join/${battleId}`,
+        {},
+        { withCredentials: true }
+      );
+      console.log("Join response:", response.data);
       markNotificationAsRead(notificationId);
       toast.success("Joined battle successfully!");
-      navigate(`/student/code-battle/lobby/${battleId}`);
+      
+      // Fetch battle details before navigation
+      const battleResponse = await axios.get(
+        `http://localhost:3000/api/battles/${battleId}`,
+        { withCredentials: true }
+      );
+      
+      // Navigate to battle lobby with battle data
+      navigate(`/student/code-battle/lobby/${battleId}`, {
+        state: {
+          battle: battleResponse.data,
+          player1: battleResponse.data.player1,
+          player2: battleResponse.data.player2
+        }
+      });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error joining battle");
+      console.error("Join battle error:", {
+        status: error.response?.status,
+        message: error.response?.data?.message,
+        error,
+      });
+      const errorMessage = error.response?.data?.message || "Error joining battle";
+      toast.error(errorMessage);
+      if (errorMessage === "You have already joined this battle") {
+        // If already joined, fetch battle details and navigate
+        try {
+          const battleResponse = await axios.get(
+            `http://localhost:3000/api/battles/${battleId}`,
+            { withCredentials: true }
+          );
+          markNotificationAsRead(notificationId);
+          navigate(`/student/code-battle/lobby/${battleId}`, {
+            state: {
+              battle: battleResponse.data,
+              player1: battleResponse.data.player1,
+              player2: battleResponse.data.player2
+            }
+          });
+        } catch (fetchError) {
+          console.error("Error fetching battle details:", fetchError);
+          toast.error("Error loading battle details");
+        }
+      }
     } finally {
       setJoining(null);
     }
   };
-
 
   return (
     <Popover>
@@ -107,7 +166,8 @@ export default function NotificationCard() {
             variant="ghost"
             size="sm"
             className="h-8 text-xs text-white hover:bg-violet-700 hover:text-white"
-            onClick={() => notifications.forEach(n => markNotificationAsRead(n.id))}
+            onClick={() => notifications.forEach((n) => markNotificationAsRead(n.id))}
+            disabled={notifications.length === 0}
           >
             Mark all as read
           </Button>
@@ -127,18 +187,26 @@ export default function NotificationCard() {
                     onClick={() => handleNotificationClick(notification)}
                     whileHover={{ scale: 1.02 }}
                   >
-                    <Card className={`relative overflow-hidden border border-violet-200 ${
-                      notification.read ? "opacity-80" : "opacity-100 shadow-sm"
-                    }`}>
+                    <Card
+                      className={`relative overflow-hidden border border-violet-200 ${
+                        notification.read ? "opacity-80" : "opacity-100 shadow-sm"
+                      }`}
+                    >
                       <CardContent className="p-3">
                         <div className="flex gap-3">
-                          <div className={`flex-shrink-0 w-8 h-8 rounded-full ${getIconBgColor(notification.type)} p-1.5 flex items-center justify-center shadow-md`}>
+                          <div
+                            className={`flex-shrink-0 w-8 h-8 rounded-full ${getIconBgColor(
+                              notification.type
+                            )} p-1.5 flex items-center justify-center shadow-md`}
+                          >
                             {getNotificationIcon(notification.type)}
                           </div>
 
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start">
-                              <h4 className="font-bold text-sm text-gray-800">{notification.title}</h4>
+                              <h4 className="font-bold text-sm text-gray-800">
+                                {notification.title}
+                              </h4>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -163,10 +231,11 @@ export default function NotificationCard() {
                                   className="h-7 text-xs px-2 bg-indigo-500 hover:bg-indigo-600 text-white"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleNotificationClick(notification);
+                                    handleJoinBattle(notification.battleId, notification.id);
                                   }}
+                                  disabled={joining === notification.battleId}
                                 >
-                                  Join Battle
+                                  {joining === notification.battleId ? "Joining..." : "Join Battle"}
                                 </Button>
                               )}
                             </div>
@@ -187,11 +256,16 @@ export default function NotificationCard() {
         </ScrollArea>
 
         <div className="p-2 border-t border-violet-200 bg-violet-50">
-          <Button variant="ghost" size="sm" className="w-full bg-violet-200 text-violet-700 hover:bg-violet-300">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full bg-violet-200 text-violet-700 hover:bg-violet-300"
+            disabled={notifications.length === 0}
+          >
             View All
           </Button>
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
