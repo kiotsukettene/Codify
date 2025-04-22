@@ -10,6 +10,7 @@ import lessonRoutes from "./routes/lesson.route.js";
 import activityRoutes from "./routes/activity.route.js";
 import studentCourseRoutes from "./routes/studentCourse.route.js";
 import challengeRoutes from "./routes/challenge.route.js";
+import CourseFieldRoutes from "./routes/courseField.route.js";
 import cors from "cors";
 import emailRoutes from "./routes/email.route.js"; // Import email routes
 import session from "express-session";
@@ -54,6 +55,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/professors", professorRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/courseFields", CourseFieldRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/uploads", express.static("uploads"));

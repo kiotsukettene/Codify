@@ -235,9 +235,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useActivityStore } from "../../../store/activityStore";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Calendar, Upload, FileText, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MoreVertical, Calendar, Upload, FileText, X, MessageSquare } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -246,8 +247,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import GamifiedToast from "@/components/student-view/gamified-success-toast";
 import { ToastProvider, ToastViewport } from "@/components/ui/toast";
+import Lion from "@/assets/picture/Avatar/Lion.png"
+
+
+const initialComments = [
+  { id: 4, author: "Catherine Bae", message: "I have a question about the else if statement.", avatar: Lion },
+];
+
 
 function StudentActivityPage() {
+
   const { activitySlug } = useParams();
   const {
     activity,
@@ -264,6 +273,28 @@ function StudentActivityPage() {
   const [open, setOpen] = useState(false); // Gamified Toast
   const [files, setFiles] = useState([]); // Files to upload
   const [errorMessage, setErrorMessage] = useState(""); // Error message for file validation
+  const [comments, setComments] = useState(initialComments);
+  const [newComment, setNewComment] = useState("");
+
+
+  const handleAddComment = (e) => {
+      e.preventDefault();
+      if (!newComment.trim()) return;
+    
+      const newCommentObj = {
+        id: comments.length + 1,
+        author: "Professor Name", // You should get this from your auth context
+        message: newComment,
+        avatar: Lion, // You might want to use professor's avatar
+        isProfessor: true,
+      };
+    
+      setComments([...comments, newCommentObj]);
+      setNewComment("");
+    };
+
+
+
 
   useEffect(() => {
     if (activitySlug) {
@@ -512,6 +543,46 @@ function StudentActivityPage() {
                 <p>No resources available</p>
               )}
             </div>
+
+
+            <Card className="shadow-sm hover:shadow-md transition-shadow duration-300 max-h-80">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-purple-600">
+                  <MessageSquare className="h-5 w-5" />
+                  <h3 className="font-semibold">Private Comment</h3>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {comments.slice(-2).map((comment) => (
+                  <div key={comment.id} className="flex items-start gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={comment.avatar} />
+                      <AvatarFallback>{comment.initials}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900">{comment.author}</div>
+                      <p className="text-xs text-gray-600">{comment.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 border-t pt-4">
+              <form onSubmit={handleAddComment} className="flex gap-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="flex-1 px-3 py-2 border rounded-md text-sm"
+                  placeholder="Type your reply..."
+                />
+                <Button type="submit" size="sm">
+                  Send
+                </Button>
+              </form>
+            </div>
+            </CardContent>
+          </Card>
 
             <ToastProvider>
               <Button
