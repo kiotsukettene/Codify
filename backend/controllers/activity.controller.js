@@ -389,12 +389,12 @@ export const getStudentAllActivities = async (req, res) => {
     }
 
     const studentId = req.studentId;
-    console.log("Student ID:", studentId);
+    // console.log("Student ID:", studentId);
 
     const courses = await mongoose.model("Course").find({
       studentsEnrolled: studentId,
     });
-    console.log("Enrolled courses:", courses);
+    // console.log("Enrolled courses:", courses);
 
     if (!courses.length) {
       console.log("No enrolled courses found for student");
@@ -475,7 +475,7 @@ export const getStudentAllActivities = async (req, res) => {
       };
     });
 
-    console.log("Formatted activities:", formattedActivities);
+    // console.log("Formatted activities:", formattedActivities);
     res.status(200).json(formattedActivities);
   } catch (error) {
     console.error("Error fetching all student activities:", error);

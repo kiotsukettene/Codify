@@ -9,12 +9,21 @@ export const SocketProvider = ({ children }) => {
   const { addNotification } = useBattleStore();
   const [socket, setSocket] = useState(null);
 
+  // Helper function to get cookie by name
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  };
+
   useEffect(() => {
+    // Get token from cookie
+    const token = getCookie("token");
+
     const socketInstance = io("http://localhost:3000", {
       withCredentials: true,
-      auth: {
-        token: localStorage.getItem("token") || document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1]
-      }
+      auth: { token }
     });
 
     socketInstance.on("connect", () => {
@@ -39,7 +48,6 @@ export const SocketProvider = ({ children }) => {
 
     socketInstance.on("connect_error", (error) => {
       console.error("Socket.IO connection error:", error.message);
-      toast.error("Connection error, please refresh");
     });
 
     setSocket(socketInstance);
