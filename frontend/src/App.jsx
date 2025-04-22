@@ -85,9 +85,6 @@ import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
 
 
-import Lobby from "./pages/professor-view-pages/Code-Battle/Lobby";
-
-
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
   const { checkStudentAuth, isCheckingStudentAuth } = useStudentStore();
@@ -113,7 +110,6 @@ function App() {
   return (
     <div>
       <Routes>  
-        <Route path="/lobby" element={<Lobby />} />
         <Route path="/terms" element={<TermsAndCondition />} />
         <Route path="/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess/></ProtectedRouteInstitution>} />
         {/* Public Routes */}
