@@ -35,6 +35,7 @@ import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor
 import StudentList from "./pages/admin-view-pages/admin-student/Student";
 import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
 import CoursesAdmin from "./pages/admin-view-pages/courses";
+import CourseSetting from "./pages/admin-view-pages/Course-Settings";
 
 // Professor Pages
 import { useprofAuthStore } from "@/store/profAuthStore";
@@ -84,6 +85,9 @@ import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
 
 
+import Lobby from "./pages/professor-view-pages/Code-Battle/Lobby";
+
+
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
   const { checkStudentAuth, isCheckingStudentAuth } = useStudentStore();
@@ -109,7 +113,7 @@ function App() {
   return (
     <div>
       <Routes>  
-        <Route path="/battle" element={<CodeBattle />} />
+        <Route path="/lobby" element={<Lobby />} />
         <Route path="/terms" element={<TermsAndCondition />} />
         <Route path="/payment-success" element={<ProtectedRouteInstitution><PaymentSuccess/></ProtectedRouteInstitution>} />
         {/* Public Routes */}
@@ -392,6 +396,14 @@ function App() {
             element={
               <ProtectedRouteInstitution>
                 <CoursesAdmin />
+              </ProtectedRouteInstitution>
+            }
+          />
+          <Route
+            path="course-settings"
+            element={
+              <ProtectedRouteInstitution>
+                <CourseSetting />
               </ProtectedRouteInstitution>
             }
           />

@@ -72,12 +72,20 @@ const EditActivity = () => {
     setIsFormValid(hasContent);
   }, [title, subtitle, instruction, files]);
 
-  const dueDateTime =
+  // const dueDateTime =
+  //   date && time
+  //     ? `${format(date, "yyyy-MM-dd")}T${
+  //         /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
+  //       }:00.000Z`
+  //     : null;
+
+   const dueDateTime =
     date && time
-      ? `${format(date, "yyyy-MM-dd")}T${
+      ? new Date(`${format(date, "yyyy-MM-dd")}T${
           /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
-        }:00.000Z`
+        }:00`).toISOString()
       : null;
+      
 
   const handleSubmit = async () => {
     if (!activity?._id) {
@@ -95,7 +103,6 @@ const EditActivity = () => {
 
     try {
       await updateActivity(activity._id, updatedActivity, files);
-      toast.success("Activity updated successfully! 🎉");
       navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activitySlug}`);
     } catch (error) {
       console.error("Error updating activity:", error);
@@ -127,7 +134,7 @@ const EditActivity = () => {
   if (!activity) return <p>No activity found</p>;
 
   return (
-    <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
+    <div className="w-full p-4 grid grid-cols-12 gap-6">
       <div className="col-span-12 lg:col-span-9">
         <Card className="border-0 shadow-none">
           <CardContent className="p-0">
@@ -207,7 +214,7 @@ const EditActivity = () => {
 
       {/* Right Content - Upload Files and Due Date */}
       <div className="col-span-12 lg:col-span-3">
-        <div className="hidden lg:flex items-center justify-end lg:justify-between lg:ml-48">
+        <div className="hidden lg:flex items-center justify-end lg:justify-between lg:ml-40">
           <Button
             className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
             onClick={handleSubmit}

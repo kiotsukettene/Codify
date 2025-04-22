@@ -50,6 +50,27 @@ export const useCourseStore = create((set) => ({
   createCourse: async (courseData) => {
     set({ isLoading: true, error: null });
     try {
+      // Check for duplicate course
+      const { className, program, year, section, professorId, institutionId } =
+        courseData;
+      const responseCheck = await axios.get(`${API_URL}/courses`, {
+        params: {
+          className,
+          program,
+          year,
+          section,
+          professorId,
+          institutionId,
+        },
+      });
+
+      if (responseCheck.data.length > 0) {
+        set({ isLoading: false });
+        toast.error("A course with these details already exists!");
+        return;
+      }
+
+      // Proceed with course creation if no duplicates
       const response = await axios.post(`${API_URL}/create`, courseData);
       set((state) => ({
         courses: [...state.courses, response.data.course],
