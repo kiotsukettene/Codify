@@ -34,27 +34,21 @@ function StudentSidebar() {
            </Link>
           </SidebarHeader>
       {/* Sidebar Menu */}
-      <SidebarMenu className="mt-4">
+      <SidebarMenu className="mt-4 py-2 px-4">
         {studentMenu.map((item) => (
-          <SidebarMenuItem key={item.label} className="py-2 px-4 ">
-            <SidebarMenuButton asChild>
-            <NavLink
-                to={item.to}
-                end // prevents partial matches if needed
-                className={({ isActive }) =>
-                  `flex items-center font-medium transition-all px-3 py-2 rounded-lg hover:bg-violet-100 ${
-                    isActive
-                      ? "text-violet-700 font-semibold bg-violet-100"
-                      : "text-gray-700"
-                  }`
-                }
-              >
-                <item.icon className="mr-2" />
-                {item.label}
-              </NavLink>
-
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+           <NavLink
+           key={item.label}
+           
+           to={item.to}
+           className={({ isActive }) =>
+             `flex font-semibold text-base rounded-lg hover:bg-violet-100 items-center px-6 py-3 text-[#633ea5] transition-all ${
+               isActive ? "bg-[#F3F0FF]" : ""
+             }`
+           }
+         >
+           <item.icon className="mr-2 h-4 w-4" />
+           <span>{item.label}</span>
+         </NavLink>
         ))}
     
       </SidebarMenu>

@@ -108,7 +108,7 @@ print(introduction)
 
 
   return (
-    <div className="flex lg:flex-row mt-5 flex-col">
+    <div className="flex lg:flex-row mt-5 flex-col w-full">
       <div className="w-full lg:w-3/4">
         <Card className="shadow-none border-none bg-white p-6">
           <CardTitle className="bg-pink-50 p-5 rounded-lg">
