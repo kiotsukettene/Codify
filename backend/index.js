@@ -19,7 +19,8 @@ import battleRoutes from "./routes/battle.route.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import cookie from "cookie"; // Add cookie parser for Socket.IO
+import cookie from "cookie";
+import Battle from "./models/battle.model.js";
 
 dotenv.config();
 
@@ -79,10 +80,35 @@ io.use((socket, next) => {
 // Store connected users
 const connectedUsers = new Map();
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const userId = socket.userId;
   connectedUsers.set(userId, socket.id);
-  console.log("User connected:", userId, "Socket ID:", socket.id, "Connected Users:", [...connectedUsers]);
+  console.log("User connected:", userId, "Socket ID:", socket.id);
+
+  // Deliver stored notifications
+  const battles = await Battle.find({
+    "notifications.playerId": userId,
+    "notifications.read": false,
+  });
+  battles.forEach((battle) => {
+    const notification = battle.notifications.find(
+      (n) => n.playerId.toString() === userId && !n.read
+    );
+    if (notification) {
+      socket.emit("battleNotification", {
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        time: notification.time,
+        battleId: notification.battleId,
+      });
+      // Mark as read
+      Battle.updateOne(
+        { battleId: battle.battleId, "notifications._id": notification._id },
+        { $set: { "notifications.$.read": true } }
+      );
+    }
+  });
 
   socket.on("joinBattleRoom", (battleId) => {
     socket.join(battleId);
@@ -91,7 +117,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     connectedUsers.delete(userId);
-    console.log("User disconnected:", userId, "Connected Users:", [...connectedUsers]);
+    console.log("User disconnected:", userId);
   });
 });
 

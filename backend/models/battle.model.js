@@ -19,7 +19,7 @@ const ChallengeSchema = new mongoose.Schema({
 
 const BattleSchema = new mongoose.Schema(
   {
-    battleId: {
+    battleCode: {
       type: String,
       required: true,
       unique: true,
@@ -68,6 +68,15 @@ const BattleSchema = new mongoose.Schema(
       player1Score: { type: Number, default: 0 },
       player2Score: { type: Number, default: 0 },
     },
+    notifications: [{
+      playerId: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
+      type: { type: String, default: "challenge" },
+      title: String,
+      message: String,
+      time: { type: Date, default: Date.now },
+      read: { type: Boolean, default: false },
+      battleCode: String,
+    }],
   },
   { timestamps: true }
 );

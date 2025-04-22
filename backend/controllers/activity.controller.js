@@ -444,7 +444,7 @@ export const getStudentAllActivities = async (req, res) => {
         },
       },
     ]);
-    console.log("Raw activities:", activities);
+    // console.log("Raw activities:", activities);
 
     const currentDate = new Date();
     const formattedActivities = activities.map((activity) => {

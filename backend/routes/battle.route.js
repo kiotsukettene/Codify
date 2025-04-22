@@ -9,6 +9,7 @@ import {
   joinBattle,
   getStudentBattles,
   getBattleById,
+  getBattleByIdForProfessor,
 } from "../controllers/battle.controller.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
@@ -22,9 +23,9 @@ router.get("/professor", profVerifyToken, getBattlesByProfessor); // New endpoin
 router.get("/leaderboard", profVerifyToken, getLeaderboard); // New endpoint
 router.delete("/:id", profVerifyToken, deleteBattle);
 router.put("/:id", profVerifyToken, updateBattle);
-router.post("/join/:battleId", StudentVerifyToken, joinBattle);
+router.post("/join/:battleCode", StudentVerifyToken, joinBattle);
 router.get("/student", StudentVerifyToken, getStudentBattles);
-router.get("/:battleId", StudentVerifyToken, getBattleById); // Add new route
-
+router.get("/:battleCode", StudentVerifyToken, getBattleById); // Add new route
+router.get("/professor/:battleCode", profVerifyToken, getBattleByIdForProfessor);
 
 export default router;

@@ -1,70 +1,131 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Swords, Timer, Users, Crown, Rocket, Star, Zap } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import React, { useEffect, useState, useContext } from 'react';
+import { Rocket, Clock, ArrowLeft, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import Bear from '@/assets/picture/Avatar/Bear.png';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { useParams, useNavigate } from 'react-router-dom';
 import useBattleStore from '@/store/battleStore';
-import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import { SocketContext } from '@/context/auth-context/SocketProvider';
 
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/battles"
+  : `${import.meta.env.VITE_API_URL}/api/battles`;
 const LOBBY_WAIT_TIME = 300; // 5 minutes in seconds
 
 const BattleLobby = () => {
-  const { battleId } = useParams();
+  const { battleCode } = useParams();
   const navigate = useNavigate();
   const { battles, fetchBattles } = useBattleStore();
   const [battle, setBattle] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [players, setPlayers] = useState({
     player1: { joined: false, ready: false },
     player2: { joined: false, ready: false },
   });
   const [timeLeft, setTimeLeft] = useState(LOBBY_WAIT_TIME);
   const [battleStatus, setBattleStatus] = useState('waiting'); // waiting, started, completed
-  const socket = io(import.meta.env.VITE_API_URL, { withCredentials: true });
+  const socket = useContext(SocketContext);
 
-  // Fetch battles and set up battle data
+  // Fetch battle by battleCode for professor
   useEffect(() => {
-    fetchBattles();
-  }, [fetchBattles]);
+    const fetchBattle = async () => {
+      try {
+        const response = await fetch(`${API_URL}/professor/${battleCode}`, {
+          credentials: 'include',
+        });
+        const data = await response.json();
+        console.log("Fetched battle:", data);
+        if (response.ok) {
+          setBattle(data);
+          setPlayers({
+            player1: {
+              joined: data.joinedPlayers.includes(data.player1.id),
+              ready: false,
+            },
+            player2: {
+              joined: data.joinedPlayers.includes(data.player2.id),
+              ready: false,
+            },
+          });
 
-  // Find and set the current battle
-  useEffect(() => {
-    if (battles.length > 0) {
-      const currentBattle = battles.find((b) => b.id === battleId);
-      if (currentBattle) {
-        setBattle(currentBattle);
-      } else {
-        toast.error('Battle not found');
-        navigate('/professor/code-battle');
+          // Initialize timer from localStorage or set new
+          const timerKey = `battleTimer_${battleCode}`;
+          const storedTimer = localStorage.getItem(timerKey);
+          if (storedTimer) {
+            const { startTime, initialTime } = JSON.parse(storedTimer);
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const remaining = Math.max(0, initialTime - elapsed);
+            setTimeLeft(remaining);
+          } else {
+            localStorage.setItem(
+              timerKey,
+              JSON.stringify({
+                startTime: Date.now(),
+                initialTime: LOBBY_WAIT_TIME,
+              })
+            );
+            setTimeLeft(LOBBY_WAIT_TIME);
+          }
+        } else {
+          setError(data.message || 'Battle not found');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Fetch battle error:", error);
+        setError('Error fetching battle');
+        setIsLoading(false);
       }
-    }
-  }, [battles, battleId, navigate]);
+      setIsLoading(false);
+    };
+    fetchBattle();
+  }, [battleCode, navigate]);
 
-  // Timer logic for lobby waiting period
+  // Join battle room
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (socket && battleCode) {
+      socket.emit('joinBattleRoom', battleCode);
+      console.log(`Joined battle room ${battleCode}`);
+    }
+  }, [socket, battleCode]);
 
-    // Start timer only when at least one player has joined
-    if (!players.player1.joined && !players.player2.joined) return;
+  // Timer logic
+  useEffect(() => {
+    if (timeLeft <= 0 || battleStatus !== 'waiting') {
+      if (timeLeft <= 0) {
+        // Clean up localStorage when timer expires
+        localStorage.removeItem(`battleTimer_${battleCode}`);
+      }
+      return;
+    }
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          // If both players are ready, start the battle
           if (players.player1.ready && players.player2.ready) {
             setBattleStatus('started');
-            socket.emit('battleStart', { battleId });
-            toast.success('Battle is starting!');
-            navigate(`/professor/code-battle/arena/${battleId}`);
+            socket.emit('battleStart', { battleCode });
+            localStorage.removeItem(`battleTimer_${battleCode}`);
+            navigate(`/professor/code-battle/arena/${battleCode}`);
           } else {
-            // If time runs out and players aren't ready
             setBattleStatus('completed');
-            socket.emit('battleCancelled', { battleId });
+            socket.emit('battleCancelled', { battleCode });
             toast.error('Battle cancelled - players not ready in time');
+            fetch(`${API_URL}/${battleCode}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ status: 'completed' }),
+            });
+            // Clean up notifications
+            fetch(`${API_URL}/cleanup/${battleCode}`, {
+              method: 'POST',
+              credentials: 'include',
+            });
+            localStorage.removeItem(`battleTimer_${battleCode}`);
             navigate('/professor/code-battle');
           }
           return 0;
@@ -74,41 +135,39 @@ const BattleLobby = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, players, battleId, socket, navigate]);
+  }, [timeLeft, players, battleCode, socket, navigate, battleStatus]);
 
-  // Socket.io listeners for real-time updates
+  // Socket listeners
   useEffect(() => {
+    if (!socket || !battle) return;
+
     socket.on('playerJoined', ({ userId }) => {
+      const playerKey = userId === battle.player1.id ? 'player1' : 'player2';
       setPlayers((prev) => ({
         ...prev,
-        [userId === battle?.challengers[0]?.id ? 'player1' : 'player2']: {
-          ...prev[userId === battle?.challengers[0]?.id ? 'player1' : 'player2'],
-          joined: true,
-        },
+        [playerKey]: { ...prev[playerKey], joined: true, ready: true },
       }));
-      toast.success(`${userId === battle?.challengers[0]?.id ? battle?.challengers[0]?.name : battle?.challengers[1]?.name} has joined!`);
+      toast.success(`${userId === battle.player1.id ? battle.player1.name : battle.player2.name} has joined!`);
     });
 
     socket.on('playerReady', ({ userId }) => {
+      const playerKey = userId === battle.player1.id ? 'player1' : 'player2';
       setPlayers((prev) => ({
         ...prev,
-        [userId === battle?.challengers[0]?.id ? 'player1' : 'player2']: {
-          ...prev[userId === battle?.challengers[0]?.id ? 'player1' : 'player2'],
-          ready: true,
-        },
+        [playerKey]: { ...prev[playerKey], ready: true },
       }));
-      toast.success(`${userId === battle?.challengers[0]?.id ? battle?.challengers[0]?.name : battle?.challengers[1]?.name} is ready!`);
+      toast.success(`${userId === battle.player1.id ? battle.player1.name : battle.player2.name} is ready!`);
 
-      // Check if both players are ready
       const updatedPlayers = {
         ...players,
-        [userId === battle?.challengers[0]?.id ? 'player1' : 'player2']: { joined: true, ready: true },
+        [playerKey]: { joined: true, ready: true },
       };
       if (updatedPlayers.player1.ready && updatedPlayers.player2.ready) {
         setBattleStatus('started');
-        socket.emit('battleStart', { battleId });
+        socket.emit('battleStart', { battleCode });
         toast.success('All players ready! Battle starting...');
-        navigate(`/professor/code-battle/arena/${battleId}`);
+        localStorage.removeItem(`battleTimer_${battleCode}`);
+        navigate(`/professor/code-battle/arena/${battleCode}`);
       }
     });
 
@@ -116,7 +175,7 @@ const BattleLobby = () => {
       socket.off('playerJoined');
       socket.off('playerReady');
     };
-  }, [socket, battle, battleId, players, navigate]);
+  }, [socket, battle, battleCode, players, navigate]);
 
   const formatTime = (seconds) => {
     if (seconds === null) return 'Loading...';
@@ -125,200 +184,199 @@ const BattleLobby = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!battle) {
+  const handleStartBattle = () => {
+    if (players.player1.joined && players.player2.joined) {
+      setBattleStatus('started');
+      socket.emit('battleStart', { battleCode });
+      localStorage.removeItem(`battleTimer_${battleCode}`);
+      navigate(`/professor/code-battle/arena/${battleCode}`);
+    } else {
+      toast.error('Both players must join before starting the battle');
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50 p-8 flex items-center justify-center">
-        <motion.div
-          animate={{
-            rotate: 360,
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            rotate: { duration: 2, repeat: Infinity, ease: 'linear' },
-            scale: { duration: 1, repeat: Infinity },
-          }}
-          className="text-violet-600"
-        >
-          <Rocket className="h-12 w-12" />
-        </motion.div>
+      <div className="min-h-screen bg-[#0D0A1A] text-white p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+          <div className="mt-4">Loading battle lobby...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !battle) {
+    return (
+      <div className="min-h-screen bg-[#0D0A1A] text-white p-6">
+        <div className="text-center justify-center items-center flex flex-col h-full">
+          <div className="text-red-600 text-3xl mb-4">{error || "Battle not found"}</div>
+          <Button onClick={() => navigate("/professor/code-battle")} variant="secondary">
+            Back to Dashboard
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-purple-900 p-8 flex items-center justify-center">
-      <div className="absolute inset-0 bg-[url('/path/to/your/gaming-background.jpg')] bg-cover bg-center opacity-10" />
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="max-w-6xl w-full mx-auto relative z-10"
-      >
-        <div className="text-center mb-12">
-          <motion.div
-            animate={{
-              scale: [1, 1.05, 1],
-              rotate: [0, 1, -1, 0],
-            }}
-            transition={{ duration: 4, repeat: Infinity }}
-            className="inline-block"
-          >
-            <h1 className="text-5xl font-bold text-white flex items-center justify-center gap-4 mb-4">
-              <Swords className="h-12 w-12 text-yellow-400" />
-              Code Arena
-              <Crown className="h-10 w-10 text-yellow-400" />
+    <div className="min-h-screen bg-[#0D0A1A] text-white">
+      {/* Header */}
+      <div className="bg-[#1A1625]/50 border-b border-purple-900/50 p-4">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              onClick={() => navigate("/professor/code-battle")}
+              className="text-purple-300 hover:text-purple-100"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-purple-400" />
+              {battle.title}
             </h1>
-          </motion.div>
-          <motion.p
-            animate={{
-              opacity: [0.7, 1, 0.7],
-              scale: [1, 1.02, 1],
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="text-purple-200 text-xl font-medium"
-          >
-            {battleStatus === 'waiting' ? 'Waiting for players to join...' : battleStatus === 'started' ? 'Epic Battle in Progress!' : 'Battle Concluded!'}
-          </motion.p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Badge variant="outline" className="flex items-center gap-1 text-white bg-purple-900/20">
+              <Trophy className="h-4 w-4 text-yellow-400" />
+              {battle.challenges?.length || 3} Challenges
+            </Badge>
+            <Badge variant="outline" className="flex items-center gap-1 text-white bg-purple-900/20">
+              <Clock className="h-4 w-4 text-purple-400" />
+              {battle.duration} minutes
+            </Badge>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-300/20"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Shield className="h-6 w-6 text-purple-300" />
-              <h2 className="text-xl font-semibold text-white">Battle Details</h2>
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-2">{battle?.challenge}</h3>
-            <p className="text-purple-200 text-lg">{battle?.description}</p>
-            <p className="text-purple-300 text-sm mt-2">Course: {battle?.course?.name}</p>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-300/20"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Timer className="h-6 w-6 text-purple-300" />
-              <h2 className="text-xl font-semibold text-white">Lobby Timer</h2>
-            </div>
-            <motion.div
-              animate={{
-                scale: timeLeft < 60 ? [1, 1.1, 1] : 1,
-                color: timeLeft < 60 ? ['#ffffff', '#ff0000', '#ffffff'] : '#ffffff',
-              }}
-              transition={{ duration: 1, repeat: timeLeft < 60 ? Infinity : 0 }}
-              className="text-5xl font-mono font-bold text-center"
-            >
-              {formatTime(timeLeft)}
-            </motion.div>
-            <p className="text-purple-200 text-sm text-center mt-2">
-              {!players.player1.joined && !players.player2.joined
-                ? "Waiting for players to join..."
-                : !players.player1.ready || !players.player2.ready
-                ? "Players must be ready before time runs out!"
-                : "All players ready!"}
-            </p>
-          </motion.div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-          {[0, 1].map((index) => (
-            <motion.div
-              key={index}
-              initial={{ x: index === 0 ? -100 : 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 100 }}
-              className="relative"
-            >
-              <div
-                className={`
-                  p-8 rounded-2xl backdrop-blur-lg border-2 transition-all duration-300
-                  ${players[`player${index + 1}`].joined ? 'border-purple-400 bg-purple-400/10' : 'border-gray-500/30 bg-white/5'}
-                  transform hover:scale-105
-                  ${index === 0 ? 'hover:rotate-[-1deg]' : 'hover:rotate-[1deg]'}
-                `}
-              >
-                <motion.div
-                  animate={{
-                    boxShadow: players[`player${index + 1}`].joined ? ['0 0 0px purple', '0 0 30px purple', '0 0 0px purple'] : 'none',
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="flex items-center gap-6"
-                >
-                  <div className="relative">
-                    <motion.div
-                      animate={{ rotate: players[`player${index + 1}`].joined ? 360 : 0 }}
-                      transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                    >
-                      <img
-                        src={Bear}
-                        alt="Player avatar"
-                        className={`w-20 h-20 rounded-full ${!players[`player${index + 1}`].joined && 'opacity-50 grayscale'}`}
-                      />
-                    </motion.div>
-                    {players[`player${index + 1}`].joined && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1.5"
-                      >
-                        <div className="w-4 h-4 bg-green-500 rounded-full" />
-                      </motion.div>
-                    )}
-                  </div>
-                  <div>
-                    <motion.h3
-                      animate={{ color: players[`player${index + 1}`].joined ? '#ffffff' : '#9CA3AF' }}
-                      className="text-2xl font-bold mb-2"
-                    >
-                      {battle?.challengers[index]?.name || 'Unknown'}
-                    </motion.h3>
-                    <motion.p
-                      animate={{
-                        color: players[`player${index + 1}`].joined ? '#A5B4FC' : '#6B7280',
-                        scale: players[`player${index + 1}`].joined ? [1, 1.05, 1] : 1,
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="text-lg"
-                    >
-                      {players[`player${index + 1}`].joined ? 'Ready for Battle!' : 'Awaiting Champion...'}
-                    </motion.p>
-                  </div>
-                </motion.div>
-
-                {players[`player${index + 1}`].joined && (
-                  <motion.div
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    className="mt-6"
-                  >
-                    <Progress value={players[`player${index + 1}`].ready ? 100 : 0} className="h-2" />
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        <motion.div
-          className="text-center"
-          animate={{
-            opacity: [0.7, 1, 0.7],
-            scale: [1, 1.02, 1],
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <p className="text-purple-200 text-xl font-semibold">
-            {battleStatus === 'waiting'
-              ? 'The Epic Battle Begins Soon!'
-              : battleStatus === 'started'
-              ? 'The Epic Battle Begins When Both Champions Are Ready'
-              : 'Battle Concluded! Check Results.'}
+      {/* Main Content */}
+      <div className="container mx-auto p-6">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-purple-400 mb-4">MISSION BRIEFING</h2>
+          <p className="text-gray-300">
+            Monitor {battle.challenges?.length || 3} algorithm challenges in this cosmic coding battle!
           </p>
-        </motion.div>
-      </motion.div>
+          <p className="text-sm text-gray-400 mt-2">
+            {battle.course.name} | {battle.course.program} {battle.course.section}
+          </p>
+          <p className="text-xl font-semibold text-yellow-400 mt-4">
+            Time Left: {formatTime(timeLeft)}
+          </p>
+        </div>
+
+        {/* Player Cards */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Player 1 Card */}
+          <div className={`p-6 rounded-lg border ${players.player1.joined ? "border-green-500/50 bg-[#1A1625]/50" : "border-purple-800/50 bg-[#1A1625]/50"}`}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="relative">
+                <div className="h-16 w-16 rounded-full bg-white"></div>
+                <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${players.player1.joined ? "bg-green-500" : "bg-yellow-500"} border-2 border-[#1A1625]`}></div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold">
+                    Commander {battle.player1.name}
+                  </h3>
+                </div>
+                <Badge className={`mt-1 ${players.player1.joined ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                  {players.player1.joined ? "Systems Online" : "Awaiting Launch"}
+                </Badge>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Mission Status:</span>
+                <span className={players.player1.joined ? "text-green-400" : "text-yellow-400"}>
+                  {players.player1.joined ? "Ready for Launch" : "Preparing Systems"}
+                </span>
+              </div>
+              <div className="h-2 bg-[#0D0A1A] rounded-full overflow-hidden">
+                <div className={`h-full transition-all duration-300 ${players.player1.joined ? "bg-green-500 w-full" : "bg-yellow-500 w-1/2"}`}></div>
+              </div>
+              <div className="text-center text-sm text-gray-400">
+                {players.player1.joined ? "Player is ready for battle" : "Waiting for player to get ready..."}
+              </div>
+            </div>
+          </div>
+
+          {/* Player 2 Card */}
+          <div className={`p-6 rounded-lg border ${players.player2.joined ? "border-green-500/50 bg-[#1A1625]/50" : "border-purple-800/50 bg-[#1A1625]/50"}`}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="relative">
+                <div className="h-16 w-16 rounded-full bg-white"></div>
+                <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${players.player2.joined ? "bg-green-500" : "bg-yellow-500"} border-2 border-[#1A1625]`}></div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold">
+                    Pilot {battle.player2.name}
+                  </h3>
+                </div>
+                <Badge className={`mt-1 ${players.player2.joined ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                  {players.player2.joined ? "Systems Online" : "Awaiting Launch"}
+                </Badge>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Mission Status:</span>
+                <span className={players.player2.joined ? "text-green-400" : "text-yellow-400"}>
+                  {players.player2.joined ? "Ready for Launch" : "Preparing Systems"}
+                </span>
+              </div>
+              <div className="h-2 bg-[#0D0A1A] rounded-full overflow-hidden">
+                <div className={`h-full transition-all duration-300 ${players.player2.joined ? "bg-green-500 w-full" : "bg-yellow-500 w-1/2"}`}></div>
+              </div>
+              <div className="text-center text-sm text-gray-400">
+                {players.player2.joined ? "Player is ready for battle" : "Waiting for player to get ready..."}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mission Details */}
+        <div className="bg-[#1A1625]/50 rounded-lg p-6 mb-8">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Rocket className="h-5 w-5 text-purple-400" />
+            Mission Details
+          </h3>
+          <div className="grid md:grid-cols-2 gap-6 mb-4">
+            <div>
+              <div className="text-sm text-gray-400">Challenges</div>
+              <div className="font-medium">{battle.challenges?.length || 3} coding challenges</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-400">Estimated Time</div>
+              <div className="font-medium">{battle.duration} minutes</div>
+            </div>
+          </div>
+          <Separator className="my-4 bg-purple-900/50" />
+          <p className="text-sm text-gray-400">
+            {battle.description || "Oversee an interstellar coding challenge! Monitor as students face algorithmic puzzles that test their problem-solving skills. Ensure the battle runs smoothly and declare the victor."}
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4">
+          <Button
+            className="bg-purple-600 hover:bg-purple-700 min-w-[200px] transition-colors"
+            onClick={handleStartBattle}
+            disabled={!players.player1.joined || !players.player2.joined || battleStatus !== 'waiting'}
+          >
+            <Rocket className="h-5 w-5 mr-2" />
+            LAUNCH SEQUENCE
+          </Button>
+          <Button
+            variant="outline"
+            className="border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
+            onClick={() => navigate("/professor/code-battle")}
+          >
+            ABORT MISSION
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -48,6 +48,7 @@ import { cn } from "@/lib/utils";
 import useBattleStore from "@/store/battleStore";
 import { useCourseStore } from "@/store/courseStore";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const CreateBattle = ({ isEditMode = false, battleId }) => {
   const {
@@ -95,12 +96,18 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
     try {
       if (isEditMode) {
         await editBattle(battleId, battleData);
+        toast.success("Battle updated successfully!");
       } else {
         const response = await submitBattle();
-        navigate(`/professor/code-battle/lobby/${response.battle.battleId}`);
+        console.log("Navigating with battleCode:", response.battle.battleCode);
+        toast.success("Battle commenced! Redirecting to lobby...");
+        setTimeout(() => {
+          navigate(`/professor/code-battle/lobby/${response.battle.battleCode}`);
+        }, 1500);
       }
     } catch (error) {
       console.error("Failed to handle battle:", error);
+      toast.error(error.message || "Failed to commence battle");
     }
   };
 
