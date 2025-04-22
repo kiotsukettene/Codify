@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import SearchForm from "./SearchForm";
 import { BellRing, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import badge from "@/assets/picture/achievements/sampleBadge.png";
@@ -36,7 +35,6 @@ function StudentHeader() {
   return (
     <div className="flex justify-between items-center w-full">
       <div className="flex item">
-        <SearchForm />
       </div>
       <div
         className="flex gap-3 items-center md:flex md:items-center z-[-1] md:z-auto md:static 

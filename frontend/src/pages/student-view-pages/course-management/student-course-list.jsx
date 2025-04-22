@@ -21,6 +21,7 @@ import { useStudentStore } from "@/store/studentStore";
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { enrolledCourses, fetchEnrolledCourses, isLoading } =
     useStudentCourseStore();
   const { student } = useStudentStore();
@@ -28,6 +29,23 @@ function StudentCourseListPage() {
   useEffect(() => {
     fetchEnrolledCourses();
   }, [fetchEnrolledCourses]);
+
+  const handleSearch = (query) => {
+    setSearchQuery(query.toLowerCase());
+  };
+
+  const filteredCourses = enrolledCourses.filter((course) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      course.className.toLowerCase().includes(searchLower) ||
+      course.program.toLowerCase().includes(searchLower) ||
+      course.language.toLowerCase().includes(searchLower) ||
+      (course.professorId &&
+        `${course.professorId.firstName} ${course.professorId.lastName}`
+          .toLowerCase()
+          .includes(searchLower))
+    );
+  });
 
   console.log("Enrolled Courses:", enrolledCourses); // Debugging line
   return (
@@ -38,7 +56,7 @@ function StudentCourseListPage() {
           <CardHeader className="text-header text-4xl font-semibold text-center md:text-left">
             Hi, {student.firstName} Ready to Learn?
             <span className="text-base font-normal mt-1 ">
-              Continue your learning journey. Let’s go!
+              Continue your learning journey. Let's go!
             </span>
           </CardHeader>
 
@@ -77,38 +95,46 @@ function StudentCourseListPage() {
 
       <div className="flex flex-col px-8 text-center justify-between items-center mt-5 md:flex-row">
         <h1 className="text-header font-semibold text-4xl">My Courses</h1>
-        <SearchForm />
+        <SearchForm onSearch={handleSearch} />
       </div>
 
       {isLoading ? (
         <p>Loading courses...</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 my-4">
-          {enrolledCourses.map((course) => (
-            <StudentCourseCard
-              key={course._id}
-              lessons={course.lessonCount || 0}
-              image={course.image || "https://via.placeholder.com/150"}
-              title={course.className}
-              professor={
-                course.professorId
-                  ? `${course.professorId.firstName} ${course.professorId.lastName}`
-                  : "Unknown Professor"
-              }
-              schedule={
-                course.schedule
-                  ? `${
-                      course.schedule.day
-                        ? course.schedule.day.charAt(0).toUpperCase() +
-                          course.schedule.day.slice(1)
-                        : "N/A"
-                    } | ${course.schedule.time || "N/A"}`
-                  : "Schedule Unavailable"
-              }
-              tags={[course.program, course.language].filter(Boolean)}
-              onClick={() => navigate(`/student/lesson-list/${course._id}`)}
-            />
-          ))}
+          {filteredCourses.length === 0 ? (
+            <div className="col-span-full text-center py-8 items-center justify-center"> 
+              <p className="text-gray-500 text-xl">
+                {searchQuery ? "No courses found matching your search" : "No courses available"}
+              </p>
+            </div>
+          ) : (
+            filteredCourses.map((course) => (
+              <StudentCourseCard
+                key={course._id}
+                lessons={course.lessonCount || 0}
+                image={course.image || "https://via.placeholder.com/150"}
+                title={course.className}
+                professor={
+                  course.professorId
+                    ? `${course.professorId.firstName} ${course.professorId.lastName}`
+                    : "Unknown Professor"
+                }
+                schedule={
+                  course.schedule
+                    ? `${
+                        course.schedule.day
+                          ? course.schedule.day.charAt(0).toUpperCase() +
+                            course.schedule.day.slice(1)
+                          : "N/A"
+                      } | ${course.schedule.time || "N/A"}`
+                    : "Schedule Unavailable"
+                }
+                tags={[course.program, course.language].filter(Boolean)}
+                onClick={() => navigate(`/student/lesson-list/${course._id}`)}
+              />
+            ))
+          )}
         </div>
       )}
     </div>

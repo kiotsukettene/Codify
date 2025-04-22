@@ -372,7 +372,6 @@ function StudentCalendar() {
         )
       );
 
-      toast.success("Event rescheduled successfully!");
     } catch (error) {
       console.error("Error rescheduling event:", error.message);
       toast.error(error.message || "Failed to reschedule event");
