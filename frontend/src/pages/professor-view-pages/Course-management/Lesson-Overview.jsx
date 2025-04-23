@@ -42,7 +42,11 @@ const LessonOverview = () => {
     isLoading,
     error,
   } = useCourseStore();
-  const { activities, fetchActivitiesByCourse } = useActivityStore();
+  const {
+    activities,
+    fetchActivitiesByCourse,
+    fetchStudentSubmissionsByCourse,
+  } = useActivityStore();
   const { lessons, fetchLessonsByCourse } = useLessonStore();
   const { professor } = useprofAuthStore();
 
@@ -69,47 +73,102 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchLessonsByCourse, fetchActivitiesByCourse]);
 
-  const studentList =
-    course?.studentsEnrolled?.map((student, index) => ({
-      id: student._id || index + 1,
-      name: `${student.firstName} ${student.lastName}`,
-      avatar: "/placeholder.svg?height=40&width=40",
-      crown:
-        index === 0
-          ? "gold"
-          : index === 1
-          ? "silver"
-          : index === 2
-          ? "bronze"
-          : null,
-      studentNo: student.studentId || "N/A",
-      email: student.email || "N/A",
-      grade: 0,
-    })) || [];
+  // Fetch submissions for each student and calculate metrics
+  const [studentList, setStudentList] = useState([]);
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      if (!courseId || !course?.studentsEnrolled) return;
+
+      const totalActivities = activities.length; // Total activities in the course
+
+      const studentsWithMetrics = await Promise.all(
+        course.studentsEnrolled.map(async (student, index) => {
+          // Fetch submissions for the student in this course
+          const submissions = await fetchStudentSubmissionsByCourse(
+            courseId,
+            student._id
+          );
+
+          // Calculate metrics
+          const submittedActivities = submissions.filter(
+            (sub) => sub.status === "submitted"
+          ).length;
+          const incompleteActivities = totalActivities - submittedActivities;
+          const totalScore = submissions.reduce(
+            (sum, sub) => sum + (sub.score || 0),
+            0
+          );
+
+          return {
+            id: student._id || index + 1,
+            name: `${student.firstName} ${student.lastName}`,
+            avatar: "/placeholder.svg?height=40&width=40",
+            crown:
+              index === 0
+                ? "gold"
+                : index === 1
+                ? "silver"
+                : index === 2
+                ? "bronze"
+                : null,
+            studentNo: student.studentId || "N/A",
+            email: student.email || "N/A",
+            activities: submittedActivities,
+            incomplete: incompleteActivities,
+            totalScore: totalScore,
+            rank: index + 1, // Optional: for ranking display
+            hasMedal: index < 3, // Optional: for medal display
+            initials:
+              `${student.firstName[0]}${student.lastName[0]}`.toUpperCase(),
+          };
+        })
+      );
+
+      // Sort students by totalScore for ranking
+      studentsWithMetrics.sort((a, b) => b.totalScore - a.totalScore);
+      studentsWithMetrics.forEach((student, index) => {
+        student.rank = index + 1;
+        student.hasMedal = index < 3;
+        student.crown =
+          index === 0
+            ? "gold"
+            : index === 1
+            ? "silver"
+            : index === 2
+            ? "bronze"
+            : null;
+      });
+
+      setStudentList(studentsWithMetrics);
+    };
+
+    fetchStudentData();
+  }, [course, courseId, activities, fetchStudentSubmissionsByCourse]);
 
   // Map activities to their corresponding lesson slugs
   const enhancedActivities = activities.map((activity) => {
     const lesson = lessons.find((lesson) => lesson._id === activity.lessonId);
     return {
       ...activity,
-      lessonSlug: lesson ? lesson.slug : "undefined", // Fallback to "undefined" if lesson not found
+      lessonSlug: lesson ? lesson.slug : "undefined",
     };
   });
 
-  // Filter activities for the "activities" tab (as before)
+  // Filter activities for the "activities" tab
   const filteredActivities = enhancedActivities
-    .filter((activity) => activity.lessonSlug !== "undefined") // Ensure only activities with a valid lessonSlug are included
-    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Optional: Sort by creation date
+    .filter((activity) => activity.lessonSlug !== "undefined")
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   const metrics = [
-    { title: "Class Performance", value: "0%", subtitle: "Average Score" },
-    { title: "Completion Rate", value: "0%", subtitle: "Activities Completed" },
+    { title: "Class Performance", value: "0%", subtitle: "Average Score" }, // Update if needed
+    { title: "Completion Rate", value: "0%", subtitle: "Activities Completed" }, // Update if needed
     {
       title: "Active Students",
       value: studentList.length.toString(),
       subtitle: "Currently Active",
     },
-    { title: "Top Performers", value: "0", subtitle: "Display Performance" },
+    { title: "Top Performers", value: "0", subtitle: "Display Performance" }, // Update if needed
   ];
 
   if (isLoading && !course) return <div>Loading course...</div>;
@@ -263,12 +322,16 @@ const LessonOverview = () => {
                 </AnimatePresence>
               )}
               {activeTab === "scores" && (
-                <ScoreTab metrics={metrics} students={studentList} />
+                <ScoreTab
+                  metrics={metrics}
+                  students={studentList}
+                  activities={filteredActivities}
+                />
               )}
               {activeTab === "students" && (
                 <StudentTab
                   studentList={studentList}
-                  activities={enhancedActivities} // Pass enhanced activities with lessonSlug
+                  activities={enhancedActivities}
                   courseId={courseId}
                   courseSlug={courseSlug}
                 />
