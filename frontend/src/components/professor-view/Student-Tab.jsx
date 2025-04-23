@@ -7,7 +7,7 @@ import { Crown, Search } from "lucide-react";
 import lion from "@/assets/picture/Avatar/Lion.png";
 import { useActivityStore } from "@/store/activityStore";
 import DateFormatter from "@/utils/DateFormatter";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 const StudentTab = ({
   studentList = [],
@@ -22,7 +22,7 @@ const StudentTab = ({
   const [submissionData, setSubmissionData] = useState({});
   const { fetchStudentSubmissionsByCourse, isLoading, error } =
     useActivityStore();
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   const filteredStudents = studentList.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -56,7 +56,7 @@ const StudentTab = ({
 
   // Handle activity click with navigation
   const handleActivityClick = (activity) => {
-    // Assuming activity.lessonSlug and activity.slug are available
+    // Use lessonSlug directly from the activity
     navigate(
       `/professor/course/${courseSlug}/lesson/${activity.lessonSlug}/activity/${activity.slug}`,
       {

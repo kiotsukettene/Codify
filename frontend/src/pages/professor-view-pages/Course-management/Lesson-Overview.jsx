@@ -88,18 +88,18 @@ const LessonOverview = () => {
     })) || [];
 
   // Map activities to their corresponding lesson slugs
-  const filteredActivities = activities
-    .filter((activity) =>
-      lessons.some((lesson) => lesson._id === activity.lessonId)
-    )
-    .map((activity) => {
-      const lesson = lessons.find((lesson) => lesson._id === activity.lessonId);
-      return {
-        ...activity,
-        lessonSlug: lesson ? lesson.slug : null,
-      };
-    })
-    .filter((activity) => activity.lessonSlug); // Ensure only activities with a valid lessonSlug are included
+  const enhancedActivities = activities.map((activity) => {
+    const lesson = lessons.find((lesson) => lesson._id === activity.lessonId);
+    return {
+      ...activity,
+      lessonSlug: lesson ? lesson.slug : "undefined", // Fallback to "undefined" if lesson not found
+    };
+  });
+
+  // Filter activities for the "activities" tab (as before)
+  const filteredActivities = enhancedActivities
+    .filter((activity) => activity.lessonSlug !== "undefined") // Ensure only activities with a valid lessonSlug are included
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Optional: Sort by creation date
 
   const metrics = [
     { title: "Class Performance", value: "0%", subtitle: "Average Score" },
@@ -241,8 +241,8 @@ const LessonOverview = () => {
                           <ActivityTab
                             index={index + 1}
                             activity={activity}
-                            courseSlug={courseSlug} // Pass courseSlug
-                            lessonSlug={activity.lessonSlug} // Pass the mapped lessonSlug
+                            courseSlug={courseSlug}
+                            lessonSlug={activity.lessonSlug}
                           />
                         </motion.div>
                       ))
@@ -268,9 +268,9 @@ const LessonOverview = () => {
               {activeTab === "students" && (
                 <StudentTab
                   studentList={studentList}
-                  activities={activities}
+                  activities={enhancedActivities} // Pass enhanced activities with lessonSlug
                   courseId={courseId}
-                  courseSlug={courseSlug} // Pass courseSlug
+                  courseSlug={courseSlug}
                 />
               )}
             </motion.div>
