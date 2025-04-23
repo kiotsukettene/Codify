@@ -270,6 +270,7 @@ const LessonOverview = () => {
                   studentList={studentList}
                   activities={activities}
                   courseId={courseId}
+                  courseSlug={courseSlug} // Pass courseSlug
                 />
               )}
             </motion.div>

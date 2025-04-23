@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom"; // Add useLocation
 import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
 import { useActivityStore } from "@/store/activityStore";
@@ -10,6 +10,7 @@ import { useCourseStore } from "@/store/courseStore";
 
 const ActivityPage = () => {
   const { courseSlug, lessonSlug, activitySlug } = useParams();
+  const location = useLocation(); // Get location to access state
   const {
     activity,
     fetchActivityBySlug,
@@ -24,8 +25,11 @@ const ActivityPage = () => {
     isLoading: isCourseLoading,
     error: courseError,
   } = useCourseStore();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(
+    location.state?.selectedStudentId ? "Student Output" : "overview" // Set tab based on state
+  );
   const navigate = useNavigate();
+  const selectedStudentId = location.state?.selectedStudentId; // Get selected student ID
 
   // Fetch activity
   useEffect(() => {
@@ -60,7 +64,6 @@ const ActivityPage = () => {
     }
   };
 
-  // Debug course and submissions before computing students
   console.log("Course data:", course);
   console.log("Submissions data:", submissions);
 
@@ -72,7 +75,6 @@ const ActivityPage = () => {
   if (!activity) return <p>No activity found</p>;
   if (!course) return <p>No course found</p>;
 
-  // Compute students array with safety checks
   const students =
     Array.isArray(course?.studentsEnrolled) && Array.isArray(submissions)
       ? course.studentsEnrolled
@@ -94,7 +96,7 @@ const ActivityPage = () => {
               submission: submission || null,
             };
           })
-          .filter((student) => student.id) // Filter out invalid entries
+          .filter((student) => student.id)
       : [];
 
   console.log("Processed students:", students);
@@ -164,6 +166,7 @@ const ActivityPage = () => {
             students={students}
             activityId={activity._id}
             refetchSubmissions={refetchSubmissions}
+            selectedStudentId={selectedStudentId} // Pass selected student ID
           />
         </div>
       )}

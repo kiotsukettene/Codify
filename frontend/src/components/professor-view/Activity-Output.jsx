@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Add useEffect
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,13 +12,27 @@ import { Send, Download } from "lucide-react";
 import { useActivityStore } from "@/store/activityStore";
 import toast from "react-hot-toast";
 
-const ActivityOutput = ({ students = [], refetchSubmissions }) => {
+const ActivityOutput = ({
+  students = [],
+  refetchSubmissions,
+  selectedStudentId,
+}) => {
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [comments, setComments] = useState({});
   const [submittingComment, setSubmittingComment] = useState(null);
   const [tempScores, setTempScores] = useState({});
   const [isGrading, setIsGrading] = useState(null);
   const { updateSubmission } = useActivityStore();
+
+  // Automatically select the student if selectedStudentId is provided
+  useEffect(() => {
+    if (
+      selectedStudentId &&
+      students.some((student) => student.id === selectedStudentId)
+    ) {
+      setSelectedStudentIds([selectedStudentId]);
+    }
+  }, [selectedStudentId, students]);
 
   console.log("ActivityOutput students:", students);
 
@@ -122,14 +136,12 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
       await updateSubmission(submission._id, { score: newScore });
       console.log("Score updated successfully for student ID:", studentId);
 
-      // Clear the temporary score
       setTempScores((prev) => {
         const updated = { ...prev };
         delete updated[studentId];
         return updated;
       });
 
-      // Refetch submissions to update the UI
       await refetchSubmissions();
       console.log("Submissions refetched after score update");
 
@@ -266,7 +278,7 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right ">
+                            <div className="text-right">
                               {student.score > 0 && (
                                 <Badge
                                   variant="outline"

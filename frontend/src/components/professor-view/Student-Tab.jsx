@@ -7,8 +7,14 @@ import { Crown, Search } from "lucide-react";
 import lion from "@/assets/picture/Avatar/Lion.png";
 import { useActivityStore } from "@/store/activityStore";
 import DateFormatter from "@/utils/DateFormatter";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
-const StudentTab = ({ studentList = [], activities = [], courseId }) => {
+const StudentTab = ({
+  studentList = [],
+  activities = [],
+  courseId,
+  courseSlug,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(
     studentList.length > 0 ? studentList[0] : null
@@ -16,6 +22,7 @@ const StudentTab = ({ studentList = [], activities = [], courseId }) => {
   const [submissionData, setSubmissionData] = useState({});
   const { fetchStudentSubmissionsByCourse, isLoading, error } =
     useActivityStore();
+  const navigate = useNavigate(); // Initialize navigate
 
   const filteredStudents = studentList.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -30,7 +37,6 @@ const StudentTab = ({ studentList = [], activities = [], courseId }) => {
             courseId,
             selectedStudent.id
           );
-          // Convert submissions array to an object keyed by activityId
           const submissionsMap = submissions.reduce((acc, submission) => {
             acc[submission.activityId] = submission;
             return acc;
@@ -47,6 +53,19 @@ const StudentTab = ({ studentList = [], activities = [], courseId }) => {
       fetchSubmissions();
     }
   }, [selectedStudent, courseId, fetchStudentSubmissionsByCourse]);
+
+  // Handle activity click with navigation
+  const handleActivityClick = (activity) => {
+    // Assuming activity.lessonSlug and activity.slug are available
+    navigate(
+      `/professor/course/${courseSlug}/lesson/${activity.lessonSlug}/activity/${activity.slug}`,
+      {
+        state: {
+          selectedStudentId: selectedStudent.id, // Pass the selected student ID
+        },
+      }
+    );
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -131,7 +150,7 @@ const StudentTab = ({ studentList = [], activities = [], courseId }) => {
             {/* Student Activities */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Activities</h3>
-              {isLoading && <p></p>}
+              {isLoading && <p>Loading...</p>}
               {error && <p className="text-red-500">Error: {error}</p>}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activities.length > 0 ? (
@@ -204,10 +223,6 @@ const StudentTab = ({ studentList = [], activities = [], courseId }) => {
       </div>
     </div>
   );
-};
-
-const handleActivityClick = (activity) => {
-  console.log("Activity clicked:", activity);
 };
 
 export default StudentTab;
