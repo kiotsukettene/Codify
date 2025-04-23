@@ -121,9 +121,8 @@ export const getCoursesByProfessor = async (req, res) => {
     // console.log("Fetched courses:", courses);
     res.status(200).json(courses);
   } catch (error) {
-    console.error("Error in getCoursesByProfessor:", error);
     res.status(500).json({
-      message: "Error fetching professor courses",
+      message: "Error fetching courses",
       error: error.message,
     });
   }

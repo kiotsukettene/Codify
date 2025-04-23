@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Card from "@/components/professor-view/Course-Card";
-import { Plus, BookX } from "lucide-react";
+import { Plus, BookX} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -16,23 +16,30 @@ import { useCourseStore } from "@/store/courseStore";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
+
 const Courses = () => {
   const navigate = useNavigate();
   const { courses, fetchCoursesByProfessor, isLoading } = useCourseStore();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [selectedLanguage, setSelectedLanguage] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     console.log("Fetching professor courses on mount...");
     fetchCoursesByProfessor();
-  }, [fetchCoursesByProfessor]);
+  }, []);
 
+  // Filter courses by selected languages
   const filteredCourses =
     selectedLanguage.length > 0
-      ? courses.filter((course) => selectedLanguage.includes(course.language))
+      ? courses.filter(
+          (course) => selectedLanguage.includes(course.language) // ✅ Check directly without `.some()`
+        )
       : courses;
 
+  // Paginate filtered courses
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const currentCourses = filteredCourses.slice(
     (currentPage - 1) * itemsPerPage,
@@ -58,21 +65,20 @@ const Courses = () => {
 
   return (
     <div className="w-full p-2 sm:p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="pb-10"
-      >
-        <div className="w-full flex items-center justify-between mb-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">
-            My Courses
-          </h1>
+    <motion.div 
+     initial={{ opacity: 0, y: 20 }}
+     animate={{ opacity: 1, y: 0 }}
+     transition={{ duration: 0.6, ease: "easeOut" }}
+     className="pb-10">
+      <div className="w-full flex items-center justify-between mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">
+          Courses
+        </h1>
         </div>
 
         <div className="flex items-center justify-between w-full flex-wrap gap-2">
           <div className="flex flex-wrap gap-2">
-            {["Javascript", "Python", "C++", "Java"].map((tag) => (
+            {["Javascript", "Python", "C++", "Java"].map((tag, index) => (
               <Button
                 key={tag}
                 className={`${
@@ -84,64 +90,73 @@ const Courses = () => {
               >
                 {tag}
               </Button>
-            ))}
-          </div>
+            )
+          )}
         </div>
-      </motion.div>
+      </div>
+    </motion.div>
+    {/* Card Courses */}
 
-      {isLoading ? (
-        <div className="flex items-center justify-center w-full min-h-[50vh]">
-          <p className="text-gray-500 text-base text-center">
-            Loading courses...
-          </p>
-        </div>
-      ) : currentCourses.length > 0 ? (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="grid gap-8 sm:gap-12 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        >
-          {currentCourses.map((course) => (
-            <div
-              key={course._id}
-              onClick={() => handleCourseClick(course)}
-              className="cursor-pointer transition duration-200 mx-auto"
-            >
-              <Card
-                courseId={course._id}
-                lessonCount={course.lessonCount || 0}
-                languages={course.language}
-                title={course.className}
-                courseCode={course.courseCode}
-                section={course.section}
-                students={course.studentCount}
-              />
-            </div>
-          ))}
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
-        >
-          <BookX size={60} className="text-gray-400 mb-2" />
-          <p className="text-gray-500 text-lg font-medium">No courses assigned.</p>
-        </motion.div>
-      )}
+    {isLoading ? (
+  <div className="flex items-center justify-center w-full min-h-[50vh]">
+    <p className="text-gray-500 text-base text-center">
+      Loading courses...
+    </p>
+  </div>
+) : currentCourses.length > 0 ? (
+  <motion.div
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+    className={`grid gap-8 sm:gap-12 transition-all duration-300 ${
+      isSidebarOpen
+        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
+    }`}
+  >
+    {currentCourses.map((course, index) => (
+      <div
+        key={index}
+        onClick={() => handleCourseClick(course)}
+        className="cursor-pointer transition duration-200  items-center justify-center mx-auto align-middle"
+      >
+        <Card
+          key={course._id}
+          courseId={course._id}
+          lessonCount={course.lessonCount || 0}
+          languages={course.language}
+          title={course.className}
+          courseCode={course.courseCode}
+          section={course.section}
+          students={course.studentCount}
+        />
+      </div>
+    ))}
+  </motion.div>
+) : (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.4 }}
+    className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
+  >
+    <BookX size={60} className="text-gray-400 mb-2" />
+    <p className="text-gray-500 text-lg font-medium">No courses found.</p>
+  </motion.div>
+)}
 
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-8">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                />
-              </PaginationItem>
+              {/* Pagination */}
+              <div className="flex justify-center mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                      />
+                    </PaginationItem>
 
               {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
                 <PaginationItem key={i}>
@@ -170,7 +185,6 @@ const Courses = () => {
             </PaginationContent>
           </Pagination>
         </div>
-      )}
     </div>
   );
 };
