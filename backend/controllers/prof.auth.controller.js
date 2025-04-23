@@ -1,4 +1,5 @@
 import { Professor } from "../models/professor.model.js";
+import { Institution } from "../models/institution.model.js";
 import bcrypt from "bcryptjs";
 import { profTokenAndCookie } from "../utils/profTokenAndCookie.js";
 import crypto from "crypto";
@@ -77,14 +78,14 @@ export const loginProfessor = async (req, res) => {
 export const logoutProfessor = async (req, res) => {
   try {
     res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  });
-  res.status(200).json({
-    success: true, // Fixed typo: "sucess" -> "success"
-    message: "Logged out successfully",
-  });
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    res.status(200).json({
+      success: true, // Fixed typo: "sucess" -> "success"
+      message: "Logged out successfully",
+    });
   } catch (error) {
     console.log("Error logging out professor", error);
     res.status(400).json({
@@ -100,7 +101,9 @@ export const getProfessorById = async (req, res) => {
   console.log("Professor ID:", professorId);
 
   try {
-    const professor = await Professor.findById(professorId);
+    const professor = await Professor.findById(professorId).populate(
+      "courseCount"
+    );
 
     if (!professor) {
       return res.status(404).json({ message: "Professor not found" });
@@ -121,30 +124,29 @@ export const getProfessorById = async (req, res) => {
   }
 };
 
-
-
 export const checkAuthProfessor = async (req, res) => {
   try {
-    const professor = await Professor.findById(req.professorId).select(
-      "-password")
+    const professor = await Professor.findById(req.professorId)
+      .select("-password")
+      .populate("institution", "institutionName");
 
-      if(!professor) {
-        return res.status(404).json({
-          success: false,
-          message: "Professor not found"
-        })
-      }
+    if (!professor) {
+      return res.status(404).json({
+        success: false,
+        message: "Professor not found",
+      });
+    }
 
-      res.status(200).json({
-        success: true,
-        professor
-      })
+    res.status(200).json({
+      success: true,
+      professor,
+    });
   } catch (error) {
     console.log("Error checking professor authentication", error);
     res.status(400).json({
       success: false,
-      message: "Error checking professor authentication"
-    })
+      message: "Error checking professor authentication",
+    });
   }
 };
 
@@ -158,7 +160,7 @@ export const ForgotPasswordProfessor = async (req, res) => {
     if (!professor) {
       return res.status(400).json({
         success: false,
-        message: "Account doesn't exist",
+        message: "Professor not found",
       });
     }
 
@@ -279,7 +281,6 @@ export const googleLoginProfessor = async (req, res) => {
   }
 };
 
-
 export const registerProfessor = async (req, res) => {
   try {
     const { firstName, lastName, email, institutionId } = req.body;
@@ -290,8 +291,18 @@ export const registerProfessor = async (req, res) => {
         .json({ success: false, message: "All fields are required" });
     }
 
+    const institution = await Institution.findById(institutionId);
+    if (!institution) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Institution not found" });
+    }
+
     // Check if professor already exists
-    const existingProfessor = await Professor.findOne({ email });
+    const existingProfessor = await Professor.findOne({
+      email,
+      institution: institutionId,
+    });
     if (existingProfessor) {
       return res
         .status(400)
@@ -299,56 +310,37 @@ export const registerProfessor = async (req, res) => {
     }
 
     // Generate temporary password (using last name)
-    const plainPassword = lastName.trim();
+    const plainPassword = lastName.trim().toUpperCase();
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    // Create new professor object
-    const newProfessor = new Professor({
+    const newProfessor = await Professor.create({
       firstName,
       lastName,
       email,
       password: hashedPassword,
-      institution: institutionId, // ✅ Ensure institution ID is set
+      institution: institution._id,
     });
 
-    // Save professor to database first
-    let savedProfessor = await newProfessor.save();
-
-    // Fetch again with institution details
-    savedProfessor = await Professor.findById(savedProfessor._id).populate(
+    const savedProfessor = await Professor.findById(newProfessor._id).populate(
       "institution",
       "institutionName"
     );
 
-    // ✅ Ensure institutionName is defined
-    const institutionName =
-      savedProfessor.institution?.institutionName || "Your Institution";
-
-    // Send email with login details
     await sendProfessorWelcomeEmail(
       savedProfessor.email,
       savedProfessor.firstName,
       savedProfessor.lastName,
-      plainPassword, // Send lastName as temporary password
-      institutionName
+      plainPassword,
+      savedProfessor.institution.institutionName
     );
-
-    // Generate JWT Token
-    const token = jwt.sign(
-      { id: savedProfessor._id, institutionId: savedProfessor.institution._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    // Convert to plain object and remove password before sending response
-    const responseProfessor = savedProfessor.toObject();
-    delete responseProfessor.password;
 
     res.status(201).json({
       success: true,
-      message: "Professor registered successfully",
-      professor: responseProfessor, // ✅ Hide password in response
-      token, // ✅ Include token
+      message: "Professor created successfully",
+      professor: {
+        ...savedProfessor._doc,
+        password: undefined, // Hide password from response
+      },
     });
   } catch (error) {
     console.error("Error in registerProfessor:", error.message);
@@ -382,27 +374,66 @@ export const getProfessors = async (req, res) => {
 };
 
 //update prof info
+// export const updateProfessor = async (req, res) => {
+//   try {
+//     const { firstName, lastName, email, password } = req.body;
+//     const updateProfessor = await Professor.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         firstName,
+//         lastName,
+//         email,
+//         password,
+//       },
+//       { new: true }
+//     );
+
+//     if (!updateProfessor) {
+//       return res.status(404).json({ message: "Professor not found" });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Professor updated successfully",
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 export const updateProfessor = async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
-    const updateProfessor = await Professor.findByIdAndUpdate(
-      req.params.id,
-      {
-        firstName,
-        lastName,
-        email,
-        password,
-      },
-      { new: true }
-    );
+    // Extract currentPassword and new password from the request body, along with other fields
+    const { currentPassword, password: newPassword, ...otherFields } = req.body;
 
-    if (!updateProfessor) {
+    // Retrieve the professor from the database
+    const professor = await Professor.findById(req.params.id);
+    if (!professor) {
       return res.status(404).json({ message: "Professor not found" });
     }
+
+    // Verify that the provided currentPassword matches the stored hashed password
+    const isMatch = await bcrypt.compare(currentPassword, professor.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // If a new password is provided, hash it before updating
+    if (newPassword) {
+      otherFields.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    // Update the professor document with the provided fields
+    const updatedProfessor = await Professor.findByIdAndUpdate(
+      req.params.id,
+      otherFields,
+      { new: true }
+    );
 
     res.status(200).json({
       success: true,
       message: "Professor updated successfully",
+      professor: updatedProfessor,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -1,5 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
-import { Calendar, Gamepad2, Layers, Sword, Video } from "lucide-react";
+import { Link, NavLink, useNavigate} from "react-router-dom";
+import { Calendar, Gamepad2, Layers, Sword, Video, Code } from "lucide-react";
 import { CircleCheckBig, LayoutDashboard } from "lucide-react";
 import sidebarImage from "@/assets/picture/random-background/sidebar-image.png";
 import Logo from "@/assets/picture/logos/Logo.png";
@@ -14,18 +14,17 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-
 // Student Sidebar Menu Data
 const studentMenu = [
   { to: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/student/course-list", icon: Layers, label: "Course" },
-  { to: "/student/schedules", icon: Calendar, label: "Schedules" },
+  { to: "/student/events", icon: Calendar, label: "Events" },
   { to: "/student/challenges", icon: Gamepad2, label: "Challenges" },
-  { to: "/student/code-battles", icon: Sword, label: "Code Battles" },
+  { to: "/student/code-battle", icon: Sword, label: "Code Battles" },
   { to: "/student/task-list", icon: CircleCheckBig, label: "Task" },
 ];
-
 function StudentSidebar() {
+  const navigate = useNavigate();
   return (
     <Sidebar className="w-72 h-screen border-r flex flex-col">
       {/* Sidebar Header */}
@@ -34,28 +33,31 @@ function StudentSidebar() {
            <img src={Logo} className="w-26 h-auto" alt="Logo" />
            </Link>
           </SidebarHeader>
-
       {/* Sidebar Menu */}
       <SidebarMenu className="mt-4">
         {studentMenu.map((item) => (
-          <SidebarMenuItem key={item.label} className="py-2 px-4">
+          <SidebarMenuItem key={item.label} className="py-2 px-4 ">
             <SidebarMenuButton asChild>
-              <NavLink
+            <NavLink
                 to={item.to}
+                end // prevents partial matches if needed
                 className={({ isActive }) =>
-                  `flex items-center font-medium transition-all ${
-                    isActive ? "text-violet-700 font-semibold" : "text-gray-700"
-                  } hover:bg-violet-100 px-3 py-2 rounded-lg`
+                  `flex items-center font-medium transition-all px-3 py-2 rounded-lg hover:bg-violet-100 ${
+                    isActive
+                      ? "text-violet-700 font-semibold bg-violet-100"
+                      : "text-gray-700"
+                  }`
                 }
               >
                 <item.icon className="mr-2" />
                 {item.label}
               </NavLink>
+
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
+    
       </SidebarMenu>
-
       {/* Sidebar Footer */}
       <SidebarFooter className="mt-auto">
         <div className="relative flex justify-center items-center">
@@ -63,11 +65,10 @@ function StudentSidebar() {
           <div className="absolute flex flex-col items-center px-4 py-4">
             <div className="text-center">
               <h4 className="text-base font-semibold text-neutral-950">
-                Connect and Collaborate
+                Code Compiler
               </h4>
               <h4 className="text-xs flex flex-col text-neutral-950 mt-3">
-                Ready to explore today's coding galaxy? Join the live session
-                and level up your skills!
+                Ready to explore today's coding galaxy? Join the playground now!
               </h4>
             </div>
             <div className="mt-4 items-center text-center">
@@ -76,18 +77,17 @@ function StudentSidebar() {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <Button className="bg-violet-700 flex items-center font-normal gap-2 px-5 py-1 text-sm text-white">
-                  <Video /> Join Now
+                <Button className="bg-violet-700 flex items-center font-normal gap-2 px-5 py-1 text-sm text-white"
+                onClick={() => navigate("/code-editor")}>
+                  <Code /> Playground
                 </Button>
               </motion.div>
             </div>
           </div>
         </div>
       </SidebarFooter>
-
       <SidebarRail />
     </Sidebar>
   );
 }
-
 export default StudentSidebar;

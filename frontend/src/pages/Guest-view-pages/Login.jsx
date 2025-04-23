@@ -88,7 +88,7 @@ function MainLogin() {
         />
       </div>
 
-      <div className="relative z-10 text-center mt-28 mb-7">
+      <div className="relative z-10 text-center mt-24">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
           Choose your portal
         </h1>
@@ -97,7 +97,7 @@ function MainLogin() {
         </p>
       </div>
 
-      <div className="relative pt-9 z-10 flex flex-wrap justify-center gap-8 mt-8 w-full max-w-6xl px-4">
+      <div className="relative pt-9 z-10 flex flex-wrap justify-center gap-8 mt-8 w-full max-w-6xl px-4 ">
       {roles.map((role, index) => (
           <motion.div
             key={index}

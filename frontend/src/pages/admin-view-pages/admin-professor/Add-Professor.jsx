@@ -5,11 +5,13 @@ import { Label } from "@/components/ui/label";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
-function AddProfessor({ onClose, fetchProfessors }) {
+function AddProfessor({ onClose }) {
   const { institution } = useAuthStore();
   const { AddProfessor, isLoading, error } = useprofAuthStore();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -64,12 +66,9 @@ function AddProfessor({ onClose, fetchProfessors }) {
   };
 
   const isFormValid = () => {
-    const requiredFields = ['firstName', 'lastName', 'email'];
-    
-    const isComplete = requiredFields.every(field => formData[field].trim() !== '');
-    
-    const hasNoErrors = Object.values(errors).every(error => error === '');
-    
+    const requiredFields = ["firstName", "lastName", "email"];
+    const isComplete = requiredFields.every((field) => formData[field].trim() !== "");
+    const hasNoErrors = Object.values(errors).every((error) => error === "");
     return isComplete && hasNoErrors;
   };
 
@@ -79,7 +78,6 @@ function AddProfessor({ onClose, fetchProfessors }) {
       ...prevData,
       [name]: value,
     }));
-    
     validateField(name, value);
   };
 
@@ -89,7 +87,7 @@ function AddProfessor({ onClose, fetchProfessors }) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     switch (fieldName) {
-      case 'firstName':
+      case "firstName":
         if (!value.trim()) {
           newErrors.firstName = "First name is required.";
         } else if (!nameRegex.test(value)) {
@@ -99,7 +97,7 @@ function AddProfessor({ onClose, fetchProfessors }) {
         }
         break;
 
-      case 'lastName':
+      case "lastName":
         if (!value.trim()) {
           newErrors.lastName = "Last name is required.";
         } else if (!nameRegex.test(value)) {
@@ -109,7 +107,7 @@ function AddProfessor({ onClose, fetchProfessors }) {
         }
         break;
 
-      case 'email':
+      case "email":
         if (!value.trim()) {
           newErrors.email = "Email is required.";
         } else if (!emailRegex.test(value)) {
@@ -136,18 +134,8 @@ function AddProfessor({ onClose, fetchProfessors }) {
 
     try {
       await AddProfessor(formData);
-
-      // ✅ Refresh the professor list after adding
-      if (fetchProfessors) {
-        await fetchProfessors();
-      }
-
-      toast.success("Professor added successfully");
-
-      // ✅ Close the modal
-      if (onClose) {
-        onClose();
-      }
+      onClose();
+      navigate("/admin/professors");
     } catch (error) {
       console.error("Error saving professor:", error);
     }
@@ -164,7 +152,7 @@ function AddProfessor({ onClose, fetchProfessors }) {
   };
 
   return (
-    <DialogContent 
+    <DialogContent
       onPointerDownOutside={(e) => {
         e.preventDefault();
       }}
@@ -172,9 +160,7 @@ function AddProfessor({ onClose, fetchProfessors }) {
     >
       <DialogHeader>
         <DialogTitle>Create New Professor Account</DialogTitle>
-        <DialogDescription>
-          Manage and view the list of professors.
-        </DialogDescription>
+        <DialogDescription>Manage and view the list of professors.</DialogDescription>
       </DialogHeader>
       <div className="flex-1 flex flex-col w-full h-full p-4 overflow-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -188,11 +174,13 @@ function AddProfessor({ onClose, fetchProfessors }) {
                 value={formData.firstName}
                 onChange={handleChange}
               />
+               <div className="h-1">
               {errors.firstName && (
                 <p className="text-red-500 text-sm">{errors.firstName}</p>
               )}
+              </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2">
               <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
@@ -201,32 +189,35 @@ function AddProfessor({ onClose, fetchProfessors }) {
                 value={formData.lastName}
                 onChange={handleChange}
               />
+              <div className="h-1">
               {errors.lastName && (
                 <p className="text-red-500 text-sm">{errors.lastName}</p>
               )}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              vvalue={formData.email}
+              value={formData.email} // Fixed typo: was "vvalue"
               onChange={handleChange}
-            />{" "}
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email}</p>
-            )}
+            />
+              <div className="h-1">
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            </div>
           </div>
+
 
           <div className="flex justify-end space-x-4 pt-4">
             <Button type="button" onClick={handleCancel} variant="outline">
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading || !isFormValid()}
               className={!isFormValid() ? "opacity-50 cursor-not-allowed bg-gray-400" : ""}
             >

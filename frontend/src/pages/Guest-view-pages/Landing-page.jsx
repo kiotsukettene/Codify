@@ -1,8 +1,6 @@
-import GalaxyButton from "@/components/ui/galaxyButton";
 import React, { useRef } from "react";
 import sampleImg from "@/assets/picture/random-background/sampleImg.png";
 import sampleImg2 from '@/assets/picture/random-background/sampleImg2.png';
-import VariableFontHoverByRandomLetter from "@/fancy/components/text/variable-font-hover-by-random-letter";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import BrandsComponent from "@/components/ui/brands";
 import { PricingCard } from "@/components/pricing-card";
@@ -105,6 +103,7 @@ function LandingPage({title}) {
       {/*====================== Hero Section ==========================*/}
       <section
         ref={heroRef}
+        id="home"
         className="min-h-screen flex flex-col items-center justify-center text-center px-4 pt-32 pb-16 bg-gradient-to-b from-indigo-700 via-purple-400 to-pink-200 relative overflow-hidden"
       >
         {/* Animated Particle Background */}
@@ -230,11 +229,11 @@ function LandingPage({title}) {
       <BrandsComponent />
 
       {/*========================= Why Choose Codify? ===============================*/}
-      <section className="mt-[-10rem] pt-0 max-w-7xl mx-auto  px-6 bg-neutral-50">
-        <div className="container mx-auto flex flex-col md:flex-row items-center px-6">
+      <section className="mt-[-10rem] pt-0 max-w-7xl mx-auto  bg-neutral-50 ">
+        <div className="container mx-auto flex flex-col md:flex-row items-center px-6 md:px-12 lg:px-16 py-16  relative z-10">
           {/* Left Text */}
-          <div className="w-full md:w-1/2 p-6 lg:p-12">
-            <h2 className="text-xl md:text-5xl font-bold">
+          <div className="w-full md:w-1/2 p-6 lg:py-12 mt-11 md:mt-0">
+            <h2 className="text-3xl md:text-5xl font-bold">
               Why Choose <span className="italic text-purple-600">Codify?</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mt-8">
@@ -298,7 +297,7 @@ function LandingPage({title}) {
           </div>
 
           {/* Right Image */}
-          <div className="w-full md:w-1/2">
+          <div className=" mt-[-14rem] w-full md:w-1/2">
             <ContainerScroll>
               <img
                 src={sampleImg2}

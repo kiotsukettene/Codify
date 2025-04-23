@@ -10,9 +10,12 @@ import lessonRoutes from "./routes/lesson.route.js";
 import activityRoutes from "./routes/activity.route.js";
 import studentCourseRoutes from "./routes/studentCourse.route.js";
 import challengeRoutes from "./routes/challenge.route.js";
+import CourseFieldRoutes from "./routes/courseField.route.js";
 import cors from "cors";
+import emailRoutes from "./routes/email.route.js"; // Import email routes
 import session from "express-session";
 import passport from "passport";
+import studentEventRoutes from "./routes/studentEvent.route.js";
 
 dotenv.config();
 
@@ -28,7 +31,7 @@ app.use(
         "http://localhost:5173", // Local dev (Vite default port)
         "https://www.codifylms.me", // Production domain
         "https://api.codifylms.me", // Backend custom domain
-        "https://codifylms.me" // Root domain
+        "https://codifylms.me", // Root domain
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, origin || true);
@@ -42,11 +45,8 @@ app.use(
   })
 );
 
-
-
 app.use(express.json());
 app.use(cookieParser());
-
 
 // Handle CORS Preflight Requests
 app.options("*", cors());
@@ -55,12 +55,17 @@ app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/professors", professorRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/courseFields", CourseFieldRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/students/courses", studentCourseRoutes);
 app.use("/api/students/challenges", challengeRoutes);
+app.use("/api/events", studentEventRoutes);
+
+// Use email routes
+app.use("/api", emailRoutes);
 
 app.listen(PORT, () => {
   connectDB();

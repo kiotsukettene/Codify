@@ -8,11 +8,10 @@ import {
   Trophy,
   Star,
   Target,
-  Sparkles,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -22,13 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import AppSidebar from "@/components/professor-view/Sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -43,12 +35,14 @@ import { useLessonStore } from "@/store/lessonStore"; // Import lesson store
 import { useParams, useNavigate } from "react-router-dom"; // For getting courseId & navigation
 import toast from "react-hot-toast"; // For notifications
 import { useCourseStore } from "@/store/courseStore"; // Import course store
+import { motion, AnimatePresence } from "framer-motion";
+import { Separator } from "@/components/ui/separator"
+
 
 const CreateLesson = () => {
   const { createLesson } = useLessonStore(); // Get function from store
   const { courses, fetchCoursesByProfessor } = useCourseStore(); // Get courses from store
   const { courseSlug } = useParams();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -60,9 +54,12 @@ const CreateLesson = () => {
     hasTitle: false,
     hasSubtitle: false,
     hasDescription: false,
-    hasCode: false,
-    hasNote: false,
   });
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [submitted, setSubmitted] = useState(false); // Added submitted state
+  
+  
 
   const addSection = (type) => {
     setSections((prev) => [
@@ -104,56 +101,33 @@ const CreateLesson = () => {
   // Update progress whenever content changes
   const updateProgress = () => {
     let completedSteps = 0;
-    if (title) completedSteps++;
-    if (subtitle) completedSteps++;
-    if (sections.some((s) => s.type === "description" && s.content))
-      completedSteps++;
-
-    setProgress((completedSteps / 5) * 100);
-
-    // Update achievements
+    const hasTitle = !!title.trim();
+    const hasSubtitle = !!subtitle.trim();
+    const hasDescription = sections.some(
+      (s) => s.type === "description" && s.content.trim()
+    );
+  
+    if (hasTitle) completedSteps++;
+    if (hasSubtitle) completedSteps++;
+    if (hasDescription) completedSteps++;
+  
+    const progressValue = (completedSteps / 3) * 100;
+    setProgress(progressValue);
+  
     setAchievements({
-      hasTitle: !!title,
-      hasSubtitle: !!subtitle,
-      hasDescription: sections.some(
-        (s) => s.type === "description" && s.content
-      ),
+      hasTitle,
+      hasSubtitle,
+      hasDescription,
     });
+  
+    // Set form validity
+    setIsFormValid(hasTitle && hasSubtitle && hasDescription);
   };
+  
 
-  //submit
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   console.log("submit");
-  //   if (!courseId || !title) {
-  //     toast.error("Course ID and Title are required!");
-  //     return;
-  //   }
-
-  //   const lessonData = {
-  //     courseId,
-  //     title,
-  //     sections: sections.map((section) => ({
-  //       subTitle: section.subTitle || "Untitled Section", // ✅ Ensures a subTitle for all sections
-  //       description: section.type === "description" ? section.content : "",
-  //       codeSnippets: section.type === "code" ? [section.content] : [],
-  //       notes: section.type === "note" ? [section.content] : [],
-  //     })),
-  //   };
-  //   console.log("Saving lesson:", JSON.stringify(lessonData, null, 2));
-
-  //   try {
-  //     await createLesson(lessonData);
-  //     toast.success("Lesson created successfully!");
-  //     navigate(`/professor/course/${courseId}`); // Redirect to lessons page
-  //   } catch (error) {
-  //     console.error("Error creating lesson:", error);
-  //     toast.error("Error creating lesson!");
-  //   }
-  // };
   useEffect(() => {
     if (courses.length === 0) {
-      fetchCoursesByProfessor(); // or whatever fetch function you have
+      fetchCoursesByProfessor(); 
     }
   }, [courses, fetchCoursesByProfessor]);
   const getCourseIdFromSlug = (slug) => {
@@ -179,9 +153,6 @@ const CreateLesson = () => {
         };
         groupedSections.push(currentSection);
       }
-
-      // If no subheader is provided and we have not created a section yet,
-      // do nothing (or handle however you prefer).
       if (!currentSection) {
         return;
       }
@@ -207,27 +178,31 @@ const CreateLesson = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Courses array in store:", courses);
+    if (submitted) return; // Prevent double submission
+    setSubmitted(true); // Set submitted flag
+    setIsUploading(true); // Indicate upload start
 
-    // Convert courseSlug to courseId
     const courseId = getCourseIdFromSlug(courseSlug);
     if (!courseId) {
       toast.error("No course found for that slug!");
+      setIsUploading(false); // Reset upload state
+      setSubmitted(false); // Reset submitted flag
       return;
     }
     if (!title) {
       toast.error("Title is required!");
+      setIsUploading(false); // Reset upload state
+      setSubmitted(false); // Reset submitted flag
       return;
     }
 
     // Group sections based on subheader
     const groupedSections = groupSections(sections);
 
-    // Build your lesson payload (adjust the field names as per your Lesson schema)
     const lessonData = {
       courseId,
       title,
-      subTitle: subtitle, // optional, if you have a subtitle for the lesson
+      subTitle: subtitle,
       sections: groupedSections,
     };
 
@@ -235,12 +210,15 @@ const CreateLesson = () => {
 
     try {
       await createLesson(lessonData);
-      toast.success("Lesson created successfully!");
-      navigate(`/professor/course/${courseSlug}`); // Redirect to the lessons page for the course
+      // toast.success("Lesson created successfully!"); // REMOVED - Assuming store handles this
+      navigate(`/professor/course/${courseSlug}`);
     } catch (error) {
       console.error("Error creating lesson:", error);
-      toast.error("Error creating lesson!");
+      toast.error("Error creating lesson: " + (error.message || "Please try again.")); // Show more specific error
+      setIsUploading(false); // Reset upload state on error
+      setSubmitted(false); // Reset submitted flag on error
     }
+    // Removed setIsUploading(false) from here as navigation occurs on success
   };
 
   const deleteSection = (id) => {
@@ -248,20 +226,21 @@ const CreateLesson = () => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1">
-        <SidebarInset className="flex-1 !p-0">
-          <header className="flex h-16 items-center px-4">
-            <SidebarTrigger
-              className="-ml-1"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <Separator orientation="vertical" className="mx-2 h-4" />
-          </header>
+          <div className="w-full">
+            <div className="flex items-center">
+              <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate(-1)}
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+            <h1 className="font-bold text-2xl text-purple-600">
+              Create Topic
+            </h1>
+                    </div>
 
-          <div className="container w-full p-4">
-            <Card className="border-0 shadow-none">
+
               <CardContent className="space-y-6">
                 <div className="space-y-4 mb-6">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -315,33 +294,34 @@ const CreateLesson = () => {
                       ))}
                       <Button
                         variant="secondary"
-                        className="ml-4"
+                        className="ml-4a bg-purple-600 text-white hover:bg-purple-700"
                         onClick={handleSubmit}
+                        disabled={isUploading || !isFormValid || submitted} // Disable while uploading or if already submitted
                       >
-                        Save
+                        {isUploading ? "Saving..." : "Save"} {/* Show loading text */}
                       </Button>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(-1)}
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </Button>
-                  <div className="space-y-4 flex-1">
+                
+                  <div className="space-y-4 w-full">
+                  <label className="block text-sm sm:text-base font-medium text-gray-700">
+                       Title
+                  </label>
                     <Input
                       value={title}
                       onChange={(e) => {
                         setTitle(e.target.value);
                         updateProgress();
                       }}
-                      placeholder="Title"
-                      className="text-balance font-semibold border-purple-100 px-4 focus-visible:ring-0 bg-purple-100"
+                      placeholder="Type title"
+                      className="border-purple-100 px-4 focus-visible:ring-0 bg-purple-100 placeholder:text-sm"
                     />
+                     <label className="block text-sm sm:text-base font-medium text-gray-700">
+                      Description
+                  </label>
                     <Textarea
                       value={subtitle}
                       onChange={(e) => {
@@ -351,11 +331,27 @@ const CreateLesson = () => {
                       placeholder="Type Title Description"
                       className="min-h-36 border-purple-100 resize-none focus-visible:ring-0"
                     />
+                    
                   </div>
+
+
                 </div>
 
+                <Separator className="bg-gray-300" />
+
+                <AnimatePresence>
                 {sections.map((section, index) => (
+                      <motion.div
+                      key={section.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="space-y-2 relative"
+                    >
+
                   <div key={section.id} className="space-y-2 relative">
+                    
                     <div className="relative">
                       {section.type === "description" && (
                         <>
@@ -388,6 +384,9 @@ const CreateLesson = () => {
                             </ToggleGroupItem>
                           </ToggleGroup>
 
+                          <label className="block text-sm sm:text-base font-medium text-gray-700 p-2">
+                      Sub-topic
+                  </label>
                           <Input
                             value={section.subheader || ""}
                             onChange={(e) =>
@@ -396,7 +395,7 @@ const CreateLesson = () => {
                               })
                             }
                             placeholder="Type sub-header"
-                            className="text-balance border-purple-100 px-4 focus-visible:ring-0 font-semibold mb-2"
+                            className="text-balance border-purple-100 px-4 focus-visible:ring-0 mb-2"
                           />
                           <Textarea
                             placeholder="Description"
@@ -481,7 +480,10 @@ const CreateLesson = () => {
                       )}
                     </div>
                   </div>
+                  </motion.div>
+
                 ))}
+                </AnimatePresence>
 
                 {/* Separate add button section that's always visible */}
                 <div className="mt-4 flex justify-end gap-2">
@@ -513,17 +515,9 @@ const CreateLesson = () => {
                   </DropdownMenu>
                 </div>
 
-                {progress === 100 && (
-                  <div className="fixed top-4 right-4 animate-bounce">
-                    <Sparkles className="h-8 w-8 text-yellow-500" />
-                  </div>
-                )}
+               
               </CardContent>
-            </Card>
           </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
   );
 };
 

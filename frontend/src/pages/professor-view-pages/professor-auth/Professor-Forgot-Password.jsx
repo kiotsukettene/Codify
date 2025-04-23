@@ -1,103 +1,78 @@
-//import React from 'react'
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Mail, Loader } from "lucide-react";
+import { Mail, Loader, Info } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import ProfPasswordResetConfirmation from "@/components/professor-view/Prof-Password-reset";
 import toast from "react-hot-toast";
-import Astro from "@/assets/picture/random-background/Astro.png";
-import FiveStar from "@/assets/picture/random-background/FiveStar.png";
-import FourStar from "@/assets/picture/random-background/FourStar.png";
-import PinkStar from "@/assets/picture/random-background/PinkStar.png";
-import VioletStar from "@/assets/picture/random-background/VioletStar.png";
-import SpaceShip from "@/assets/picture/random-background/Spaceship.png";
-import Waves from "@/assets/picture/random-background/Waves.png";
+import ProfBg2 from "@/components/Auth/Prof-Bg-2";
 
 const ProfForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const { isLoading, forgotPassword } = useprofAuthStore();
+  const [validationError, setValidationError] = useState(""); // Add state for validation errors
+  const { isLoading, forgotPassword, error, clearError } = useprofAuthStore(); // Include error from store
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
+  const validateEmail = (email) => {
+    if (!email) {
+      return "Please input your email address";
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
 
   const handleSendResetLink = async (e) => {
     e.preventDefault();
-    await forgotPassword(email);
-    setEmailSent(true);
-    toast.success("Password reset link sent to your email");
+
+    // Validate email
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setValidationError(emailError);
+      return;
+    }
+
+    setValidationError("");
+
+    try {
+      await forgotPassword(email);
+      // Only set emailSent to true if the API call succeeds
+      setEmailSent(true);
+      toast.success("Password reset link sent to your email");
+    } catch (error) {
+      // Error is handled in forgotPassword (sets error state and shows toast)
+      // No need to set emailSent to true here
+    }
   };
+
   return (
     <div className="relative min-h-screen w-full bg-[#F5EBFF] flex items-center justify-center overflow-hidden p-4">
-      <div>
-        {/* Background Images */}
-        <img
-          src={Astro}
-          alt="Mascot"
-          className="absolute top-10 right-[-120px] w-60 lg:w-96 opacity-90 -rotate-12"
-        />
-        <img
-          src={FiveStar}
-          alt="Five Star"
-          className="absolute top-32 lg:top-60 left-80 lg:left-52 w-5 lg:w-12 opacity-90"
-        />
-        <img
-          src={FiveStar}
-          alt="Five Star"
-          className="absolute top-20 lg:top-32 right-80 lg:right-96 w-20 lg:w-16 opacity-90"
-        />
-        <img
-          src={FourStar}
-          alt="Four Star"
-          className="absolute bottom-[10px] right-0 w-20 lg:w-64 opacity-90 rotate-45"
-        />
-        <img
-          src={PinkStar}
-          alt="Star"
-          className="absolute top-2/4 left-32 w-5 lg:w-10"
-        />
-        <img
-          src={PinkStar}
-          alt="Star"
-          className="absolute top-2/4 right-52 w-5 lg:w-10"
-        />
-        <img
-          src={PinkStar}
-          alt="Star"
-          className="absolute bottom-36 right-72 w-5 lg:w-20"
-        />
-        <img
-          src={VioletStar}
-          alt="Star"
-          className="absolute top-24 left-[-90px] w-10 lg:w-52"
-        />
-        <img
-          src={SpaceShip}
-          alt="Spaceship"
-          className="absolute bottom-4 lg:bottom-32 left-32 w-36 lg:w-52"
-        />
-        <img
-          src={Waves}
-          alt="wave"
-          className="absolute bottom-0 left-0 w-52 lg:w-72"
-        />
-      </div>
+      <ProfBg2 />
+
       {emailSent ? (
-        //success message
+        // Success message
         <div className="text-center">
           <ProfPasswordResetConfirmation />
         </div>
       ) : (
-        <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
+        <Card className="w-full max-w-[450px] p-8 sm:p-9 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
-            <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
+            <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight mt-4">
               Forgot Password?
             </h1>
             <p className="text-sm sm:text-[15px] text-muted-foreground">
               Enter your email for instructions.
             </p>
           </CardHeader>
-          <form onSubmit={handleSendResetLink}>
+          <form onSubmit={handleSendResetLink} noValidate>
             <CardContent className="space-y-4 p-0 mt-6 sm:mt-8">
               <div className="space-y-3 sm:space-y-4 relative">
                 <Input
@@ -105,16 +80,29 @@ const ProfForgotPassword = () => {
                   type="email"
                   value={email}
                   placeholder="Email Address"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setValidationError(""); // Clear validation error on change
+                    clearError(); // Clear API error on change
+                  }}
                   className="h-10 sm:h-12 px-4 bg-white placeholder:text-sm lg:placeholder:text-base"
                 />
-                <p className="text-xs py-2 text-gray-500 text-center">
+                {/* Reserve space for the error message */}
+                <div className="min-h-[24px]">
+                  {validationError && (
+                    <p className="text-red-500 text-sm">{validationError}</p>
+                  )}
+                  {error && !validationError && (
+                    <p className="text-red-500 text-sm">{error}</p>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 text-center">
                   A password reset link will be sent to the provided email
                   address.
                 </p>
               </div>
               <div className="pt-2 space-y-3">
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? (
                     <Loader className="size-6 animate-spin mx-auto" />
                   ) : (
@@ -130,6 +118,13 @@ const ProfForgotPassword = () => {
               Go back to login
             </Link>
           </div>
+
+          <div className="mt-3 text-justify">
+          <p className="text-xs flex text-gray-500"> <Info className=" mr-1 w-4 h-4" />
+              Please check your Spam bin if the email is not in your inbox.</p>
+          </div>
+
+
         </Card>
       )}
     </div>

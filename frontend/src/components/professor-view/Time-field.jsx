@@ -1,84 +1,55 @@
-import React, { useState, useEffect } from "react";
-import { Input } from "../ui/input";
+import React, { useState } from "react";
 
-export function TimeField({ value, onChange, suggestions = [] }) {
-  const [internalValue, setInternalValue] = useState(value || "11:59 PM");
+const TimeField = ({ value, onChange, minTime, isToday, disabled }) => {
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (value && value !== internalValue) {
-      setInternalValue(value);
-    }
-  }, [value]);
-
-  const handleInputChange = (e) => {
-    let inputValue = e.target.value;
-    setInternalValue(inputValue);
-    onChange(inputValue);
+  // Format minTime to HH:mm format for the input's min attribute
+  const formatMinTime = (date) => {
+    if (!date) return "";
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes() + 1).padStart(2, "0"); // Add 1 minute to exclude current time
+    return `${hours}:${minutes}`;
   };
 
-  const handleBlur = () => {
-    let inputValue = internalValue.trim();
-
-    // Allow only numbers, colon, and space
-    inputValue = inputValue.replace(/[^\d:\s]/g, "");
-
-    // Match 12-hour or 24-hour time format
-    let match12Hour = inputValue.match(/(\d{1,2}):?(\d{0,2})?\s?(AM|PM)?/i);
-    let match24Hour = inputValue.match(/^(\d{1,2}):?(\d{0,2})$/);
-
-    let hours, minutes, period;
-
-    if (match24Hour) {
-      // Handle 24-hour format
-      hours = parseInt(match24Hour[1], 10);
-      minutes = match24Hour[2] ? parseInt(match24Hour[2].slice(0, 2), 10) : 0;
-
-      // Convert 24-hour time to 12-hour format
-      period = hours >= 12 ? "PM" : "AM";
-      if (hours === 0) {
-        hours = 12;
-      } else if (hours > 12) {
-        hours -= 12;
+  // Validate selected time
+  const handleTimeChange = (newValue) => {
+    if (isToday && newValue) {
+      const [hours, minutes] = newValue.split(":").map(Number);
+      const selectedTime = new Date();
+      selectedTime.setHours(hours, minutes, 0, 0);
+      
+      if (selectedTime <= minTime) {
+        setError("The selected time is unavailable. Choose a later time.");
+        onChange(""); // Clear invalid time
+        return;
       }
-    } else if (match12Hour) {
-      // Handle 12-hour format
-      hours = parseInt(match12Hour[1] || "12", 10);
-      minutes = match12Hour[2] ? parseInt(match12Hour[2].slice(0, 2), 10) : 0;
-      period = match12Hour[3] ? match12Hour[3].toUpperCase() : "AM";
-    } else {
-      // Reset to default if invalid
-      setInternalValue("11:59 PM");
-      onChange("11:59 PM");
-      return;
     }
-
-    // Fix out-of-range values
-    if (hours > 12) hours = 12;
-    if (minutes > 59) minutes = 59;
-
-    // Format the time properly
-    let formattedTime = `${hours}:${minutes.toString().padStart(2, "0")} ${period}`;
-    setInternalValue(formattedTime);
-    onChange(formattedTime);
+    setError("");
+    onChange(newValue);
   };
 
   return (
-    <div className="space-y-2">
-      <Input
-        type="text"
-        value={internalValue}
-        onChange={handleInputChange}
-        onBlur={handleBlur}
-        placeholder="Enter time (e.g., 8:00 AM or 22:00)"
-        className="w-full"
-        autoComplete="off"
-        maxLength={8} 
+    <div>
+      <input
+        type="time"
+        className={`w-full px-3 py-2 border rounded-md bg-white focus:ring-2 focus:ring-purple-400 focus-visible:outline-none ${
+          disabled ? "bg-gray-200 cursor-not-allowed" : error ? "border-red-500" : ""
+        }`}
+        value={value}
+        onChange={(e) => handleTimeChange(e.target.value)}
+        min={isToday && !disabled ? formatMinTime(minTime) : undefined}
+        disabled={disabled}
       />
-      <datalist id="time-suggestions">
-        {suggestions.map((suggestion, index) => (
-          <option key={index} value={suggestion} />
-        ))}
-      </datalist>
+      {disabled && (
+        <p className="text-sm text-red-500 mt-1">
+          No valid times available for today. Please select a future date.
+        </p>
+      )}
+      {error && !disabled && (
+        <p className="text-sm text-red-500 mt-1">{error}</p>
+      )}
     </div>
   );
-}
+};
+
+export default TimeField;

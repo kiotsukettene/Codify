@@ -12,15 +12,10 @@ const ProfBg2= () => {
   return (
     <div>
        {/* Background Images */}
-       <img 
-              src={logo}
-              alt="Logo" 
-              className="absolute top-28 lg:top-7 left-24 lg:left-10 lg:w-28" 
-            />
             <img
               src={Astro}
               alt="Mascot"
-              className="absolute top-10 right-[-120px] w-60 lg:w-96 opacity-90 -rotate-12"
+              className="absolute top-14 right-[-120px] w-60 lg:w-96 opacity-90 -rotate-12"
             />
             <img
               src={FiveStar}

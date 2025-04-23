@@ -69,17 +69,9 @@ return(
         </div>
       </motion.div>
 
-      {/* <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-base"
-      >
-        {description}
-      </motion.p> */}
-
       {/* Card details */}
       <motion.div 
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mt-2 flex-1 lg:w-3/4"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mt-2 flex-1 lg:w-4/5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -89,16 +81,16 @@ return(
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
-            whileHover={{ scale: 1.05, rotate: 2 }}
-            className="col-span-1 flex px-3 py-2 bg-white/20 rounded-lg backdrop-blur-sm border border-white/20"
+            className="col-span-1 flex px-3 py-3 bg-white/20 rounded-lg backdrop-blur-sm border border-white/20"
           >
             <p className="text-xs capitalize flex items-center gap-2">
               {key === 'language' && <Zap className="w-4 h-4 flex" />}
               {key === 'students' && <Users className="w-4 h-4" />}
-              {key === 'program' && <BookOpen className="w-4 h-4" />}
+              {key === 'instructor' && <BookOpen  className="w-4 h-4" />}
               {key === 'schedule' && <Clock className="w-4 h-4" />}
               {key === 'code' && <ShieldAlert className="w-4 h-4" />}
               {key === 'section' && <Flag className="w-4 h-4" />}
+
             {`${key} : ${value}`} {/* Space after colon */}
             </p>
           </motion.div>

@@ -62,7 +62,7 @@ export const getEnrolledCourses = async (req, res) => {
         const courses = await Course.find({ studentsEnrolled: studentId }).populate({
             path: "professorId",
             select: "firstName lastName email"
-        });
+        }).populate("lessonCount");
 
         res.status(200).json(courses);
     } catch (error) {

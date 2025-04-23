@@ -98,3 +98,18 @@ export const deleteLesson = async (req, res) => {
       .json({ message: "Error deleting lesson", error: error.message });
   }
 };
+
+export const getLessonBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const lesson = await Lesson.findOne({ slug });
+
+    if (!lesson) {
+      return res.status(404).json({ message: "Lesson not found" });
+    }
+
+    res.status(200).json(lesson);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching lesson", error: error.message });
+  }
+};

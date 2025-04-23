@@ -1,14 +1,25 @@
-
 import { Editor } from "@monaco-editor/react";
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import LanguageSelector from "./LanguageSelector";
 import { CODE_SNIPPETS } from "@/constants";
 import Output from "./Output";
 import { Button } from "@/components/ui/button";
-import { Maximize2, Minimize2, Play } from "lucide-react";
+import { HelpCircle, Maximize2, Minimize2, Play } from "lucide-react";
 import Input from "./Input";
 import { executeCode } from "@/api";
-import Logo from '@/assets/picture/logos/Logo.png';
+import Logo from "@/assets/picture/logos/Logo.png";
+import { useStudentStore } from "@/store/studentStore"; // Add this import
+import { useprofAuthStore } from "@/store/profAuthStore"; // Add this import
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Info } from "lucide-react"
 
 const CodeEditor = () => {
   const editorRef = useRef();
@@ -17,7 +28,10 @@ const CodeEditor = () => {
   const [maximizedPanel, setMaximizedPanel] = useState(null);
   const [output, setOutput] = useState(null);
   const [isError, setIsError] = useState(false);
-  const [inputValue, setInputValue] = useState(""); // State for input
+  const [inputValue, setInputValue] = useState("");
+  const navigate = useNavigate(); // Hook for navigation
+  const { isAuthenticated: isStudentAuthenticated } = useStudentStore(); // Check student auth
+  const { isAuthenticated: isProfessorAuthenticated } = useprofAuthStore(); // Check professor auth
 
   const onMount = (editor) => {
     editorRef.current = editor;
@@ -33,13 +47,15 @@ const CodeEditor = () => {
     setMaximizedPanel(maximizedPanel === panel ? null : panel);
   };
 
-  const getPanelWidth = (panel) => {
-    if (maximizedPanel === null) return "w-1/2";
-    return maximizedPanel === panel ? "w-full" : "w-0 hidden";
+  const getPanelStyles = (panel) => {
+    if (maximizedPanel === null) {
+      return "w-full md:w-1/2 h-[50vh] md:h-full"; // Stack vertically on mobile, side-by-side on medium+
+    }
+    return maximizedPanel === panel ? "w-full h-full" : "w-0 h-0 hidden";
   };
 
   const handleInputChange = (newInput) => {
-    setInputValue(newInput); // Update input state
+    setInputValue(newInput);
   };
 
   const runCode = async () => {
@@ -47,7 +63,7 @@ const CodeEditor = () => {
     if (!sourceCode) return;
 
     try {
-      const { run: result } = await executeCode(language, sourceCode, inputValue); // Pass inputValue
+      const { run: result } = await executeCode(language, sourceCode, inputValue);
       setOutput(result.output.split("\n"));
       result.stderr ? setIsError(true) : setIsError(false);
     } catch (error) {
@@ -57,22 +73,66 @@ const CodeEditor = () => {
     }
   };
 
+  // Function to handle logo click and navigate to the appropriate dashboard
+  const handleLogoClick = () => {
+    if (isStudentAuthenticated) {
+      navigate("/student/dashboard");
+    } else if (isProfessorAuthenticated) {
+      navigate("/professor/dashboard");
+    } else {
+      // Fallback: if somehow neither is authenticated, go to login
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e] overflow-hidden">
-      <div className="flex items-center justify-between p-2 bg-[#2d2d2d] border-b border-gray-800">
-        <div>
-          <img src={Logo} className="w-28 h-auto" alt="Logo" />
+       <div className="flex lg:flex-row flex-col items-start justify-between p-2 bg-[#2d2d2d] border-b border-gray-800">
+        <div className="lg:mb-2 mb-4">
+          <img
+            src={Logo}
+            className="w-24 h-auto cursor-pointer"
+            alt="Logo"
+            onClick={handleLogoClick}
+          />
         </div>
+
         <div className="flex items-center pt-4 gap-4">
+
+        <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="icon" className="h-6 w-6 rounded-full border-muted-foreground/30">
+          <HelpCircle className="h-3 w-3" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="w-full max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-purple-600">Code compiler Information</DialogTitle>
+          <DialogDescription >
+          Each section of the interface plays a specific role in the process of code development and testing. Below is a detailed description of each component:<br /><br />
+          <b>Main</b> <br /> This is where users type their source code in the selected programming language. This section acts as the central workspace where the logic and structure of the program are written and edited.<br /><br />
+          <b>Input</b> <br /> This section is designed to accept user-provided input values that the program will read during execution. When a piece of code requires data from the user, the input area serves as the simulated input environment. Any values typed into this section will be passed to the program when it runs. <br /><br />
+          <b>Output</b> <br /> This displays the results once the code is executed. This section shows any output generated by the program, including printed text, return values, and error messages. <br /><br />
+          <b>Language Selector</b> <br /> This dropdown menu allows the user to choose the programming language they want to use. Selecting a language updates the environment accordingly, ensuring the correct syntax and behavior are applied during code execution. <br /><br />
+          <b>Run Code</b> <br /> This execute the code written in the main panel. When this button is clicked, the system compiles and runs the program based on the selected language and any input provided that displays in the output panel. <br /><br />
+          
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+    
+
+
+
           <LanguageSelector language={language} onSelect={handleSelect} />
-          <Button className="bg-primary text-white gap-2" onClick={runCode}>
-            <Play size={16} />
+          <Button className="bg-primary text-white gap-2 text-sm sm:text-base" onClick={runCode}>
+            <Play size={14} />
             Run Code
           </Button>
         </div>
       </div>
-      <div className="flex flex-1 overflow-hidden">
-        <div className={`${getPanelWidth("editor")} transition-all duration-300 border-r border-gray-800`}>
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <div className={`${getPanelStyles("editor")} transition-all duration-300 border-b md:border-r md:border-b-0 border-gray-800`}>
           <div className="flex justify-between items-center p-2 bg-[#2d2d2d] border-b border-gray-800">
             <span className="text-gray-300 text-sm">main</span>
             <Button
@@ -85,7 +145,7 @@ const CodeEditor = () => {
             </Button>
           </div>
           <Editor
-            height="calc(100vh - 120px)"
+            height="calc(100% - 40px)" // Adjust height to fit panel
             theme="vs-dark"
             language={language}
             onMount={onMount}
@@ -93,22 +153,22 @@ const CodeEditor = () => {
             value={value}
             onChange={(value) => setValue(value)}
             options={{
-              fontSize: 14,
+              fontSize: 12, // Smaller font for mobile
               lineNumbers: "on",
               minimap: { enabled: false },
               scrollBeyondLastLine: true,
               automaticLayout: true,
               fontFamily: "monospace",
               renderLineHighlight: "all",
-              lineHeight: 21,
+              lineHeight: 18, // Tighter line height for mobile
             }}
           />
         </div>
-        <div className={`${getPanelWidth("input")} transition-all duration-300`}>
+        <div className={`${getPanelStyles("input")} transition-all duration-300`}>
           <Input
             isMaximized={maximizedPanel === "input"}
             onToggleMaximize={() => toggleMaximize("input")}
-            onInputChange={handleInputChange} // Pass callback to update input
+            onInputChange={handleInputChange}
           />
         </div>
       </div>

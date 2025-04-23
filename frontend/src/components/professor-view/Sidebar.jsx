@@ -1,4 +1,4 @@
-import { Layers, Sword, User2, Video, LayoutDashboard } from "lucide-react";
+import { Layers, Sword, User2, LayoutDashboard } from "lucide-react";
 import Logo from "@/assets/picture/logos/Logo.png";
 import {
   Sidebar,
@@ -21,8 +21,8 @@ function AppSidebar() {
   const location = useLocation();
 
   return (
-    <Sidebar className="mx-2 py-4 item">
-      <SidebarHeader className="border-b pl-6">
+    <Sidebar className="w-72 h-screen border-r flex flex-col">
+      <SidebarHeader className="border-b border-gray-200 pl-6 mt-2">
         <div className="">
           <img src={Logo} className="w-26 h-auto" alt="Logo" />
         </div>
@@ -43,7 +43,7 @@ function AppSidebar() {
                   href={item.to}
                   className={`flex items-center font-medium transition-all ${
                     isActive
-                      ? "bg-violet-600 text-white" // Darker highlight, white text
+                      ? "bg-violet-100 text-purple-600 font-semibold" // Darker highlight, white text
                       : "hover:bg-violet-100 text-[#7648C8]" // Inactive styles with hover
                   }`}
                 >

@@ -1,20 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Search } from "lucide-react";
 import lion from "@/assets/picture/Avatar/Lion.png";
+import { useActivityStore } from "@/store/activityStore";
+import DateFormatter from "@/utils/DateFormatter";
+import { useNavigate } from "react-router-dom";
 
-const StudentTab = ({ studentList = [], activities = [] }) => {
+const StudentTab = ({
+  studentList = [],
+  activities = [],
+  courseId,
+  courseSlug,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(
     studentList.length > 0 ? studentList[0] : null
   );
+  const [submissionData, setSubmissionData] = useState({});
+  const { fetchStudentSubmissionsByCourse, isLoading, error } =
+    useActivityStore();
+  const navigate = useNavigate();
 
   const filteredStudents = studentList.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Fetch submissions for the selected student's activities
+  useEffect(() => {
+    if (selectedStudent && courseId) {
+      const fetchSubmissions = async () => {
+        try {
+          const submissions = await fetchStudentSubmissionsByCourse(
+            courseId,
+            selectedStudent.id
+          );
+          const submissionsMap = submissions.reduce((acc, submission) => {
+            acc[submission.activityId] = submission;
+            return acc;
+          }, {});
+          setSubmissionData(submissionsMap);
+        } catch (err) {
+          console.error(
+            `Error fetching submissions for student ${selectedStudent.id}:`,
+            err
+          );
+          setSubmissionData({});
+        }
+      };
+      fetchSubmissions();
+    }
+  }, [selectedStudent, courseId, fetchStudentSubmissionsByCourse]);
+
+  // Handle activity click with navigation
+  const handleActivityClick = (activity) => {
+    // Use lessonSlug directly from the activity
+    navigate(
+      `/professor/course/${courseSlug}/lesson/${activity.lessonSlug}/activity/${activity.slug}`,
+      {
+        state: {
+          selectedStudentId: selectedStudent.id, // Pass the selected student ID
+        },
+      }
+    );
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -87,7 +138,7 @@ const StudentTab = ({ studentList = [], activities = [] }) => {
                   )}
                 </div>
                 <div className="text-sm text-gray-500 mt-1">
-                  <p>Student no.: {selectedStudent.studentNo}</p>
+                  <p>Student #: {selectedStudent.studentNo}</p>
                   <p>Email: {selectedStudent.email}</p>
                 </div>
                 <p className="mt-2">
@@ -99,54 +150,69 @@ const StudentTab = ({ studentList = [], activities = [] }) => {
             {/* Student Activities */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Activities</h3>
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isLoading && <p>Loading...</p>}
+              {error && <p className="text-red-500">Error: {error}</p>}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activities.length > 0 ? (
-                  activities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="transform transition-all duration-300 hover:scale-105 hover:shadow-xl rounded-lg overflow-hidden"
-                    >
-                      <div className="bg-white p-6 border rounded-lg">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-base font-semibold text-gray-800">
-                            Mission: {activity.id} {activity.title}
-                          </h3>
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              activity.grade >= 90
-                                ? "bg-green-100 text-green-800"
-                                : activity.grade >= 70
-                                ? "bg-blue-100 text-blue-800"
-                                : activity.grade >= 60
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {activity.grade}/100
-                          </span>
-                        </div>
+                  activities.map((activity) => {
+                    const submission = submissionData[activity._id];
+                    return (
+                      <div
+                        key={activity._id}
+                        className="transform transition-all duration-300 hover:scale-105 hover:shadow-xl rounded-lg overflow-hidden"
+                      >
+                        <div className="bg-white p-6 border rounded-lg">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-base font-semibold text-gray-800">
+                              Mission: {activity.title}
+                            </h3>
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                submission && submission.score >= 90
+                                  ? "bg-green-100 text-green-800"
+                                  : submission && submission.score >= 70
+                                  ? "bg-blue-100 text-blue-800"
+                                  : submission && submission.score >= 60
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : submission
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {submission
+                                ? `${submission.score}/100`
+                                : "Not Submitted"}
+                            </span>
+                          </div>
 
-                        <p className="text-gray-600 text-sm">
-                          {activity.description}
-                        </p>
-                        <div className="items-center mt-4">
-                          <span className="text-sm text-gray-500">
-                            Due: {activity.dueDate}
-                          </span>
-                          <button
-                            className="px-2 py-2 text-sm mt-2 bg-blue-500 text-white rounded-lg transform transition-transform duration-200 hover:scale-105 hover:bg-blue-600 focus:outline-none"
-                            onClick={() => handleActivityClick(activity)}
-                          >
-                            View Details
-                          </button>
+                          <p className="text-gray-600 text-sm">
+                            {activity.description}
+                          </p>
+                          <div className="items-center mt-4">
+                            <DateFormatter date={activity.dueDate} />
+                            {submission && (
+                              <p className="text-sm text-gray-500">
+                                Status: {submission.status}
+                                {submission.comment && (
+                                  <span> | Comment: {submission.comment}</span>
+                                )}
+                              </p>
+                            )}
+                            <button
+                              className="px-2 py-2 text-sm mt-2 bg-blue-500 text-white rounded-lg transform transition-transform duration-200 hover:scale-105 hover:bg-blue-600 focus:outline-none"
+                              onClick={() => handleActivityClick(activity)}
+                            >
+                              View Details
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-gray-500">No activities available</p>
                 )}
-              </div> */}
+              </div>
             </div>
           </Card>
         ) : (
@@ -157,10 +223,6 @@ const StudentTab = ({ studentList = [], activities = [] }) => {
       </div>
     </div>
   );
-};
-
-const handleActivityClick = (activity) => {
-  console.log("Activity clicked:", activity);
 };
 
 export default StudentTab;

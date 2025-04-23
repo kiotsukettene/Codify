@@ -1,9 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, Rocket } from "lucide-react";
+import { Home, Rocket, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import notfound from "@/assets/picture/random-background/notfound.png";
-import GalaxyButton from "@/components/ui/galaxyButton";
+import { motion } from "framer-motion";
+
 
 function PageNotFoundPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -56,9 +57,24 @@ function PageNotFoundPage() {
         {/* Return Home Button */}
 
         <Link to={"/"}>
-          <GalaxyButton className="inline-flex items-center px-9 rounded-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-medium transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] group">
-            Back to Home
-          </GalaxyButton>
+      
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-8 space-y-4"
+          >
+            <button className="group relative px-8 py-4 text-lg font-medium bg-white text-gray-900 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:scale-105 transition-all duration-300 overflow-hidden">
+              <span className="relative z-10 flex items-center justify-center">
+                Back to home
+                <Sparkles className="ml-2 w-5 h-5 text-yellow-500 group-hover:rotate-12 transition-transform" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-200 to-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </button>
+
+           
+          </motion.div>
+
         </Link>
       </div>
 

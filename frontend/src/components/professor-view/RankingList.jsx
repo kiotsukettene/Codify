@@ -3,6 +3,7 @@ import goldFrame from "@/assets/picture/frames/goldborder.png";
 import violetFrame from "@/assets/picture/frames/violetborder.png";
 import silverFrame from "@/assets/picture/frames/silverborder.png";
 import bronzeFrame from "@/assets/picture/frames/bronzeborder.png";
+import { motion } from "framer-motion";
 
 const RankingList = ({ rankingData }) => {
   const getRankFrame = (rank) => {
@@ -30,7 +31,7 @@ const RankingList = ({ rankingData }) => {
   };
 
   return (
-    <div className="relative bg-white rounded-xl p-6 border border-black/5 overflow-hidden">
+    <div className="relative bg-white rounded-xl p-4 border border-black/5 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none" />
 
       <div className="relative">
@@ -40,18 +41,22 @@ const RankingList = ({ rankingData }) => {
         </div>
 
         <div className="space-y-3 mb-4">
-          {rankingData.map((student) => (
-            <div
+          {rankingData.map((student, index) => (
+            <motion.div
+            initial={{ opacity: 0, x: -10 }} // Animation on load
+            animate={{ opacity: 1, x: 0 }} // Final position and opacity
+            transition={{ delay: 0.2 + index * 0.1 }} // Stagger the animations
+            whileHover={{ backgroundColor: "#f9f5ff" }} // Hover effect
               key={student.id}
-              className={`flex items-center pl-6 gap-3 rounded-full ${getRankColor(
+              className={`flex items-center gap-3 rounded-full ${getRankColor(
                 student.rank
-              )} border p-4 sm:p-5 transition-all hover:scale-[1.02] hover:shadow-md flex-nowrap`}
+              )} border sm:p-3 transition-all hover:scale-[1.02] hover:shadow-md flex-nowrap`}
             >
               <span className="text-sm font-semibold text-gray-500 w-8 text-center">
                 #{student.rank}
               </span>
 
-              <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
+              <div className="relative flex h-16 w-16 sm:h-12 sm:w-12 items-center justify-center">
                 {getRankFrame(student.rank) && (
                   <img
                     src={getRankFrame(student.rank)}
@@ -59,7 +64,7 @@ const RankingList = ({ rankingData }) => {
                     className="absolute inset-0 w-full h-full object-contain z-50 translate-y-[-5px]"
                   />
                 )}
-                <div className="relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white border z-10">
+                <div className="relative flex h-3 w-3 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-white border z-10">
                   <span className="text-lg">{student.avatar}</span>
                 </div>
               </div>
@@ -82,7 +87,7 @@ const RankingList = ({ rankingData }) => {
               >
                 {student.score.toLocaleString()} XP
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
