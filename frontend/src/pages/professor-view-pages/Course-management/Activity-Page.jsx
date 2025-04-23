@@ -20,7 +20,7 @@ const ActivityPage = () => {
   } = useActivityStore();
   const {
     course,
-    fetchCourseById,
+    fetchCourseBySlug,
     isLoading: isCourseLoading,
     error: courseError,
   } = useCourseStore();
@@ -34,30 +34,12 @@ const ActivityPage = () => {
     }
   }, [activitySlug, fetchActivityBySlug]);
 
-  // Fetch course and submissions
+  //fetch course
   useEffect(() => {
-    if (activity) {
-      // Fetch course using lessonId to get courseId
-      const fetchCourse = async () => {
-        try {
-          const response = await fetch(
-            `http://localhost:3000/api/lessons/${activity.lessonId}`
-          );
-          const lesson = await response.json();
-          if (lesson && lesson.courseId) {
-            fetchCourseById(lesson.courseId);
-          } else {
-            throw new Error("Course not found for this lesson");
-          }
-        } catch (error) {
-          console.error("Error fetching lesson:", error);
-        }
-      };
-
-      fetchCourse();
-      fetchSubmissionsByActivity(activity._id); // Fetch submissions for this activity
+    if (courseSlug) {
+      fetchCourseBySlug(courseSlug);
     }
-  }, [activity, fetchCourseById, fetchSubmissionsByActivity]);
+  }, [courseSlug, fetchCourseBySlug]);
 
   if (isActivityLoading || isCourseLoading) return <p>Loading...</p>;
   if (activityError)
