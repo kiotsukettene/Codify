@@ -19,11 +19,14 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   const [isGrading, setIsGrading] = useState(null);
   const { updateSubmission } = useActivityStore();
 
+  console.log("ActivityOutput students:", students);
+
   const selectedStudents = students.filter((student) =>
     selectedStudentIds.includes(student.id)
   );
 
   const handleStudentSelection = (studentId) => {
+    console.log("Selecting student ID:", studentId);
     setSelectedStudentIds((prev) => {
       if (studentId === "1") {
         return prev.length === students.length - 1
@@ -37,6 +40,12 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   };
 
   const handleCommentChange = (studentId, comment) => {
+    console.log(
+      "Comment changed for student ID:",
+      studentId,
+      "Comment:",
+      comment
+    );
     setComments((prev) => ({
       ...prev,
       [studentId]: comment,
@@ -46,6 +55,7 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   const handleSubmitComment = async (studentId) => {
     if (!comments[studentId]?.trim()) return;
 
+    console.log("Submitting comment for student ID:", studentId);
     setSubmittingComment(studentId);
     try {
       const student = students.find((s) => s.id === studentId);
@@ -54,8 +64,13 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
         await updateSubmission(submission._id, {
           comment: comments[studentId],
         });
+        console.log(
+          "Comment submitted successfully for student ID:",
+          studentId
+        );
         setComments((prev) => ({ ...prev, [studentId]: "" }));
-        await refetchSubmissions(); // Refetch submissions to update UI
+        await refetchSubmissions();
+        console.log("Submissions refetched after comment update");
       }
     } finally {
       setSubmittingComment(null);
@@ -64,6 +79,7 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
 
   const handleTempScoreChange = (studentId, value) => {
     const score = Math.min(Math.max(0, Number(value) || 0), 100);
+    console.log("Score changed for student ID:", studentId, "Score:", score);
     setTempScores((prev) => ({
       ...prev,
       [studentId]: score,
@@ -71,6 +87,7 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   };
 
   const handleGrade = async (studentId) => {
+    console.log("Grading student ID:", studentId);
     setIsGrading(studentId);
     try {
       const student = students.find((s) => s.id === studentId);
@@ -78,7 +95,9 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
       if (submission) {
         const newScore = tempScores[studentId] ?? student.score;
         await updateSubmission(submission._id, { score: newScore });
-        await refetchSubmissions(); // Refetch submissions to update UI
+        console.log("Score updated successfully for student ID:", studentId);
+        await refetchSubmissions();
+        console.log("Submissions refetched after score update");
         setTempScores((prev) => {
           const updated = { ...prev };
           delete updated[studentId];
@@ -207,7 +226,7 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
                                     className="text-sm text-blue-600 hover:underline flex items-center gap-1"
                                   >
                                     <Download className="h-4 w-4" />
-                                    Submitted File
+                                    Download Submission
                                   </a>
                                 ) : (
                                   <p className="text-sm text-muted-foreground">
@@ -322,3 +341,4 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
 };
 
 export default ActivityOutput;
+a;

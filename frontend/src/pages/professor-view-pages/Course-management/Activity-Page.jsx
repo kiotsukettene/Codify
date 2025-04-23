@@ -30,16 +30,35 @@ const ActivityPage = () => {
   // Fetch activity
   useEffect(() => {
     if (activitySlug) {
+      console.log("Fetching activity for slug:", activitySlug);
       fetchActivityBySlug(activitySlug);
     }
   }, [activitySlug, fetchActivityBySlug]);
 
-  //fetch course
+  // Fetch course
   useEffect(() => {
     if (courseSlug) {
+      console.log("Fetching course for slug:", courseSlug);
       fetchCourseBySlug(courseSlug);
     }
   }, [courseSlug, fetchCourseBySlug]);
+
+  // Fetch submissions
+  useEffect(() => {
+    if (activity?._id) {
+      console.log("Fetching submissions for activity ID:", activity._id);
+      fetchSubmissionsByActivity(activity._id);
+    }
+  }, [activity?._id, fetchSubmissionsByActivity]);
+
+  // Refetch submissions function
+  const refetchSubmissions = async () => {
+    if (activity?._id) {
+      console.log("Refetching submissions for activity ID:", activity._id);
+      await fetchSubmissionsByActivity(activity._id);
+      console.log("Submissions refetched:", submissions);
+    }
+  };
 
   if (isActivityLoading || isCourseLoading) return <p>Loading...</p>;
   if (activityError)
@@ -68,6 +87,8 @@ const ActivityPage = () => {
         submission: submission || null,
       };
     }) || [];
+
+  console.log("Processed students:", students);
 
   return (
     <div className="w-full px-4">
@@ -130,7 +151,11 @@ const ActivityPage = () => {
       ) : (
         <div>
           <h2>Student Activity Output</h2>
-          <ActivityOutput students={students} activityId={activity._id} />
+          <ActivityOutput
+            students={students}
+            activityId={activity._id}
+            refetchSubmissions={refetchSubmissions}
+          />
         </div>
       )}
     </div>
@@ -138,3 +163,4 @@ const ActivityPage = () => {
 };
 
 export default ActivityPage;
+a;

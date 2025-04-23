@@ -13,7 +13,7 @@ export const useActivityStore = create((set) => ({
   activities: [],
   activity: null,
   submission: null,
-  submissions: [], // Add state for submissions (professor-facing)
+  submissions: [],
   isLoading: false,
   error: null,
 
@@ -78,10 +78,13 @@ export const useActivityStore = create((set) => ({
   fetchSubmissionsByActivity: async (activityId) => {
     set({ isLoading: true, error: null });
     try {
+      console.log("Fetching submissions for activity ID:", activityId);
       const response = await axios.get(`${API_URL}/submissions/${activityId}`);
+      console.log("Submissions fetched:", response.data);
       set({ submissions: response.data, isLoading: false });
       return response.data;
     } catch (error) {
+      console.error("Error fetching submissions:", error);
       set({
         error: error.response?.data?.message || "Error fetching submissions",
         isLoading: false,
@@ -269,10 +272,12 @@ export const useActivityStore = create((set) => ({
   updateSubmission: async (submissionId, updates) => {
     set({ isLoading: true, error: null });
     try {
+      console.log("Updating submission ID:", submissionId, "Updates:", updates);
       const response = await axios.put(
         `${API_URL}/submissions/${submissionId}`,
         updates
       );
+      console.log("Submission updated:", response.data.submission);
       set((state) => ({
         submissions: state.submissions.map((sub) =>
           sub._id === submissionId ? response.data.submission : sub
@@ -282,6 +287,7 @@ export const useActivityStore = create((set) => ({
       toast.success("Submission updated successfully!");
       return response.data.submission;
     } catch (error) {
+      console.error("Error updating submission:", error);
       set({
         error: error.response?.data?.message || "Error updating submission",
         isLoading: false,
@@ -290,6 +296,7 @@ export const useActivityStore = create((set) => ({
       return null;
     }
   },
+
   unsubmitActivity: async (activityId) => {
     set({ isLoading: true, error: null });
     try {
