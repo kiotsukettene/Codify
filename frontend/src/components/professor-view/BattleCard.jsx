@@ -1,17 +1,18 @@
 import { Button } from "@/components/ui/button";
 import BattleCardBg from "@/assets/picture/random-background/battleCardBg.png";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-
-
-const BattleCard = ( index ) => {
+const BattleCard = (index) => {
+  const navigate = useNavigate();
   return (
-    <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: index * 0.1, duration: 0.3 }}
-    whileHover={{ scale: 1.02 }}    
-    className="transition-all duration-300 bg-purple-100 rounded-lg p-6 md:p-8 text-left relative overflow-hidden flex flex-col md:flex-row items-start md:items-center">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.3 }}
+      whileHover={{ scale: 1.02 }}
+      className="transition-all duration-300 bg-purple-100 rounded-lg p-6 md:p-8 text-left relative overflow-hidden flex flex-col md:flex-row items-start md:items-center"
+    >
       <div className="flex-1">
         <h2 className="text-lg sm:text-xl font-semibold mb-2">
           Battle of the Coders: Time to Guide the Challengers!
@@ -23,7 +24,10 @@ const BattleCard = ( index ) => {
 
         {/* Button positioned below text on mobile, inline on larger screens */}
         <div className="flex justify-start">
-          <Button className="px-4 py-2 bg-purple-600 text-white rounded-lg">
+          <Button
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg"
+            onClick={() => navigate("/professor/code-battle/create")}
+          >
             Create Battle
           </Button>
         </div>

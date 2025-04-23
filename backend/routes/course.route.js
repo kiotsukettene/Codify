@@ -6,15 +6,23 @@ import {
   updateCourse,
   deleteCourse,
   getCoursesByProfessor,
+  getUniqueStudentCountByProfessor,
+  getCourseBySlug,
 } from "../controllers/course.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
-import {profVerifyToken} from "../middleware/professorVerifyToken.js";
+import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 
 const router = express.Router();
 
 router.post("/create", verifyToken, createCourse);
 router.get("/courses", verifyToken, getCoursesByInstitution);
 router.get("/professor-courses", profVerifyToken, getCoursesByProfessor);
+router.get("/slug/:slug", profVerifyToken, getCourseBySlug);
+router.get(
+  "/professor/unique-student-count",
+  profVerifyToken,
+  getUniqueStudentCountByProfessor
+);
 router.get("/course/:courseId", getCourseById);
 router.put("/update/:courseId", updateCourse);
 router.delete("/delete/:courseId", deleteCourse);

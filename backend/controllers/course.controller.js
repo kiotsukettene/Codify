@@ -1,11 +1,12 @@
 import Course from "../models/course.model.js";
 import { generateCourseCode } from "../utils/generateCourseCode.js";
 import slugify from "slugify";
+import mongoose from "mongoose";
 
 export const createCourse = async (req, res) => {
   try {
-    console.log("Request body:", req.body); // Debug incoming data
-    console.log("Institution ID from token:", req.institutionId); // Debug token
+    console.log("Request body:", req.body);
+    console.log("Institution ID from token:", req.institutionId);
 
     const {
       className,
@@ -38,10 +39,10 @@ export const createCourse = async (req, res) => {
     let courseCode;
     let isUnique = false;
     let attempts = 0;
-    const maxAttempts = 10; // Prevent infinite loop
+    const maxAttempts = 10;
     while (!isUnique && attempts < maxAttempts) {
       courseCode = generateCourseCode();
-      console.log("Generated courseCode:", courseCode); // Debug
+      console.log("Generated courseCode:", courseCode);
       const existingCourse = await Course.findOne({ courseCode });
       if (!existingCourse) isUnique = true;
       attempts++;
@@ -53,7 +54,7 @@ export const createCourse = async (req, res) => {
     }
 
     const slug = slugify(String(className), { lower: true, strict: true });
-    console.log("Generated slug:", slug); // Debug
+    console.log("Generated slug:", slug);
 
     const course = new Course({
       institutionId,
@@ -69,7 +70,7 @@ export const createCourse = async (req, res) => {
       slug,
     });
 
-    console.log("Course object before save:", course); // Debug
+    console.log("Course object before save:", course);
     await course.save();
 
     res.status(201).json({
@@ -78,7 +79,7 @@ export const createCourse = async (req, res) => {
       course,
     });
   } catch (error) {
-    console.error("Error in createCourse:", error); // Detailed error log
+    console.error("Error in createCourse:", error);
     res.status(500).json({
       message: "Error creating course",
       error: error.message,
@@ -100,18 +101,6 @@ export const getCoursesByInstitution = async (req, res) => {
     });
   }
 };
-// export const getCoursesByProfessor = async (req, res) => {
-//   try {
-//     const { professorId } = req.params;
-//     const courses = await Course.find({ professorId });
-
-//     res.status(200).json(courses);
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ message: "Error fetching courses", error: error.message });
-//   }
-// };
 
 export const getCoursesByProfessor = async (req, res) => {
   try {
@@ -123,14 +112,74 @@ export const getCoursesByProfessor = async (req, res) => {
         path: "studentsEnrolled",
         select: "firstName lastName _id",
       })
-      .select("className program section studentsEnrolled _id courseCode slug language");
+      .select(
+        "className program section studentsEnrolled _id courseCode slug language"
+      );
 
     console.log("Fetched courses:", courses);
     res.status(200).json(courses);
   } catch (error) {
-    console.error("Error in getCoursesByProfessor:", error);
     res.status(500).json({
-      message: "Error fetching professor courses",
+      message: "Error fetching courses",
+      error: error.message,
+    });
+  }
+};
+
+export const getUniqueStudentCountByProfessor = async (req, res) => {
+  try {
+    const professorId = req.professorId;
+    const { year, section, program } = req.query;
+
+    const matchCriteria = {
+      professorId: new mongoose.Types.ObjectId(professorId),
+    };
+    if (year) matchCriteria.year = String(year);
+    if (section) matchCriteria.section = section;
+    if (program) matchCriteria.program = program;
+
+    console.log("Match Criteria:", matchCriteria);
+
+    // Debug: Check matched courses
+    const matchedCourses = await Course.aggregate([{ $match: matchCriteria }]);
+    console.log("Matched Courses:", matchedCourses);
+
+    // Debug: Check unwound documents
+    const unwound = await Course.aggregate([
+      { $match: matchCriteria },
+      { $unwind: "$studentsEnrolled" },
+    ]);
+    console.log("Unwound Documents:", unwound);
+
+    // Final aggregation
+    const result = await Course.aggregate([
+      { $match: matchCriteria },
+      { $unwind: "$studentsEnrolled" },
+      {
+        $group: {
+          _id: null,
+          uniqueStudents: { $addToSet: "$studentsEnrolled" },
+        },
+      },
+      {
+        $project: {
+          uniqueStudentCount: { $size: "$uniqueStudents" },
+        },
+      },
+    ]);
+
+    const uniqueStudentCount =
+      result.length > 0 ? result[0].uniqueStudentCount : 0;
+
+    console.log("Unique Student Count:", uniqueStudentCount);
+
+    res.status(200).json({
+      uniqueStudentCount,
+    });
+  } catch (error) {
+    console.error("Error fetching unique student count:", error);
+    res.status(500).json({
+      message: "Error fetching unique student count",
       error: error.message,
     });
   }
@@ -142,22 +191,48 @@ export const getCourseById = async (req, res) => {
     const course = await Course.findById(courseId)
       .populate({
         path: "professorId",
-        select: "firstName lastName email", // ✅ Select only necessary fields
+        select: "firstName lastName email",
       })
       .populate({
-        path: "studentsEnrolled", // Populate Students
+        path: "studentsEnrolled",
         select: "firstName lastName email studentId",
       });
 
     if (!course) return res.status(404).json({ message: "Course not found" });
 
-    console.log("Course Data:", course); // ✅ Debugging log
-    console.log("Professor Data:", course.professorId); // ✅ Should contain firstName & lastName
+    console.log("Course Data:", course);
+    console.log("Professor Data:", course.professorId);
     console.log("Students Enrolled:", course.studentsEnrolled);
 
     res.status(200).json(course);
   } catch (error) {
     console.error("Error fetching course:", error);
+    res.status(500).json({
+      message: "Error fetching course",
+      error: error.message,
+    });
+  }
+};
+
+export const getCourseBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const course = await Course.findOne({ slug })
+      .populate({
+        path: "professorId",
+        select: "firstName lastName email",
+      })
+      .populate({
+        path: "studentsEnrolled",
+        select: "firstName lastName email studentId",
+      });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json(course);
+  } catch (error) {
     res
       .status(500)
       .json({ message: "Error fetching course", error: error.message });
@@ -179,9 +254,10 @@ export const updateCourse = async (req, res) => {
       updatedCourse,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error updating course", error: error.message });
+    res.status(500).json({
+      message: "Error updating course",
+      error: error.message,
+    });
   }
 };
 
@@ -195,8 +271,9 @@ export const deleteCourse = async (req, res) => {
 
     res.status(200).json({ message: "Course deleted successfully!" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error deleting course", error: error.message });
+    res.status(500).json({
+      message: "Error deleting course",
+      error: error.message,
+    });
   }
 };

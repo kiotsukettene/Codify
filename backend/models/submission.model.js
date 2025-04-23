@@ -1,4 +1,3 @@
-// models/submission.model.js
 import mongoose from "mongoose";
 
 const SubmissionSchema = new mongoose.Schema(
@@ -10,7 +9,7 @@ const SubmissionSchema = new mongoose.Schema(
     },
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student", // Adjust to your student model
+      ref: "Student",
       required: true,
     },
     status: {
@@ -19,7 +18,17 @@ const SubmissionSchema = new mongoose.Schema(
       default: "pending",
     },
     file: {
-      type: String, // Path to submitted file
+      type: String,
+    },
+    score: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
+    comment: {
+      type: String,
+      default: "",
     },
   },
   { timestamps: true }

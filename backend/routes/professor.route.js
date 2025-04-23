@@ -23,7 +23,7 @@ router.post("/forgot-password", ForgotPasswordProfessor);
 router.post("/password/:token", resetPasswordProfessor);
 router.post("/google-login", googleLoginProfessor);
 router.post("/reset-password/:token", resetPasswordProfessor);
-router.get("/professor/:professorId", getProfessorById);
+router.get("/:professorId", getProfessorById);
 
 //prof registration
 router.post("/register", verifyToken, registerProfessor);
