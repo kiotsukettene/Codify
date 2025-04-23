@@ -9,10 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useBattleStore from "@/store/battleStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useStudentStore } from "@/store/studentStore";
+import { SocketContext } from "@/context/auth-context/SocketProvider";
+import { useContext } from "react";
+
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
@@ -27,6 +30,7 @@ export default function NotificationCard() {
     dismissNotification,
   } = useBattleStore();
   const { student } = useStudentStore();
+  const socket = useContext(SocketContext);
 
   console.log("Notifications in NotificationCard:", notifications);
   console.log("NotificationCard rendered, unread count:", unreadNotifications);
@@ -78,13 +82,10 @@ export default function NotificationCard() {
         toast.error("Invalid battle code");
         return;
       }
-
-      console.log("handleJoinBattle triggered:", { 
-        notification,
-        battleCode, 
-        notificationId: notification.id 
-      });
-
+  
+      // Join the battle room via socket
+      socket.emit("joinBattleRoom", battleCode);
+  
       try {
         const joinResponse = await axios.post(
           `${API_URL}/join/${battleCode}`,
@@ -95,21 +96,16 @@ export default function NotificationCard() {
       } catch (joinError) {
         console.log("Join response error (expected if already joined):", joinError.response?.data);
       }
-
-      navigate(`/student/code-battle/lobby/${battleCode}`, { replace: true });
-      
+  
+      // Mark notification as read and navigate
       if (notification.id) {
-        await axios.patch(
-          `${API_URL}/notifications/${notification.id}`,
-          { read: true },
-          { withCredentials: true }
-        );
         markNotificationAsRead(notification.id);
       }
-
+  
+      navigate(`/student/code-battle/lobby/${battleCode}`, { replace: true });
+  
     } catch (error) {
       console.error("Error in handleJoinBattle:", error);
-      console.log("Full notification object:", notification);
       toast.error("Failed to join battle. Please try again.");
     } finally {
       setIsLoading(false);

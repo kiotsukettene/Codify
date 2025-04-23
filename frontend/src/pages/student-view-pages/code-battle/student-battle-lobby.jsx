@@ -44,7 +44,7 @@ export default function StudentBattleLobby() {
           currentStudentId: student._id,
         });
 
-        const response = await axios.get(`${API_URL}/professor/${battleCode}`, {
+        const response = await axios.get(`${API_URL}/${battleCode}`, {
           withCredentials: true,
         });
 
@@ -93,11 +93,12 @@ export default function StudentBattleLobby() {
 
         // Check if the current user is already ready
         const joinedPlayers = battleData.joinedPlayers || [];
-        const isPlayerReady = joinedPlayers.some((id) => id === currentStudentId);
+        const isPlayerReady = joinedPlayers.includes(currentStudentId);
         setIsReady(isPlayerReady);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching battle data:", error);
-        setError("Failed to load battle data.");
+        setError(error.response?.data?.message || "Failed to load battle data.");
         setIsLoading(false);
       }
     };
@@ -105,44 +106,42 @@ export default function StudentBattleLobby() {
     fetchBattleData();
   }, [battleCode, student?._id]);
 
-  // Join battle room
-  useEffect(() => {
-    if (socket && battleCode) {
-      socket.emit("joinBattleRoom", battleCode);
-      console.log(`Joined battle room ${battleCode}`);
-    }
-  }, [socket, battleCode]);
-
-  // Socket listeners
+  // Modify the socket listeners effect to handle everything in one place
   useEffect(() => {
     if (!socket || !battle) return;
 
-    socket.on("playerJoined", ({ userId }) => {
-      setBattle((prev) => ({
-        ...prev,
-        joinedPlayers: [...(prev.joinedPlayers || []), userId],
-      }));
-      const playerName =
-        userId === battle.player1.id ? battle.player1.name : battle.player2.name;
-      toast.success(`${playerName} has joined!`);
+    // Join battle room only once when component mounts
+    socket.emit("joinBattleRoom", battleCode);
+    console.log(`Joined battle room ${battleCode}`);
+
+    socket.on("error", ({ message }) => {
+      toast.error(message);
+      setError(message);
     });
 
-    socket.on("playerReady", ({ userId }) => {
-      const playerName =
-        userId === battle.player1.id ? battle.player1.name : battle.player2.name;
-      toast.success(`${playerName} is ready!`);
-
-      if (
-        battle.joinedPlayers.includes(battle.player1.id) &&
-        battle.joinedPlayers.includes(battle.player2.id)
-      ) {
-        toast.success("All players ready! Battle starting...");
-        navigate(`/student/code-battle/arena/${battleCode}`);
-      }
+    socket.on("playerJoined", ({ battleId, studentId, message }) => {
+      console.log("Player joined:", message);
+      toast.success(message);
+      
+      setBattle(prev => {
+        if (prev.joinedPlayers?.includes(studentId)) {
+          return prev;
+        }
+        return {
+          ...prev,
+          joinedPlayers: [...(prev.joinedPlayers || []), studentId]
+        };
+      });
     });
 
-    socket.on("battleStart", () => {
-      navigate(`/student/code-battle/arena/${battleCode}`);
+    socket.on("playerReady", ({ battleId, studentId, message }) => {
+      console.log("Player ready:", message);
+      toast.success(message);
+    });
+
+    socket.on("professorStartBattle", () => {
+      toast.success("Professor has started the battle!");
+      navigate(`/student/code-battle/main-arena/${battleCode}`);
     });
 
     socket.on("battleCancelled", () => {
@@ -150,20 +149,29 @@ export default function StudentBattleLobby() {
       navigate("/student/dashboard");
     });
 
+    // Cleanup function to remove all listeners and leave room
     return () => {
+      socket.off("error");
       socket.off("playerJoined");
       socket.off("playerReady");
-      socket.off("battleStart");
+      socket.off("professorStartBattle");
       socket.off("battleCancelled");
+      socket.emit("leaveBattleRoom", battleCode); // Add this event if you want to track when players leave
     };
-  }, [socket, battle, battleCode, navigate]);
+  }, [socket, battle, battleCode, navigate]); // Remove any unnecessary dependencies
 
   const handleReadyClick = async () => {
     try {
       await axios.post(`${API_URL}/join/${battleCode}`, {}, { withCredentials: true });
       setIsReady(true);
+      
+      // Emit ready event
+      socket.emit("playerReady", { 
+        battleCode,
+        studentId: student._id 
+      });
+      
       toast.success("You're ready for battle!");
-      socket.emit("playerReady", { userId: student._id, battleCode });
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Failed to mark as ready";
       setError(errorMessage);

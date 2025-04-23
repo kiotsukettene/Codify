@@ -51,8 +51,9 @@ export const getBattleById = async (req, res) => {
       return res.status(404).json({ message: "Battle not found" });
     }
 
-    // Ensure the student is a participant
-    if (![battle.player1._id.toString(), battle.player2._id.toString()].includes(studentId)) {
+    // Allow access if battle is active and student is a participant
+    const isParticipant = [battle.player1._id.toString(), battle.player2._id.toString()].includes(studentId);
+    if (!isParticipant) {
       return res.status(403).json({ message: "You are not a participant in this battle" });
     }
 

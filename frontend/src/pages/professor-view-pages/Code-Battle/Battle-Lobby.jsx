@@ -140,42 +140,45 @@ const BattleLobby = () => {
   // Socket listeners
   useEffect(() => {
     if (!socket || !battle) return;
-
-    socket.on('playerJoined', ({ userId }) => {
-      const playerKey = userId === battle.player1.id ? 'player1' : 'player2';
-      setPlayers((prev) => ({
+  
+    socket.on("playerJoined", ({ battleId, studentId, message }) => {
+      const playerKey = studentId === battle.player1.id ? "player1" : "player2";
+      setPlayers(prev => ({
         ...prev,
-        [playerKey]: { ...prev[playerKey], joined: true, ready: true },
+        [playerKey]: { ...prev[playerKey], joined: true }
       }));
-      toast.success(`${userId === battle.player1.id ? battle.player1.name : battle.player2.name} has joined!`);
+      toast.success(message);
     });
-
-    socket.on('playerReady', ({ userId }) => {
-      const playerKey = userId === battle.player1.id ? 'player1' : 'player2';
-      setPlayers((prev) => ({
+  
+    socket.on("playerReady", ({ battleId, studentId, message }) => {
+      const playerKey = studentId === battle.player1.id ? "player1" : "player2";
+      setPlayers(prev => ({
         ...prev,
-        [playerKey]: { ...prev[playerKey], ready: true },
+        [playerKey]: { ...prev[playerKey], joined: true, ready: true }
       }));
-      toast.success(`${userId === battle.player1.id ? battle.player1.name : battle.player2.name} is ready!`);
-
-      const updatedPlayers = {
-        ...players,
-        [playerKey]: { joined: true, ready: true },
-      };
-      if (updatedPlayers.player1.ready && updatedPlayers.player2.ready) {
-        setBattleStatus('started');
-        socket.emit('battleStart', { battleCode });
-        toast.success('All players ready! Battle starting...');
-        localStorage.removeItem(`battleTimer_${battleCode}`);
-        navigate(`/professor/code-battle/arena/${battleCode}`);
+      toast.success(message);
+  
+      // If both players are ready, start countdown
+      if (players.player1.ready && players.player2.ready) {
+        let countdown = 5;
+        const countdownInterval = setInterval(() => {
+          if (countdown > 0) {
+            toast.success(`Battle starting in ${countdown}...`);
+            countdown--;
+          } else {
+            clearInterval(countdownInterval);
+            socket.emit("battleStart", { battleCode });
+            navigate(`/professor/code-battle/arena/${battleCode}`);
+          }
+        }, 1000);
       }
     });
-
+  
     return () => {
-      socket.off('playerJoined');
-      socket.off('playerReady');
+      socket.off("playerJoined");
+      socket.off("playerReady");
     };
-  }, [socket, battle, battleCode, players, navigate]);
+  }, [socket, battle, players, battleCode, navigate]);
 
   const formatTime = (seconds) => {
     if (seconds === null) return 'Loading...';
@@ -187,7 +190,7 @@ const BattleLobby = () => {
   const handleStartBattle = () => {
     if (players.player1.joined && players.player2.joined) {
       setBattleStatus('started');
-      socket.emit('battleStart', { battleCode });
+      socket.emit('professorStartBattle', { battleCode });
       localStorage.removeItem(`battleTimer_${battleCode}`);
       navigate(`/professor/code-battle/arena/${battleCode}`);
     } else {

@@ -110,9 +110,68 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("joinBattleRoom", (battleId) => {
-    socket.join(battleId);
-    console.log(`User ${userId} joined battle room ${battleId}`);
+  socket.on("joinBattleRoom", async (battleCode) => {
+    try {
+      // Check if socket is already in this room
+      if (socket.rooms.has(battleCode)) {
+        console.log(`User ${socket.userId} is already in battle room ${battleCode}`);
+        return;
+      }
+
+      const battle = await Battle.findOne({ battleCode });
+      if (!battle) {
+        socket.emit("error", { message: "Battle not found" });
+        return;
+      }
+
+      socket.join(battleCode);
+      console.log(`User ${socket.userId} joined battle room ${battleCode}`);
+
+      const isPlayer1 = battle.player1.toString() === socket.userId;
+      const isPlayer2 = battle.player2.toString() === socket.userId;
+
+      if (isPlayer1 || isPlayer2) {
+        const message = `${isPlayer1 ? "Commander" : "Pilot"} has joined the battle!`;
+        io.to(battleCode).emit("playerJoined", {
+          battleId: battle._id,
+          studentId: socket.userId,
+          message
+        });
+
+        // Update battle's joinedPlayers if not already included
+        if (!battle.joinedPlayers.includes(socket.userId)) {
+          await Battle.findOneAndUpdate(
+            { battleCode },
+            { $addToSet: { joinedPlayers: socket.userId } }
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error in joinBattleRoom:", error);
+      socket.emit("error", { message: "Failed to join battle room" });
+    }
+  });
+
+  socket.on("playerReady", async ({ battleCode, studentId }) => {
+    const battle = await Battle.findOne({ battleCode });
+    if (battle) {
+      const message = `${studentId === battle.player1.toString() ? "Commander" : "Pilot"} is ready for battle!`;
+      io.to(battleCode).emit("playerReady", {
+        battleId: battle._id,
+        studentId,
+        message
+      });
+    }
+  });
+
+  socket.on("professorStartBattle", ({ battleCode }) => {
+    io.to(battleCode).emit("professorStartBattle");
+  });
+
+  // Add handler for leaving rooms
+  socket.on("leaveBattleRoom", (battleCode) => {
+    socket.leave(battleCode);
+    console.log(`User ${socket.userId} left battle room ${battleCode}`);
   });
 
   socket.on("disconnect", () => {
