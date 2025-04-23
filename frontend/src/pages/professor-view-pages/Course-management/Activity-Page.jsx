@@ -60,6 +60,10 @@ const ActivityPage = () => {
     }
   };
 
+  // Debug course and submissions before computing students
+  console.log("Course data:", course);
+  console.log("Submissions data:", submissions);
+
   if (isActivityLoading || isCourseLoading) return <p>Loading...</p>;
   if (activityError)
     return <p className="text-red-500">Activity Error: {activityError}</p>;
@@ -68,25 +72,30 @@ const ActivityPage = () => {
   if (!activity) return <p>No activity found</p>;
   if (!course) return <p>No course found</p>;
 
-  // Merge studentsEnrolled with submissions
+  // Compute students array with safety checks
   const students =
-    course.studentsEnrolled.map((student) => {
-      const submission = submissions.find(
-        (sub) => sub.studentId._id.toString() === student._id.toString()
-      );
-      return {
-        id: student._id,
-        name: `${student.firstName} ${student.lastName}`,
-        avatar: student.avatar || "",
-        submitted: submission
-          ? new Date(submission.createdAt).toLocaleString()
-          : "",
-        score: submission ? submission.score : 0,
-        comment: submission ? submission.comment : "",
-        file: submission && submission.file ? submission.file : null,
-        submission: submission || null,
-      };
-    }) || [];
+    Array.isArray(course?.studentsEnrolled) && Array.isArray(submissions)
+      ? course.studentsEnrolled
+          .map((student) => {
+            const submission = submissions.find(
+              (sub) =>
+                sub?.studentId?._id?.toString() === student?._id?.toString()
+            );
+            return {
+              id: student?._id || "",
+              name: `${student?.firstName || ""} ${student?.lastName || ""}`,
+              avatar: student?.avatar || "",
+              submitted: submission?.createdAt
+                ? new Date(submission.createdAt).toLocaleString()
+                : "",
+              score: submission?.score || 0,
+              comment: submission?.comment || "",
+              file: submission?.file || null,
+              submission: submission || null,
+            };
+          })
+          .filter((student) => student.id) // Filter out invalid entries
+      : [];
 
   console.log("Processed students:", students);
 
@@ -163,4 +172,3 @@ const ActivityPage = () => {
 };
 
 export default ActivityPage;
-a;

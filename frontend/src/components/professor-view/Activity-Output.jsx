@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Download } from "lucide-react";
 import { useActivityStore } from "@/store/activityStore";
+import toast from "react-hot-toast";
 
 const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
@@ -28,10 +29,8 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   const handleStudentSelection = (studentId) => {
     console.log("Selecting student ID:", studentId);
     setSelectedStudentIds((prev) => {
-      if (studentId === "1") {
-        return prev.length === students.length - 1
-          ? []
-          : students.slice(1).map((s) => s.id);
+      if (studentId === "all") {
+        return prev.length === students.length ? [] : students.map((s) => s.id);
       }
       return prev.includes(studentId)
         ? prev.filter((id) => id !== studentId)
@@ -53,14 +52,17 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   };
 
   const handleSubmitComment = async (studentId) => {
-    if (!comments[studentId]?.trim()) return;
+    if (!comments[studentId]?.trim()) {
+      toast.error("Comment cannot be empty");
+      return;
+    }
 
     console.log("Submitting comment for student ID:", studentId);
     setSubmittingComment(studentId);
     try {
       const student = students.find((s) => s.id === studentId);
-      const submission = student.submission;
-      if (submission) {
+      const submission = student?.submission;
+      if (submission?._id) {
         await updateSubmission(submission._id, {
           comment: comments[studentId],
         });
@@ -71,7 +73,13 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
         setComments((prev) => ({ ...prev, [studentId]: "" }));
         await refetchSubmissions();
         console.log("Submissions refetched after comment update");
+        toast.success("Comment added successfully!");
+      } else {
+        throw new Error("No submission found for student");
       }
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+      toast.error(error.message || "Failed to add comment");
     } finally {
       setSubmittingComment(null);
     }
@@ -91,27 +99,50 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
     setIsGrading(studentId);
     try {
       const student = students.find((s) => s.id === studentId);
-      const submission = student.submission;
-      if (submission) {
-        const newScore = tempScores[studentId] ?? student.score;
-        await updateSubmission(submission._id, { score: newScore });
-        console.log("Score updated successfully for student ID:", studentId);
-        await refetchSubmissions();
-        console.log("Submissions refetched after score update");
-        setTempScores((prev) => {
-          const updated = { ...prev };
-          delete updated[studentId];
-          return updated;
-        });
+      const submission = student?.submission;
+      if (!submission?._id) {
+        throw new Error("No submission found for student");
       }
+
+      const newScore =
+        tempScores[studentId] !== undefined
+          ? tempScores[studentId]
+          : student.score;
+      if (newScore === student.score) {
+        console.log("No score change detected for student ID:", studentId);
+        return;
+      }
+
+      console.log(
+        "Updating score for submission ID:",
+        submission._id,
+        "New score:",
+        newScore
+      );
+      await updateSubmission(submission._id, { score: newScore });
+      console.log("Score updated successfully for student ID:", studentId);
+
+      // Clear the temporary score
+      setTempScores((prev) => {
+        const updated = { ...prev };
+        delete updated[studentId];
+        return updated;
+      });
+
+      // Refetch submissions to update the UI
+      await refetchSubmissions();
+      console.log("Submissions refetched after score update");
+
+      toast.success("Score updated successfully!");
     } catch (error) {
-      console.error("Error saving score:", error);
+      console.error("Error updating score:", error);
+      toast.error(error.message || "Failed to update score");
     } finally {
       setIsGrading(null);
     }
   };
 
-  if (!students.length) {
+  if (!Array.isArray(students) || !students.length) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -341,4 +372,3 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
 };
 
 export default ActivityOutput;
-a;
