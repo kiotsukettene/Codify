@@ -210,7 +210,6 @@ const ProfDashboard = ({ title, content }) => {
   console.log("Professor:", professor);
   console.log("Professor ID:", professorId);
   console.log("Courses:", courses);
-
   console.log("Display Schedule:", displaySchedule);
   console.log("Unique Student Count:", uniqueStudentCount);
   console.log("Auth error:", profError);
