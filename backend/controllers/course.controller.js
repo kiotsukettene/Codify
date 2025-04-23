@@ -112,7 +112,9 @@ export const getCoursesByProfessor = async (req, res) => {
         path: "studentsEnrolled",
         select: "firstName lastName _id",
       })
-      .select("className program section studentsEnrolled _id courseCode slug language");
+      .select(
+        "className program section studentsEnrolled _id courseCode slug language"
+      );
 
     console.log("Fetched courses:", courses);
     res.status(200).json(courses);
@@ -209,6 +211,31 @@ export const getCourseById = async (req, res) => {
       message: "Error fetching course",
       error: error.message,
     });
+  }
+};
+
+export const getCourseBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const course = await Course.findOne({ slug })
+      .populate({
+        path: "professorId",
+        select: "firstName lastName email",
+      })
+      .populate({
+        path: "studentsEnrolled",
+        select: "firstName lastName email studentId",
+      });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json(course);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching course", error: error.message });
   }
 };
 

@@ -18,22 +18,30 @@ export const useCourseStore = create((set) => ({
 
   fetchCoursesByProfessor: async () => {
     set({ isLoading: true, error: null });
-    console.log("Fetching professor courses from:", `${API_URL}/professor-courses`);
+    console.log(
+      "Fetching professor courses from:",
+      `${API_URL}/professor-courses`
+    );
 
     try {
       const response = await axios.get(`${API_URL}/professor-courses`);
       console.log("API Response:", response.data);
       set({ courses: response.data, isLoading: false });
     } catch (error) {
-      console.error("Error fetching professor courses:", error.response?.data || error);
+      console.error(
+        "Error fetching professor courses:",
+        error.response?.data || error
+      );
       set({
-        error: error.response?.data?.message || "Error fetching professor courses",
+        error:
+          error.response?.data?.message || "Error fetching professor courses",
         isLoading: false,
       });
-      toast.error(error.response?.data?.message || "Error fetching professor courses");
+      toast.error(
+        error.response?.data?.message || "Error fetching professor courses"
+      );
     }
   },
-
 
   fetchUniqueStudentCountByProfessor: async (filters = {}) => {
     set({ isLoading: true, error: null });
@@ -49,7 +57,10 @@ export const useCourseStore = create((set) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error("Error fetching professor courses:", error.response?.data || error);
+      console.error(
+        "Error fetching professor courses:",
+        error.response?.data || error
+      );
       set({
         error: error.response?.data?.message || "Error fetching courses",
         isLoading: false,
@@ -57,7 +68,6 @@ export const useCourseStore = create((set) => ({
       toast.error(error.response?.data?.message || "Error fetching courses");
     }
   },
-
 
   fetchUniqueStudentCountByProfessor: async (filters = {}) => {
     set({ isLoading: true, error: null });
@@ -149,6 +159,20 @@ export const useCourseStore = create((set) => ({
         isLoading: false,
       });
       toast.error(error.response?.data?.message || "Error fetching courses");
+    }
+  },
+
+  fetchCourseBySlug: async (slug) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/slug/${slug}`);
+      set({ course: response.data, isLoading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Error fetching course",
+        isLoading: false,
+      });
+      toast.error(error.response?.data?.message || "Error fetching course");
     }
   },
 
