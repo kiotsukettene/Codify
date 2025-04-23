@@ -106,8 +106,8 @@ const ArenaDashboardPage = () => {
 
   const activeBattles = battles.active.map(battle => ({
     id: battle.id,
-    name: battle.title,
-    subject: `${battle.course?.program} ${battle.course?.section}`,
+    name: battle.challenge,
+    subject: `${battle.course?.program} | ${battle.course?.section}`,
     description: battle.description,
     accent: "purple-500",
     battleCode: battle.battleCode,
@@ -171,29 +171,46 @@ const ArenaDashboardPage = () => {
               <Code className="h-6 w-6 text-purple-400" />
               Incoming Battles
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {battles.lobby.map((battle) => (
-                <Card key={battle.id} className="bg-[#1A1625] border-purple-500/30">
+                <Card 
+                  key={battle.id} 
+                  className="group bg-[#1A1625] border-purple-500/30 hover:border-purple-500/60 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10"
+                >
                   <CardContent className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-xl font-bold text-white mb-2">{battle.title}</h3>
-                        <p className="text-gray-400 text-sm">{battle.description}</p>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge className="bg-purple-500/20 text-purple-400 px-2 py-1">{battle.status.toUpperCase()}</Badge>
+                          <Badge variant="outline" className="bg-transparent border-purple-500/30 text-purple-400/80 px-2">
+                            {battle.challenge}
+                          </Badge>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">{battle.title}</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{battle.description}</p>
                       </div>
-                      <Badge className="bg-purple-500 text-sm h-7">{battle.id}</Badge>
                     </div>
+
                     <Separator className="my-4 bg-purple-500/20" />
-                    <div className="flex justify-between items-center">
+
+                    <div className="space-y-3">
                       <div className="flex items-center gap-2 text-sm text-gray-400">
-                        <Calendar className="h-4 w-4" />
-                        {format(new Date(battle.commencement), "MMM dd, yyyy - h:mm a")}
+                        <Calendar className="h-4 w-4 text-purple-400" />
+                        <span>Starts: {format(new Date(battle.commencement), "MMM dd, yyyy - h:mm a")}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-purple-400 font-mono">Code: {battle.id}</span>
+
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm text-purple-400 font-medium">Battle Code:</span>
+                            <code className="px-2 py-1 rounded bg-purple-500/10 text-purple-400 font-mono text-sm">
+                              {battle.id}
+                            </code>
+                          </div>
+                        </div>
                         <Button 
-                          size="sm"
                           onClick={() => setIsJoinModalOpen(true)}
-                          className="bg-purple-600 hover:bg-purple-700"
+                          className="bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/20 transition-all duration-300 hover:shadow-purple-500/40"
                         >
                           Join Battle
                         </Button>
@@ -251,20 +268,11 @@ const ArenaDashboardPage = () => {
                   <div className="absolute inset-0 bg-black/70 rounded-lg"></div>
                   <div className="relative flex flex-col items-center text-white">
                     <h3 className="mt-3 text-lg font-bold">{battle.name}</h3>
-                    <p className="text-sm text-white/80">{battle.subject}</p>
+                    <p className="text-sm text-white/80 text-center">{battle.subject}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Clock className="w-4 h-4 text-green-400" />
                       <p className="text-sm text-green-400">Live Now</p>
                     </div>
-                    <Button 
-                      className="mt-4 bg-purple-600 hover:bg-purple-700"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleJoinActiveBattle(battle.battleCode);
-                      }}
-                    >
-                      Join Now <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
                   </div>
                 </div>
               ))}
