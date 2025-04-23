@@ -110,6 +110,7 @@ export const getCoursesByInstitution = async (req, res) => {
 export const getCoursesByProfessor = async (req, res) => {
   try {
     const professorId = req.professorId; // Extracted from JWT via profVerifyToken
+    console.log("Fetching courses for professorId:", professorId);
 
     const courses = await Course.find({ professorId })
       .populate({
@@ -118,11 +119,12 @@ export const getCoursesByProfessor = async (req, res) => {
       })
       .select("className program section studentsEnrolled _id courseCode slug language");
 
-    // console.log("Fetched courses:", courses);
+    console.log("Fetched courses:", courses);
     res.status(200).json(courses);
   } catch (error) {
+    console.error("Error in getCoursesByProfessor:", error);
     res.status(500).json({
-      message: "Error fetching courses",
+      message: "Error fetching professor courses",
       error: error.message,
     });
   }
