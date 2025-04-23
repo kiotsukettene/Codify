@@ -9,6 +9,7 @@ import { UsersRound, BookOpenText, ChartLine } from "lucide-react";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import { useCourseStore } from "@/store/courseStore";
 import { useActivityStore } from "@/store/activityStore";
+import { useStudentStore } from "@/store/studentStore";
 
 const mockStudentRankings = [
   {
@@ -53,30 +54,6 @@ const mockStudentRankings = [
   },
 ];
 
-const mockToGradeTasks = [
-  {
-    id: 1,
-    studentName: "John Smith",
-    assignment: "JavaScript Basics",
-    dueDate: "2024-03-20",
-    status: "Pending",
-  },
-  {
-    id: 2,
-    studentName: "Maria Garcia",
-    assignment: "React Components",
-    dueDate: "2024-03-21",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    studentName: "Alex Wong",
-    assignment: "API Integration",
-    dueDate: "2024-03-19",
-    status: "Overdue",
-  },
-];
-
 const mockSchedule = [
   {
     id: 1,
@@ -115,7 +92,9 @@ const ProfDashboard = ({ title, content }) => {
   } = useCourseStore();
   const { fetchActivitiesByCourse, fetchSubmissionsByActivity } =
     useActivityStore();
+  const { fetchStudents } = useStudentStore();
   const [gradingQueueCount, setGradingQueueCount] = useState(0);
+  const [toGradeTasks, setToGradeTasks] = useState([]);
   const professorId = professor?._id;
 
   useEffect(() => {
@@ -143,6 +122,18 @@ const ProfDashboard = ({ title, content }) => {
       if (!courses || courses.length === 0) return;
 
       let totalUnscored = 0;
+      const tasks = [];
+      let students = [];
+
+      // Fetch all students to map studentId to names
+      try {
+        await fetchStudents();
+        students = useStudentStore.getState().students;
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        return;
+      }
+
       for (const course of courses) {
         const courseId = course._id;
         const activities = await fetchActivitiesByCourse(courseId);
@@ -152,13 +143,38 @@ const ProfDashboard = ({ title, content }) => {
             (submission) => submission.score === 0
           );
           totalUnscored += unscoredSubmissions.length;
+
+          unscoredSubmissions.forEach((submission) => {
+            const student = students.find(
+              (s) => s._id === submission.studentId.toString()
+            );
+            const dueDate = new Date(activity.dueDate);
+            const currentDate = new Date();
+            const status = dueDate < currentDate ? "Overdue" : "Pending";
+
+            tasks.push({
+              id: submission._id,
+              studentName: student
+                ? `${student.firstName} ${student.lastName}`
+                : "Unknown Student",
+              assignment: activity.title,
+              dueDate: dueDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+              status,
+            });
+          });
         }
       }
       setGradingQueueCount(totalUnscored);
+      setToGradeTasks(tasks);
     };
 
     fetchGradingQueue();
-  }, [courses, fetchActivitiesByCourse, fetchSubmissionsByActivity]);
+  }, [
+    courses,
+    fetchActivitiesByCourse,
+    fetchSubmissionsByActivity,
+    fetchStudents,
+  ]);
 
   const currentDate = new Date();
   const daysOfWeek = [
@@ -194,11 +210,12 @@ const ProfDashboard = ({ title, content }) => {
   console.log("Professor:", professor);
   console.log("Professor ID:", professorId);
   console.log("Courses:", courses);
-  console.log("Today's Courses:", todaysCourses);
+
   console.log("Display Schedule:", displaySchedule);
   console.log("Unique Student Count:", uniqueStudentCount);
   console.log("Auth error:", profError);
   console.log("Grading Queue Count:", gradingQueueCount);
+  console.log("To Grade Tasks:", toGradeTasks);
 
   if (profError) {
     return <div>Error: {profError}</div>;
@@ -240,7 +257,7 @@ const ProfDashboard = ({ title, content }) => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
         <RankingList rankingData={mockStudentRankings} />
-        <GradeTask activityData={mockToGradeTasks} />
+        <GradeTask activityData={toGradeTasks} />
       </div>
     </div>
   );
