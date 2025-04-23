@@ -50,6 +50,7 @@ const LessonOverview = () => {
   const { lessons, fetchLessonsByCourse } = useLessonStore();
   const { professor } = useprofAuthStore();
 
+  // Fetch all courses for the professor if not already loaded
   useEffect(() => {
     if (courses.length === 0) {
       fetchCoursesByProfessor();
@@ -59,6 +60,7 @@ const LessonOverview = () => {
   const currentCourse = courses.find((course) => course.slug === courseSlug);
   const courseId = currentCourse?._id;
 
+  // Fetch course details by ID
   useEffect(() => {
     if (courseId) {
       console.log("Fetching course with ID:", courseId);
@@ -66,6 +68,7 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchCourseById]);
 
+  // Fetch lessons and activities for the course
   useEffect(() => {
     if (courseId) {
       fetchLessonsByCourse(courseId);
@@ -73,9 +76,10 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchLessonsByCourse, fetchActivitiesByCourse]);
 
-  // Fetch submissions for each student and calculate metrics
+  // State for student list with computed metrics
   const [studentList, setStudentList] = useState([]);
 
+  // Fetch submissions and compute student metrics
   useEffect(() => {
     const fetchStudentData = async () => {
       if (!courseId || !course?.studentsEnrolled) return;
@@ -104,21 +108,14 @@ const LessonOverview = () => {
             id: student._id || index + 1,
             name: `${student.firstName} ${student.lastName}`,
             avatar: "/placeholder.svg?height=40&width=40",
-            crown:
-              index === 0
-                ? "gold"
-                : index === 1
-                ? "silver"
-                : index === 2
-                ? "bronze"
-                : null,
+            crown: null, // Will be set after sorting
             studentNo: student.studentId || "N/A",
             email: student.email || "N/A",
             activities: submittedActivities,
             incomplete: incompleteActivities,
             totalScore: totalScore,
-            rank: index + 1, // Optional: for ranking display
-            hasMedal: index < 3, // Optional: for medal display
+            rank: index + 1, // Temporary, will be updated
+            hasMedal: false, // Will be updated after sorting
             initials:
               `${student.firstName[0]}${student.lastName[0]}`.toUpperCase(),
           };
@@ -160,16 +157,74 @@ const LessonOverview = () => {
     .filter((activity) => activity.lessonSlug !== "undefined")
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-  const metrics = [
-    { title: "Class Performance", value: "0%", subtitle: "Average Score" }, // Update if needed
-    { title: "Completion Rate", value: "0%", subtitle: "Activities Completed" }, // Update if needed
-    {
-      title: "Active Students",
-      value: studentList.length.toString(),
-      subtitle: "Currently Active",
-    },
-    { title: "Top Performers", value: "0", subtitle: "Display Performance" }, // Update if needed
-  ];
+  // Compute metrics for the ScoreTab
+  const computeMetrics = () => {
+    const totalActivities = filteredActivities.length;
+    const totalStudents = studentList.length;
+
+    // Calculate maximum possible score (sum of points from all activities)
+    const maxPossibleScore = filteredActivities.reduce(
+      (sum, activity) => sum + (activity.points || 100), // Default to 100 if points not available
+      0
+    );
+
+    // Class Performance: Average totalScore as a percentage of maxPossibleScore
+    const totalClassScore = studentList.reduce(
+      (sum, student) => sum + student.totalScore,
+      0
+    );
+    const classPerformance =
+      totalStudents > 0 && maxPossibleScore > 0
+        ? (
+            (totalClassScore / (totalStudents * maxPossibleScore)) *
+            100
+          ).toFixed(0) + "%"
+        : "0%";
+
+    // Completion Rate: Percentage of activities completed
+    const totalSubmittedActivities = studentList.reduce(
+      (sum, student) => sum + student.activities,
+      0
+    );
+    const completionRate =
+      totalStudents > 0 && totalActivities > 0
+        ? (
+            (totalSubmittedActivities / (totalStudents * totalActivities)) *
+            100
+          ).toFixed(0) + "%"
+        : "0%";
+
+    // Top Performers: Students with score >= 80% of maxPossibleScore
+    const topPerformersCount = studentList.filter(
+      (student) =>
+        maxPossibleScore > 0 && student.totalScore >= 0.8 * maxPossibleScore
+    ).length;
+
+    return [
+      {
+        title: "Class Performance",
+        value: classPerformance,
+        subtitle: "Average Score",
+      },
+      {
+        title: "Completion Rate",
+        value: completionRate,
+        subtitle: "Activities Completed",
+      },
+      {
+        title: "Active Students",
+        value: totalStudents.toString(),
+        subtitle: "Currently Active",
+      },
+      {
+        title: "Top Performers",
+        value: topPerformersCount.toString(),
+        subtitle: "High Achievers",
+      },
+    ];
+  };
+
+  const metrics = computeMetrics();
 
   if (isLoading && !course) return <div>Loading course...</div>;
   if (error) {
