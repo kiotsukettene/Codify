@@ -257,7 +257,7 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
                                     className="text-sm text-blue-600 hover:underline flex items-center gap-1"
                                   >
                                     <Download className="h-4 w-4" />
-                                    Download Submission
+                                    Submitted File
                                   </a>
                                 ) : (
                                   <p className="text-sm text-muted-foreground">
@@ -266,11 +266,11 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right ">
                               {student.score > 0 && (
                                 <Badge
                                   variant="outline"
-                                  className="bg-green-50 text-green-700"
+                                  className="bg-green-50 text-green-700 my-2"
                                 >
                                   Graded
                                 </Badge>
