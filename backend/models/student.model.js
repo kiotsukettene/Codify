@@ -50,6 +50,10 @@ const studentSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    avatar: {
+      type: String,
+      default: "/src/assets/picture/Avatar/cat1.png", // Default avatar
+    },
     solvedChallenges: [
       {
         id: String,
@@ -58,9 +62,9 @@ const studentSchema = new mongoose.Schema(
         codeSubmitted: String,
       }
     ],
-    events:[
+    events: [
       {
-        id:{
+        id: {
           type: String,
           required: true,
         },
@@ -94,8 +98,6 @@ const studentSchema = new mongoose.Schema(
     ],
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
-    // verificationToken: String,
-    // verificationTokenExpiresAt: Date,
   },
   { timestamps: true }
 );
