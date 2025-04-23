@@ -61,7 +61,7 @@ const BattleSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "active", "completed"],
+      enum: ["pending", "lobby", "active", "completed"],
       default: "pending",
     },
     results: {

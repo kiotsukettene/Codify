@@ -7,8 +7,8 @@ const sendBattleNotification = async (req, players, battle) => {
 
   const notification = {
     type: "challenge",
-    title: battle.status === "active" ? "New Battle Challenge!" : "Upcoming Battle",
-    message: `You've been selected for ${battle.status === "active" ? "an immediate" : "an upcoming"} code battle: ${battle.title}`,
+    title: battle.status === "lobby" ? "Battle Ready in Lobby!" : battle.status === "active" ? "New Battle Challenge!" : "Upcoming Battle",
+    message: `You've been selected for ${battle.status === "lobby" ? "a battle in lobby" : battle.status === "active" ? "an immediate" : "an upcoming"} code battle: ${battle.title}`,
     time: new Date().toISOString(),
     battleCode: battle.battleCode,
   };
@@ -173,7 +173,7 @@ export const createBattle = async (req, res) => {
     }
 
     // For immediate battles, set commencement to now
-    if (status === "active") {
+    if (status === "lobby") {
       finalCommencement = new Date();
     }
 
@@ -652,5 +652,36 @@ export const markNotificationAsRead = async (req, res) => {
   } catch (error) {
     console.error("Error in markNotificationAsRead:", error);
     res.status(500).json({ message: "Error marking notification as read", error: error.message });
+  }
+};
+
+export const updateBattleStatus = async (req, res) => {
+  try {
+    const { battleCode } = req.params;
+    const { status } = req.body;
+    const professorId = req.professorId;
+
+    // Validate status
+    if (!["pending", "lobby", "active", "completed"].includes(status)) {
+      return res.status(400).json({ message: "Invalid battle status" });
+    }
+
+    const battle = await Battle.findOneAndUpdate(
+      { battleCode, createdBy: professorId },
+      { $set: { status } },
+      { new: true }
+    );
+
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found or not authorized" });
+    }
+
+    res.status(200).json({ message: "Battle status updated successfully", battle });
+  } catch (error) {
+    console.error("Error in updateBattleStatus:", error);
+    res.status(500).json({
+      message: "Error updating battle status",
+      error: error.message,
+    });
   }
 };

@@ -518,20 +518,16 @@ export default function StudentBattleLobby() {
 
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
-          <Button
-            className="bg-purple-600 hover:bg-purple-700 min-w-[200px] transition-colors"
-            disabled={!isReady || !opponentStatus.joined}
-          >
-            <Rocket className="h-5 w-5 mr-2" />
-            LAUNCH SEQUENCE
-          </Button>
-          <Button
-            variant="outline"
-            className="border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
-            onClick={() => navigate("/student/dashboard")}
-          >
-            ABORT MISSION
-          </Button>
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">Waiting for professor to start the battle...</p>
+            <Button
+              variant="outline"
+              className="border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
+              onClick={() => navigate("/student/dashboard")}
+            >
+              ABORT MISSION
+            </Button>
+          </div>
         </div>
       </div>
 

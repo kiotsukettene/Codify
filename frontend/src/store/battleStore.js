@@ -206,7 +206,7 @@ const createBattleSlice = (set, get) => ({
       }
       const response = await axios.post(`${API_URL}/create`, {
         ...state.battleData,
-        status: "active",
+        status: "lobby",
         commencement: new Date().toISOString(),
       });
       console.log("Create battle response:", response.data);

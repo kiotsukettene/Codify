@@ -11,6 +11,7 @@ import {
   getBattleById,
   getBattleByIdForProfessor,
   markNotificationAsRead,
+  updateBattleStatus,
 } from "../controllers/battle.controller.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
@@ -44,5 +45,6 @@ router.post('/notifications', async (req, res) => {
     res.status(500).json({ message: 'Failed to store notifications' });
   }
 });
+router.put("/:battleCode/status", profVerifyToken, updateBattleStatus);
 
 export default router;

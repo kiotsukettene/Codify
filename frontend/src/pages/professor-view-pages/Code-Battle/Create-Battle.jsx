@@ -98,7 +98,12 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
         await editBattle(battleId, battleData);
         toast.success("Battle updated successfully!");
       } else {
-        const response = await submitBattle();
+        // Set initial status to lobby when commencing
+        const battleWithStatus = {
+          ...battleData,
+          status: "lobby"
+        };
+        const response = await submitBattle(battleWithStatus);
         console.log("Navigating with battleCode:", response.battle.battleCode);
         toast.success("Battle commenced! Redirecting to lobby...");
         setTimeout(() => {
