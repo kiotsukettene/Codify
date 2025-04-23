@@ -436,6 +436,7 @@ export const getBattlesByProfessor = async (req, res) => {
         : 0;
 
       return {
+        battleCode: battle.battleCode,
         id: battle._id,
         challenge: battle.title,
         description: `${battle.courseId.className} | ${battle.courseId.program} ${battle.courseId.section} | ${battle.duration} minutes`,
@@ -619,5 +620,36 @@ export const updateBattle = async (req, res) => {
       message: "Error updating battle",
       error: error.message,
     });
+  }
+};
+
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const { battleCode, notificationId } = req.params;
+    const studentId = req.studentId;
+
+    const battle = await Battle.findOne({ battleCode });
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found" });
+    }
+
+    // Ensure the student is a participant
+    if (![battle.player1.toString(), battle.player2.toString()].includes(studentId)) {
+      return res.status(403).json({ message: "You are not authorized to modify this notification" });
+    }
+
+    // Update the notification
+    const notification = battle.notifications.find(n => n._id.toString() === notificationId);
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    notification.read = true;
+    await battle.save();
+
+    res.status(200).json({ message: "Notification marked as read" });
+  } catch (error) {
+    console.error("Error in markNotificationAsRead:", error);
+    res.status(500).json({ message: "Error marking notification as read", error: error.message });
   }
 };

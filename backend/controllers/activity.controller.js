@@ -402,7 +402,7 @@ export const getStudentAllActivities = async (req, res) => {
     }
 
     const courseIds = courses.map((course) => course._id);
-    console.log("Course IDs:", courseIds);
+    // console.log("Course IDs:", courseIds);
 
     const activities = await Activity.aggregate([
       {

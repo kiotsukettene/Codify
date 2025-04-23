@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, MoreHorizontal, Rocket, Edit, Trash2, Calendar, Loader2, AlertCircle } from "lucide-react";
+import { Play, MoreHorizontal, Rocket, Edit, Trash2, Calendar, Loader2, AlertCircle, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import pic from "@/assets/picture/courses/header.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import useBattleStore from "@/store/battleStore";
+import toast from "react-hot-toast";
 
 const CodeBattleTab = () => {
   const {
@@ -26,6 +27,8 @@ const CodeBattleTab = () => {
   useEffect(() => {
     fetchBattles();
   }, [fetchBattles]);
+
+  console.log(battles);
 
   const activeBattles = battles.filter((battle) => battle.status === "active");
   const scheduledBattles = battles.filter((battle) => battle.status === "pending");
@@ -44,6 +47,14 @@ const CodeBattleTab = () => {
     } catch (error) {
       // Error toast is handled in battleStore
     }
+  };
+
+  const handleGoToLobby = (battleCode) => {
+    if (!battleCode) {
+      toast.error("Battle code not available");
+      return;
+    }
+    navigate(`/professor/code-battle/lobby/${battleCode}`);
   };
 
   // Calculate total points for a battle and challenger progress
@@ -155,7 +166,7 @@ const CodeBattleTab = () => {
                               <Button
                                 variant="ghost"
                                 className="text-red-600 hover:bg-gray-800/50 hover:text-white flex items-center gap-2"
-                                onClick={() => navigate(`/professor/code-battle/lobby/${battle.id}`)}
+                                onClick={() => handleGoToLobby(battle.battleCode)}
                               >
                                 <Play className="h-4 w-4" />
                                 Watch Live
@@ -163,7 +174,7 @@ const CodeBattleTab = () => {
                             </motion.div>
                           </div>
                           <div className="flex-1 p-4">
-                            <h3 className="text-lg font-semibold">{battle.challenge}</h3>
+                            <h3 className="text-lg font-semibold">{battle.challenge || battle.title}</h3>
                             <p className="mb-4 text-sm text-gray-500">
                               {battle.description}
                             </p>
@@ -237,9 +248,9 @@ const CodeBattleTab = () => {
                               className="w-1 bg-purple-600 rounded-full"
                             ></motion.div>
                             <div>
-                              <h3 className="font-medium">{battle.challenge}</h3>
+                              <h3 className="font-medium">{battle.challenge || battle.title}</h3>
                               <p className="text-sm text-gray-500">
-                                {battle.time} | Total Points: {totalPoints}
+                                {battle.time || new Date(battle.commencement).toLocaleString()} | Total Points: {totalPoints}
                               </p>
                             </div>
                           </div>
@@ -250,6 +261,10 @@ const CodeBattleTab = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleGoToLobby(battle.battleCode)}>
+                                <Users className="mr-2 h-4 w-4" />
+                                Go to Lobby
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleEditBattle(battle.id)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit

@@ -49,17 +49,17 @@ const io = new Server(httpServer, {
 // Socket.IO middleware for authentication
 io.use((socket, next) => {
   let token = socket.handshake.auth.token;
-  console.log("Socket.IO auth attempt - Token from auth:", token ? "Provided" : "Missing");
+  // console.log("Socket.IO auth attempt - Token from auth:", token ? "Provided" : "Missing");
 
   // Fallback to cookie if token is not in auth
   if (!token && socket.handshake.headers.cookie) {
     const cookies = cookie.parse(socket.handshake.headers.cookie);
     token = cookies.token;
-    console.log("Socket.IO auth attempt - Token from cookie:", token ? "Provided" : "Missing");
+    // console.log("Socket.IO auth attempt - Token from cookie:", token ? "Provided" : "Missing");
   }
 
   if (!token) {
-    console.error("Authentication error: No token provided");
+    // console.error("Authentication error: No token provided");
     return next(new Error("Authentication error: No token provided"));
   }
 

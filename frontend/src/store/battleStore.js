@@ -215,6 +215,7 @@ const createBattleSlice = (set, get) => ({
         title: `New Battle: ${state.battleData.title}`,
         message: `You've been selected for a code battle: ${state.battleData.description}`,
         battleCode: response.data.battle.battleCode,
+        time: Date.now(), // Add timestamp
       });
       toast.success("Battle commenced successfully!");
       set({
@@ -307,11 +308,13 @@ const createBattleSlice = (set, get) => ({
         ...state.battleData,
         status: "pending",
       });
+      
 
       state.addNotification({
         title: `Scheduled Battle: ${state.battleData.title}`,
         message: `You've been selected for an upcoming code battle on ${new Date(state.battleData.commencement).toLocaleString()}`,
         battleCode: response.data.battle.battleCode,
+        time: Date.now(), // Add timestamp
       });
 
       toast.success(`Battle scheduled for ${new Date(state.battleData.commencement).toLocaleString()}!`);
@@ -357,17 +360,42 @@ const createNotificationSlice = (set, get) => ({
   notifications: loadNotificationsFromStorage(),
   unreadNotifications: loadUnreadCountFromStorage(),
   addNotification: (notification) => set((state) => {
-    // Prevent duplicate notifications
     if (state.notifications.some((n) => n.battleCode === notification.battleCode)) {
       console.log(`Notification for battle ${notification.battleCode} already exists`);
       return state;
+    }
+    // Parse notification.time
+    let notificationTime = Number(notification.time);
+    if (isNaN(notificationTime)) {
+      // Try parsing as ISO string
+      const parsedTime = Date.parse(notification.time);
+      if (isNaN(parsedTime)) {
+        console.warn(
+          `Invalid notification.time: ${notification.time}, using current time instead`,
+          notification
+        );
+        notificationTime = Date.now();
+      } else {
+        notificationTime = parsedTime;
+      }
     }
     const newNotification = {
       id: Date.now(),
       type: "challenge",
       title: notification.title || "New Battle Challenge",
       message: notification.message || "You've been selected for a code battle!",
-      time: "Just now",
+      time: (() => {
+        const seconds = Math.floor((Date.now() - notificationTime) / 1000);
+        if (seconds < 60) return "Just now";
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} mn`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h`;
+        const days = Math.floor(hours / 24);
+        if (days < 7) return `${days}d`;
+        const weeks = Math.floor(days / 7);
+        return `${weeks}w`;
+      })(),
       read: false,
       battleCode: notification.battleCode,
     };
@@ -416,10 +444,10 @@ const createNotificationSlice = (set, get) => ({
           id: Date.now() + Math.random(),
           type: "challenge",
           title: battle.status === "active" ? "New Battle Challenge!" : "Upcoming Battle",
-          message: `You've been selected for ${battle.status === "active" ? "an immediate" : "an upcoming"} code battle: ${battle.challenge}`,
-          time: "Just now",
+          message: `You've been selected for ${battle.status === "active" ? "an immediate" : "an upcoming"} code battle: ${battle.title}`,
+          time: Date.now(), // Use timestamp instead of "Just now"
           read: false,
-          battleCode: battle.id,
+          battleCode: battle.battleCode,
         }));
       set((state) => {
         const existingCodes = new Set(state.notifications.map((n) => n.battleCode));

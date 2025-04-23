@@ -14,6 +14,11 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useStudentStore } from "@/store/studentStore";
 
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/battles"
+  : `${import.meta.env.VITE_API_URL}/api/battles`;
+
 export default function NotificationCard() {
   const {
     notifications,
@@ -28,6 +33,7 @@ export default function NotificationCard() {
 
   const navigate = useNavigate();
   const [joining, setJoining] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -52,71 +58,61 @@ export default function NotificationCard() {
   };
 
   const handleNotificationClick = (notification) => {
-    if (!notification?.battleId) {
+    if (!notification?.battleCode) {
       toast.error("No battle associated with this notification.");
       return;
     }
     markNotificationAsRead(notification.id);
-    const navigationPath = `/student/code-battle/lobby/${notification.battleId}`;
+    const navigationPath = `/student/code-battle/lobby/${notification.battleCode}`;
     navigate(navigationPath, { replace: true });
   };
 
-  const handleJoinBattle = async (battleId, notificationId) => {
-    console.log("handleJoinBattle triggered:", { battleId, notificationId, studentId: student?._id });
-    if (!battleId) {
-      console.error("Invalid battle ID");
-      toast.error("Invalid battle ID.");
-      return;
-    }
-    if (!student?._id) {
-      console.error("No student logged in");
-      toast.error("Please log in to join the battle.");
-      navigate("/student/login");
-      return;
-    }
-    setJoining(battleId);
+  const handleJoinBattle = async (notification) => {
+    setIsLoading(true);
+    setJoining(notification.battleCode);
     try {
-      console.log("Sending join request to:", `http://localhost:3000/api/battles/join/${battleId}`);
-      const response = await axios.post(
-        `http://localhost:3000/api/battles/join/${battleId}`,
-        {},
-        { withCredentials: true }
-      );
-      console.log("Join response:", response.data);
+      const battleCode = notification.battleCode;
       
-      // Show the response message
-      toast(response.data.message);
-      
-      // Mark notification as read
-      markNotificationAsRead(notificationId);
-      
-      // Navigate to battle lobby
-      const navigationPath = `/student/code-battle/lobby/${battleId}`;
-      console.log("Attempting navigation to:", navigationPath);
-      navigate(navigationPath, { replace: true });
-      
-    } catch (error) {
-      console.error("Join battle error:", {
-        status: error.response?.status,
-        message: error.response?.data?.message,
-        error,
-      });
-      
-      // If battle is not accepting players but can be viewed
-      if (error.response?.data?.message === "Successfully join!") {
-        // Mark notification as read
-        markNotificationAsRead(notificationId);
-        
-        // Navigate to battle lobby in view-only mode
-        const navigationPath = `/student/code-battle/lobby/${battleId}`;
-        console.log("Attempting navigation to lobby (view-only):", navigationPath);
-        navigate(navigationPath, { replace: true });
-      } else {
-        // For other errors, show the error message
-        const errorMessage = error.response?.data?.message || "Error joining battle";
-        toast.error(errorMessage);
+      if (!battleCode) {
+        console.error("No battle code found in notification:", notification);
+        toast.error("Invalid battle code");
+        return;
       }
+
+      console.log("handleJoinBattle triggered:", { 
+        notification,
+        battleCode, 
+        notificationId: notification.id 
+      });
+
+      try {
+        const joinResponse = await axios.post(
+          `${API_URL}/join/${battleCode}`,
+          {},
+          { withCredentials: true }
+        );
+        console.log("Join response:", joinResponse.data);
+      } catch (joinError) {
+        console.log("Join response error (expected if already joined):", joinError.response?.data);
+      }
+
+      navigate(`/student/code-battle/lobby/${battleCode}`, { replace: true });
+      
+      if (notification.id) {
+        await axios.patch(
+          `${API_URL}/notifications/${notification.id}`,
+          { read: true },
+          { withCredentials: true }
+        );
+        markNotificationAsRead(notification.id);
+      }
+
+    } catch (error) {
+      console.error("Error in handleJoinBattle:", error);
+      console.log("Full notification object:", notification);
+      toast.error("Failed to join battle. Please try again.");
     } finally {
+      setIsLoading(false);
       setJoining(null);
     }
   };
@@ -214,17 +210,17 @@ export default function NotificationCard() {
                             <div className="flex justify-between items-center mt-2">
                               <span className="text-xs text-gray-500">{notification.time}</span>
 
-                              {notification.type === "challenge" && (
+                              {notification.type === "challenge" && !notification.read && (
                                 <Button
                                   size="sm"
                                   className="h-7 text-xs px-2 bg-indigo-500 hover:bg-indigo-600 text-white"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleJoinBattle(notification.battleId, notification.id);
+                                    handleJoinBattle(notification);
                                   }}
-                                  disabled={joining === notification.battleId}
+                                  disabled={joining === notification.battleCode || isLoading}
                                 >
-                                  {joining === notification.battleId ? "Joining..." : "Join Battle"}
+                                  {isLoading && joining === notification.battleCode ? "Joining..." : "Join Battle"}
                                 </Button>
                               )}
                             </div>

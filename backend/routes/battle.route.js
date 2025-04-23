@@ -10,6 +10,7 @@ import {
   getStudentBattles,
   getBattleById,
   getBattleByIdForProfessor,
+  markNotificationAsRead,
 } from "../controllers/battle.controller.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
@@ -27,5 +28,6 @@ router.post("/join/:battleCode", StudentVerifyToken, joinBattle);
 router.get("/student", StudentVerifyToken, getStudentBattles);
 router.get("/:battleCode", StudentVerifyToken, getBattleById); // Add new route
 router.get("/professor/:battleCode", profVerifyToken, getBattleByIdForProfessor);
+router.patch('/:battleCode/notifications/:notificationId', StudentVerifyToken, markNotificationAsRead);
 
 export default router;

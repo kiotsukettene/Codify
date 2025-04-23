@@ -33,7 +33,6 @@ export const SocketProvider = ({ children }) => {
     socketInstance.on("battleNotification", (notification) => {
       console.log("Received battle notification:", notification);
       addNotification(notification);
-      toast.success(notification.message);
     });
 
     socketInstance.on("playerJoined", ({ battleId, studentId, message }) => {
