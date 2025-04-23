@@ -85,30 +85,55 @@ io.on("connection", async (socket) => {
   connectedUsers.set(userId, socket.id);
   console.log("User connected:", userId, "Socket ID:", socket.id);
 
-  // Deliver stored notifications
-  const battles = await Battle.find({
-    "notifications.playerId": userId,
-    "notifications.read": false,
-  });
-  battles.forEach((battle) => {
-    const notification = battle.notifications.find(
-      (n) => n.playerId.toString() === userId && !n.read
-    );
-    if (notification) {
-      socket.emit("battleNotification", {
-        type: notification.type,
-        title: notification.title,
-        message: notification.message,
-        time: notification.time,
-        battleId: notification.battleId,
-      });
-      // Mark as read
-      Battle.updateOne(
-        { battleId: battle.battleId, "notifications._id": notification._id },
-        { $set: { "notifications.$.read": true } }
+  try {
+    // Deliver stored notifications - enhance the query to be more specific
+    const battles = await Battle.find({
+      $and: [
+        {
+          "notifications.playerId": userId,
+          "notifications.read": false,
+        },
+        {
+          $or: [
+            { player1: userId },
+            { player2: userId }
+          ]
+        }
+      ]
+    });
+
+    console.log(`Found ${battles.length} battles with notifications for user ${userId}`);
+
+    for (const battle of battles) {
+      const notifications = battle.notifications.filter(
+        n => n.playerId.toString() === userId && !n.read
       );
+
+      for (const notification of notifications) {
+        socket.emit("battleNotification", {
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          time: notification.time,
+          battleId: battle.battleId,
+          battleCode: battle.battleCode, // Add battleCode to the notification
+        });
+
+        // Mark as read
+        await Battle.updateOne(
+          { 
+            battleId: battle.battleId, 
+            "notifications._id": notification._id 
+          },
+          { 
+            $set: { "notifications.$.read": true } 
+          }
+        );
+      }
     }
-  });
+  } catch (error) {
+    console.error("Error delivering stored notifications:", error);
+  }
 
   socket.on("joinBattleRoom", async (battleCode) => {
     try {
@@ -131,7 +156,7 @@ io.on("connection", async (socket) => {
       const isPlayer2 = battle.player2.toString() === socket.userId;
 
       if (isPlayer1 || isPlayer2) {
-        const message = `${isPlayer1 ? "Commander" : "Pilot"} has joined the battle!`;
+        const message = `${isPlayer1 ? "Player 1" : "Player 2"} has joined the battle!`;
         io.to(battleCode).emit("playerJoined", {
           battleId: battle._id,
           studentId: socket.userId,
@@ -153,14 +178,27 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("playerReady", async ({ battleCode, studentId }) => {
-    const battle = await Battle.findOne({ battleCode });
-    if (battle) {
-      const message = `${studentId === battle.player1.toString() ? "Commander" : "Pilot"} is ready for battle!`;
-      io.to(battleCode).emit("playerReady", {
-        battleId: battle._id,
-        studentId,
-        message
-      });
+    try {
+      const battle = await Battle.findOne({ battleCode });
+      if (battle) {
+        // Add to readyPlayers array if not already included
+        if (!battle.readyPlayers?.includes(studentId)) {
+          await Battle.findOneAndUpdate(
+            { battleCode },
+            { $addToSet: { readyPlayers: studentId } }
+          );
+        }
+
+        const message = `${studentId === battle.player1.toString() ? "Player 1" : "Player 2"} is ready for battle!`;
+        io.to(battleCode).emit("playerReady", {
+          battleId: battle._id,
+          studentId,
+          message
+        });
+      }
+    } catch (error) {
+      console.error("Error in playerReady:", error);
+      socket.emit("error", { message: "Failed to mark player as ready" });
     }
   });
 

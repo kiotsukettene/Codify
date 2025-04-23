@@ -14,6 +14,7 @@ import {
 } from "../controllers/battle.controller.js";
 import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
+import Battle  from "../models/battle.model.js";
 
 
 const router = express.Router();
@@ -29,5 +30,19 @@ router.get("/student", StudentVerifyToken, getStudentBattles);
 router.get("/:battleCode", StudentVerifyToken, getBattleById); // Add new route
 router.get("/professor/:battleCode", profVerifyToken, getBattleByIdForProfessor);
 router.patch('/:battleCode/notifications/:notificationId', StudentVerifyToken, markNotificationAsRead);
+router.post('/notifications', async (req, res) => {
+  try {
+    const { battleId, notifications } = req.body;
+    
+    await Battle.findByIdAndUpdate(battleId, {
+      $push: { notifications: { $each: notifications } }
+    });
+
+    res.status(200).json({ message: 'Notifications stored successfully' });
+  } catch (error) {
+    console.error('Error storing notifications:', error);
+    res.status(500).json({ message: 'Failed to store notifications' });
+  }
+});
 
 export default router;

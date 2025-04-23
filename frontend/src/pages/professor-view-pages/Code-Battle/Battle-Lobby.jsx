@@ -7,6 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useBattleStore from '@/store/battleStore';
 import toast from 'react-hot-toast';
 import { SocketContext } from '@/context/auth-context/SocketProvider';
+import { motion } from 'framer-motion';
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
@@ -27,6 +28,8 @@ const BattleLobby = () => {
   });
   const [timeLeft, setTimeLeft] = useState(LOBBY_WAIT_TIME);
   const [battleStatus, setBattleStatus] = useState('waiting'); // waiting, started, completed
+  const [countdownActive, setCountdownActive] = useState(false);
+  const [countdown, setCountdown] = useState(10);
   const socket = useContext(SocketContext);
 
   // Fetch battle by battleCode for professor
@@ -180,6 +183,37 @@ const BattleLobby = () => {
     };
   }, [socket, battle, players, battleCode, navigate]);
 
+  // Handle countdown
+  useEffect(() => {
+    let timer;
+    if (countdownActive && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    } else if (countdown === 0) {
+      // Navigate to battle page after a short delay to show the explosion effect
+      setTimeout(() => {
+        navigate(`/professor/code-battle/arena/${battleCode}`);
+      }, 2000);
+    }
+
+    return () => clearTimeout(timer);
+  }, [countdownActive, countdown, navigate, battleCode]);
+
+  // Add screen shake effect for countdown
+  useEffect(() => {
+    if (countdownActive && countdown <= 3) {
+      const mainElement = document.querySelector("main");
+      if (mainElement) {
+        mainElement.classList.add("screen-shake");
+
+        setTimeout(() => {
+          mainElement.classList.remove("screen-shake");
+        }, 300);
+      }
+    }
+  }, [countdown, countdownActive]);
+
   const formatTime = (seconds) => {
     if (seconds === null) return 'Loading...';
     const mins = Math.floor(seconds / 60);
@@ -191,8 +225,7 @@ const BattleLobby = () => {
     if (players.player1.joined && players.player2.joined) {
       setBattleStatus('started');
       socket.emit('professorStartBattle', { battleCode });
-      localStorage.removeItem(`battleTimer_${battleCode}`);
-      navigate(`/professor/code-battle/arena/${battleCode}`);
+      setCountdownActive(true);
     } else {
       toast.error('Both players must join before starting the battle');
     }
@@ -271,69 +304,153 @@ const BattleLobby = () => {
         {/* Player Cards */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Player 1 Card */}
-          <div className={`p-6 rounded-lg border ${players.player1.joined ? "border-green-500/50 bg-[#1A1625]/50" : "border-purple-800/50 bg-[#1A1625]/50"}`}>
+          <div className={`p-6 rounded-lg border ${
+            players.player1.ready 
+              ? "border-green-500/50 bg-[#1A1625]/50" 
+              : players.player1.joined 
+              ? "border-yellow-500/50 bg-[#1A1625]/50"
+              : "border-purple-800/50 bg-[#1A1625]/50"
+          }`}>
             <div className="flex items-center gap-4 mb-6">
               <div className="relative">
                 <div className="h-16 w-16 rounded-full bg-white"></div>
-                <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${players.player1.joined ? "bg-green-500" : "bg-yellow-500"} border-2 border-[#1A1625]`}></div>
+                <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${
+                  players.player1.ready 
+                    ? "bg-green-500" 
+                    : players.player1.joined 
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
+                } border-2 border-[#1A1625]`}></div>
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold">
-                    Commander {battle.player1.name}
+                    {battle.player1.name}
                   </h3>
                 </div>
-                <Badge className={`mt-1 ${players.player1.joined ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
-                  {players.player1.joined ? "Systems Online" : "Awaiting Launch"}
+                <Badge className={`mt-1 ${
+                  players.player1.ready 
+                    ? "bg-green-500/20 text-green-400" 
+                    : players.player1.joined 
+                    ? "bg-yellow-500/20 text-yellow-400"
+                    : "bg-red-500/20 text-red-400"
+                }`}>
+                  {players.player1.ready 
+                    ? "Ready for Battle" 
+                    : players.player1.joined 
+                    ? "Joined - Not Ready"
+                    : "Not Joined"}
                 </Badge>
               </div>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Mission Status:</span>
-                <span className={players.player1.joined ? "text-green-400" : "text-yellow-400"}>
-                  {players.player1.joined ? "Ready for Launch" : "Preparing Systems"}
+                <span className={
+                  players.player1.ready 
+                    ? "text-green-400" 
+                    : players.player1.joined 
+                    ? "text-yellow-400"
+                    : "text-red-400"
+                }>
+                  {players.player1.ready 
+                    ? "Ready for Launch" 
+                    : players.player1.joined 
+                    ? "Preparing Systems"
+                    : "Not Joined"}
                 </span>
               </div>
               <div className="h-2 bg-[#0D0A1A] rounded-full overflow-hidden">
-                <div className={`h-full transition-all duration-300 ${players.player1.joined ? "bg-green-500 w-full" : "bg-yellow-500 w-1/2"}`}></div>
+                <div className={`h-full transition-all duration-300 ${
+                  players.player1.ready 
+                    ? "bg-green-500 w-full" 
+                    : players.player1.joined 
+                    ? "bg-yellow-500 w-1/2"
+                    : "bg-red-500 w-1/4"
+                }`}></div>
               </div>
               <div className="text-center text-sm text-gray-400">
-                {players.player1.joined ? "Player is ready for battle" : "Waiting for player to get ready..."}
+                {players.player1.ready 
+                  ? "Player is ready for battle" 
+                  : players.player1.joined 
+                  ? "Waiting for player to get ready..."
+                  : "Waiting for player to join..."}
               </div>
             </div>
           </div>
 
           {/* Player 2 Card */}
-          <div className={`p-6 rounded-lg border ${players.player2.joined ? "border-green-500/50 bg-[#1A1625]/50" : "border-purple-800/50 bg-[#1A1625]/50"}`}>
+          <div className={`p-6 rounded-lg border ${
+            players.player2.ready 
+              ? "border-green-500/50 bg-[#1A1625]/50" 
+              : players.player2.joined 
+              ? "border-yellow-500/50 bg-[#1A1625]/50"
+              : "border-purple-800/50 bg-[#1A1625]/50"
+          }`}>
             <div className="flex items-center gap-4 mb-6">
               <div className="relative">
                 <div className="h-16 w-16 rounded-full bg-white"></div>
-                <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${players.player2.joined ? "bg-green-500" : "bg-yellow-500"} border-2 border-[#1A1625]`}></div>
+                <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${
+                  players.player2.ready 
+                    ? "bg-green-500" 
+                    : players.player2.joined 
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
+                } border-2 border-[#1A1625]`}></div>
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold">
-                    Pilot {battle.player2.name}
+                    {battle.player2.name}
                   </h3>
                 </div>
-                <Badge className={`mt-1 ${players.player2.joined ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
-                  {players.player2.joined ? "Systems Online" : "Awaiting Launch"}
+                <Badge className={`mt-1 ${
+                  players.player2.ready 
+                    ? "bg-green-500/20 text-green-400" 
+                    : players.player2.joined 
+                    ? "bg-yellow-500/20 text-yellow-400"
+                    : "bg-red-500/20 text-red-400"
+                }`}>
+                  {players.player2.ready 
+                    ? "Ready for Battle" 
+                    : players.player2.joined 
+                    ? "Joined - Not Ready"
+                    : "Not Joined"}
                 </Badge>
               </div>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Mission Status:</span>
-                <span className={players.player2.joined ? "text-green-400" : "text-yellow-400"}>
-                  {players.player2.joined ? "Ready for Launch" : "Preparing Systems"}
+                <span className={
+                  players.player2.ready 
+                    ? "text-green-400" 
+                    : players.player2.joined 
+                    ? "text-yellow-400"
+                    : "text-red-400"
+                }>
+                  {players.player2.ready 
+                    ? "Ready for Launch" 
+                    : players.player2.joined 
+                    ? "Preparing Systems"
+                    : "Not Joined"}
                 </span>
               </div>
               <div className="h-2 bg-[#0D0A1A] rounded-full overflow-hidden">
-                <div className={`h-full transition-all duration-300 ${players.player2.joined ? "bg-green-500 w-full" : "bg-yellow-500 w-1/2"}`}></div>
+                <div className={`h-full transition-all duration-300 ${
+                  players.player2.ready 
+                    ? "bg-green-500 w-full" 
+                    : players.player2.joined 
+                    ? "bg-yellow-500 w-1/2"
+                    : "bg-red-500 w-1/4"
+                }`}></div>
               </div>
               <div className="text-center text-sm text-gray-400">
-                {players.player2.joined ? "Player is ready for battle" : "Waiting for player to get ready..."}
+                {players.player2.ready 
+                  ? "Player is ready for battle" 
+                  : players.player2.joined 
+                  ? "Waiting for player to get ready..."
+                  : "Waiting for player to join..."}
               </div>
             </div>
           </div>
@@ -380,6 +497,252 @@ const BattleLobby = () => {
           </Button>
         </div>
       </div>
+
+      {/* Cinematic Countdown overlay */}
+      {countdownActive && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-50"
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Animated warning lights - flashing red border */}
+            <motion.div
+              className="absolute inset-0 border-8 border-red-500/70 rounded-xl"
+              animate={{
+                opacity: countdown <= 5 ? [0.2, 1, 0.2] : [0.1, 0.3, 0.1],
+                boxShadow:
+                  countdown <= 5
+                    ? [
+                        "0 0 30px rgba(239, 68, 68, 0.3)",
+                        "0 0 60px rgba(239, 68, 68, 0.8)",
+                        "0 0 30px rgba(239, 68, 68, 0.3)",
+                      ]
+                    : [
+                        "0 0 20px rgba(239, 68, 68, 0.1)",
+                        "0 0 30px rgba(239, 68, 68, 0.3)",
+                        "0 0 20px rgba(239, 68, 68, 0.1)",
+                      ],
+              }}
+              transition={{
+                duration: countdown <= 3 ? 0.5 : 1.5,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            />
+
+            {/* Heartbeat pulse overlay */}
+            <motion.div
+              className="absolute inset-0 bg-red-500/5"
+              animate={{
+                opacity: [0.05, 0.2, 0.05],
+                scale: [0.98, 1, 0.98],
+              }}
+              transition={{
+                duration: countdown <= 3 ? 0.5 : 1,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            />
+
+            <div className="text-center p-16 relative overflow-hidden w-full max-w-4xl">
+              {/* Pressure messaging */}
+              <motion.h2
+                className="text-3xl font-bold mb-8 text-[#B689F4] font-['Orbitron'] tracking-widest"
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              >
+                {countdown > 5
+                  ? "T-MINUS LAUNCH SEQUENCE"
+                  : countdown > 3
+                    ? "MISSION LOCKED. NO TURNING BACK."
+                    : countdown > 1
+                      ? "PRESSURE LEVELS RISING..."
+                      : countdown > 0
+                        ? "GOING LIVE..."
+                        : "BLAST OFF!"}
+              </motion.h2>
+
+              {/* Main countdown number */}
+              <motion.div
+                key={countdown}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{
+                  scale: 1,
+                  opacity: [0, 1, 0.8],
+                  y: [10, 0, 0],
+                }}
+                exit={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                className="relative"
+              >
+                <motion.div
+                  animate={{
+                    x: countdown <= 3 ? [0, -4, 4, -4, 0] : 0,
+                    y: countdown <= 3 ? [0, -2, 2, -2, 0] : 0,
+                  }}
+                  transition={{
+                    duration: countdown <= 3 ? 0.3 : 0.5,
+                    repeat: countdown <= 3 ? 1 : 0,
+                    repeatType: "mirror",
+                  }}
+                >
+                  {countdown > 0 ? (
+                    <div
+                      className={`text-[180px] font-bold text-[#E94560] mb-6 relative
+                      ${
+                        countdown === 5
+                          ? "font-mono"
+                          : countdown === 4
+                            ? "font-serif"
+                            : countdown === 3
+                              ? "font-['Orbitron']"
+                              : countdown === 2
+                                ? "font-sans italic"
+                                : countdown === 1
+                                  ? "font-['Impact']"
+                                  : "font-mono"
+                      }`}
+                    >
+                      {countdown}
+
+                      {/* Glow effect */}
+                      <div
+                        className={`absolute inset-0 text-[180px] font-bold text-[#E94560] blur-md opacity-70 z-[-1]
+                        ${
+                          countdown === 5
+                            ? "font-mono"
+                            : countdown === 4
+                              ? "font-serif"
+                              : countdown === 3
+                                ? "font-['Orbitron']"
+                                : countdown === 2
+                                  ? "font-sans italic"
+                                  : countdown === 1
+                                    ? "font-['Impact']"
+                                    : "font-mono"
+                        }`}
+                      >
+                        {countdown}
+                      </div>
+                    </div>
+                  ) : (
+                    // Explosion effect at zero
+                    <motion.div
+                      initial={{ opacity: 1, scale: 1 }}
+                      animate={{ opacity: 0, scale: 2 }}
+                      transition={{ duration: 1 }}
+                      className="relative"
+                    >
+                      <div className="text-[180px] font-bold text-white mb-6 opacity-0">0</div>
+                      {/* Particle explosion */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {[...Array(30)].map((_, i) => (
+                          <motion.div
+                            key={i}
+                            className="absolute w-2 h-2 bg-[#E94560] rounded-full"
+                            initial={{
+                              x: 0,
+                              y: 0,
+                              opacity: 1,
+                            }}
+                            animate={{
+                              x: Math.sin((i * 12 * Math.PI) / 180) * (100 + Math.random() * 200),
+                              y: Math.cos((i * 12 * Math.PI) / 180) * (100 + Math.random() * 200),
+                              opacity: 0,
+                              scale: Math.random() * 3,
+                            }}
+                            transition={{
+                              duration: 1.5,
+                              ease: "easeOut",
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                {/* Particle effects for final countdown */}
+                {countdown <= 3 && countdown > 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {[...Array(12)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute w-1 h-1 bg-red-500 rounded-full"
+                        initial={{
+                          x: 0,
+                          y: 0,
+                          opacity: 1,
+                        }}
+                        animate={{
+                          x: Math.sin((i * 30 * Math.PI) / 180) * 150,
+                          y: Math.cos((i * 30 * Math.PI) / 180) * 150,
+                          opacity: 0,
+                        }}
+                        transition={{
+                          duration: 0.8,
+                          repeat: 1,
+                          repeatType: "loop",
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Status text */}
+              <motion.p
+                className="text-[#C2C2DD] mt-8 font-['Orbitron'] text-xl"
+                animate={{
+                  opacity: [0.6, 1, 0.6],
+                  textShadow: [
+                    "0 0 8px rgba(194, 194, 221, 0.3)",
+                    "0 0 12px rgba(194, 194, 221, 0.6)",
+                    "0 0 8px rgba(194, 194, 221, 0.3)",
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              >
+                {countdown <= 0
+                  ? "MISSION COMMENCING"
+                  : countdown <= 3
+                    ? "CRITICAL SYSTEMS ENGAGED"
+                    : "PREPARE FOR CODING BATTLE"}
+              </motion.p>
+
+              {/* Horizontal scan line effect */}
+              <motion.div
+                className="absolute left-0 right-0 h-[2px] bg-[#E94560]/30 z-10"
+                initial={{ top: -10 }}
+                animate={{ top: ["0%", "100%"] }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
+                }}
+              />
+            </div>
+
+            {/* Blast-off animation */}
+            {countdown === 0 && (
+              <motion.div
+                className="absolute inset-0 bg-white z-30"
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: [0, 0.8, 0],
+                  y: [0, -1000],
+                }}
+                transition={{
+                  duration: 2,
+                  times: [0, 0.1, 1],
+                  ease: "easeOut",
+                }}
+              />
+            )}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

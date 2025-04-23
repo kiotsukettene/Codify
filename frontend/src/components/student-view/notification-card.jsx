@@ -62,51 +62,79 @@ export default function NotificationCard() {
   };
 
   const handleNotificationClick = (notification) => {
-    if (!notification?.battleCode) {
-      toast.error("No battle associated with this notification.");
+    if (!notification) {
+      console.error("Invalid notification:", notification);
+      toast.error("Invalid notification");
       return;
     }
+
+    if (!notification.battleCode) {
+      console.error("No battle code in notification:", notification);
+      // Remove invalid notification
+      dismissNotification(notification.id);
+      toast.error("Invalid battle notification - removing it");
+      return;
+    }
+
     markNotificationAsRead(notification.id);
     const navigationPath = `/student/code-battle/lobby/${notification.battleCode}`;
     navigate(navigationPath, { replace: true });
   };
 
   const handleJoinBattle = async (notification) => {
+    if (!notification || !notification.battleCode) {
+      console.error("Invalid notification or missing battle code:", notification);
+      dismissNotification(notification?.id);
+      toast.error("Invalid battle notification - removing it");
+      return;
+    }
+
     setIsLoading(true);
     setJoining(notification.battleCode);
+    
     try {
       const battleCode = notification.battleCode;
       
-      if (!battleCode) {
-        console.error("No battle code found in notification:", notification);
-        toast.error("Invalid battle code");
+      // Verify battle exists before joining
+      try {
+        const battleCheck = await axios.get(`${API_URL}/${battleCode}`, {
+          withCredentials: true
+        });
+        
+        if (!battleCheck.data) {
+          throw new Error("Battle not found");
+        }
+      } catch (error) {
+        console.error("Battle verification failed:", error);
+        dismissNotification(notification.id);
+        toast.error("Battle no longer exists - removing notification");
         return;
       }
-  
-      // Join the battle room via socket
+
+      // Rest of the join logic...
       socket.emit("joinBattleRoom", battleCode);
-  
+      
       try {
-        const joinResponse = await axios.post(
+        await axios.post(
           `${API_URL}/join/${battleCode}`,
           {},
           { withCredentials: true }
         );
-        console.log("Join response:", joinResponse.data);
       } catch (joinError) {
-        console.log("Join response error (expected if already joined):", joinError.response?.data);
+        if (joinError.response?.status !== 409) { // Ignore "already joined" errors
+          throw joinError;
+        }
       }
-  
-      // Mark notification as read and navigate
+
       if (notification.id) {
         markNotificationAsRead(notification.id);
       }
-  
+
       navigate(`/student/code-battle/lobby/${battleCode}`, { replace: true });
-  
+
     } catch (error) {
       console.error("Error in handleJoinBattle:", error);
-      toast.error("Failed to join battle. Please try again.");
+      toast.error(error.response?.data?.message || "Failed to join battle");
     } finally {
       setIsLoading(false);
       setJoining(null);

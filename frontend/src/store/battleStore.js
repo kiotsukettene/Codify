@@ -307,16 +307,38 @@ const createBattleSlice = (set, get) => ({
       const response = await axios.post(`${API_URL}/create`, {
         ...state.battleData,
         status: "pending",
+        commencement: new Date().toISOString(),
       });
-      
-
-      state.addNotification({
-        title: `Scheduled Battle: ${state.battleData.title}`,
-        message: `You've been selected for an upcoming code battle on ${new Date(state.battleData.commencement).toLocaleString()}`,
+       // Only add notification if we have a valid battle response
+    if (response.data && response.data.battle && response.data.battle.battleCode) {
+      // Add notifications for both players
+      const notificationData = {
+        title: `New Battle: ${state.battleData.title}`,
+        message: `You've been selected for a code battle: ${state.battleData.description}`,
         battleCode: response.data.battle.battleCode,
-        time: Date.now(), // Add timestamp
+        time: Date.now(),
+      };
+
+      // Store notifications in database for both players
+      await axios.post(`${API_URL}/notifications`, {
+        battleId: response.data.battle._id,
+        notifications: [
+          {
+            ...notificationData,
+            playerId: state.battleData.player1,
+          },
+          {
+            ...notificationData,
+            playerId: state.battleData.player2,
+          }
+        ]
       });
 
+      // Only emit to currently connected players
+      state.addNotification(notificationData);
+    } else {
+      console.error("Invalid battle response:", response.data);
+    }
       toast.success(`Battle scheduled for ${new Date(state.battleData.commencement).toLocaleString()}!`);
       set({
         battleData: {
