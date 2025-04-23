@@ -12,7 +12,7 @@ import { useEffect, useState } from "react"
 import useStudentCourseStore from "@/store/studentCourseStore"
 import { useActivityStore } from "@/store/activityStore"
 import ScheduleModal from "@/components/student-view/schedule-modal"
-
+import { motion } from "framer-motion"
 function StudentDashboard() {
   const navigate = useNavigate()
   const { student } = useStudentStore()
@@ -86,6 +86,12 @@ function StudentDashboard() {
         </p>
       </div>
 
+      <motion.div
+initial={{ opacity: 0, y: 20 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{ duration: 0.6, ease: "easeOut" }}
+className="pb-10"
+>
       {/* Main Content Layout */}
       <div className="flex flex-col lg:flex-row gap-3">
         {/* Left Side Content */}
@@ -299,6 +305,7 @@ function StudentDashboard() {
           </div>
         </div>
       </div>
+      </motion.div>
     </div>
   )
 }

@@ -10,7 +10,7 @@ import wave from '@/assets/picture/random-background/wave.png';
 import { useStudentStore } from '@/store/studentStore';
 import { useChallengeStore } from '@/store/challengeStore';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-
+import { motion } from 'framer-motion';
 function StudentChallengesView() {
   const [challengeList, setChallengeList] = useState(challenges);
   const { student } = useStudentStore();
@@ -75,7 +75,16 @@ function StudentChallengesView() {
   );
 
   return (
-    <div className="container mx-auto py-4 px-6">
+   
+
+<motion.div
+initial={{ opacity: 0, y: 20 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{ duration: 0.6, ease: "easeOut" }}
+className="pb-10"
+>
+
+<div className="container mx-auto py-4 px-6">
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 flex flex-col">
           <h1 className="text-header font-semibold text-4xl mt-3">Let's warm up!</h1>
@@ -135,6 +144,8 @@ function StudentChallengesView() {
 
       </div>
     </div>
+
+</motion.div>
   );
 }
 

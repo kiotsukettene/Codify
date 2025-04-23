@@ -231,18 +231,7 @@ const StudentAccountSettings = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-2">
-                      <label className="bg-primary text-white w-full py-2 rounded-lg flex items-center justify-center cursor-pointer">
-                        <Upload size={16} className="mr-2" />
-                        Upload Custom
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
+                    
                   </div>
                 )}
               </div>

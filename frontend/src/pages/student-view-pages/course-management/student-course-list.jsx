@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import JoinCourseModal from "@/components/student-view/join-course-modal";
 import useStudentCourseStore from "@/store/studentCourseStore";
 import { useStudentStore } from "@/store/studentStore";
-
+import { motion } from "framer-motion";
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
@@ -49,6 +49,7 @@ function StudentCourseListPage() {
 
   console.log("Enrolled Courses:", enrolledCourses); // Debugging line
   return (
+   
     <div className="mx-6 w-full py-4">
       <Card className="h-auto w-full bg-[#ededff]  shadow-none border-none flex lg:justify-between relative overflow-hidden rounded-xl">
         {/* Left Content */}
@@ -93,6 +94,12 @@ function StudentCourseListPage() {
         </div>
       </Card>
 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="pb-10"
+      >
       <div className="flex flex-col px-8 text-center justify-between items-center mt-5 md:flex-row">
         <h1 className="text-header font-semibold text-4xl">My Courses</h1>
         <SearchForm onSearch={handleSearch} />
@@ -137,7 +144,9 @@ function StudentCourseListPage() {
           )}
         </div>
       )}
+    </motion.div>
     </div>
+    
   );
 }
 
