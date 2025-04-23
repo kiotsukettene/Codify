@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "@/components/professor-view/Header";
 import BattleCard from "@/components/professor-view/BattleCard";
 import RankingList from "@/components/professor-view/RankingList";
@@ -8,6 +8,7 @@ import ScheduleList from "@/components/professor-view/ScheduleList";
 import { UsersRound, BookOpenText, ChartLine } from "lucide-react";
 import { useprofAuthStore } from "@/store/profAuthStore";
 import { useCourseStore } from "@/store/courseStore";
+import { useActivityStore } from "@/store/activityStore";
 
 const mockStudentRankings = [
   {
@@ -112,6 +113,9 @@ const ProfDashboard = ({ title, content }) => {
     isLoading: courseLoading,
     error: courseError,
   } = useCourseStore();
+  const { fetchActivitiesByCourse, fetchSubmissionsByActivity } =
+    useActivityStore();
+  const [gradingQueueCount, setGradingQueueCount] = useState(0);
   const professorId = professor?._id;
 
   useEffect(() => {
@@ -133,6 +137,28 @@ const ProfDashboard = ({ title, content }) => {
       console.warn("professorId is undefined");
     }
   }, [professorId]);
+
+  useEffect(() => {
+    const fetchGradingQueue = async () => {
+      if (!courses || courses.length === 0) return;
+
+      let totalUnscored = 0;
+      for (const course of courses) {
+        const courseId = course._id;
+        const activities = await fetchActivitiesByCourse(courseId);
+        for (const activity of activities) {
+          const submissions = await fetchSubmissionsByActivity(activity._id);
+          const unscoredSubmissions = submissions.filter(
+            (submission) => submission.score === 0
+          );
+          totalUnscored += unscoredSubmissions.length;
+        }
+      }
+      setGradingQueueCount(totalUnscored);
+    };
+
+    fetchGradingQueue();
+  }, [courses, fetchActivitiesByCourse, fetchSubmissionsByActivity]);
 
   const currentDate = new Date();
   const daysOfWeek = [
@@ -172,6 +198,7 @@ const ProfDashboard = ({ title, content }) => {
   console.log("Display Schedule:", displaySchedule);
   console.log("Unique Student Count:", uniqueStudentCount);
   console.log("Auth error:", profError);
+  console.log("Grading Queue Count:", gradingQueueCount);
 
   if (profError) {
     return <div>Error: {profError}</div>;
@@ -183,7 +210,7 @@ const ProfDashboard = ({ title, content }) => {
   const displayedCourseCount =
     profLoading || courseLoading ? "Loading..." : courses.length;
   const displayedStudentCount =
-    profLoading || courseLoading ? "Loading..." : uniqueStudentCount || 0; // Fallback to 0
+    profLoading || courseLoading ? "Loading..." : uniqueStudentCount || 0;
 
   return (
     <div className="w-full min-h-screen px-2 md:px-4">
@@ -203,7 +230,7 @@ const ProfDashboard = ({ title, content }) => {
             />
             <StatsCard
               title="Grading Queue"
-              value="0"
+              value={gradingQueueCount}
               icon={<ChartLine size={24} />}
             />
           </div>
