@@ -21,6 +21,15 @@ function AdminRegisterPage() {
   const [address, setAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [hasSubmitted, setHasSubmitted] = useState(false); // Track submission
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    institutionName: false,
+    address: false,
+    phoneNumber: false,
+    password: false,
+  });
   const [errors, setErrors] = useState({
     name: "",
     email: "",
@@ -35,81 +44,106 @@ function AdminRegisterPage() {
     clearError();
   }, []);
 
-  const validateForm = () => {
-    let valid = true;
+  // Real-time validation for all fields
+  useEffect(() => {
     const newErrors = { ...errors };
 
     // Name validation
-    // Name regex: Only letters, spaces, and hyphens are allowed
     const nameRegex = /^[a-zA-Z\s-]+$/;
-    if (!name.trim()) {
-      newErrors.name = "Name is required.";
-      valid = false;
-    } else if (!nameRegex.test(name)) {
-      newErrors.name = "Invalid name format.";
-      valid = false;
-    } else {
-      newErrors.name = "";
+    if (touched.name) {
+      if (!name.trim()) {
+        newErrors.name = "Name is required.";
+      } else if (!nameRegex.test(name)) {
+        newErrors.name = "Invalid name format.";
+      } else {
+        newErrors.name = "";
+      }
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      newErrors.email = "Email is required.";
-      valid = false;
-    } else if (!emailRegex.test(email)) {
-      newErrors.email = "Invalid email format.";
-      valid = false;
-    } else {
-      newErrors.email = "";
+    if (touched.email) {
+      if (!email.trim()) {
+        newErrors.email = "Email is required.";
+      } else if (!emailRegex.test(email)) {
+        newErrors.email = "Invalid email format.";
+      } else {
+        newErrors.email = "";
+      }
     }
 
     // Institution Name validation
-    if (!institutionName.trim()) {
-      newErrors.institutionName = "Institution Name is required.";
-      valid = false;
-    } else {
-      newErrors.institutionName = "";
+    if (touched.institutionName) {
+      if (!institutionName.trim()) {
+        newErrors.institutionName = "Institution Name is required.";
+      } else {
+        newErrors.institutionName = "";
+      }
     }
 
     // Address validation
-    if (!address.trim()) {
-      newErrors.address = "Address is required.";
-      valid = false;
-    } else {
-      newErrors.address = "";
+    if (touched.address) {
+      if (!address.trim()) {
+        newErrors.address = "Address is required.";
+      } else {
+        newErrors.address = "";
+      }
     }
 
     // Phone Number validation
-    const phoneRegex = /^\d{10,}$/; // Assuming a minimum of 10 digits
-    if (!phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone Number is required.";
-      valid = false;
-    } else if (!phoneRegex.test(phoneNumber)) {
-      newErrors.phoneNumber = "Invalid phone number.";
-      valid = false;
-    } else {
-      newErrors.phoneNumber = "";
+    const phoneRegex = /^\d{10,}$/;
+    if (touched.phoneNumber) {
+      if (!phoneNumber.trim()) {
+        newErrors.phoneNumber = "Phone Number is required.";
+      } else if (!phoneRegex.test(phoneNumber)) {
+        newErrors.phoneNumber = "Invalid phone number.";
+      } else {
+        newErrors.phoneNumber = "";
+      }
     }
 
     // Password validation
-    if (!password.trim()) {
-      newErrors.password = "Password is required.";
-      valid = false;
-    } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long.";
-      valid = false;
-    } else {
-      newErrors.password = "";
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&>])[A-Za-z\d@$!%*?&>]{8,}$/;
+    if (touched.password) {
+      if (!password.trim()) {
+        newErrors.password = "Password is required.";
+      } else if (!passwordRegex.test(password)) {
+        newErrors.password =
+          "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character (allowed: @$!%*?&>).";
+      } else {
+        newErrors.password = "";
+      }
     }
 
     setErrors(newErrors);
-    return valid;
+    console.log("Errors:", newErrors); // Debugging log
+  }, [name, email, institutionName, address, phoneNumber, password, touched]);
+
+  // Check if there are any errors
+  const hasErrors = Object.values(errors).some((error) => error !== "");
+  console.log("hasErrors:", hasErrors); // Debugging log
+
+  const handleTouch = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleAdminRegister = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    setHasSubmitted(true); // Mark form as submitted
+    // Mark all fields as touched on submit to show errors if any fields are still empty
+    setTouched({
+      name: true,
+      email: true,
+      institutionName: true,
+      address: true,
+      phoneNumber: true,
+      password: true,
+    });
+
+    if (hasErrors) {
+      console.log("Validation failed:", errors);
+      return;
+    }
 
     try {
       await signup(
@@ -172,7 +206,7 @@ function AdminRegisterPage() {
                     style={{ color: "#383838" }}
                   >
                     <div className="grid gap-2">
-                      {error && <p className="text-red-500 text-sm">{error}</p>}
+                      {hasSubmitted && error && <p className="text-red-500 text-sm">{error}</p>}
                       <Label className="font-medium" htmlFor="name">
                         Billed to
                       </Label>
@@ -185,8 +219,9 @@ function AdminRegisterPage() {
                         value={name}
                         placeholder="John Smith"
                         onChange={(e) => setName(e.target.value)}
+                        onBlur={() => handleTouch("name")}
                       />
-                      {errors.name && (
+                      {touched.name && errors.name && (
                         <p className="text-red-500 text-xs">{errors.name}</p>
                       )}
                     </div>
@@ -204,8 +239,9 @@ function AdminRegisterPage() {
                         placeholder="m@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        onBlur={() => handleTouch("email")}
                       />
-                      {errors.email && (
+                      {touched.email && errors.email && (
                         <p className="text-red-500 text-xs">{errors.email}</p>
                       )}
                     </div>
@@ -223,14 +259,15 @@ function AdminRegisterPage() {
                         value={institutionName}
                         placeholder="University of Caloocan City"
                         onChange={(e) => setInstitutionName(e.target.value)}
+                        onBlur={() => handleTouch("institutionName")}
                       />
-                      {errors.institutionName && (
+                      {touched.institutionName && errors.institutionName && (
                         <p className="text-red-500 text-xs">
                           {errors.institutionName}
                         </p>
                       )}
                     </div>
-                    <div className="grid gap-2 ">
+                    <div className="grid gap-2">
                       <Label className="font-medium" htmlFor="phoneNumber">
                         Phone Number
                       </Label>
@@ -242,8 +279,9 @@ function AdminRegisterPage() {
                         placeholder="Phone Number"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
+                        onBlur={() => handleTouch("phoneNumber")}
                       />
-                      {errors.phoneNumber && (
+                      {touched.phoneNumber && errors.phoneNumber && (
                         <p className="text-red-500 text-xs">
                           {errors.phoneNumber}
                         </p>
@@ -263,8 +301,9 @@ function AdminRegisterPage() {
                         placeholder="23J+R9M, Congressional Rd Ext, Caloocan, Metro Manila"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
+                        onBlur={() => handleTouch("address")}
                       />
-                      {errors.address && (
+                      {touched.address && errors.address && (
                         <p className="text-red-500 text-xs">{errors.address}</p>
                       )}
                     </div>
@@ -272,9 +311,13 @@ function AdminRegisterPage() {
                     <div className="col-span-2">
                       <PasswordStrengthIndicator
                         password={password}
-                        setPassword={setPassword}
+                        setPassword={(value) => {
+                          console.log("Password updated:", value);
+                          setPassword(value);
+                          handleTouch("password");
+                        }}
                       />
-                      {errors.password && (
+                      {touched.password && errors.password && (
                         <p className="text-red-500 text-xs">
                           {errors.password}
                         </p>
@@ -302,13 +345,13 @@ function AdminRegisterPage() {
                   </div>
 
                   <div>
-                    <Label className="text-xl font-semibold ">
-                    Standard Codify Plan
+                    <Label className="text-xl font-semibold">
+                      Standard Codify Plan
                     </Label>
-                    <div className="mt-3 w-full ">
+                    <div className="mt-3 w-full">
                       <button
                         type="button"
-                        onClick={() => setIsSelected(!isSelected)} // Now it only updates state
+                        onClick={() => setIsSelected(!isSelected)}
                         className="w-full transition-all hover:scale-[1.02] active:scale-[0.98]"
                       >
                         <div
@@ -330,7 +373,7 @@ function AdminRegisterPage() {
                             </div>
                             <div className="flex flex-col items-start">
                               <h3 className="font-semibold text-gray-900">
-                              Full Institution Access
+                                Full Institution Access
                               </h3>
                               <p className="text-gray-500">₱ 70,000</p>
                             </div>
@@ -341,7 +384,7 @@ function AdminRegisterPage() {
                   </div>
                   <Button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || hasErrors}
                     className="w-full font-normal text-sm"
                   >
                     <BadgeCheck />{" "}

@@ -27,7 +27,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import AppSidebar from "@/components/professor-view/Sidebar";
 import confetti from "canvas-confetti";
-import { isBefore, startOfToday } from "date-fns";
+import { isBefore, startOfToday, isToday } from "date-fns";
 import { toast } from "react-hot-toast";
 import {
   Popover,
@@ -35,7 +35,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import TimeField  from "@/components/professor-view/Time-field";
+import TimeField from "@/components/professor-view/Time-field";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useActivityStore } from "@/store/activityStore";
@@ -43,7 +43,6 @@ import { useParams } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
 import { useCourseStore } from "@/store/courseStore";
 import { parse } from "date-fns";
-
 
 const CreateActivity = () => {
   const [title, setTitle] = React.useState("");
@@ -58,11 +57,35 @@ const CreateActivity = () => {
   const [date, setDate] = useState(startOfToday());
   const [time, setTime] = useState("");
   const [sections, setSections] = useState([]);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const { createActivity } = useActivityStore();
   const { courses } = useCourseStore();
   const { lessonSlug, courseSlug } = useParams();
   const { lessons, fetchLessonsByCourse, isLoading } = useLessonStore();
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Check if time input should be disabled
+  const isTimeInputDisabled = () => {
+    if (!isToday(date)) return false;
+    const now = currentTime;
+    return now.getHours() >= 23 && now.getMinutes() >= 59;
+  };
+
+  // Validate if the selected time is in the future
+  const isTimeValid = () => {
+    if (!time || !date) return false;
+    if (!isToday(date)) return true; // Any time is valid for future dates
+    const selectedDateTime = parse(time, "HH:mm", date);
+    return selectedDateTime > currentTime;
+  };
 
   const getCourseIdFromSlug = (slug) => {
     if (!courses || courses.length === 0) return null;
@@ -89,23 +112,16 @@ const CreateActivity = () => {
     console.log("Received lessonSlug from URL:", lessonSlug);
   }, [lessonSlug]);
 
-  // const dueDateTime =
-  //   date && time
-  //     ? `${format(date, "yyyy-MM-dd")}T${
-  //         /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
-  //       }:00.000Z`
-  //     : null;
-
   const dueDateTime =
-  date && time
-    ? new Date(`${format(date, "yyyy-MM-dd")}T${
-        /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
-      }:00`).toISOString()
-    : null;
+    date && time
+      ? new Date(`${format(date, "yyyy-MM-dd")}T${
+          /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
+        }:00`).toISOString()
+      : null;
 
   const handleSubmit = async () => {
     const lessonIdConverted = getLessonIdFromSlug(lessonSlug);
-    
+
     // Validate lesson ID
     if (!lessonIdConverted) {
       console.error("No lesson found for slug:", lessonSlug);
@@ -113,11 +129,17 @@ const CreateActivity = () => {
       return;
     }
 
-    // Validate lesson exists in the current lessons array
-    const lessonExists = lessons.some(lesson => lesson._id === lessonIdConverted);
+    // Validate lesson exists
+    const lessonExists = lessons.some((lesson) => lesson._id === lessonIdConverted);
     if (!lessonExists) {
       console.error("Lesson not found in current lessons:", lessonIdConverted);
       toast.error("Lesson not found. Please refresh the page and try again.");
+      return;
+    }
+
+    // Validate time
+    if (!isTimeValid()) {
+      toast.error("Selected time is in the past. Please choose a future time.");
       return;
     }
 
@@ -154,16 +176,16 @@ const CreateActivity = () => {
 
   useEffect(() => {
     const hasTitle = title.trim() !== "";
-    const hasTime = time !== "";
-    setIsFormValid(hasTitle && hasTime);
-  }, [title, time]);
+    const hasValidTime = isTimeValid();
+    setIsFormValid(hasTitle && hasValidTime);
+  }, [title, time, date, currentTime]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let progress = 0;
     if (title) progress += 50;
-    if (time) progress += 50;
+    if (isTimeValid()) progress += 50;
     setActivityProgress(Math.round(progress));
-  }, [title, time]);
+  }, [title, time, date, currentTime]);
 
   const addSection = (type) => {
     const newSection = {
@@ -243,285 +265,280 @@ const CreateActivity = () => {
   }
 
   return (
-
-          <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-9">
-              <Card className="border-0 shadow-none">
-                <CardContent className="p-0">
-                  <div className="mb-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
-                        <div className="flex items-center justify-between">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => navigate(-1)}
-                          >
-                            <ArrowLeft className="h-5 w-5" />
-                          </Button>
-                        </div>
-                        <h1 className="font-bold text-2xl text-purple-600">
-                          {" "}
-                          CREATE ACTIVITY{" "}
-                        </h1>
-                        <div className="block lg:hidden">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
-                                onClick={() => {
-                                  console.log("Button clicked"); // ✅ This should log when clicked
-                                  handleSubmit();
-                                }}
-                                disabled={isUploading || !isFormValid}
-                              >
-                                {isUploading ? "Uploading..." : "Assign"}
-                                <ChevronDown className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem>
-                                <span>Assign</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div
-                        className="bg-purple-600 h-2.5 rounded-full transition-all duration-500"
-                        style={{ width: `${activityProgress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  {/* TITLE AND INSTRUCTION */}
-                  <div className="space-y-2">
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
-                       Title
-                  </label>
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Title"
-                      className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 "
-                    />
-                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
-                      Description
-                  </label>
-                    <Input
-                      value={subtitle}
-                      onChange={(e) => setSubtitle(e.target.value)}
-                      placeholder="Activity Description"
-                      className="text-balance border-purple-100 px-4 focus-visible:ring-0"
-                    />
-
-                    <div className="space-y-2">
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700">
-                      Instruction
-                  </label>
-                      <ToggleGroup
-                        type="multiple"
-                        className="justify-start"
-                        value={textFormat}
-                        onValueChange={setTextFormat}
-                      >
-                        <ToggleGroupItem value="bold" aria-label="Toggle bold">
-                          <span className="font-bold">B</span>
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                          value="italic"
-                          aria-label="Toggle italic"
-                        >
-                          <span className="italic">I</span>
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                          value="underline"
-                          aria-label="Toggle underline"
-                        >
-                          <span className="underline">U</span>
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                    
-                      <Textarea
-                        value={instruction}
-                        onChange={(e) => setInstruction(e.target.value)}
-                        placeholder="Instruction"
-                        className="min-h-[300px] border border-purple-100 px-4 focus-visible:ring-0 placeholder:text-gray-400 resize-none"
-                        style={{
-                          fontWeight: textFormat.includes("bold")
-                            ? "bold"
-                            : "normal",
-                          fontStyle: textFormat.includes("italic")
-                            ? "italic"
-                            : "normal",
-                          textDecoration: textFormat.includes("underline")
-                            ? "underline"
-                            : "none",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {sections.map((section) =>
-                section.type === "code" ? (
-                  <div key={section.id} className="relative mt-6">
-                    <Textarea
-                      placeholder="Type code..."
-                      value={section.content}
-                      onChange={(e) => {
-                        updateSection(section.id, { content: e.target.value });
-                      }}
-                      className="min-h-[100px] border-purple-100 px-4 focus-visible:ring-0 bg-purple-50 font-mono text-sm pl-8 resize-none"
-                    />
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-500" />
+    <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
+      <div className="col-span-12 lg:col-span-9">
+        <Card className="border-0 shadow-none">
+          <CardContent className="p-0">
+            <div className="mb-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+                  <div className="flex items-center justify-between">
                     <Button
-                      onClick={() => deleteSection(section.id)}
                       variant="ghost"
                       size="icon"
-                      className="absolute top-0 right-0 rounded-s hover:bg-gray-100"
+                      onClick={() => navigate(-1)}
                     >
-                      <X className="h-4 w-4" />
+                      <ArrowLeft className="h-5 w-5" />
                     </Button>
                   </div>
-                ) : null
-              )}
+                  <h1 className="font-bold text-2xl text-purple-600">
+                    {" "}
+                    CREATE ACTIVITY{" "}
+                  </h1>
+                  <div className="block lg:hidden">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+                          onClick={() => {
+                            console.log("Button clicked");
+                            handleSubmit();
+                          }}
+                          disabled={isUploading || !isFormValid}
+                        >
+                          {isUploading ? "Uploading..." : "Assign"}
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem>
+                          <span>Assign</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-purple-600 h-2.5 rounded-full transition-all duration-500"
+                  style={{ width: `${activityProgress}%` }}
+                ></div>
+              </div>
             </div>
 
-            {/* Right Content - Upload Files and Due date */}
-            <div className="col-span-12 lg:col-span-3">
-              <div className="hidden lg:flex items-center justify-end lg:justify-between lg:ml-48">
-                <Button
-                  className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
-                  onClick={() => {
-                    handleSubmit();
-                  }}
-                  disabled={isUploading || !isFormValid}
+            {/* TITLE AND INSTRUCTION */}
+            <div className="space-y-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                Title
+              </label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title"
+                className="lg:text-balance border-purple-100 px-4 focus-visible:ring-0 "
+              />
+              <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                Description
+              </label>
+              <Input
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                placeholder="Activity Description"
+                className="text-balance border-purple-100 px-4 focus-visible:ring-0"
+              />
+
+              <div className="space-y-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                  Instruction
+                </label>
+                <ToggleGroup
+                  type="multiple"
+                  className="justify-start"
+                  value={textFormat}
+                  onValueChange={setTextFormat}
                 >
-                  {isUploading ? "Uploading..." : "Assign"}
-                </Button>
+                  <ToggleGroupItem value="bold" aria-label="Toggle bold">
+                    <span className="font-bold">B</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="italic"
+                    aria-label="Toggle italic"
+                  >
+                    <span className="italic">I</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="underline"
+                    aria-label="Toggle underline"
+                  >
+                    <span className="underline">U</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+
+                <Textarea
+                  value={instruction}
+                  onChange={(e) => setInstruction(e.target.value)}
+                  placeholder="Instruction"
+                  className="min-h-[300px] border border-purple-100 px-4 focus-visible:ring-0 placeholder:text-gray-400 resize-none"
+                  style={{
+                    fontWeight: textFormat.includes("bold")
+                      ? "bold"
+                      : "normal",
+                    fontStyle: textFormat.includes("italic")
+                      ? "italic"
+                      : "normal",
+                    textDecoration: textFormat.includes("underline")
+                      ? "underline"
+                      : "none",
+                  }}
+                />
               </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              {/* Due Date */}
+        {sections.map((section) =>
+          section.type === "code" ? (
+            <div key={section.id} className="relative mt-6">
+              <Textarea
+                placeholder="Type code..."
+                value={section.content}
+                onChange={(e) => {
+                  updateSection(section.id, { content: e.target.value });
+                }}
+                className="min-h-[100px] border-purple-100 px-4 focus-visible:ring-0 bg-purple-50 font-mono text-sm pl-8 resize-none"
+              />
+              <div className="absolute left-0 top-0 bottom-0 w-2 bg-purple-500" />
+              <Button
+                onClick={() => deleteSection(section.id)}
+                variant="ghost"
+                size="icon"
+                className="absolute top-0 right-0 rounded-s hover:bg-gray-100"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )}
+      </div>
 
-              <Card className="w-full lg:w-[300px] p-4 mt-6">
-              <p className="font-medium mb-4 flex">
-                Due :
-                {(date || time) && (
-                  <div className="text-sm text-muted-foreground mt-1 ml-2">
-                    {date && format(date, "PPP")}
-                    {time && ` at ${format(parse(time, "HH:mm", new Date()), "hh:mm a")}`}
-                                      </div>
+      {/* Right Content - Upload Files and Due date */}
+      <div className="col-span-12 lg:col-span-3">
+        <div className="hidden lg:flex items-center justify-end lg:justify-between lg:ml-48">
+          <Button
+            className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+            onClick={() => {
+              handleSubmit();
+            }}
+            disabled={isUploading || !isFormValid}
+          >
+            {isUploading ? "Uploading..." : "Assign"}
+          </Button>
+        </div>
+
+        {/* Due Date */}
+        <Card className="w-full lg:w-[300px] p-4 mt-6">
+          <p className="font-medium mb-4 flex">
+            Due :
+            {(date || time) && (
+              <div className="text-sm text-muted-foreground mt-1 ml-2">
+                {date && format(date, "PPP")}
+                {time &&
+                  ` at ${format(parse(time, "HH:mm", new Date()), "hh:mm a")}`}
+              </div>
+            )}
+          </p>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !date && !time && "text-muted-foreground"
                 )}
-              </p>
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                initialFocus
+                disabled={(date) => isBefore(date, startOfToday())}
+              />
+            </PopoverContent>
+          </Popover>
 
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !date && !time && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                      disabled={(date) => isBefore(date, startOfToday())}
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <div className="mt-4">
-                  <TimeField value={time} onChange={setTime} />
-                </div>
-
-
-                {/* Upload Files */}
-              </Card>
-              <div className="mt-8">
-                <h2 className="text-lg font-semibold mb-4">Upload Files</h2>
-                <label
-                  className={`border-2 border-dashed rounded-lg w-full h-40 flex flex-col items-center justify-center cursor-pointer transition
+          <div className="mt-4">
+            <TimeField
+              value={time}
+              onChange={setTime}
+              minTime={currentTime}
+              isToday={date && isToday(date)}
+              disabled={isTimeInputDisabled()}
+            />
+          </div>
+        </Card>
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-4">Upload Files</h2>
+          <label
+            className={`border-2 border-dashed rounded-lg w-full h-40 flex flex-col items-center justify-center cursor-pointer transition
               ${
                 files.length === 0
                   ? "border-gray-300 hover:border-purple-600"
                   : "border-purple-600"
               }`}
+          >
+            <Upload
+              className={`h-10 w-10 ${
+                files.length === 0 ? "text-gray-500" : "text-purple-600"
+              }`}
+            />
+            <span
+              className={`text-sm ${
+                files.length === 0 ? "text-gray-500" : "text-purple-600"
+              }`}
+            >
+              + Add New File
+            </span>
+            <input
+              type="file"
+              className="hidden"
+              multiple
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+            />
+          </label>
+
+          {/* Display uploaded files */}
+          {files.length > 0 && (
+            <div className="mt-4 space-y-2">
+              {files.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-gray-50 p-2 rounded-lg"
                 >
-                  <Upload
-                    className={`h-10 w-10 ${
-                      files.length === 0 ? "text-gray-500" : "text-purple-600"
-                    }`}
-                  />
-                  <span
-                    className={`text-sm ${
-                      files.length === 0 ? "text-gray-500" : "text-purple-600"
-                    }`}
+                  <div className="flex items-center space-x-2 truncate">
+                    <FileIcon className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm text-gray-600 truncate">
+                      {file.name}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleRemoveFile(index)}
                   >
-                    + Add New File
-                  </span>
-                  <input
-                    type="file"
-                    className="hidden"
-                    multiple
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                  />
-                </label>
-
-                {/* Display uploaded files */}
-                {files.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {files.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between bg-gray-50 p-2 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-2 truncate">
-                          <FileIcon className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-600 truncate">
-                            {file.name}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => handleRemoveFile(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {files.length > 0 && (
-                  <div className="mt-4 text-sm text-gray-500">
-                    {files.length} file(s) selected
-                  </div>
-                )}
-              </div>
-              {/* <Button
-                onClick={() => addSection("code")}
-                className="mt-8 font-normal"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Code snippets
-              </Button> */}
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
+
+          {files.length > 0 && (
+            <div className="mt-4 text-sm text-gray-500">
+              {files.length} file(s) selected
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

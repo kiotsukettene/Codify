@@ -85,6 +85,7 @@ import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
 import BattleResults from "./pages/student-view-pages/code-battle/battle-result";
 import BattleWinnerPage from "./pages/student-view-pages/code-battle/battle-winner-page";
+import AboutUs from "./pages/Guest-view-pages/About-us";
 
 
 function App() {
@@ -108,10 +109,15 @@ function App() {
     (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth)
   ) {
     return <LoadingSpinner />;
+
+
+
   }
   return (
     <div>
+
       <Routes>  
+      <Route path="/about" element={<AboutUs />} />
         <Route path="/terms" element={<TermsAndCondition />} />
         <Route
           path="/payment-success"
@@ -145,6 +151,14 @@ function App() {
             element={
               <RestrictPublicRoutes>
                 <ContactUsPage />
+              </RestrictPublicRoutes>
+            }
+          />
+           <Route
+            path="/about-us"
+            element={
+              <RestrictPublicRoutes>
+                <AboutUs />
               </RestrictPublicRoutes>
             }
           />
