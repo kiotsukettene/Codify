@@ -5,193 +5,338 @@ import { ArrowLeft, Flame, Sword, Shield } from "lucide-react"
 import ProfCodeEditor from '@/components/Prof-Code-Editor'
 import { motion, AnimatePresence } from "framer-motion"
 import Bear from "@/assets/picture/Avatar/Bear.png"
+import useBattleStore from '@/store/battleStore'
+import { useParams, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
-// First, let's add these configurations at the top of the file, outside the component
-const BATTLE_CONFIG = {
-  defaultTime: "15:00",
-  countdown: {
-    sequence: [3, 2, 1, "LET THE CODING BATTLE BEGIN!"],
-    duration: 1000 // 1 second per count
-  },
-  statuses: {
-    waiting: { color: "bg-yellow-500", label: "Waiting" },
-    active: { color: "bg-red-500", label: "In Progress" },
-    finished: { color: "bg-green-500", label: "Finished" }
-  }
-}
-
-const CHALLENGE_DATA = {
-  title: "Array Manipulation",
-  category: "Programming Languages",
-  class: "BSCS 3B",
-  description: "Implement a function that manipulates arrays efficiently"
-}
-
-const PLAYERS_DATA = [
-  {
-    id: 1,
-    name: "Irheil Mae Antang",
-    avatar: Bear,
-    initials: "IM",
-    role: "Player 1"
-  },
-  {
-    id: 2,
-    name: "Momo Revillame",
-    avatar: Bear,
-    initials: "MR",
-    role: "Player 2"
-  }
-]
-
-const TEST_CASES = [
-    { input: "[1,2,3]", expected: "[3,2,1]", solved: false },
-    { input: "[5,10,15]", expected: "[15,10,5]", solved: false },
-    { input: "[7,8,9]", expected: "[9,8,7]", solved: false }
-];
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/battles"
+  : `${import.meta.env.VITE_API_URL}/api/battles`;
 
 const CodeBattle = () => {
+    const { battleCode } = useParams();
+    const navigate = useNavigate();
     const [battleState, setBattleState] = useState({
-        timer: BATTLE_CONFIG.defaultTime,
-        status: "waiting",
+        timer: "",
+        status: "active",
         showCountdown: false,
         winner: null
-    })
+    });
 
-    const [playersState, setPlayersState] = useState(
-        PLAYERS_DATA.reduce((acc, player) => ({
-            ...acc,
-            [player.id]: {
-                typing: false,
-                progress: 20,
-                code: ""
+    const [battle, setBattle] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [playersState, setPlayersState] = useState({});
+
+    // Initialize timer when battle data is loaded
+    useEffect(() => {
+        if (battle && battle.duration) {
+            // Check if we already have an end time stored
+            const storedEndTime = localStorage.getItem(`battle_${battleCode}_end_time`);
+            
+            if (!storedEndTime) {
+                // If no stored end time, calculate and store it
+                const endTime = Date.now() + (battle.duration * 60 * 1000);
+                localStorage.setItem(`battle_${battleCode}_end_time`, endTime.toString());
             }
-        }), {})
-    )
+            
+            // Calculate initial remaining time
+            const endTime = parseInt(storedEndTime || Date.now() + (battle.duration * 60 * 1000));
+            const remainingTime = Math.max(0, endTime - Date.now());
+            const minutes = Math.floor(remainingTime / (60 * 1000));
+            const seconds = Math.floor((remainingTime % (60 * 1000)) / 1000);
+            
+            setBattleState(prev => ({
+                ...prev,
+                timer: `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+                status: remainingTime <= 0 ? "completed" : "active"
+            }));
 
-    const [countdownNumber, setCountdownNumber] = useState(3);
-    const [testCases, setTestCases] = useState(TEST_CASES);
+            // If battle is already over, trigger end handling
+            if (remainingTime <= 0) {
+                handleBattleEnd();
+            }
+        }
+    }, [battle, battleCode]);
 
-
-        {/* FOR TIMER */}   
-
+    // Timer countdown effect
     useEffect(() => {
         let interval;
-        if (battleState.status === "active" && battleState.timer !== "00:00") {
+        if (battle && battleState.status === "active") {
             interval = setInterval(() => {
-                setBattleState(prev => {
-                    const [mins, secs] = prev.timer.split(":").map(Number);
-                    let totalSeconds = mins * 60 + secs - 1;
-                    
-                    if (totalSeconds < 0) {
-                        return { ...prev, status: "finished", timer: "00:00" };
-                    }
+                const endTime = parseInt(localStorage.getItem(`battle_${battleCode}_end_time`));
+                if (!endTime) return;
 
-                    const newMins = Math.floor(totalSeconds / 60);
-                    const newSecs = totalSeconds % 60;
-                    return {
+                const now = Date.now();
+                const remainingTime = Math.max(0, endTime - now);
+                
+                if (remainingTime <= 0) {
+                    clearInterval(interval);
+                    handleBattleEnd();
+                    setBattleState(prev => ({
                         ...prev,
-                        timer: `${String(newMins).padStart(2, '0')}:${String(newSecs).padStart(2, '0')}`
-                    };
-                });
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [battleState.status]);
+                        status: "completed",
+                        timer: "00:00"
+                    }));
+                    return;
+                }
 
-        {/* FOR COUNTDOWN */}   
-
-    const startBattle = () => {
-        setBattleState(prev => ({ ...prev, showCountdown: true }));
-        let countIndex = 0;
-        
-        const countdownInterval = setInterval(() => {
-            if (countIndex < BATTLE_CONFIG.countdown.sequence.length - 1) {
-                setCountdownNumber(BATTLE_CONFIG.countdown.sequence[countIndex + 1]);
-                countIndex++;
-            } else {
-                clearInterval(countdownInterval);
+                const minutes = Math.floor(remainingTime / (60 * 1000));
+                const seconds = Math.floor((remainingTime % (60 * 1000)) / 1000);
+                
                 setBattleState(prev => ({
                     ...prev,
-                    showCountdown: false,
-                    status: "active"
+                    timer: `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
                 }));
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [battle, battleState.status, battleCode]);
+
+    // Clean up localStorage when component unmounts
+    useEffect(() => {
+        return () => {
+            if (battleState.status === "completed") {
+                localStorage.removeItem(`battle_${battleCode}_end_time`);
             }
-        }, BATTLE_CONFIG.countdown.duration);
-    }
+        };
+    }, [battleCode, battleState.status]);
+
+    // Handle battle end
+    const handleBattleEnd = async () => {
+        try {
+            // Check if battle is already marked as completed in localStorage
+            const isCompleted = localStorage.getItem(`battle_${battleCode}_completed`);
+            if (isCompleted) return;
+
+            // Mark battle as completed in localStorage
+            localStorage.setItem(`battle_${battleCode}_completed`, 'true');
+
+            // Update battle status in the database
+            await fetch(`${API_URL}/${battleCode}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ status: 'completed' })
+            });
+
+            // Calculate final scores and determine winner
+            const player1Score = playersState[battle.player1.id]?.pointsEarned || 0;
+            const player2Score = playersState[battle.player2.id]?.pointsEarned || 0;
+
+            let winner;
+            if (player1Score > player2Score) {
+                winner = battle.player1.id;
+            } else if (player2Score > player1Score) {
+                winner = battle.player2.id;
+            }
+
+            // Show battle end notification
+            toast.success('Battle has ended!');
+            
+            // Update battle state with winner
+            setBattleState(prev => ({
+                ...prev,
+                status: "completed",
+                winner
+            }));
+        } catch (error) {
+            console.error('Error ending battle:', error);
+            toast.error('Failed to end battle properly');
+        }
+    };
+
+    // Fetch battle data
+    useEffect(() => {
+        const fetchBattleData = async () => {
+            try {
+                const response = await fetch(`${API_URL}/professor/${battleCode}`, {
+                    credentials: 'include',
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    setBattle(data);
+                    // Initialize players state
+                    setPlayersState({
+                        [data.player1.id]: {
+                            typing: false,
+                            progress: 0,
+                            code: "",
+                            name: data.player1.name,
+                            avatar: data.player1.avatar || Bear,
+                            pointsEarned: 0
+                        },
+                        [data.player2.id]: {
+                            typing: false,
+                            progress: 0,
+                            code: "",
+                            name: data.player2.name,
+                            avatar: data.player2.avatar || Bear,
+                            pointsEarned: 0
+                        }
+                    });
+                    setIsLoading(false);
+                } else {
+                    setError(data.message || 'Failed to fetch battle data');
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                console.error('Error fetching battle:', error);
+                setError('Failed to fetch battle data');
+                setIsLoading(false);
+            }
+        };
+
+        fetchBattleData();
+    }, [battleCode]);
 
     const updatePlayerProgress = (playerId, code) => {
-        const solvedTests = testCases.filter(test => validateTestCase(code, test)).length;
-        const progress = (solvedTests / testCases.length) * 100;
+        if (!battle) return;
+        
+        // Calculate total available points
+        const totalPoints = battle.challenges.reduce((sum, challenge) => sum + challenge.points, 0);
+        
+        // Calculate points earned
+        const pointsEarned = battle.challenges.reduce((sum, challenge) => {
+            // Here you would implement the actual validation logic
+            // This is a placeholder that you'll need to replace with actual validation
+            const solved = validateTestCase(code, challenge.testCases);
+            return sum + (solved ? challenge.points : 0);
+        }, 0);
+
+        // Calculate progress percentage based on points
+        const progress = (pointsEarned / totalPoints) * 100;
 
         setPlayersState(prev => ({
             ...prev,
             [playerId]: {
                 ...prev[playerId],
                 progress,
-                code
+                code,
+                pointsEarned // Add points earned to track actual points
             }
         }));
+    };
+
+    const validateTestCase = (code, test) => {
+        // Implement your test case validation logic here
+        // This is just a placeholder
+        return false;
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+        );
     }
 
-    const renderPlayerCard = (player) => (
-        <div>
-            <div className="pb-6 flex justify-center align-center ">
-                <div className="flex items-center gap-2">
-                {battleState.winner === player.id && (
-                                <Trophy className="h-6 w-6 text-yellow-500" />
-                            )}
-                    <Avatar className="h-10 w-10">
-                        <AvatarImage src={player.avatar} />
-                        <AvatarFallback>{player.initials}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <div className="font-medium flex items-center gap-2">
-                            {player.role} : {player.name}
-                           
-                        </div>
-                        <div className="text-xs text-gray-500">
-                            {CHALLENGE_DATA.category} | {CHALLENGE_DATA.class}
+    if (error || !battle) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen">
+                <p className="text-red-500 mb-4">{error || "Battle not found"}</p>
+                <Button onClick={() => navigate("/professor/code-battle")}>
+                    Return to Dashboard
+                </Button>
+            </div>
+        );
+    }
+
+    const renderPlayerCard = (playerId) => {
+        const player = playersState[playerId];
+        if (!player) return null;
+
+        // Calculate total points
+        const totalPoints = battle.challenges.reduce((sum, challenge) => sum + challenge.points, 0);
+
+        return (
+            <div>
+                <div className="pb-6 flex justify-center align-center">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={player.avatar} />
+                            <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <div className="font-medium flex items-center gap-2">
+                                {player.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                {battle.course?.name} | {battle.course?.section}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
 
-            <div className="w-full bg-gray-200 rounded-full h-4 mb-3 overflow-hidden">
-                <div
-                    className="bg-purple-600 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${playersState[player.id].progress}%` }}
-                >
-                    {playersState[player.id].progress > 0 && (
-                        <motion.div
-                            className="absolute inset-0"
-                            initial={{ opacity: 0 }}
-                            animate={{
-                                opacity: [0.2, 0.5, 0.2],
-                                background: [
-                                    "linear-gradient(90deg, transparent, rgba(255,255,255,0.5))",
-                                    "linear-gradient(90deg, transparent, rgba(255,255,255,0.8))",
-                                    "linear-gradient(90deg, transparent, rgba(255,255,255,0.5))"
-                                ]
-                            }}
-                            transition={{
-                                duration: 1.5,
-                                repeat: Infinity,
-                                ease: "linear"
-                            }}
-                        />
-                    )}
+                {/* Progress Section */}
+                <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-600"></span>
+                        <span className="text-sm font-medium text-purple-600">
+                            {player.pointsEarned || 0}/{totalPoints} points
+                        </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div
+                            className="bg-purple-600 h-full rounded-full transition-all duration-500 relative"
+                            style={{ width: `${player.progress}%` }}
+                        >
+                            {/* Progress markers for each challenge */}
+                            {battle.challenges.map((challenge, index) => {
+                                const previousChallengesPoints = battle.challenges
+                                    .slice(0, index)
+                                    .reduce((sum, ch) => sum + ch.points, 0);
+                                const markerPosition = (previousChallengesPoints + challenge.points) / totalPoints * 100;
+                                
+                                return (
+                                    <div
+                                        key={index}
+                                        className="absolute top-0 bottom-0 w-0.5 bg-white/50"
+                                        style={{ 
+                                            left: `${markerPosition}%`,
+                                            display: markerPosition === 100 ? 'none' : 'block' // Hide the last marker
+                                        }}
+                                    />
+                                );
+                            })}
+                            
+                            <motion.div
+                                className="absolute inset-0"
+                                initial={{ opacity: 0 }}
+                                animate={{
+                                    opacity: [0.2, 0.5, 0.2],
+                                    background: [
+                                        "linear-gradient(90deg, transparent, rgba(255,255,255,0.5))",
+                                        "linear-gradient(90deg, transparent, rgba(255,255,255,0.8))",
+                                        "linear-gradient(90deg, transparent, rgba(255,255,255,0.5))"
+                                    ]
+                                }}
+                                transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    ease: "linear"
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-md overflow-hidden relative">
+                    <ProfCodeEditor 
+                        onChange={(code) => updatePlayerProgress(playerId, code)}
+                        readOnly={true}
+                        value={player.code}
+                    />
                 </div>
             </div>
-
-            <div className="border border-gray-200 rounded-md overflow-hidden relative">
-                <ProfCodeEditor 
-                    onChange={(code) => updatePlayerProgress(player.id, code)} 
-                />
-            </div>
-        </div>
-    )
+        );
+    };
 
     return (
         <div>
@@ -229,40 +374,14 @@ const CodeBattle = () => {
                 `}
             </style>
             
-            {/* Countdown Overlay */}
-            <AnimatePresence>
-                {battleState.showCountdown && (
-                    <div
-                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            <main className="mt-24 px-4 w-full">
+                <div className="fixed top-0 left-0 right-0 z-50 bg-white backdrop-blur-md py-4 px-4 flex flex-col md:flex-row gap-4 border-b-2 border-gray-200 items-center">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(-1)}
                     >
-                        <motion.div
-                            key={countdownNumber} 
-                            initial={{ scale: 2, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className={`font-bold text-white ${
-                                typeof countdownNumber === 'number' 
-                                    ? 'text-8xl' 
-                                    : 'text-4xl'
-                            }`}
-                        >
-                            {countdownNumber}
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Main Content */}
-         
-            <main className="mt-24 px-4 w-full"> {/* Add padding-top equal to header height */}
-            <div className="fixed top-0 left-0 right-0 z-50 bg-white backdrop-blur-md py-4 px-4 flex flex-col md:flex-row gap-4 border-b-2 border-gray-200 items-center">
-                   <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(-1)}
-                    >
-                         <ArrowLeft className="h-5 w-5" />
+                        <ArrowLeft className="h-5 w-5" />
                     </Button>
 
                     <div className="w-full">
@@ -272,11 +391,6 @@ const CodeBattle = () => {
                             className="text-center"
                         >
                             <h2 className="text-lg md:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 flex justify-start shimmer-effect">
-                                <motion.div
-                                    animate={{ rotate: [-5, 5, -5] }}
-                                    transition={{ duration: 2, repeat: Infinity }}
-                                >
-                                </motion.div>
                                 CODE BATTLE ARENA
                                 <motion.div
                                     animate={{ rotate: [5, -5, 5] }}
@@ -291,7 +405,7 @@ const CodeBattle = () => {
                                 animate={{ textShadow: ["0 0 10px #fff", "0 0 20px #fff", "0 0 10px #fff"] }}
                                 transition={{ duration: 2, repeat: Infinity }}
                             >
-                                Challenge: {CHALLENGE_DATA.title}
+                                Challenge: {battle.title}
                             </motion.div>
                         </motion.div>
                     </div>
@@ -300,43 +414,43 @@ const CodeBattle = () => {
                         <motion.div 
                             className="text-center p-2 rounded-lg border border-red-500/30"
                         >
-                            {/* <div className="text-xs text-purple-600">Timer:</div> */}
-                            <div className={`text-lg font-bold ${parseInt(battleState.timer.split(':')[0]) < 5 ? 'text-red-500' : 'text-purple-600'}`}>
-                                {battleState.timer}
+                            <div className={`text-lg font-bold ${
+                                parseInt(battleState.timer?.split(':')[0] || '0') < 5 
+                                    ? 'text-red-500' 
+                                    : 'text-purple-600'
+                            }`}>
+                                {battleState.timer || "00:00"}
                             </div>
                         </motion.div>
 
                         <Button 
-                            onClick={startBattle} 
-                            disabled={battleState.status === "active"}
-                            className={`${
-                                battleState.status === "active" 
-                                    ? 'bg-gray-500' 
-                                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
-                            } text-white text-sm font-bold py-6 px-4 rounded-lg shadow-lg transition-all duration-300 relative overflow-hidden`}
+                            disabled={true}
+                            className="bg-gray-500 text-white text-sm font-bold py-6 px-4 rounded-lg shadow-lg transition-all duration-300 relative overflow-hidden"
                         >
-                            {battleState.status === "active" ? 'Battle in Progress' : 'Start Battle'}
-                            <div
-                                className="absolute inset-0 bg-white/20"
-                            />
+                            {battleState.status === "completed" ? "Battle Ended" : "Battle in Progress"}
+                            <div className="absolute inset-0 bg-white/20" />
                         </Button>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative text-black ">
-                    {PLAYERS_DATA.map(player => (
-                        <motion.div
-                            key={player.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="p-3 backdrop-blur-sm border border-purple-500/20 rounded-lg overflow-hidden"
-                        >
-                            {renderPlayerCard(player)}
-                        </motion.div>
-                    ))}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative text-black">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-3 backdrop-blur-sm border border-purple-500/20 rounded-lg overflow-hidden"
+                    >
+                        {renderPlayerCard(battle.player1.id)}
+                    </motion.div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-3 backdrop-blur-sm border border-purple-500/20 rounded-lg overflow-hidden"
+                    >
+                        {renderPlayerCard(battle.player2.id)}
+                    </motion.div>
                 </div>
 
-                {/* Test Cases Section */}
-
+                {/* Challenge Section */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -347,30 +461,57 @@ const CodeBattle = () => {
                         Battle Challenges
                     </h3>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {testCases.map((test, index) => (
+                    <div className="grid grid-cols-1 gap-6">
+                        {battle.challenges.map((challenge, index) => (
                             <motion.div
                                 key={index}
-                                whileTap={{ scale: 0.98 }}
-                                className={`p-4 border rounded-lg`}
+                                whileHover={{ scale: 1.01 }}
+                                className="p-6 border rounded-lg bg-white shadow-sm"
                             >
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="font-bold text-purple-600">
-                                        Challenge {index + 1}
-                                    </span>
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="p-3 rounded-md border border-purple-500/20">
-                                        <p className="text-sm text-gray-300">
-                                            <span className="font-mono text-purple-900">Input:</span>
-                                            <span className="font-mono ml-2 text-black">{test.input}</span>
-                                        </p>
+                                <div className="space-y-4">
+                                    {/* Challenge Header */}
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                                                {challenge.problemTitle}
+                                            </h4>
+                                            <p className="text-sm text-gray-600">
+                                                {challenge.problemDescription}
+                                            </p>
+                                        </div>
+                                        <div className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                            {challenge.points} Points
+                                        </div>
                                     </div>
-                                    <div className="p-3 rounded-md border border-purple-500/20">
-                                        <p className="text-sm text-gray-300">
-                                            <span className="font-mono text-purple-900">Expected:</span>
-                                            <span className="font-mono ml-2 text-black">{test.expected}</span>
-                                        </p>
+
+                                    {/* Challenge Details */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div className="space-y-2">
+                                            <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>
+                                                Input Constraints
+                                            </h5>
+                                            {challenge.inputConstraints.map((input, idx) => (
+                                                <div key={idx} className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                                                    <code className="text-sm font-mono text-gray-800">
+                                                        {input}
+                                                    </code>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h5 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>
+                                                Expected Output
+                                            </h5>
+                                            {challenge.expectedOutput.map((output, idx) => (
+                                                <div key={idx} className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                                                    <code className="text-sm font-mono text-gray-800">
+                                                        {output}
+                                                    </code>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>
@@ -379,7 +520,8 @@ const CodeBattle = () => {
                 </motion.div>
             </main>
         </div>
-    )
-}
+    );
+};
 
-export default CodeBattle
+export default CodeBattle;
+
