@@ -7,7 +7,7 @@ import {
 import React, { useState, useEffect } from "react";
 import header from "@/assets/picture/courses/course-header.png";
 import { Separator } from "@/components/ui/separator";
-import { BookOpenCheck, Search, Users } from "lucide-react";
+import { BookOpenCheck, ChevronRight, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchForm from "@/components/student-view/SearchForm";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,7 @@ function StudentCourseListPage() {
             </div>
           </CardContent>
           <CardFooter className="items-center justify-center mt-4 md:items-start md:justify-start">
-            <Button onClick={() => setJoinCourse(true)}>Join Course 🚀</Button>
+            <Button onClick={() => setJoinCourse(true)}>Join Course <ChevronRight/></Button>
           </CardFooter>
 
           {/* ==============================================

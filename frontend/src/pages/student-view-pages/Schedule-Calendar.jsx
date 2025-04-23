@@ -419,7 +419,7 @@ function StudentCalendar() {
   <div className="w-full md:w-80 border-r border-red-200 flex flex-col bg-white/50 backdrop-blur-sm">
     <div className="p-4 border-b border-blue-200">
       <Button
-        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all"
+        className="w-full bg-primary text-white font-medium shadow-md hover:shadow-lg transition-all"
         onClick={() => {
           setEventToEdit(null)
           setIsCreateModalOpen(true)
