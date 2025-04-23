@@ -203,138 +203,6 @@ export const deleteActivity = async (req, res) => {
   }
 };
 
-// export const getStudentAllActivities = async (req, res) => {
-//   try {
-//     if (!req.studentId) {
-//       return res
-//         .status(401)
-//         .json({ message: "Unauthorized: No student ID available" });
-//     }
-
-//     const studentId = req.studentId; // Use req.studentId set by StudentVerifyToken
-//     console.log("Student ID:", studentId);
-
-//     const courses = await mongoose.model("Course").find({
-//       studentsEnrolled: studentId,
-//     });
-//     console.log("Enrolled courses:", courses);
-
-//     if (!courses.length) {
-//       console.log("No enrolled courses found for student");
-//       return res.status(200).json([]);
-//     }
-
-//     const courseIds = courses.map((course) => course._id);
-//     console.log("Course IDs:", courseIds);
-
-//     const activities = await Activity.aggregate([
-//       {
-//         $lookup: {
-//           from: "lessons",
-//           localField: "lessonId",
-//           foreignField: "_id",
-//           as: "lessonData",
-//         },
-//       },
-//       { $unwind: "$lessonData" },
-//       {
-//         $match: {
-//           "lessonData.courseId": { $in: courseIds },
-//         },
-//       },
-//     ]);
-//     console.log("Raw activities:", activities);
-
-//     const currentDate = new Date();
-//     const formattedActivities = activities.map((activity) => {
-//       const dueDate = activity.dueDate ? new Date(activity.dueDate) : null;
-//       let status = "Not Submitted";
-//       let isCompleted = false;
-
-//       if (dueDate && dueDate < currentDate) {
-//         status = "Missing";
-//       } else if (dueDate) {
-//         status = "Not Submitted";
-//       } else {
-//         status = "Not Submitted";
-//       }
-
-//       return {
-//         subject: activity.lessonData.title || "Unknown Subject",
-//         activity: activity.title,
-//         dueDate: dueDate ? dueDate.toLocaleString() : "No Due Date",
-//         status,
-//         isCompleted,
-//       };
-//     });
-
-//     console.log("Formatted activities:", formattedActivities);
-//     res.status(200).json(formattedActivities);
-//   } catch (error) {
-//     console.error("Error fetching all student activities:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Error fetching activities", error: error.message });
-//   }
-// };
-
-export const createSubmission = async (req, res) => {
-  try {
-    const studentId = req.studentId; // From StudentVerifyToken
-    const { activityId } = req.body; // Expect activityId from the request body
-    const file = req.file ? req.file.path : null; // Handle uploaded file
-
-    if (!studentId || !activityId) {
-      return res
-        .status(400)
-        .json({ message: "Student ID and Activity ID are required" });
-    }
-
-    // Check if activity exists
-    const activity = await Activity.findById(activityId);
-    if (!activity) {
-      return res.status(404).json({ message: "Activity not found" });
-    }
-
-    // Check if a submission already exists for this student and activity
-    const existingSubmission = await Submission.findOne({
-      activityId,
-      studentId,
-    });
-    if (existingSubmission) {
-      return res
-        .status(400)
-        .json({ message: "Submission already exists for this activity" });
-    }
-
-    // Create new submission
-    const submission = new Submission({
-      activityId,
-      studentId,
-      status: "submitted", // Set to "submitted" on creation
-      file, // Store file path if provided
-    });
-
-    const savedSubmission = await submission.save();
-
-    // Construct file URL if applicable
-    let fileUrl = null;
-    if (savedSubmission.file) {
-      const fileName = savedSubmission.file.replace(/^uploads[\\/]/, "");
-      fileUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
-    }
-
-    res.status(201).json({
-      message: "Submission created successfully",
-      submission: { ...savedSubmission._doc, file: fileUrl },
-    });
-  } catch (error) {
-    console.error("Error creating submission:", error);
-    res
-      .status(500)
-      .json({ message: "Error creating submission", error: error.message });
-  }
-};
 // Update getStudentAllActivities to include submission status
 export const getStudentAllActivities = async (req, res) => {
   try {
@@ -438,6 +306,64 @@ export const getStudentAllActivities = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching activities", error: error.message });
+  }
+};
+
+export const createSubmission = async (req, res) => {
+  try {
+    const studentId = req.studentId; // From StudentVerifyToken
+    const { activityId } = req.body; // Expect activityId from the request body
+    const file = req.file ? req.file.path : null; // Handle uploaded file
+
+    if (!studentId || !activityId) {
+      return res
+        .status(400)
+        .json({ message: "Student ID and Activity ID are required" });
+    }
+
+    // Check if activity exists
+    const activity = await Activity.findById(activityId);
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+
+    // Check if a submission already exists for this student and activity
+    const existingSubmission = await Submission.findOne({
+      activityId,
+      studentId,
+    });
+    if (existingSubmission) {
+      return res
+        .status(400)
+        .json({ message: "Submission already exists for this activity" });
+    }
+
+    // Create new submission
+    const submission = new Submission({
+      activityId,
+      studentId,
+      status: "submitted", // Set to "submitted" on creation
+      file, // Store file path if provided
+    });
+
+    const savedSubmission = await submission.save();
+
+    // Construct file URL if applicable
+    let fileUrl = null;
+    if (savedSubmission.file) {
+      const fileName = savedSubmission.file.replace(/^uploads[\\/]/, "");
+      fileUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
+    }
+
+    res.status(201).json({
+      message: "Submission created successfully",
+      submission: { ...savedSubmission._doc, file: fileUrl },
+    });
+  } catch (error) {
+    console.error("Error creating submission:", error);
+    res
+      .status(500)
+      .json({ message: "Error creating submission", error: error.message });
   }
 };
 
@@ -567,5 +493,71 @@ export const updateSubmission = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error updating submission", error: error.message });
+  }
+};
+
+export const getStudentSubmissionsByCourse = async (req, res) => {
+  try {
+    const { courseId, studentId } = req.params;
+    const objectIdCourseId = new mongoose.Types.ObjectId(courseId);
+    const objectIdStudentId = new mongoose.Types.ObjectId(studentId);
+
+    // Validate course exists
+    const course = await mongoose.model("Course").findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Validate student exists and is enrolled in the course
+    const student = await mongoose.model("Student").findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    if (!course.studentsEnrolled.includes(studentId)) {
+      return res
+        .status(403)
+        .json({ message: "Student is not enrolled in this course" });
+    }
+
+    // Fetch activities for the course
+    const activities = await Activity.aggregate([
+      {
+        $lookup: {
+          from: "lessons",
+          localField: "lessonId",
+          foreignField: "_id",
+          as: "lessonData",
+        },
+      },
+      { $unwind: "$lessonData" },
+      { $match: { "lessonData.courseId": objectIdCourseId } },
+      { $project: { _id: 1 } }, // Only need activity IDs
+    ]);
+
+    const activityIds = activities.map((activity) => activity._id);
+
+    // Fetch submissions for these activities and the specified student
+    const submissions = await Submission.find({
+      activityId: { $in: activityIds },
+      studentId: objectIdStudentId,
+    });
+
+    // Transform submissions to include file URL if applicable
+    const formattedSubmissions = submissions.map((submission) => {
+      let fileUrl = null;
+      if (submission.file) {
+        const fileName = submission.file.replace(/^uploads[\\/]/, "");
+        fileUrl = `${req.protocol}://${req.get("host")}/uploads/${fileName}`;
+      }
+      return { ...submission._doc, file: fileUrl };
+    });
+
+    res.status(200).json(formattedSubmissions);
+  } catch (error) {
+    console.error("Error fetching student submissions by course:", error);
+    res.status(500).json({
+      message: "Error fetching student submissions",
+      error: error.message,
+    });
   }
 };

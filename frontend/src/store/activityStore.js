@@ -315,4 +315,25 @@ export const useActivityStore = create((set) => ({
       return false;
     }
   },
+
+  fetchStudentSubmissionsByCourse: async (courseId, studentId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(
+        `${API_URL}/student/${studentId}/course/${courseId}/submissions`
+      );
+      set({ submissions: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({
+        error:
+          error.response?.data?.message || "Error fetching student submissions",
+        isLoading: false,
+      });
+      toast.error(
+        error.response?.data?.message || "Error fetching student submissions"
+      );
+      return [];
+    }
+  },
 }));
