@@ -4,20 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import purpleCloud from '@/assets/picture/random-background/code-battle-header-2.png';
+import useBattleStore from "@/store/battleStore";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
-const JoinBattleModal = ({ isOpen, onClose }) => {
-  const [battleCode, setBattleCode] = useState("");
+const JoinBattleModal = ({ isOpen, onClose, initialBattleCode = "" }) => {
+  const [battleCode, setBattleCode] = useState(initialBattleCode);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { joinBattle } = useBattleStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isOpen) {
       setBattleCode("");
       setJoinSuccess(false);
       setError("");
+    } else if (initialBattleCode) {
+      setBattleCode(initialBattleCode);
     }
-  }, [isOpen]);
+  }, [isOpen, initialBattleCode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,12 +33,18 @@ const JoinBattleModal = ({ isOpen, onClose }) => {
     setError("");
 
     try {
-      // TODO: Implement actual API call to join battle
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      await joinBattle(battleCode);
       setJoinSuccess(true);
-      setTimeout(() => onClose(), 1500);
+      toast.success("Successfully joined the battle!");
+      
+      // Wait for a moment to show success state
+      setTimeout(() => {
+        onClose();
+        navigate(`/student/code-battle/lobby/${battleCode}`);
+      }, 1500);
     } catch (err) {
-      setError("Failed to join battle. Please check your code and try again.");
+      setError(err.message || "Failed to join battle. Please check your code and try again.");
+      toast.error(err.message || "Failed to join battle");
     } finally {
       setIsLoading(false);
     }

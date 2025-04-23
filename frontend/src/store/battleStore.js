@@ -507,6 +507,19 @@ const createBattleManagementSlice = (set, get) => ({
       toast.error(errorMessage, { id: `battles-error-${Date.now()}` });
     }
   },
+  fetchStudentBattles: async () => {
+    set({ isLoadingBattles: true, battlesError: null });
+    try {
+      const response = await axios.get(`${API_URL}/student`, { withCredentials: true });
+      set({ isLoadingBattles: false });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error fetching battles";
+      set({ battlesError: errorMessage, isLoadingBattles: false });
+      toast.error(errorMessage, { id: `battles-error-${Date.now()}` });
+      throw error;
+    }
+  },
   deleteBattle: async (id) => {
     try {
       await axios.delete(`${API_URL}/${id}`);

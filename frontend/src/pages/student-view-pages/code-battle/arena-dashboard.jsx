@@ -1,17 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Logo from "@/assets/picture/logos/Logo.png";
 import { Button } from "@/components/ui/button";
 import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import LiveNowBG from "@/assets/picture/random-background/LiveNow-BG.png";
 import { Cover } from "@/components/ui/cover";
-import { Calendar } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Code } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import JoinBattleModal from "@/components/student-view/join-battle-modal";
 import NotificationCard from "@/components/student-view/notification-card";
+import useBattleStore from "@/store/battleStore";
+import { format } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const ArenaDashboardPage = () => {
   const navigate = useNavigate();
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const { fetchStudentBattles } = useBattleStore();
+  const [battles, setBattles] = useState({
+    upcoming: [],
+    lobby: [],
+    active: [],
+    completed: []
+  });
+
+
+
+  useEffect(() => {
+    const loadBattles = async () => {
+      try {
+        const battlesData = await fetchStudentBattles();
+        const categorizedBattles = battlesData.reduce((acc, battle) => {
+          if (battle.status === "completed") {
+            acc.completed.push(battle);
+          } else if (battle.status === "active") {
+            acc.active.push(battle);
+          } else if (battle.status === "lobby") {
+            acc.lobby.push(battle);
+          } else if (battle.status === "pending") {
+            acc.upcoming.push(battle);
+          }
+          return acc;
+        }, { upcoming: [], lobby: [], active: [], completed: [] });
+
+        setBattles(categorizedBattles);
+      } catch (error) {
+        console.error("Error loading battles:", error);
+      }
+    };
+
+    loadBattles();
+  }, [fetchStudentBattles]);
 
   const cards = [
     {
@@ -20,6 +60,7 @@ const ArenaDashboardPage = () => {
       description: "Join the next coding challenges and prepare your skills",
       color: "from-red-500 to-red-600",
       tagText: "NEW",
+      count: battles.upcoming.length + battles.lobby.length,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -43,7 +84,7 @@ const ArenaDashboardPage = () => {
       description: "All coding battles completed",
       color: "from-indigo-500 to-indigo-600",
       tagText: "STATS",
-      count: "42",
+      count: battles.completed.length,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -60,61 +101,29 @@ const ArenaDashboardPage = () => {
           />
         </svg>
       ),
-      graphic: (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-green-400 bg-opacity-30 absolute -top-8 right-4"></div>
-            <div className="w-12 h-12 rounded-full bg-green-300 bg-opacity-40 absolute top-4 right-0"></div>
-            <div className="w-14 h-14 rounded-full bg-green-200 bg-opacity-50 absolute top-2 -right-6 flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-      ),
     },
   ];
 
-  const professors = [
-    {
-      id: 1,
-      name: "Dr. Smith",
-      subject: "Computer Science",
-      description:
-        "Explore algorithms, data structures, and programming fundamentals",
-      accent: "purple-500",
-    },
-    {
-      id: 2,
-      name: "Prof. Johnson",
-      subject: "Mathematics",
-      description: "Explore calculus, algebra, and statistical analysis",
-      accent: "red-500",
-    },
-    {
-      id: 3,
-      name: "Dr. Williams",
-      subject: "Physics",
-      description: "Explore mechanics, quantum theory, and relativity",
-      accent: "pink-500",
-    },
-  ];
+  const activeBattles = battles.active.map(battle => ({
+    id: battle.id,
+    name: battle.title,
+    subject: `${battle.course?.program} ${battle.course?.section}`,
+    description: battle.description,
+    accent: "purple-500",
+    battleCode: battle.battleCode,
+    status: battle.status,
+    commencement: battle.commencement
+  }));
+
+  console.log(battles)
+
+  const handleJoinActiveBattle = (battleCode) => {
+    navigate(`/student/code-battle/lobby/${battleCode}`);
+  };
 
   return (
     <div className="min-h-screen bg-[#151135] text-white p-6 px-7">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-8">
         <img src={Logo} alt="" />
         <div className="flex items-center gap-4">
           <NotificationCard />
@@ -123,8 +132,9 @@ const ArenaDashboardPage = () => {
           </Button>
         </div>
       </div>
-      <div className="w-full max-w-7xl mx-auto items-center flex justify-center">
-        <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-purple-500 rounded-3xl">
+
+      <div className="w-full max-w-7xl mx-auto">
+        <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-purple-500 rounded-3xl mb-8">
           <div className="p-8">
             <p className="md:text-4xl lg:text-6xl font-semibold space-y-4 text-white leading-tight z-20 py-6 md:py-6 bg-clip-text bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
               Step Into the Arena and <Cover>Prove Your Skills!</Cover>
@@ -136,10 +146,8 @@ const ArenaDashboardPage = () => {
             </p>
           </div>
         </div>
-      </div>
 
-      <div className="w-full max-w-7xl mx-auto p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {cards.map((card) => (
             <div
               key={card.id}
@@ -152,58 +160,123 @@ const ArenaDashboardPage = () => {
               <h3 className="text-3xl font-bold mt-8">{card.title}</h3>
               <p className="text-5xl font-extrabold mt-2">{card.count}</p>
               <p className="mt-2 text-white/80 text-lg">{card.description}</p>
-              {card.id === 1 && (
-                <p className="mt-4 text-md font-medium bg-white/20 text-white px-3 py-2 rounded-md flex gap-2 items-center">
-                  <Calendar /> Schedule: March 20, 2025 - 3:00 PM
-                </p>
-              )}
-              {card.id === 1 && (
-                <button
-                  onClick={() => setIsJoinModalOpen(true)}
-                  className="mt-4 w-full bg-white text-neutral-900 font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all"
-                >
-                  Join Battle
-                </button>
-              )}
-              {card.id === 2 && (
-                <button className="mt-4 w-full bg-white/20 text-white font-semibold px-5 py-3 rounded-lg hover:bg-white/30 transition-all">
-                  View History
-                </button>
-              )}
             </div>
           ))}
         </div>
-      </div>
 
-      <div className="w-full max-w-7xl mx-auto p-6 rounded-lg">
-        <h2 className="text-4xl font-bold text-white mb-6">Live now</h2>
-        <InfiniteSlider durationOnHover={75} gap={24}>
-          {professors.map((prof) => (
-            <div
-              key={prof.id}
-              className="w-[250px] h-[200px] rounded-lg p-4 flex flex-col items-center justify-center bg-cover bg-center relative overflow-hidden shadow-lg hover:scale-105 transition-transform"
-              style={{
-                backgroundImage: `url(${LiveNowBG})`,
-              }}
-            >
-              <div className="absolute inset-0 bg-black/70 rounded-lg"></div>
-              <div className="relative flex flex-col items-center text-white">
-                <div className="text-4xl drop-shadow-lg">{prof.icon}</div>
-                <h3 className="mt-3 text-lg font-bold">{prof.name}</h3>
-                <p className="text-sm text-white/80">{prof.subject}</p>
-                <p className="mt-2 px-3 py-1 text-sm bg-green-500/90 text-white font-semibold rounded-full shadow-lg">
-                  Live Now
-                </p>
-              </div>
+        {/* Incoming Battles (Lobby) Section */}
+        {battles.lobby.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+              <Code className="h-6 w-6 text-purple-400" />
+              Incoming Battles
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {battles.lobby.map((battle) => (
+                <Card key={battle.id} className="bg-[#1A1625] border-purple-500/30">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2">{battle.title}</h3>
+                        <p className="text-gray-400 text-sm">{battle.description}</p>
+                      </div>
+                      <Badge className="bg-purple-500 text-sm h-7">{battle.id}</Badge>
+                    </div>
+                    <Separator className="my-4 bg-purple-500/20" />
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <Calendar className="h-4 w-4" />
+                        {format(new Date(battle.commencement), "MMM dd, yyyy - h:mm a")}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-purple-400 font-mono">Code: {battle.id}</span>
+                        <Button 
+                          size="sm"
+                          onClick={() => setIsJoinModalOpen(true)}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          Join Battle
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          ))}
-        </InfiniteSlider>
-      </div>
+          </div>
+        )}
 
-      <JoinBattleModal
-        isOpen={isJoinModalOpen}
-        onClose={() => setIsJoinModalOpen(false)}
-      />
+        {/* Upcoming Battles Section */}
+        {battles.upcoming.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+              <Calendar className="h-6 w-6 text-purple-400" />
+              Upcoming Battles
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {battles.upcoming.map((battle) => (
+                <Card key={battle.id} className="bg-[#1A1625] border-purple-500/30">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2">{battle.title}</h3>
+                        <p className="text-gray-400 text-sm">{battle.description}</p>
+                      </div>
+                      <Badge className="bg-yellow-500/20 text-yellow-400">Scheduled</Badge>
+                    </div>
+                    <Separator className="my-4 bg-purple-500/20" />
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Calendar className="h-4 w-4" />
+                      {format(new Date(battle.commencement), "MMM dd, yyyy - h:mm a")}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Live Battles Section */}
+        {battles.active.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-white mb-4">Live now</h2>
+            <InfiniteSlider durationOnHover={75} gap={24}>
+              {activeBattles.map((battle) => (
+                <div
+                  key={battle.id}
+                  className="w-[250px] h-[200px] rounded-lg p-4 flex flex-col items-center justify-center bg-cover bg-center relative overflow-hidden shadow-lg hover:scale-105 transition-transform cursor-pointer"
+                  style={{ backgroundImage: `url(${LiveNowBG})` }}
+                  onClick={() => handleJoinActiveBattle(battle.battleCode)}
+                >
+                  <div className="absolute inset-0 bg-black/70 rounded-lg"></div>
+                  <div className="relative flex flex-col items-center text-white">
+                    <h3 className="mt-3 text-lg font-bold">{battle.name}</h3>
+                    <p className="text-sm text-white/80">{battle.subject}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Clock className="w-4 h-4 text-green-400" />
+                      <p className="text-sm text-green-400">Live Now</p>
+                    </div>
+                    <Button 
+                      className="mt-4 bg-purple-600 hover:bg-purple-700"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinActiveBattle(battle.battleCode);
+                      }}
+                    >
+                      Join Now <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </InfiniteSlider>
+          </div>
+        )}
+
+        <JoinBattleModal
+          isOpen={isJoinModalOpen}
+          onClose={() => setIsJoinModalOpen(false)}
+        />
+      </div>
     </div>
   );
 };
