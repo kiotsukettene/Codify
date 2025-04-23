@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Eye, FileText, Trophy, Users, Rocket, ClipboardX } from "lucide-react";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLessonStore } from "@/store/lessonStore";
@@ -15,7 +22,11 @@ import StudentTab from "@/components/professor-view/Student-Tab";
 
 const tabs = [
   { id: "overview", label: "Overview", icon: <Eye className="w-4 h-4" /> },
-  { id: "activities", label: "Activities", icon: <FileText className="w-4 h-4" /> },
+  {
+    id: "activities",
+    label: "Activities",
+    icon: <FileText className="w-4 h-4" />,
+  },
   { id: "scores", label: "Scores", icon: <Trophy className="w-4 h-4" /> },
   { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
 ];
@@ -23,7 +34,14 @@ const tabs = [
 const LessonOverview = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const { courseSlug } = useParams();
-  const { courses, course, fetchCourseById, fetchCoursesByProfessor, isLoading, error } = useCourseStore();
+  const {
+    courses,
+    course,
+    fetchCourseById,
+    fetchCoursesByProfessor,
+    isLoading,
+    error,
+  } = useCourseStore();
   const { activities, fetchActivitiesByCourse } = useActivityStore();
   const { lessons, fetchLessonsByCourse } = useLessonStore();
   const { professor } = useprofAuthStore();
@@ -51,19 +69,29 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchLessonsByCourse, fetchActivitiesByCourse]);
 
-  const studentList = course?.studentsEnrolled?.map((student, index) => ({
-    id: student._id || index + 1,
-    name: `${student.firstName} ${student.lastName}`,
-    avatar: "/placeholder.svg?height=40&width=40",
-    crown: index === 0 ? "gold" : index === 1 ? "silver" : index === 2 ? "bronze" : null,
-    studentNo: student.studentId || "N/A",
-    email: student.email || "N/A",
-    grade: 0,
-  })) || [];
+  const studentList =
+    course?.studentsEnrolled?.map((student, index) => ({
+      id: student._id || index + 1,
+      name: `${student.firstName} ${student.lastName}`,
+      avatar: "/placeholder.svg?height=40&width=40",
+      crown:
+        index === 0
+          ? "gold"
+          : index === 1
+          ? "silver"
+          : index === 2
+          ? "bronze"
+          : null,
+      studentNo: student.studentId || "N/A",
+      email: student.email || "N/A",
+      grade: 0,
+    })) || [];
 
   // Map activities to their corresponding lesson slugs
   const filteredActivities = activities
-    .filter((activity) => lessons.some((lesson) => lesson._id === activity.lessonId))
+    .filter((activity) =>
+      lessons.some((lesson) => lesson._id === activity.lessonId)
+    )
     .map((activity) => {
       const lesson = lessons.find((lesson) => lesson._id === activity.lessonId);
       return {
@@ -76,7 +104,11 @@ const LessonOverview = () => {
   const metrics = [
     { title: "Class Performance", value: "0%", subtitle: "Average Score" },
     { title: "Completion Rate", value: "0%", subtitle: "Activities Completed" },
-    { title: "Active Students", value: studentList.length.toString(), subtitle: "Currently Active" },
+    {
+      title: "Active Students",
+      value: studentList.length.toString(),
+      subtitle: "Currently Active",
+    },
     { title: "Top Performers", value: "0", subtitle: "Display Performance" },
   ];
 
@@ -106,16 +138,23 @@ const LessonOverview = () => {
         details={{
           language: course?.language || currentCourse?.language,
           students: course?.studentCount
-            ? `${course.studentCount} student${course.studentCount === 1 ? "" : "s"}`
+            ? `${course.studentCount} student${
+                course.studentCount === 1 ? "" : "s"
+              }`
             : currentCourse?.studentCount
-            ? `${currentCourse.studentCount} student${currentCourse.studentCount === 1 ? "" : "s"}`
+            ? `${currentCourse.studentCount} student${
+                currentCourse.studentCount === 1 ? "" : "s"
+              }`
             : "0 students",
           instructor: professor
             ? `${professor.firstName} ${professor.lastName}`
             : "Unknown Instructor",
-          schedule: course?.schedule || currentCourse?.schedule
-            ? `${course?.schedule?.day || currentCourse?.schedule?.day}, ${course?.schedule?.time || currentCourse?.schedule?.time}`
-            : "No schedule available",
+          schedule:
+            course?.schedule || currentCourse?.schedule
+              ? `${course?.schedule?.day || currentCourse?.schedule?.day}, ${
+                  course?.schedule?.time || currentCourse?.schedule?.time
+                }`
+              : "No schedule available",
           code: course?.courseCode || currentCourse?.courseCode,
           section: course?.section || currentCourse?.section,
         }}
@@ -129,7 +168,11 @@ const LessonOverview = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-sm font-medium rounded-t-lg transition-colors relative
-                  ${activeTab === tab.id ? "bg-violet-100 text-violet-600" : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"}`}
+                  ${
+                    activeTab === tab.id
+                      ? "bg-violet-100 text-violet-600"
+                      : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"
+                  }`}
                 whileHover={{ y: -2 }}
                 whileTap={{ y: 0 }}
               >
@@ -140,7 +183,9 @@ const LessonOverview = () => {
                     transition={{ type: "spring", bounce: 0.2 }}
                   />
                 )}
-                {React.cloneElement(tab.icon, { className: "w-3 h-3 sm:w-4 sm:h-4" })}
+                {React.cloneElement(tab.icon, {
+                  className: "w-3 h-3 sm:w-4 sm:h-4",
+                })}
                 {tab.label}
                 {activeTab === tab.id && (
                   <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute-right-1" />
@@ -159,7 +204,7 @@ const LessonOverview = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
             >
-             {activeTab === "overview" && (
+              {activeTab === "overview" && (
                 <AnimatePresence mode="wait">
                   <motion.div
                     key="overview"
@@ -168,7 +213,10 @@ const LessonOverview = () => {
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <OverviewTab lessons={lessons || []} course={course || currentCourse} />
+                    <OverviewTab
+                      lessons={lessons || []}
+                      course={course || currentCourse}
+                    />
                   </motion.div>
                 </AnimatePresence>
               )}
@@ -206,7 +254,9 @@ const LessonOverview = () => {
                         className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
                       >
                         <ClipboardX size={60} className="text-gray-400 mb-2" />
-                        <p className="text-gray-500 text-lg font-medium">This course has no activities yet</p>
+                        <p className="text-gray-500 text-lg font-medium">
+                          This course has no activities yet
+                        </p>
                       </motion.div>
                     )}
                   </motion.div>
@@ -216,7 +266,11 @@ const LessonOverview = () => {
                 <ScoreTab metrics={metrics} students={studentList} />
               )}
               {activeTab === "students" && (
-                <StudentTab studentList={studentList} activities={activities} />
+                <StudentTab
+                  studentList={studentList}
+                  activities={activities}
+                  courseId={courseId}
+                />
               )}
             </motion.div>
           </AnimatePresence>
