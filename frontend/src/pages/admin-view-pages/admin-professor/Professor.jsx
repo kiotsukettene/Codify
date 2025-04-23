@@ -67,7 +67,7 @@ function ProfessorList() {
                   <DialogTrigger asChild>
                     <Button
                       onClick={() => setIsModalOpen(true)}
-                      className="bg-purple-600 text-white hover:bg-neutral-700"
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
                     >
                       <Plus /> Register New Professor
                     </Button>
