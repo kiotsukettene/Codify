@@ -207,7 +207,7 @@ const ActivityOutput = ({ students = [], refetchSubmissions }) => {
                                     className="text-sm text-blue-600 hover:underline flex items-center gap-1"
                                   >
                                     <Download className="h-4 w-4" />
-                                    Download Submission
+                                    Submitted File
                                   </a>
                                 ) : (
                                   <p className="text-sm text-muted-foreground">
