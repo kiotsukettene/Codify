@@ -64,6 +64,8 @@ const ActivityPage = () => {
           : "",
         score: submission ? submission.score : 0,
         comment: submission ? submission.comment : "",
+        file: submission && submission.file ? submission.file : null,
+        submission: submission || null,
       };
     }) || [];
 
@@ -128,7 +130,7 @@ const ActivityPage = () => {
       ) : (
         <div>
           <h2>Student Activity Output</h2>
-          <ActivityOutput students={students} />
+          <ActivityOutput students={students} activityId={activity._id} />
         </div>
       )}
     </div>

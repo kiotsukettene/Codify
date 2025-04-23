@@ -2,23 +2,22 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import ScoreInput from "@/components/ui/ScoreInput";
-
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, Download } from "lucide-react";
 import { useActivityStore } from "@/store/activityStore";
 
-const ActivityOutput = ({ students }) => {
+const ActivityOutput = ({ students = [], refetchSubmissions }) => {
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [comments, setComments] = useState({});
   const [submittingComment, setSubmittingComment] = useState(null);
-  const [scores, setScores] = useState({});
-  const { updateSubmission } = useActivityStore(); // Add this
+  const [tempScores, setTempScores] = useState({});
+  const [isGrading, setIsGrading] = useState(null);
+  const { updateSubmission } = useActivityStore();
 
   const selectedStudents = students.filter((student) =>
     selectedStudentIds.includes(student.id)
@@ -50,36 +49,60 @@ const ActivityOutput = ({ students }) => {
     setSubmittingComment(studentId);
     try {
       const student = students.find((s) => s.id === studentId);
-      const submission = student.submission; // Assume submission object is passed in students
+      const submission = student.submission;
       if (submission) {
         await updateSubmission(submission._id, {
           comment: comments[studentId],
         });
         setComments((prev) => ({ ...prev, [studentId]: "" }));
+        await refetchSubmissions(); // Refetch submissions to update UI
       }
     } finally {
       setSubmittingComment(null);
     }
   };
 
-  const handleScoreChange = async (studentId, value) => {
+  const handleTempScoreChange = (studentId, value) => {
     const score = Math.min(Math.max(0, Number(value) || 0), 100);
-    setScores((prev) => ({
+    setTempScores((prev) => ({
       ...prev,
       [studentId]: score,
     }));
+  };
 
-    // Save to backend
+  const handleGrade = async (studentId) => {
+    setIsGrading(studentId);
     try {
       const student = students.find((s) => s.id === studentId);
       const submission = student.submission;
       if (submission) {
-        await updateSubmission(submission._id, { score });
+        const newScore = tempScores[studentId] ?? student.score;
+        await updateSubmission(submission._id, { score: newScore });
+        await refetchSubmissions(); // Refetch submissions to update UI
+        setTempScores((prev) => {
+          const updated = { ...prev };
+          delete updated[studentId];
+          return updated;
+        });
       }
     } catch (error) {
       console.error("Error saving score:", error);
+    } finally {
+      setIsGrading(null);
     }
   };
+
+  if (!students.length) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="container mx-auto p-4 text-center text-muted-foreground"
+      >
+        No students enrolled or submissions found.
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -96,6 +119,19 @@ const ActivityOutput = ({ students }) => {
           >
             <h2 className="font-semibold text-lg pt-8">Students</h2>
             <div className="space-y-2">
+              <motion.div
+                className="flex items-center space-x-4 p-2 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors duration-200"
+                onClick={() => handleStudentSelection("all")}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                <Checkbox
+                  checked={selectedStudentIds.length === students.length}
+                  onCheckedChange={() => handleStudentSelection("all")}
+                />
+                <span className="flex-1 font-medium">All Students</span>
+              </motion.div>
+
               {students.map((student) => (
                 <motion.div
                   key={student.id}
@@ -111,11 +147,6 @@ const ActivityOutput = ({ students }) => {
                     onCheckedChange={() => handleStudentSelection(student.id)}
                   />
                   <span className="flex-1">{student.name}</span>
-                  <ScoreInput
-                    studentId={student.id}
-                    value={scores[student.id] ?? student.score}
-                    onChange={handleScoreChange}
-                  />
                 </motion.div>
               ))}
             </div>
@@ -123,7 +154,7 @@ const ActivityOutput = ({ students }) => {
 
           <div className="border-l pl-6 col-span-2">
             <AnimatePresence mode="wait">
-              {selectedStudents.length === 0 ? (
+              {selectedStudentIds.length === 0 ? (
                 <motion.div
                   key="empty"
                   initial={{ opacity: 0 }}
@@ -169,6 +200,20 @@ const ActivityOutput = ({ students }) => {
                                     ? `submitted ${student.submitted}`
                                     : "Not submitted"}
                                 </p>
+                                {student.file ? (
+                                  <a
+                                    href={student.file}
+                                    download
+                                    className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                    Download Submission
+                                  </a>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">
+                                    No file submitted
+                                  </p>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
@@ -181,29 +226,41 @@ const ActivityOutput = ({ students }) => {
                                 </Badge>
                               )}
                               <div className="flex flex-col items-end gap-1">
-                                <motion.div
-                                  initial={{ scale: 0.95 }}
-                                  animate={{ scale: 1 }}
-                                  transition={{
-                                    type: "spring",
-                                    stiffness: 300,
-                                    damping: 20,
-                                  }}
-                                >
-                                  <ScoreInput
-                                    studentId={student.id}
-                                    value={scores[student.id] ?? student.score}
-                                    onChange={handleScoreChange}
-                                  />
-                                </motion.div>
-                                {scores[student.id] >= 90 && (
-                                  <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="text-xs text-green-600 font-medium"
-                                  >
-                                    Excellent! 🌟
-                                  </motion.div>
+                                {selectedStudentIds.length ===
+                                students.length ? (
+                                  <span className="text-sm font-medium">
+                                    {student.score}/100
+                                  </span>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      value={
+                                        tempScores[student.id] !== undefined
+                                          ? tempScores[student.id]
+                                          : student.score
+                                      }
+                                      onChange={(e) =>
+                                        handleTempScoreChange(
+                                          student.id,
+                                          e.target.value
+                                        )
+                                      }
+                                      className="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                      placeholder="Score"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleGrade(student.id)}
+                                      disabled={isGrading === student.id}
+                                    >
+                                      {isGrading === student.id
+                                        ? "Grading..."
+                                        : "Grade"}
+                                    </Button>
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -230,7 +287,7 @@ const ActivityOutput = ({ students }) => {
                                 }
                                 onKeyPress={(e) => {
                                   if (e.key === "Enter") {
-                                    handlelogeSubmitComment(student.id);
+                                    handleSubmitComment(student.id);
                                   }
                                 }}
                               />
