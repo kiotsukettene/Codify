@@ -284,7 +284,7 @@ export const useActivityStore = create((set) => ({
         ),
         isLoading: false,
       }));
-      toast.success("Submission updated successfully!");
+
       return response.data.submission;
     } catch (error) {
       console.error("Error updating submission:", error);
