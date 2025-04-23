@@ -10,7 +10,6 @@ import { BookHeart, Calendar, Clock, MapPin, User, X, Rocket, Star, Trophy } fro
 const ScheduleModal = ({ open, onOpenChange, allCourses }) => {
   const [activeTab, setActiveTab] = useState("all")
   const [animatedCourses, setAnimatedCourses] = useState([])
-  const [showConfetti, setShowConfetti] = useState(true)
 
   // Group courses by day
   const coursesByDay = {
@@ -41,15 +40,7 @@ const ScheduleModal = ({ open, onOpenChange, allCourses }) => {
   }
   
 
-  useEffect(() => {
-    if (open) {
-      const timer = setTimeout(() => {
-        setShowConfetti(false)
-      }, 2000)
 
-      return () => clearTimeout(timer)
-    }
-  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -67,7 +58,6 @@ const ScheduleModal = ({ open, onOpenChange, allCourses }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-white border-purple-200">
-        {showConfetti && <Confetti />}
 
         <div className="relative p-6  bg-purple-700">
 
@@ -258,37 +248,7 @@ const getRandomColor = (index) => {
   return colors[index % colors.length]
 }
 
-// Confetti component for celebration effect
-const Confetti = () => {
-  return (
-    <div className="fixed inset-0 pointer-events-none z-50">
-      {[...Array(50)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute"
-          initial={{
-            top: "-10%",
-            left: `${Math.random() * 100}%`,
-            width: `${Math.random() * 10 + 5}px`,
-            height: `${Math.random() * 10 + 5}px`,
-            backgroundColor: getRandomConfettiColor(),
-            borderRadius: Math.random() > 0.5 ? "50%" : "0%",
-          }}
-          animate={{
-            top: "100%",
-            rotate: Math.random() * 360,
-            opacity: [1, 1, 0],
-          }}
-          transition={{
-            duration: Math.random() * 2 + 1,
-            ease: "easeOut",
-            delay: Math.random() * 0.5,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
+
 
 // Helper function for confetti colors
 const getRandomConfettiColor = () => {

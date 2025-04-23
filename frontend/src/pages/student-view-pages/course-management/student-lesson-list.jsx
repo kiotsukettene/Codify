@@ -59,7 +59,6 @@ function StudentLessonListPage() {
     setTimeout(() => setShowGuide(false), 5000);
   };
 
-  // Ensure lessons is treated as an array, default to empty array if invalid
   const lessonList = Array.isArray(lessons) ? lessons : [];
 
   return (
@@ -87,7 +86,7 @@ function StudentLessonListPage() {
                   variant="outline"
                   className="border-primary text-primary"
                 >
-                  <Video /> Arena
+                  <Blend />  Arena
                 </Button>
 
                 {/*=================================
@@ -98,7 +97,7 @@ function StudentLessonListPage() {
                   className="border-primary text-primary" 
                   onClick={() => navigate("/video-conference")}
                 >
-                  <Blend /> Video Meet
+                  <Video /> Video Meet
                 </Button>
               </CardFooter>
             </Card>
