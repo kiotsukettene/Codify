@@ -84,7 +84,7 @@ export const registerStudent = async (req, res) => {
       savedStudent.email,
       savedStudent.firstName,
       savedStudent.lastName,
-      plainPassword,
+      plainPassword, // Send lastName as their temporary password
       savedStudent.institution.institutionName
     );
 
@@ -146,29 +146,27 @@ export const getStudentById = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   try {
-    const { currentPassword, password: newPassword, avatar, ...otherFields } = req.body;
+    const { currentPassword, password: newPassword, profileImage, ...otherFields } = req.body;
 
     const student = await Student.findById(req.params.id);
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    // Validate current password if provided
-    if (currentPassword) {
+    // Only check password if it's being updated
+    if (currentPassword && newPassword) {
       const isMatch = await bcrypt.compare(currentPassword, student.password);
       if (!isMatch) {
         return res.status(400).json({ message: "Current password is incorrect" });
       }
-    }
 
-    // Hash new password if provided
-    if (newPassword) {
+      // Hash new password if provided
       otherFields.password = await bcrypt.hash(newPassword, 10);
     }
 
-    // Update avatar if provided
-    if (avatar) {
-      otherFields.avatar = avatar;
+    // Update profile image if provided
+    if (profileImage) {
+      otherFields.profileImage = profileImage;
     }
 
     const updatedStudent = await Student.findByIdAndUpdate(
@@ -177,15 +175,12 @@ export const updateStudent = async (req, res) => {
       {
         new: true,
       }
-    ).populate("institution", "institutionName");
+    ).select("-password"); // Exclude password from response
 
     res.status(200).json({
       success: true,
       message: "Student updated successfully",
-      student: {
-        ...updatedStudent._doc,
-        password: undefined,
-      },
+      student: updatedStudent,
     });
   } catch (error) {
     console.error("Error in updateStudent:", error.message);
@@ -288,6 +283,7 @@ export const studentForgotPassword = async (req, res) => {
     }
 
     // Generate reset token
+
     const resetToken = crypto.randomBytes(20).toString("hex");
     const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
 
@@ -308,7 +304,8 @@ export const studentForgotPassword = async (req, res) => {
       console.error("Error saving reset token:", error);
     }
 
-    // Send reset password email
+    // send reset password email
+
     await sendPasswordResetEmail(
       student.email,
       `${process.env.CLIENT_URL}/student/reset-password/${resetToken}`
@@ -344,7 +341,8 @@ export const studentRestPassword = async (req, res) => {
       });
     }
 
-    // Update password
+    // update password
+
     const hashedPassword = await bcrypt.hash(password, 10);
     student.password = hashedPassword;
     student.resetPasswordToken = undefined;
@@ -352,7 +350,8 @@ export const studentRestPassword = async (req, res) => {
 
     await student.save();
 
-    // Send reset success email
+    // send reset success email
+
     await sendResetSuccessEmail(student.email);
 
     res.status(200).json({
