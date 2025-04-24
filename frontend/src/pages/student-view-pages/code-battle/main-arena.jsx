@@ -663,37 +663,12 @@ export default function CodeBattle() {
                     >
                       Examples
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="hints"
-                      className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD] text-xs"
-                    >
-                      Hints
-                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="description" className="mt-0 bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
                     <div className="space-y-4 p-2">
                       <h2 className="text-lg font-semibold">Problem Description</h2>
                       <p className="text-sm text-[#C2C2DD]">{currentChallenge.description}</p>
-
-                      <h3 className="text-md font-semibold mt-4">Input Format</h3>
-                      <ul className="list-none space-y-1 pl-0 text-sm text-[#C2C2DD]">
-                        <li>The first line contains an integer N, the number of elements in the array.</li>
-                        <li>
-                          The second line contains N space-separated integers representing the elements of the array.
-                        </li>
-                      </ul>
-
-                      <h3 className="text-md font-semibold mt-4">Output Format</h3>
-                      <ul className="list-none space-y-1 pl-0 text-sm text-[#C2C2DD]">
-                        <li>A single line containing N space-separated integers representing the sorted array.</li>
-                      </ul>
-
-                      <h3 className="text-md font-semibold mt-4">Constraints</h3>
-                      <ul className="list-none space-y-1 pl-0 text-sm text-[#C2C2DD]">
-                        <li>1 ≤ N ≤ 10^5</li>
-                        <li>-10^9 ≤ array[i] ≤ 10^9</li>
-                      </ul>
                     </div>
                   </TabsContent>
 
@@ -720,23 +695,6 @@ export default function CodeBattle() {
                         )}
                       </div>
                     ))}
-                  </TabsContent>
-
-                  <TabsContent value="hints" className="mt-0">
-                    <div className="bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
-                      <h3 className="font-semibold text-yellow-400 mb-2 flex items-center gap-1 text-sm">
-                        <AlertCircle className="h-3 w-3" />
-                        Hints
-                      </h3>
-                      <ul className="space-y-1">
-                        {currentChallenge.hints.map((hint, index) => (
-                          <li key={index} className="flex items-start gap-1 text-xs">
-                            <ChevronRight className="h-3 w-3 text-yellow-400 mt-0.5 flex-shrink-0" />
-                            <span>{hint}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
                   </TabsContent>
                 </Tabs>
               </div>
