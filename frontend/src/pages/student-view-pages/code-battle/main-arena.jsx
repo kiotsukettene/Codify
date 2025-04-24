@@ -212,27 +212,33 @@ export default function CodeBattle() {
           p => p.playerId === data.player1?.id // Assuming current user is player1
         );
 
-          return {
-            challengeId: challenge.challengeId,
-            title: challenge.problemTitle,
-            points: challenge.points,
-            timeLimit: challenge.timeLimit || Math.floor((data.duration || 30) * 60 / data.challenges.length),
-            description: challenge.problemDescription,
-            examples: challenge.examples || [],
-            hints: challenge.hints || [],
-            testCases: challenge.inputConstraints.map((input, i) => ({
-              id: i + 1,
-              input,
-              expectedOutput: challenge.expectedOutput[i],
-              status: "waiting"
-            })),
-            functionName: challenge.functionName,
-            numArguments: challenge.numArguments,
-            status: progress?.status || "locked",
-            savedCode: progress?.code || "",
-            savedLanguage: progress?.language
-          };
-        });
+        // Determine if this challenge should be unlocked
+        const isCompleted = progress?.status === "completed";
+        const shouldBeUnlocked = index === 0 || (index > 0 && data.challenges[index - 1]?.playerProgress?.some(
+          p => p.playerId === data.player1?.id && p.status === "completed"
+        ));
+
+        return {
+          challengeId: challenge.challengeId,
+          title: challenge.problemTitle,
+          points: challenge.points,
+          timeLimit: challenge.timeLimit || Math.floor((data.duration || 30) * 60 / data.challenges.length),
+          description: challenge.problemDescription,
+          examples: challenge.examples || [],
+          hints: challenge.hints || [],
+          testCases: challenge.inputConstraints.map((input, i) => ({
+            id: i + 1,
+            input,
+            expectedOutput: challenge.expectedOutput[i],
+            status: isCompleted ? "passed" : "waiting"
+          })),
+          functionName: challenge.functionName,
+          numArguments: challenge.numArguments,
+          status: isCompleted ? "completed" : (shouldBeUnlocked ? "unlocked" : "locked"),
+          savedCode: progress?.code || "",
+          savedLanguage: progress?.language
+        };
+      });
 
       if (formattedChallenges.length === 0) {
         throw new Error("No valid challenges found after formatting");
@@ -250,16 +256,18 @@ export default function CodeBattle() {
       }, 0);
 
       setCurrentChallengeIndex(lastActiveIndex);
-      setUnlockedChallenges(
-        formattedChallenges
-          .filter(c => c.status === "unlocked" || c.status === "completed")
-          .map(c => c.challengeId)
-      );
-      setCompletedChallenges(
-        formattedChallenges
-          .filter(c => c.status === "completed")
-          .map(c => c.challengeId)
-      );
+      
+      // Set unlocked challenges (including completed ones)
+      const unlockedIds = formattedChallenges
+        .filter(c => c.status === "unlocked" || c.status === "completed")
+        .map(c => c.challengeId);
+      setUnlockedChallenges(unlockedIds);
+
+      // Set completed challenges
+      const completedIds = formattedChallenges
+        .filter(c => c.status === "completed")
+        .map(c => c.challengeId);
+      setCompletedChallenges(completedIds);
 
       // Restore saved code and language if available
       if (formattedChallenges[lastActiveIndex].savedCode) {
@@ -304,13 +312,14 @@ export default function CodeBattle() {
       setTimeLeft(currentChallenge.timeLimit || 1800);
       setOutput("");
       setUserProgress(0);
-      setIsEditorReadOnly(false);
-      setIsSubmitted(false);
+      // Set editor to read-only if the challenge is completed
+      setIsEditorReadOnly(completedChallenges.includes(currentChallenge.challengeId));
+      setIsSubmitted(completedChallenges.includes(currentChallenge.challengeId));
       setShowNextChallengeButton(false);
-      setUserStatus("idle");
+      setUserStatus(completedChallenges.includes(currentChallenge.challengeId) ? "submitted" : "idle");
       setIsProblemPanelOpen(true);
     }
-  }, [currentChallengeIndex, currentChallenge?.challengeId]);
+  }, [currentChallengeIndex, currentChallenge?.challengeId, completedChallenges]);
 
   // Countdown timer
   useEffect(() => {
@@ -364,6 +373,16 @@ export default function CodeBattle() {
 
   // Check if challenge is unlocked
   const isChallengeUnlocked = (challengeId) => {
+    // A challenge is unlocked if:
+    // 1. It's the first challenge
+    // 2. It's in the unlockedChallenges array
+    // 3. The previous challenge is completed
+    const challengeIndex = challengesData.findIndex(c => c.challengeId === challengeId);
+    if (challengeIndex === 0) return true;
+    if (challengeIndex > 0) {
+      const previousChallenge = challengesData[challengeIndex - 1];
+      return completedChallenges.includes(previousChallenge.challengeId);
+    }
     return unlockedChallenges.includes(challengeId);
   };
 
