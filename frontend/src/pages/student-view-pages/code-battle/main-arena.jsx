@@ -161,7 +161,15 @@ export default function CodeBattle() {
   // Battle state
   const [battleTitle, setBattleTitle] = useState("Algorithmic Coding Battle");
   const [challengesData, setChallengesData] = useState([]);
-  const [opponents, setOpponents] = useState([]);
+  const [opponents] = useState([
+    {
+      id: 'player2',
+      name: 'Player 2',
+      avatar: null,
+      progress: 33,
+      status: 'typing'
+    }
+  ]);
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
   const [completedChallenges, setCompletedChallenges] = useState([]);
   const [challengeResults, setChallengeResults] = useState([]);
@@ -1389,39 +1397,47 @@ public class Solution {
                 <div key={opponent.id} className="flex items-center gap-3">
                   <div className="flex items-center gap-2 w-32">
                     <div className="relative">
-                      <img
-                        src={opponent.avatar || "/placeholder.svg"}
-                        alt={opponent.name}
-                        className="h-6 w-6 rounded-full bg-[#2B1F4A] border border-[#2B1F4A]"
-                      />
+                      <div className="h-6 w-6 rounded-full bg-[#2B1F4A] border border-[#2B1F4A] flex items-center justify-center">
+                        <User className="h-3 w-3 text-[#C2C2DD]" />
+                      </div>
                       {opponent.status !== "idle" && (
                         <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                          <span
-                            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
-                              opponent.status === "typing" ? "bg-blue-400" : "bg-green-400"
-                            } opacity-75`}
-                          ></span>
-                          <span
-                            className={`relative inline-flex rounded-full h-2 w-2 ${
-                              opponent.status === "typing" ? "bg-blue-500" : "bg-green-500"
-                            }`}
-                          ></span>
+                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
+                            opponent.status === "typing" ? "bg-blue-400" : "bg-green-400"
+                          } opacity-75`}></span>
+                          <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                            opponent.status === "typing" ? "bg-blue-500" : "bg-green-500"
+                          }`}></span>
                         </span>
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-xs font-medium truncate">{opponent.name}</span>
-                      {getStatusIcon(opponent.status)}
+                      <span className="text-xs font-medium truncate">{battleDetails?.player2?.name}</span>
+                      {opponent.status === "typing" ? (
+                        <span className="text-blue-400 flex items-center text-xs">
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Typing...
+                        </span>
+                      ) : opponent.status === "submitted" ? (
+                        <span className="text-green-400 flex items-center text-xs">
+                          <CheckCheck className="h-3 w-3 mr-1" /> Submitted
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex-1">
-                    <Progress
-                      value={opponent.progress}
-                      className="h-2 bg-[#0D0A1A]"
-                      indicatorClassName="bg-gradient-to-r from-[#545A91] to-[#8A63D2]/70"
-                    />
+                    <div className="w-full bg-[#0D0A1A] rounded-full h-2 relative overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#545A91] to-[#8A63D2]/70 transition-all duration-300 ease-in-out"
+                        style={{ width: `${opponent.progress}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-xs text-[#C2C2DD]">
+                        {Math.round(opponent.progress / 100 * challengesData.length)} of {challengesData.length} Challenges Completed
+                      </span>
+                      <span className="text-xs font-mono font-bold">{opponent.progress}%</span>
+                    </div>
                   </div>
-                  <span className="text-xs font-mono w-8 text-right font-bold">{opponent.progress}%</span>
                 </div>
               ))}
               {challengeResults.length > 0 && (
