@@ -43,211 +43,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useParams } from "react-router-dom"
+import useBattleStore from "@/store/battleStore"
 
-// Sample challenges data (3 rounds)
-const challengesData = [
-  {
-    id: 1,
-    title: "Challenge 1",
-    points: 150,
-    timeLimit: 1800, // 30 minutes in seconds
-    description: `You are given an array of integers. Your task is to sort the array in ascending order using any algorithm of your choice.`,
-    examples: [
-      {
-        input: "5\n5 2 9 1 5",
-        output: "1 2 5 5 9",
-        explanation: "The sorted array in ascending order.",
-      },
-      {
-        input: "3\n3 1 2",
-        output: "1 2 3",
-        explanation: "The sorted array in ascending order.",
-      },
-    ],
-    hints: [
-      "Consider using built-in sorting functions for simplicity.",
-      "If implementing your own sort, quicksort or mergesort would be efficient for large arrays.",
-    ],
-    boilerplate: {
-      javascript: `function sortArray(arr) {
-  // Your code here
-  
-  return arr;
-}
 
-// Example usage:
-// const sorted = sortArray([5, 2, 9, 1, 5]);
-// console.log(sorted); // Should output [1, 2, 5, 5, 9]`,
-      python: `def sort_array(arr):
-    # Your code here
-    
-    return arr
-
-# Example usage:
-# sorted_arr = sort_array([5, 2, 9, 1, 5])
-# print(sorted_arr) # Should output [1, 2, 5, 5, 9]`,
-      java: `import java.util.*;
-
-public class Solution {
-    public static int[] sortArray(int[] arr) {
-        // Your code here
-        
-        return arr;
-    }
-    
-    public static void main(String[] args) {
-        // Example usage:
-        // int[] arr = {5, 2, 9, 1, 5};
-        // int[] sorted = sortArray(arr);
-        // System.out.println(Arrays.toString(sorted)); // Should output [1, 2, 5, 5, 9]
-    }
-}`,
-    },
-    testCases: [
-      { id: 1, input: "[5, 2, 9, 1, 5]", expectedOutput: "[1, 2, 5, 5, 9]", status: "waiting" },
-      { id: 2, input: "[3, 1, 2]", expectedOutput: "[1, 2, 3]", status: "waiting" },
-      { id: 3, input: "[10, -5, 0, 100, 20]", expectedOutput: "[-5, 0, 10, 20, 100]", status: "waiting" },
-      { id: 4, input: "[7, 7, 7, 7]", expectedOutput: "[7, 7, 7, 7]", status: "waiting" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Challenge 2",
-    points: 200,
-    timeLimit: 1800,
-    description: `Write a function that reverses a string. The input string is given as an array of characters.`,
-    examples: [
-      {
-        input: "hello",
-        output: "olleh",
-        explanation: "Reverse the characters in the string.",
-      },
-      {
-        input: "world",
-        output: "dlrow",
-        explanation: "Reverse the characters in the string.",
-      },
-    ],
-    hints: ["Try using a two-pointer approach.", "You can also use built-in functions if available in your language."],
-    boilerplate: {
-      javascript: `function reverseString(str) {
-  // Your code here
-  
-  return str;
-}
-
-// Example usage:
-// const reversed = reverseString("hello");
-// console.log(reversed); // Should output "olleh"`,
-      python: `def reverse_string(str):
-    # Your code here
-    
-    return str
-
-# Example usage:
-# reversed_str = reverse_string("hello")
-# print(reversed_str) # Should output "olleh"`,
-      java: `import java.util.*;
-
-public class Solution {
-    public static String reverseString(String str) {
-        // Your code here
-        
-        return str;
-    }
-    
-    public static void main(String[] args) {
-        // Example usage:
-        // String str = "hello";
-        // String reversed = reverseString(str);
-        // System.out.println(reversed); // Should output "olleh"
-    }
-}`,
-    },
-    testCases: [
-      { id: 1, input: "hello", expectedOutput: "olleh", status: "waiting" },
-      { id: 2, input: "world", expectedOutput: "dlrow", status: "waiting" },
-      { id: 3, input: "algorithm", expectedOutput: "mhtirogla", status: "waiting" },
-      { id: 4, input: "racecar", expectedOutput: "racecar", status: "waiting" },
-    ],
-  },
-  {
-    id: 3,
-    title: "Challenge 3",
-    points: 250,
-    timeLimit: 1800,
-    description: `Write a function that checks if a given string is a palindrome. A palindrome is a word, phrase, number, or other sequence of characters that reads the same forward and backward.`,
-    examples: [
-      {
-        input: "racecar",
-        output: "true",
-        explanation: "It reads the same forward and backward.",
-      },
-      {
-        input: "hello",
-        output: "false",
-        explanation: "It does not read the same forward and backward.",
-      },
-    ],
-    hints: [
-      "Consider removing spaces and converting to lowercase for more complex palindromes.",
-      "You can use the two-pointer technique to check from both ends.",
-    ],
-    boilerplate: {
-      javascript: `function isPalindrome(str) {
-  // Your code here
-  
-  return true; // or false
-}
-
-// Example usage:
-// const result = isPalindrome("racecar");
-// console.log(result); // Should output true`,
-      python: `def is_palindrome(str):
-    # Your code here
-    
-    return True # or False
-
-# Example usage:
-# result = is_palindrome("racecar")
-# print(result) # Should output True`,
-      java: `import java.util.*;
-
-public class Solution {
-    public static boolean isPalindrome(String str) {
-        // Your code here
-        
-        return true; // or false
-    }
-    
-    public static void main(String[] args) {
-        // Example usage:
-        // String str = "racecar";
-        // boolean result = isPalindrome(str);
-        // System.out.println(result); // Should output true
-    }
-}`,
-    },
-    testCases: [
-      { id: 1, input: "racecar", expectedOutput: "true", status: "waiting" },
-      { id: 2, input: "hello", expectedOutput: "false", status: "waiting" },
-      { id: 3, input: "A man a plan a canal Panama", expectedOutput: "true", status: "waiting" },
-      { id: 4, input: "12321", expectedOutput: "true", status: "waiting" },
-    ],
-  },
-]
-
-// Update the opponents array to only have one opponent (2 players total)
-const opponents = [
-  {
-    id: 1,
-    name: "CodeNinja",
-    avatar: "/placeholder.svg?height=40&width=40",
-    progress: 75,
-    score: 120,
-    status: "typing", // typing, submitted, idle
-  },
-]
 
 // Mock data for backend integration
 const mockUserData = {
@@ -266,10 +65,17 @@ const mockApiEndpoints = {
   updateUserScore: "/api/users/:id/score",
 }
 
+
+
 export default function CodeBattle() {
+
+  const { battleCode } = useParams()
+
+  const { fetchBattleDetails, battleDetails, isLoadingBattleDetails, battleDetailsError } = useBattleStore();
   // Battle state
   const [battleTitle, setBattleTitle] = useState("Algorithmic Coding Battle")
-
+  const [challengesData, setChallengesData] = useState([]); // Replace static challengesData with state
+  const [opponents, setOpponents] = useState([]);
   // Challenge state
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0)
   const [completedChallenges, setCompletedChallenges] = useState([])
@@ -277,7 +83,16 @@ export default function CodeBattle() {
   const [unlockedChallenges, setUnlockedChallenges] = useState([1]) // Only first challenge is unlocked initially
 
   // Current challenge data
-  const currentChallenge = challengesData[currentChallengeIndex]
+  const currentChallenge = challengesData[currentChallengeIndex] || {
+    boilerplate: { javascript: "", python: "", java: "" },
+    testCases: [],
+    timeLimit: 1800,
+    title: "",
+    points: 0,
+    description: "",
+    examples: [],
+    hints: [],
+  };
 
   // Editor state
   const [language, setLanguage] = useState("javascript")
@@ -309,6 +124,74 @@ export default function CodeBattle() {
   const testCasesRef = useRef(null)
   const outputRef = useRef(null)
   const editorRef = useRef(null)
+
+  useEffect(() => {
+    const loadBattleDetails = async () => {
+      try {
+        if (battleCode) {
+          const data = await fetchBattleDetails(battleCode);
+          // Map backend challenges to frontend format
+          const formattedChallenges = data.challenges.map((challenge, index) => ({
+            id: index + 1,
+            title: challenge.problemTitle,
+            points: challenge.points,
+            timeLimit: Math.floor(data.duration * 60 / data.challenges.length),
+            description: challenge.problemDescription,
+            examples: challenge.inputConstraints.map((input, i) => ({
+              input,
+              output: challenge.expectedOutput[i],
+              explanation: `Example ${i + 1}`,
+            })),
+            hints: [],
+            boilerplate: {
+              javascript: `function solution() {\n  // Your code here\n}`,
+              python: `def solution():\n    # Your code here\n    pass`,
+              java: `public class Solution {\n    public static void solution() {\n        // Your code here\n    }\n}`,
+            },
+            testCases: challenge.inputConstraints.map((input, i) => ({
+              id: i + 1,
+              input,
+              expectedOutput: challenge.expectedOutput[i],
+              status: "waiting",
+            })),
+          }));
+          setChallengesData(formattedChallenges);
+          setBattleTitle(data.title);
+          // Update opponents based on fetched players
+          setOpponents([
+            {
+              id: data.player2.id,
+              name: data.player2.name,
+              avatar: "/placeholder.svg?height=40&width=40",
+              progress: 75, // Update dynamically if backend provides progress
+              score: 120,
+              status: "idle",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch battle details:", error);
+        // Fallback to static challengesData and opponents
+        setChallengesData(challengesData); // Use the imported static challengesData
+        setOpponents([
+          {
+            id: 1,
+            name: "CodeNinja",
+            avatar: "/placeholder.svg?height=40&width=40",
+            progress: 75,
+            score: 120,
+            status: "typing",
+          },
+        ]);
+      }
+    };
+  
+    loadBattleDetails();
+  }, [battleCode, fetchBattleDetails]);
+
+  useEffect(() => {
+    console.log(battleDetails)
+  }, [battleDetails])
 
   // Format time from seconds to MM:SS
   const formatTime = (seconds) => {
@@ -570,6 +453,8 @@ export default function CodeBattle() {
     return "text-gray-200"
   }
 
+  
+
   // Get challenge status badge
   const getChallengeStatusBadge = (challengeId, index) => {
     if (completedChallenges.includes(challengeId)) {
@@ -620,6 +505,8 @@ export default function CodeBattle() {
               <span className="truncate">{battleTitle}</span>
             </h1>
           </div>
+
+          
 
           <div className="flex items-center gap-2">
             {/* Challenge selector */}

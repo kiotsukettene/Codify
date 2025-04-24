@@ -496,6 +496,24 @@ const createBattleManagementSlice = (set, get) => ({
   isLoadingLeaderboard: false,
   battlesError: null,
   leaderboardError: null,
+  battleDetails: null,
+  isLoadingBattleDetails: false,
+  battleDetailsError: null,
+
+  fetchBattleDetails: async (battleCode) => {
+    set({ isLoadingBattleDetails: true, battleDetailsError: null });
+    try {
+      const response = await axios.get(`${API_URL}/${battleCode}`, { withCredentials: true });
+      set({ battleDetails: response.data, isLoadingBattleDetails: false });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error fetching battle details";
+      set({ battleDetailsError: errorMessage, isLoadingBattleDetails: false });
+      toast.error(errorMessage, { id: `battle-details-error-${Date.now()}` });
+      throw error;
+    }
+  },
+  
   fetchBattles: async () => {
     set({ isLoadingBattles: true, battlesError: null });
     try {
