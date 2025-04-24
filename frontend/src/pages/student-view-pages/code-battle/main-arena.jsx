@@ -43,6 +43,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useParams } from "react-router-dom";
 import useBattleStore from "@/store/battleStore";
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 // Language options with Piston API versions
 const languageOptions = [
@@ -125,7 +126,8 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function CodeBattle() {
   const { battleCode } = useParams();
-  const { fetchBattleDetails, battleDetails } = useBattleStore();
+  const { fetchBattleDetails, battleDetails, updateChallengeProgress } = useBattleStore();
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
 
   // Battle state
   const [battleTitle, setBattleTitle] = useState("Algorithmic Coding Battle");
@@ -177,101 +179,110 @@ export default function CodeBattle() {
   const outputRef = useRef(null);
   const editorRef = useRef(null);
 
-  useEffect(() => {
-    const loadBattleDetails = async () => {
-      try {
-        if (!battleCode) {
-          throw new Error("No battle code provided");
-        }
-        const data = await fetchBattleDetails(battleCode);
-        console.log("Raw battle data:", data);
+  // Load battle details and progress
+  const loadBattleAndProgress = async () => {
+    try {
+      if (!battleCode) {
+        throw new Error("No battle code provided");
+      }
+
+      const data = await fetchBattleDetails(battleCode);
+      console.log("Raw battle data:", data);
+
+      // Validate the response data
+      if (!data || typeof data !== "object") {
+        throw new Error("Invalid battle data received");
+      }
+
+      // Check if challenges array exists and is valid
+      if (!Array.isArray(data.challenges) || data.challenges.length === 0) {
+        console.error("Received data:", data);
+        throw new Error("No challenges found in battle data");
+      }
+
+      const formattedChallenges = data.challenges.map((challenge, index) => {
+        console.log(`Challenge ${index + 1}:`, challenge);
         
-        // Validate response
-        if (!data || typeof data !== "object") {
-          throw new Error("Invalid battle data received");
-        }
-        if (!Array.isArray(data.challenges)) {
-          console.error("Received data:", data);
-          throw new Error("Battle data is missing challenges or challenges is not an array");
-        }
-        if (data.challenges.length === 0) {
-          throw new Error("Battle has no challenges defined");
+        if (!challenge) {
+          throw new Error(`Challenge ${index + 1} is undefined`);
         }
 
-        const formattedChallenges = data.challenges.map((challenge, index) => {
-          console.log(`Challenge ${index + 1}:`, challenge);
-          
-          // Validate required fields with more flexible field name matching
-          if (!challenge.title || !challenge.description || !challenge.points) {
-            throw new Error(`Challenge ${index + 1} is missing required fields (title, description, or points)`);
-          }
-          if (!challenge.functionName || !Number.isInteger(challenge.numArguments) || challenge.numArguments < 1) {
-            throw new Error(`Challenge ${index + 1} has invalid functionName or numArguments`);
-          }
-          if (!Array.isArray(challenge.testCases)) {
-            throw new Error(`Challenge ${index + 1} has invalid testCases`);
-          }
-
-          // Format test cases to ensure they have the required structure
-          const formattedTestCases = challenge.testCases.map((testCase, i) => ({
-            id: testCase.id || i + 1,
-            input: testCase.input,
-            expectedOutput: testCase.expectedOutput,
-            status: "waiting"
-          }));
-
-          // Create examples from test cases if none provided
-          const examples = challenge.examples || formattedTestCases.slice(0, 2).map(test => ({
-            input: test.input,
-            output: test.expectedOutput,
-            explanation: `Example test case`
-          }));
+        // Get player's progress for this challenge
+        const progress = challenge.playerProgress?.find(
+          p => p.playerId === data.player1?.id // Assuming current user is player1
+        );
 
           return {
-            id: challenge.id || index + 1,
-            title: challenge.title,
+            challengeId: challenge.challengeId,
+            title: challenge.problemTitle,
             points: challenge.points,
             timeLimit: challenge.timeLimit || Math.floor((data.duration || 30) * 60 / data.challenges.length),
-            description: challenge.description,
-            examples: examples,
+            description: challenge.problemDescription,
+            examples: challenge.examples || [],
             hints: challenge.hints || [],
-            testCases: formattedTestCases,
+            testCases: challenge.inputConstraints.map((input, i) => ({
+              id: i + 1,
+              input,
+              expectedOutput: challenge.expectedOutput[i],
+              status: "waiting"
+            })),
             functionName: challenge.functionName,
             numArguments: challenge.numArguments,
+            status: progress?.status || "locked",
+            savedCode: progress?.code || "",
+            savedLanguage: progress?.language
           };
         });
 
-        setChallengesData(formattedChallenges);
-        setBattleTitle(data.title || "Algorithmic Coding Battle");
-        setOpponents([
-          {
-            id: data.player2?.id || 1,
-            name: data.player2?.name || "Opponent",
-            avatar: "/placeholder.svg?height=40&width=40",
-            progress: 75,
-            score: 120,
-            status: "idle",
-          },
-        ]);
-      } catch (error) {
-        console.error("Failed to fetch battle details:", error.message, error.stack);
-        setChallengesData(staticChallengesData);
-        setOpponents([
-          {
-            id: 1,
-            name: "CodeNinja",
-            avatar: "/placeholder.svg?height=40&width=40",
-            progress: 75,
-            score: 120,
-            status: "typing",
-          },
-        ]);
-        setBattleTitle("Algorithmic Coding Battle");
+      if (formattedChallenges.length === 0) {
+        throw new Error("No valid challenges found after formatting");
       }
-    };
-  
-    loadBattleDetails();
-  }, [battleCode, fetchBattleDetails]);
+
+      setChallengesData(formattedChallenges);
+      setBattleTitle(data.title || "Algorithmic Coding Battle");
+
+      // Find the last unlocked/completed challenge
+      const lastActiveIndex = formattedChallenges.reduce((maxIndex, challenge, index) => {
+        if (challenge.status === "unlocked" || challenge.status === "completed") {
+          return index;
+        }
+        return maxIndex;
+      }, 0);
+
+      setCurrentChallengeIndex(lastActiveIndex);
+      setUnlockedChallenges(
+        formattedChallenges
+          .filter(c => c.status === "unlocked" || c.status === "completed")
+          .map(c => c.challengeId)
+      );
+      setCompletedChallenges(
+        formattedChallenges
+          .filter(c => c.status === "completed")
+          .map(c => c.challengeId)
+      );
+
+      // Restore saved code and language if available
+      if (formattedChallenges[lastActiveIndex].savedCode) {
+        setCode(formattedChallenges[lastActiveIndex].savedCode);
+        setLanguage(formattedChallenges[lastActiveIndex].savedLanguage || "javascript");
+      }
+
+      setIsLoadingProgress(false);
+    } catch (error) {
+      console.error("Failed to fetch battle details:", error.message, error.stack);
+      setIsLoadingProgress(false);
+      // Show error state
+      return (
+        <div className="flex items-center justify-center h-screen bg-[#0D0A1A]">
+          <div className="text-center">
+            <XCircle className="h-8 w-8 text-red-400 mx-auto mb-4" />
+            <p className="text-[#F5F5F5] mb-2">Failed to load battle data</p>
+            <p className="text-[#C2C2DD] text-sm">{error.message}</p>
+          </div>
+        </div>
+      );
+    }
+  };
 
   // Format time
   const formatTime = (seconds) => {
@@ -287,17 +298,19 @@ export default function CodeBattle() {
 
   // Reset state when challenge changes
   useEffect(() => {
-    setCode("");
-    setTestResults(currentChallenge.testCases || []);
-    setTimeLeft(currentChallenge.timeLimit || 1800);
-    setOutput("");
-    setUserProgress(0);
-    setIsEditorReadOnly(false);
-    setIsSubmitted(false);
-    setShowNextChallengeButton(false);
-    setUserStatus("idle");
-    setIsProblemPanelOpen(true);
-  }, [currentChallengeIndex, currentChallenge]);
+    if (currentChallenge) {
+      setCode(currentChallenge.savedCode || "");
+      setTestResults(currentChallenge.testCases || []);
+      setTimeLeft(currentChallenge.timeLimit || 1800);
+      setOutput("");
+      setUserProgress(0);
+      setIsEditorReadOnly(false);
+      setIsSubmitted(false);
+      setShowNextChallengeButton(false);
+      setUserStatus("idle");
+      setIsProblemPanelOpen(true);
+    }
+  }, [currentChallengeIndex, currentChallenge?.challengeId]);
 
   // Countdown timer
   useEffect(() => {
@@ -326,16 +339,15 @@ export default function CodeBattle() {
 
   // Set user status to typing
   useEffect(() => {
+    let timer;
     if (code !== "" && !isEditorReadOnly) {
       setUserStatus("typing");
-      const timer = setTimeout(() => {
-        if (userStatus === "typing") {
-          setUserStatus("idle");
-        }
+      timer = setTimeout(() => {
+        setUserStatus("idle");
       }, 2000);
-      return () => clearTimeout(timer);
     }
-  }, [code, userStatus, isEditorReadOnly]);
+    return () => clearTimeout(timer);
+  }, [code, isEditorReadOnly]);
 
   // Toggle editor expansion
   const toggleEditorExpansion = () => {
@@ -562,61 +574,88 @@ public class Solution {
 
   // Handle submit code
   const handleSubmitCode = () => {
-    setIsSubmitModalOpen(true);
+    // Check if all test cases pass before showing finalize modal
+    const allTestsPassed = testResults.every(test => test.status === "passed");
+    
+    if (allTestsPassed) {
+      setIsSubmitModalOpen(true);
+    } else {
+      setIsErrorModalOpen(true);
+    }
   };
 
-  // Handle finalize submission
-  const handleFinalizeSubmission = () => {
-    setIsSubmitModalOpen(false);
-    setIsEditorReadOnly(true);
-    setIsSubmitted(true);
-    setUserStatus("submitted");
-
-    const passedCount = testResults.filter((t) => t.status === "passed").length;
-    const totalCount = testResults.length;
-    const score = Math.round((passedCount / totalCount) * currentChallenge.points);
-
-    const result = {
-      challengeId: currentChallenge.id,
-      title: currentChallenge.title,
-      passedTests: passedCount,
-      totalTests: totalCount,
-      score: score,
-      timeSpent: currentChallenge.timeLimit - timeLeft,
-    };
-
-    if (passedCount === totalCount) {
-      setChallengeResults([...challengeResults, result]);
-    }
-
-    if (currentChallengeIndex === challengesData.length - 1) {
+  // Handle finalize submission with progress update
+  const handleFinalizeSubmission = async () => {
+    const allTestsPassed = testResults.every(test => test.status === "passed");
+    
+    if (!allTestsPassed) {
+      setIsSubmitModalOpen(false);
       setIsErrorModalOpen(true);
       return;
     }
 
-    if (passedCount === totalCount) {
-      setCompletedChallenges([...completedChallenges, currentChallenge.id]);
+    try {
+      // Update challenge progress in the backend
+      await updateChallengeProgress(battleCode, currentChallenge.challengeId, {
+        status: "completed",
+        code,
+        language,
+        score: currentChallenge.points,
+        submittedAt: new Date().toISOString()
+      });
+
+      setIsSubmitModalOpen(false);
+      setIsEditorReadOnly(true);
+      setIsSubmitted(true);
+      setUserStatus("submitted");
+
+      const result = {
+        challengeId: currentChallenge.challengeId,
+        title: currentChallenge.title,
+        passedTests: testResults.length,
+        totalTests: testResults.length,
+        score: currentChallenge.points,
+        timeSpent: currentChallenge.timeLimit - timeLeft,
+      };
+
+      setChallengeResults([...challengeResults, result]);
+      setCompletedChallenges([...completedChallenges, currentChallenge.challengeId]);
+
+      // Unlock next challenge if available
       if (currentChallengeIndex < challengesData.length - 1) {
-        const nextChallengeId = challengesData[currentChallengeIndex + 1].id;
-        if (!unlockedChallenges.includes(nextChallengeId)) {
-          setUnlockedChallenges([...unlockedChallenges, nextChallengeId]);
+        const nextChallenge = challengesData[currentChallengeIndex + 1];
+        if (!unlockedChallenges.includes(nextChallenge.challengeId)) {
+          await updateChallengeProgress(battleCode, nextChallenge.challengeId, {
+            status: "unlocked"
+          });
+          setUnlockedChallenges([...unlockedChallenges, nextChallenge.challengeId]);
         }
         setShowNextChallengeButton(true);
       }
-    } else {
-      setIsErrorModalOpen(true);
+    } catch (error) {
+      console.error("Failed to update challenge progress:", error);
+      toast.error("Failed to submit challenge. Please try again.");
     }
-
-    console.log("Submitting challenge to:", mockApiEndpoints.submitChallenge, {
-      userId: mockUserData.id,
-      challengeId: currentChallenge.id,
-      code: code,
-      language: language,
-      testResults: testResults,
-      score: score,
-      timeSpent: currentChallenge.timeLimit - timeLeft,
-    });
   };
+
+  // Auto-save code periodically
+  useEffect(() => {
+    let saveTimer;
+    if (!isSubmitted && code && currentChallenge?.challengeId && battleCode) {
+      saveTimer = setTimeout(async () => {
+        try {
+          await updateChallengeProgress(battleCode, currentChallenge.challengeId, {
+            code,
+            language
+          });
+        } catch (error) {
+          console.error("Failed to auto-save code:", error);
+        }
+      }, 5000);
+
+      return () => clearTimeout(saveTimer);
+    }
+  }, [code, language, currentChallenge?.challengeId, isSubmitted, battleCode, updateChallengeProgress]);
 
   // Handle next challenge
   const handleNextChallenge = () => {
@@ -627,7 +666,7 @@ public class Solution {
 
   // Handle select challenge
   const handleSelectChallenge = (index) => {
-    if (isChallengeUnlocked(challengesData[index].id)) {
+    if (isChallengeUnlocked(challengesData[index].challengeId)) {
       setCurrentChallengeIndex(index);
     }
   };
@@ -691,6 +730,24 @@ public class Solution {
     );
   };
 
+  // Load battle details and progress
+  useEffect(() => {
+    if (battleCode) {
+      loadBattleAndProgress();
+    }
+  }, [battleCode]);
+
+  if (isLoadingProgress) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#0D0A1A]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#B689F4] mx-auto mb-4" />
+          <p className="text-[#F5F5F5]">Loading your progress...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen bg-[#0D0A1A] text-[#F5F5F5] overflow-hidden">
       {!isEditorExpanded && (
@@ -720,18 +777,18 @@ public class Solution {
                   <DropdownMenuContent className="bg-[#231b3d] border border-[#2B1F4A]">
                     {challengesData.map((challenge, index) => (
                       <DropdownMenuItem
-                        key={challenge.id}
-                        disabled={!isChallengeUnlocked(challenge.id)}
+                        key={challenge.challengeId}
+                        disabled={!isChallengeUnlocked(challenge.challengeId)}
                         onClick={() => handleSelectChallenge(index)}
                         className={`flex items-center justify-between ${
-                          !isChallengeUnlocked(challenge.id) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                          !isChallengeUnlocked(challenge.challengeId) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                         } ${index === currentChallengeIndex ? "bg-[#2B1F4A]" : ""}`}
                       >
                         <div className="flex items-center">
-                          {!isChallengeUnlocked(challenge.id) && <Lock className="h-3 w-3 mr-1" />}
+                          {!isChallengeUnlocked(challenge.challengeId) && <Lock className="h-3 w-3 mr-1" />}
                           Challenge {index + 1}: {challenge.title.substring(0, 15)}...
                         </div>
-                        {getChallengeStatusBadge(challenge.id, index)}
+                        {getChallengeStatusBadge(challenge.challengeId, index)}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
@@ -786,18 +843,18 @@ public class Solution {
             <div className="flex items-center gap-2">
               {challengesData.map((challenge, index) => (
                 <Button
-                  key={challenge.id}
+                  key={challenge.challengeId}
                   variant={index === currentChallengeIndex ? "default" : "outline"}
                   size="sm"
-                  disabled={!isChallengeUnlocked(challenge.id)}
+                  disabled={!isChallengeUnlocked(challenge.challengeId)}
                   onClick={() => handleSelectChallenge(index)}
                   className={`h-7 px-3 ${
                     index === currentChallengeIndex
                       ? "bg-[#B689F4] text-[#0D0A1A]"
                       : "border-[#2B1F4A] bg-[#18122B] text-[#C2C2DD]"
-                  } ${!isChallengeUnlocked(challenge.id) ? "opacity-50 cursor-not-allowed" : ""}`}
+                  } ${!isChallengeUnlocked(challenge.challengeId) ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  {!isChallengeUnlocked(challenge.id) && <Lock className="h-3 w-3 mr-1" />}
+                  {!isChallengeUnlocked(challenge.challengeId) && <Lock className="h-3 w-3 mr-1" />}
                   {index === 2 ? (
                     <span className="flex items-center">
                       Challenge {index + 1} <ChevronDown className="h-3 w-3 ml-1" />
@@ -1169,30 +1226,30 @@ public class Solution {
                 <div className="grid grid-cols-3 gap-2">
                   {challengesData.map((challenge, index) => (
                     <div
-                      key={challenge.id}
+                      key={challenge.challengeId}
                       className={`p-2 rounded-md text-center ${
                         index === currentChallengeIndex
                           ? "bg-[#2B1F4A] border border-[#B689F4]"
-                          : completedChallenges.includes(challenge.id)
+                          : completedChallenges.includes(challenge.challengeId)
                             ? "bg-[#14AE5C]/20 border border-[#14AE5C]/50"
-                            : isChallengeUnlocked(challenge.id)
+                            : isChallengeUnlocked(challenge.challengeId)
                               ? "bg-[#18122B] border border-[#2B1F4A]"
                               : "bg-[#18122B] border border-[#2B1F4A] opacity-50"
                       }`}
                     >
                       <div className="text-xs font-medium mb-1">Challenge {index + 1}</div>
-                      {completedChallenges.includes(challenge.id) && (
+                      {completedChallenges.includes(challenge.challengeId) && (
                         <CheckCircle className="h-3 w-3 text-green-400 mx-auto" />
                       )}
-                      {index === currentChallengeIndex && !completedChallenges.includes(challenge.id) && (
+                      {index === currentChallengeIndex && !completedChallenges.includes(challenge.challengeId) && (
                         <div className="text-xs text-[#B689F4]">Current</div>
                       )}
-                      {!isChallengeUnlocked(challenge.id) && !completedChallenges.includes(challenge.id) && (
+                      {!isChallengeUnlocked(challenge.challengeId) && !completedChallenges.includes(challenge.challengeId) && (
                         <Lock className="h-3 w-3 text-[#C2C2DD] mx-auto" />
                       )}
-                      {isChallengeUnlocked(challenge.id) &&
+                      {isChallengeUnlocked(challenge.challengeId) &&
                         index !== currentChallengeIndex &&
-                        !completedChallenges.includes(challenge.id) && (
+                        !completedChallenges.includes(challenge.challengeId) && (
                           <div className="text-xs text-[#C2C2DD]">Unlocked</div>
                         )}
                     </div>
@@ -1304,27 +1361,28 @@ public class Solution {
           <DialogHeader>
             <DialogTitle className="text-xl flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-400" />
-              Final Submission
+              All Tests Passed! 🎉
             </DialogTitle>
             <DialogDescription className="text-[#C2C2DD]">
-              Are you ready to submit your solution for Challenge {currentChallengeIndex + 1}?
+              Congratulations! You've passed all test cases for Challenge {currentChallengeIndex + 1}.
+              Ready to submit your solution?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="bg-[#0D0A1A] rounded-lg p-4 border border-[#2B1F4A]">
-              <p className="text-sm text-[#F5F5F5]">Once you finalize your submission:</p>
+              <p className="text-sm text-[#F5F5F5]">Upon finalizing your submission:</p>
               <ul className="mt-2 space-y-2">
+                <li className="flex items-start gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span>Your solution will be recorded with a perfect score</span>
+                </li>
                 <li className="flex items-start gap-2 text-sm">
                   <Lock className="h-4 w-4 text-yellow-400 mt-0.5 flex-shrink-0" />
                   <span>Your code will be locked and become read-only</span>
                 </li>
                 <li className="flex items-start gap-2 text-sm">
-                  <CheckSquare className="h-4 w-4 text-[#B689F4] mt-0.5 flex-shrink-0" />
-                  <span>Your solution will be evaluated and scored</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <ArrowRight className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span>You'll be able to proceed to the next challenge if all tests pass</span>
+                  <ArrowRight className="h-4 w-4 text-[#B689F4] mt-0.5 flex-shrink-0" />
+                  <span>You'll be able to proceed to the next challenge</span>
                 </li>
               </ul>
             </div>
@@ -1335,9 +1393,9 @@ public class Solution {
               onClick={() => setIsSubmitModalOpen(false)}
               className="text-neutral-900 hover:text-neutral-200 border-[#2B1F4A] hover:bg-[#2B1F4A]"
             >
-              Cancel
+              Keep Editing
             </Button>
-            <Button onClick={handleFinalizeSubmission} className="bg-[#E94560] hover:bg-[#E94560]/80 text-white">
+            <Button onClick={handleFinalizeSubmission} className="bg-[#14AE5C] hover:bg-[#14AE5C]/80 text-white">
               <CheckSquare className="h-4 w-4 mr-1" /> Finalize Submission
             </Button>
           </DialogFooter>
@@ -1347,15 +1405,18 @@ public class Solution {
         <DialogContent className="bg-[#18122B] border border-[#2B1F4A] text-[#F5F5F5] max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl flex items-center gap-2">
-              <Lock className="h-5 w-5 text-red-400" />🛑 Challenge Locked!
+              <XCircle className="h-5 w-5 text-red-400" />
+              Test Cases Failed
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="bg-[#0D0A1A] rounded-lg p-4 border border-red-500/30">
-              <p className="text-lg text-center font-bold mb-2">🕹️Fix the Error to Continue</p>
-              <p className="text-center text-sm mb-2">You've hit a roadblock — there's still an error in this challenge.</p>
+              <p className="text-lg text-center font-bold mb-2">🔍 Some Test Cases Failed</p>
+              <p className="text-center text-sm mb-2">
+                Your solution didn't pass all test cases. Please review the failing tests and try again.
+              </p>
               <p className="text-center text-sm text-yellow-400">
-                🧩 Solve it to unlock the next level and keep progressing on your quest!
+                Fix the errors in your code to proceed with submission.
               </p>
             </div>
           </div>
@@ -1363,12 +1424,10 @@ public class Solution {
             <Button
               onClick={() => {
                 setIsErrorModalOpen(false);
-                setIsEditorReadOnly(false);
-                setIsSubmitted(false);
               }}
               className="bg-[#E94560] hover:bg-[#E94560]/80 text-white w-full"
             >
-              Try Again
+              Continue Editing
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -624,6 +624,19 @@ const useBattleStore = create((set, get) => ({
   ...createBattleSlice(set, get),
   ...createNotificationSlice(set, get),
   ...createBattleManagementSlice(set, get),
+  updateChallengeProgress: async (battleCode, challengeId, progressData) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/${battleCode}/progress/${challengeId}`,
+        progressData,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update progress:", error);
+      throw error;
+    }
+  }
 }));
 
 export default useBattleStore;
