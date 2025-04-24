@@ -1,14 +1,11 @@
-"use client"
-
-import { useState, useEffect, useRef } from "react"
-import { Editor } from "@monaco-editor/react"
+import { useState, useEffect, useRef } from "react";
+import { Editor } from "@monaco-editor/react";
 import {
   Clock,
   Play,
   Send,
   XCircle,
   CheckCircle,
-  AlertCircle,
   ChevronRight,
   ChevronDown,
   Trophy,
@@ -27,13 +24,13 @@ import {
   ArrowRight,
   CheckSquare,
   Unlock,
-} from "lucide-react"
-import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+} from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -41,12 +38,60 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useParams } from "react-router-dom"
-import useBattleStore from "@/store/battleStore"
+} from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useParams } from "react-router-dom";
+import useBattleStore from "@/store/battleStore";
+import axios from "axios";
 
+// Language options with Piston API versions
+const languageOptions = [
+  { value: "javascript", label: "JavaScript", version: "18.15.0" },
+  { value: "java", label: "Java", version: "15.0.2" },
+  { value: "csharp", label: "C#", version: "6.12.0" },
+  { value: "python", label: "Python", version: "3.10.0" },
+  { value: "c", label: "C", version: "10.2.0" },
+  { value: "cpp", label: "C++", version: "10.2.0" },
+];
 
+// Map languageOptions to LANGUAGE_VERSIONS
+const LANGUAGE_VERSIONS = languageOptions.reduce((acc, { value, version }) => {
+  acc[value] = version;
+  return acc;
+}, {});
+
+// Static challenges data (no boilerplate)
+const staticChallengesData = [
+  {
+    id: 1,
+    title: "Sort Array",
+    points: 150,
+    timeLimit: 1800,
+    description: `You are given an array of integers. Your task is to sort the array in ascending order and output the sorted numbers as a space-separated string. Use console.log (JavaScript), print (Python), or System.out.println (Java) to output the result.`,
+    examples: [
+      {
+        input: "5\n5 2 9 1 5",
+        output: "1 2 5 5 9",
+        explanation: "The sorted array in ascending order, output as a space-separated string.",
+      },
+      {
+        input: "3\n3 1 2",
+        output: "1 2 3",
+        explanation: "The sorted array in ascending order, output as a space-separated string.",
+      },
+    ],
+    hints: [
+      "Consider using built-in sorting functions for simplicity.",
+      "Ensure the output is a space-separated string, not an array or JSON.",
+    ],
+    testCases: [
+      { id: 1, input: "[5, 2, 9, 1, 5]", expectedOutput: "1 2 5 5 9", status: "waiting" },
+      { id: 2, input: "[3, 1, 2]", expectedOutput: "1 2 3", status: "waiting" },
+      { id: 3, input: "[10, -5, 0, 100, 20]", expectedOutput: "-5 0 10 20 100", status: "waiting" },
+      { id: 4, input: "[7, 7, 7, 7]", expectedOutput: "7 7 7 7", status: "waiting" },
+    ],
+  },
+];
 
 // Mock data for backend integration
 const mockUserData = {
@@ -55,7 +100,7 @@ const mockUserData = {
   totalScore: 0,
   completedChallenges: [],
   submissionHistory: [],
-}
+};
 
 // Mock API endpoints for backend integration
 const mockApiEndpoints = {
@@ -63,28 +108,35 @@ const mockApiEndpoints = {
   getChallenge: "/api/challenges/:id",
   getUserProgress: "/api/users/:id/progress",
   updateUserScore: "/api/users/:id/score",
-}
+};
 
+// Basic parseError function
+const parseError = (errorMessage) => {
+  const match = errorMessage.match(/line (\d+):(.+)/i);
+  if (match) {
+    return { line: parseInt(match[1], 10), message: match[2].trim() };
+  }
+  return { line: null, message: errorMessage || "Unknown error" };
+};
 
+// Utility for delayed execution
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function CodeBattle() {
+  const { battleCode } = useParams();
+  const { fetchBattleDetails, battleDetails } = useBattleStore();
 
-  const { battleCode } = useParams()
-
-  const { fetchBattleDetails, battleDetails, isLoadingBattleDetails, battleDetailsError } = useBattleStore();
   // Battle state
-  const [battleTitle, setBattleTitle] = useState("Algorithmic Coding Battle")
-  const [challengesData, setChallengesData] = useState([]); // Replace static challengesData with state
+  const [battleTitle, setBattleTitle] = useState("Algorithmic Coding Battle");
+  const [challengesData, setChallengesData] = useState([]);
   const [opponents, setOpponents] = useState([]);
-  // Challenge state
-  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0)
-  const [completedChallenges, setCompletedChallenges] = useState([])
-  const [challengeResults, setChallengeResults] = useState([])
-  const [unlockedChallenges, setUnlockedChallenges] = useState([1]) // Only first challenge is unlocked initially
+  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+  const [completedChallenges, setCompletedChallenges] = useState([]);
+  const [challengeResults, setChallengeResults] = useState([]);
+  const [unlockedChallenges, setUnlockedChallenges] = useState([1]);
 
   // Current challenge data
   const currentChallenge = challengesData[currentChallengeIndex] || {
-    boilerplate: { javascript: "", python: "", java: "" },
     testCases: [],
     timeLimit: 1800,
     title: "",
@@ -95,42 +147,39 @@ export default function CodeBattle() {
   };
 
   // Editor state
-  const [language, setLanguage] = useState("javascript")
-  const [code, setCode] = useState(currentChallenge.boilerplate.javascript)
-  const [output, setOutput] = useState("")
-  const [testResults, setTestResults] = useState(currentChallenge.testCases)
-  const [timeLeft, setTimeLeft] = useState(currentChallenge.timeLimit)
-  const [isRunning, setIsRunning] = useState(false)
-  const [userProgress, setUserProgress] = useState(0)
-  const [theme, setTheme] = useState("vs-dark")
-  const [isEditorExpanded, setIsEditorExpanded] = useState(false)
-  const [activeTab, setActiveTab] = useState("output")
-  const [editorKey, setEditorKey] = useState(0) // Key to force editor remount
-  const [userStatus, setUserStatus] = useState("idle") // idle, typing, submitted
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
-  const [isEditorReadOnly, setIsEditorReadOnly] = useState(false)
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [showNextChallengeButton, setShowNextChallengeButton] = useState(false)
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false)
+  const [language, setLanguage] = useState("javascript");
+  const [code, setCode] = useState("");
+  const [output, setOutput] = useState("");
+  const [testResults, setTestResults] = useState(currentChallenge.testCases || []);
+  const [timeLeft, setTimeLeft] = useState(currentChallenge.timeLimit || 1800);
+  const [userProgress, setUserProgress] = useState(0);
+  const [theme, setTheme] = useState("vs-dark");
+  const [isEditorExpanded, setIsEditorExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState("output");
+  const [userStatus, setUserStatus] = useState("idle");
+  const [isEditorReadOnly, setIsEditorReadOnly] = useState(false);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showNextChallengeButton, setShowNextChallengeButton] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   // Collapsible panel states
-  const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(false)
-  const [isProgressPanelOpen, setIsProgressPanelOpen] = useState(false)
-  const [isOutputPanelOpen, setIsOutputPanelOpen] = useState(false)
-  const [isChallenge3Open, setIsChallenge3Open] = useState(false)
+  const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(true);
+  const [isProgressPanelOpen, setIsProgressPanelOpen] = useState(false);
+  const [isOutputPanelOpen, setIsOutputPanelOpen] = useState(true);
 
   // Refs for scrollable elements
-  const testCasesRef = useRef(null)
-  const outputRef = useRef(null)
-  const editorRef = useRef(null)
+  const testCasesRef = useRef(null);
+  const outputRef = useRef(null);
+  const editorRef = useRef(null);
 
+  // Fetch battle details
   useEffect(() => {
     const loadBattleDetails = async () => {
       try {
         if (battleCode) {
           const data = await fetchBattleDetails(battleCode);
-          // Map backend challenges to frontend format
           const formattedChallenges = data.challenges.map((challenge, index) => ({
             id: index + 1,
             title: challenge.problemTitle,
@@ -143,11 +192,6 @@ export default function CodeBattle() {
               explanation: `Example ${i + 1}`,
             })),
             hints: [],
-            boilerplate: {
-              javascript: `function solution() {\n  // Your code here\n}`,
-              python: `def solution():\n    # Your code here\n    pass`,
-              java: `public class Solution {\n    public static void solution() {\n        // Your code here\n    }\n}`,
-            },
             testCases: challenge.inputConstraints.map((input, i) => ({
               id: i + 1,
               input,
@@ -157,13 +201,12 @@ export default function CodeBattle() {
           }));
           setChallengesData(formattedChallenges);
           setBattleTitle(data.title);
-          // Update opponents based on fetched players
           setOpponents([
             {
               id: data.player2.id,
               name: data.player2.name,
               avatar: "/placeholder.svg?height=40&width=40",
-              progress: 75, // Update dynamically if backend provides progress
+              progress: 75,
               score: 120,
               status: "idle",
             },
@@ -171,8 +214,7 @@ export default function CodeBattle() {
         }
       } catch (error) {
         console.error("Failed to fetch battle details:", error);
-        // Fallback to static challengesData and opponents
-        setChallengesData(challengesData); // Use the imported static challengesData
+        setChallengesData(staticChallengesData);
         setOpponents([
           {
             id: 1,
@@ -185,181 +227,216 @@ export default function CodeBattle() {
         ]);
       }
     };
-  
+
     loadBattleDetails();
   }, [battleCode, fetchBattleDetails]);
 
-  useEffect(() => {
-    console.log(battleDetails)
-  }, [battleDetails])
-
-  // Format time from seconds to MM:SS
+  // Format time
   const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
 
   // Handle editor mounting
   const handleEditorDidMount = (editor) => {
-    editorRef.current = editor
-  }
-
-  // Handle language change
-  useEffect(() => {
-    if (language === "javascript") {
-      setCode(currentChallenge.boilerplate.javascript)
-    } else if (language === "python") {
-      setCode(currentChallenge.boilerplate.python)
-    } else if (language === "java") {
-      setCode(currentChallenge.boilerplate.java)
-    }
-  }, [language, currentChallenge])
+    editorRef.current = editor;
+  };
 
   // Reset state when challenge changes
   useEffect(() => {
-    setCode(currentChallenge.boilerplate[language])
-    setTestResults(currentChallenge.testCases)
-    setTimeLeft(currentChallenge.timeLimit)
-    setOutput("")
-    setUserProgress(0)
-    setIsEditorReadOnly(false)
-    setIsSubmitted(false)
-    setShowNextChallengeButton(false)
-    setUserStatus("idle")
-    setIsProblemPanelOpen(true)
-  }, [currentChallengeIndex, currentChallenge, language])
+    setCode("");
+    setTestResults(currentChallenge.testCases || []);
+    setTimeLeft(currentChallenge.timeLimit || 1800);
+    setOutput("");
+    setUserProgress(0);
+    setIsEditorReadOnly(false);
+    setIsSubmitted(false);
+    setShowNextChallengeButton(false);
+    setUserStatus("idle");
+    setIsProblemPanelOpen(true);
+  }, [currentChallengeIndex, currentChallenge]);
 
   // Countdown timer
   useEffect(() => {
-    let timer
+    let timer;
     if (timeLeft > 0 && !isSubmitted) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1)
-      }, 1000)
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
     }
-    return () => clearInterval(timer)
-  }, [timeLeft, isSubmitted])
+    return () => clearInterval(timer);
+  }, [timeLeft, isSubmitted]);
 
-  // Handle editor expansion with debounce to prevent resize observer issues
+  // Handle editor layout
   useEffect(() => {
-    // Force editor to remount after layout changes
-    const timer = setTimeout(() => {
-      if (editorRef.current) {
-        editorRef.current.layout()
-      }
-    }, 100)
+    if (editorRef.current) {
+      const handleResize = () => {
+        editorRef.current.layout();
+      };
+      window.addEventListener("resize", handleResize);
+      editorRef.current.layout();
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
+    }
+  }, [isEditorExpanded, isProblemPanelOpen, isProgressPanelOpen, isOutputPanelOpen]);
 
-    return () => clearTimeout(timer)
-  }, [isEditorExpanded, isProblemPanelOpen, isProgressPanelOpen, isOutputPanelOpen])
-
-  // Set user status to typing when code changes
+  // Set user status to typing
   useEffect(() => {
-    if (code !== currentChallenge.boilerplate[language] && !isEditorReadOnly) {
-      setUserStatus("typing")
-
-      // Reset to idle after 2 seconds of inactivity
+    if (code !== "" && !isEditorReadOnly) {
+      setUserStatus("typing");
       const timer = setTimeout(() => {
         if (userStatus === "typing") {
-          setUserStatus("idle")
+          setUserStatus("idle");
         }
-      }, 2000)
-
-      return () => clearTimeout(timer)
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, [code, language, userStatus, isEditorReadOnly, currentChallenge.boilerplate])
+  }, [code, userStatus, isEditorReadOnly]);
 
-  // Toggle editor expansion with debounce
+  // Toggle editor expansion
   const toggleEditorExpansion = () => {
-    // Increment key to force remount of editor
-    setEditorKey((prev) => prev + 1)
+    setIsEditorExpanded((prev) => {
+      const newExpanded = !prev;
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.layout();
+        }
+      }, 100);
+      return newExpanded;
+    });
+  };
 
-    // Use setTimeout to avoid immediate state changes that could cause layout thrashing
-    setTimeout(() => {
-      setIsEditorExpanded((prev) => !prev)
-    }, 10)
-  }
-
-  // Check if a challenge is unlocked
+  // Check if challenge is unlocked
   const isChallengeUnlocked = (challengeId) => {
-    return unlockedChallenges.includes(challengeId)
-  }
+    return unlockedChallenges.includes(challengeId);
+  };
 
-  // Run code and evaluate test cases
-  const handleRunCode = () => {
-    setIsRunning(true)
-    setOutput("Running your code and evaluating test cases...")
-    setIsOutputPanelOpen(true) // Ensure output panel is open
-    setUserStatus("submitted")
+  // Execute code with retry on 429 errors
+  const executeCode = async (codeToExecute, retries = 3, initialDelay = 1000) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await axios.post(
+          "https://emkc.org/api/v2/piston/execute",
+          {
+            language: language,
+            version: LANGUAGE_VERSIONS[language],
+            files: [{ content: codeToExecute }],
+          },
+          { withCredentials: false }
+        );
+        const data = response.data;
 
-    // Simulate processing delay
-    setTimeout(() => {
-      // Update test results
-      let updatedResults
+        if (data.message) {
+          const { message, line } = parseError(data.message);
+          return { output: "", error: message, errorLine: line };
+        }
 
-      // For Challenge 3, ensure at least one test fails
-      if (currentChallengeIndex === 2) {
-        updatedResults = testResults.map((test, index) => ({
-          ...test,
-          // Make sure at least test #2 fails for Challenge 3
-          status: index === 1 ? "failed" : Math.random() > 0.3 ? "passed" : "failed",
-        }))
-      } else {
-        updatedResults = testResults.map((test) => ({
-          ...test,
-          status: Math.random() > 0.3 ? "passed" : "failed", // Randomly pass/fail for demo
-        }))
+        if (data.compile && data.compile.code !== 0) {
+          const error = data.compile.stderr || data.compile.output || "Compilation failed";
+          const { message, line } = parseError(error);
+          return { output: "", error: message, errorLine: line };
+        }
+
+        if (data.run && data.run.code !== 0) {
+          const error = data.run.stderr || data.run.output || "Runtime error";
+          const { message, line } = parseError(error);
+          return { output: "", error: message, errorLine: line };
+        }
+
+        const output = data.run.output;
+        return { output: output.trim(), error: null, errorLine: null };
+      } catch (error) {
+        if (error.response && error.response.status === 429 && attempt < retries) {
+          const delayMs = initialDelay * Math.pow(2, attempt - 1);
+          console.warn(`Rate limit hit, retrying after ${delayMs}ms (attempt ${attempt}/${retries})`);
+          await delay(delayMs);
+          continue;
+        }
+        console.error("Execution failed:", error);
+        const { message, line } = parseError(error.message || "Unknown error");
+        return { output: "", error: `Error executing code: ${message}`, errorLine: line };
+      }
+    }
+    return { output: "", error: "Max retries reached due to rate limiting", errorLine: null };
+  };
+
+  // Handle run code with FIFO queue
+  const handleRunCode = async () => {
+    setIsExecuting(true);
+    setOutput("Executing code...");
+
+
+    try {
+      const updatedTestResults = [];
+      for (const test of currentChallenge.testCases) {
+        const executionCode = `
+          ${code}
+          // Input: ${test.input}
+        `;
+
+        const result = await executeCode(executionCode);
+
+        if (result.error) {
+          updatedTestResults.push({
+            ...test,
+            status: "failed",
+            actualOutput: result.error,
+            errorLine: result.errorLine,
+          });
+        } else {
+          const isPassed = result.output === test.expectedOutput;
+          updatedTestResults.push({
+            ...test,
+            status: isPassed ? "passed" : "failed",
+            actualOutput: result.output,
+            errorLine: null,
+          });
+        }
       }
 
-      setTestResults(updatedResults)
+      setTestResults(updatedTestResults);
 
-      const passedCount = updatedResults.filter((t) => t.status === "passed").length
-      const totalCount = updatedResults.length
+      const passedCount = updatedTestResults.filter((t) => t.status === "passed").length;
+      const outputText = updatedTestResults
+        .map((t) => {
+          if (t.status === "passed") {
+            return `Test ${t.id}: Passed`;
+          }
+          if (t.errorLine) {
+            return `Test ${t.id}: Failed (Error at line ${t.errorLine}: ${t.actualOutput})`;
+          }
+          return `Test ${t.id}: Failed (Got: ${t.actualOutput}, Expected: ${t.expectedOutput})`;
+        })
+        .join("\n");
+      setOutput(`Test Results:\n${outputText}\n\nPassed ${passedCount}/${updatedTestResults.length} tests`);
 
-      // Generate detailed output
-      let outputText = `Code execution completed!\n\n`
-      outputText += `Test Results: ${passedCount}/${totalCount} test cases passed.\n\n`
-
-      updatedResults.forEach((test) => {
-        outputText += `Test #${test.id}: ${test.input} → ${
-          test.status === "passed"
-            ? test.expectedOutput + " ✓"
-            : (test.id === 3 ? "Incorrect output" : "No output") + " ✗"
-        }\n`
-      })
-
-      setOutput(outputText)
-      setIsRunning(false)
-
-      // Update progress based on passed tests
-      setUserProgress(Math.round((passedCount / totalCount) * 100))
-
-      // Show success animation if all tests passed
-      if (passedCount === totalCount) {
-        setShowSuccessAnimation(true)
-        setTimeout(() => setShowSuccessAnimation(false), 1500)
-      }
-    }, 1500)
-  }
+      setUserProgress(Math.round((passedCount / updatedTestResults.length) * 100));
+    } catch (error) {
+      console.error("Run code error:", error);
+      setOutput(`Error running code: ${error.message}`);
+    } finally {
+      setIsExecuting(false);
+    }
+  };
 
   // Handle submit code
   const handleSubmitCode = () => {
-    setIsSubmitModalOpen(true)
-  }
+    setIsSubmitModalOpen(true);
+  };
 
   // Handle finalize submission
   const handleFinalizeSubmission = () => {
-    setIsSubmitModalOpen(false)
-    setIsEditorReadOnly(true)
-    setIsSubmitted(true)
-    setUserStatus("submitted")
+    setIsSubmitModalOpen(false);
+    setIsEditorReadOnly(true);
+    setIsSubmitted(true);
+    setUserStatus("submitted");
 
-    // Calculate results
-    const passedCount = testResults.filter((t) => t.status === "passed").length
-    const totalCount = testResults.length
-    const score = Math.round((passedCount / totalCount) * currentChallenge.points)
+    const passedCount = testResults.filter((t) => t.status === "passed").length;
+    const totalCount = testResults.length;
+    const score = Math.round((passedCount / totalCount) * currentChallenge.points);
 
-    // Store challenge result
     const result = {
       challengeId: currentChallenge.id,
       title: currentChallenge.title,
@@ -367,38 +444,30 @@ export default function CodeBattle() {
       totalTests: totalCount,
       score: score,
       timeSpent: currentChallenge.timeLimit - timeLeft,
-    }
+    };
 
-    // Only add to challenge results if all tests passed
     if (passedCount === totalCount) {
-      setChallengeResults([...challengeResults, result])
+      setChallengeResults([...challengeResults, result]);
     }
 
-    // Special case for Challenge 3 (index 2) - Always show error
     if (currentChallengeIndex === 2) {
-      setIsErrorModalOpen(true)
-      return
+      setIsErrorModalOpen(true);
+      return;
     }
 
-    // Check if all tests passed before allowing to proceed
     if (passedCount === totalCount) {
-      // Add to completed challenges
-      setCompletedChallenges([...completedChallenges, currentChallenge.id])
-
-      // Unlock next challenge if available
+      setCompletedChallenges([...completedChallenges, currentChallenge.id]);
       if (currentChallengeIndex < challengesData.length - 1) {
-        const nextChallengeId = challengesData[currentChallengeIndex + 1].id
+        const nextChallengeId = challengesData[currentChallengeIndex + 1].id;
         if (!unlockedChallenges.includes(nextChallengeId)) {
-          setUnlockedChallenges([...unlockedChallenges, nextChallengeId])
+          setUnlockedChallenges([...unlockedChallenges, nextChallengeId]);
         }
-        setShowNextChallengeButton(true)
+        setShowNextChallengeButton(true);
       }
     } else {
-      // Show error modal if not all tests passed
-      setIsErrorModalOpen(true)
+      setIsErrorModalOpen(true);
     }
 
-    // Mock API call to submit challenge
     console.log("Submitting challenge to:", mockApiEndpoints.submitChallenge, {
       userId: mockUserData.id,
       challengeId: currentChallenge.id,
@@ -407,24 +476,24 @@ export default function CodeBattle() {
       testResults: testResults,
       score: score,
       timeSpent: currentChallenge.timeLimit - timeLeft,
-    })
-  }
+    });
+  };
 
-  // Handle moving to next challenge
+  // Handle next challenge
   const handleNextChallenge = () => {
     if (currentChallengeIndex < challengesData.length - 1) {
-      setCurrentChallengeIndex(currentChallengeIndex + 1)
+      setCurrentChallengeIndex(currentChallengeIndex + 1);
     }
-  }
+  };
 
-  // Handle selecting a challenge from dropdown (for challenge 3)
+  // Handle select challenge
   const handleSelectChallenge = (index) => {
     if (isChallengeUnlocked(challengesData[index].id)) {
-      setCurrentChallengeIndex(index)
+      setCurrentChallengeIndex(index);
     }
-  }
+  };
 
-  // Get status icon based on status
+  // Get status icon
   const getStatusIcon = (status) => {
     switch (status) {
       case "typing":
@@ -432,28 +501,26 @@ export default function CodeBattle() {
           <span className="flex items-center text-blue-400">
             <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Typing...
           </span>
-        )
+        );
       case "submitted":
         return (
           <span className="flex items-center text-green-400">
             <CheckCheck className="h-3 w-3 mr-1" /> Submitted
           </span>
-        )
+        );
       case "idle":
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  // Get time color class based on time left
+  // Get time color class
   const getTimeColorClass = () => {
-    if (timeLeft < 60) return "text-red-500 animate-pulse font-bold"
-    if (timeLeft < 300) return "text-red-400 font-bold"
-    if (timeLeft < 600) return "text-yellow-400"
-    return "text-gray-200"
-  }
-
-  
+    if (timeLeft < 60) return "text-red-500 animate-pulse font-bold";
+    if (timeLeft < 300) return "text-red-400 font-bold";
+    if (timeLeft < 600) return "text-yellow-400";
+    return "text-gray-200";
+  };
 
   // Get challenge status badge
   const getChallengeStatusBadge = (challengeId, index) => {
@@ -462,35 +529,31 @@ export default function CodeBattle() {
         <Badge variant="outline" className="ml-1 bg-green-500/20 text-green-400 border-green-500">
           <CheckCircle className="h-3 w-3 mr-1" /> Completed
         </Badge>
-      )
+      );
     }
-
     if (index === currentChallengeIndex) {
       return (
         <Badge variant="outline" className="ml-1 bg-blue-500/20 text-blue-400 border-blue-500">
           Current
         </Badge>
-      )
+      );
     }
-
     if (isChallengeUnlocked(challengeId)) {
       return (
         <Badge variant="outline" className="ml-1 bg-yellow-500/20 text-yellow-400 border-yellow-500">
           <Unlock className="h-3 w-3 mr-1" /> Unlocked
         </Badge>
-      )
+      );
     }
-
     return (
       <Badge variant="outline" className="ml-1 bg-gray-500/20 text-gray-400 border-gray-500">
         <Lock className="h-3 w-3 mr-1" /> Locked
       </Badge>
-    )
-  }
+    );
+  };
 
   return (
     <div className="flex flex-col h-screen bg-[#0D0A1A] text-[#F5F5F5] overflow-hidden">
-      {/* Sticky header with essential info */}
       {!isEditorExpanded && (
         <header className="flex items-center justify-between px-3 py-2 bg-[#18122B] border-b border-[#2B1F4A] sticky top-0 z-10">
           <div className="flex items-center gap-2">
@@ -505,11 +568,7 @@ export default function CodeBattle() {
               <span className="truncate">{battleTitle}</span>
             </h1>
           </div>
-
-          
-
           <div className="flex items-center gap-2">
-            {/* Challenge selector */}
             <div className="bg-[#231b3d] border border-[#2B1F4A] rounded">
               {currentChallengeIndex === 2 ? (
                 <DropdownMenu>
@@ -546,16 +605,12 @@ export default function CodeBattle() {
                 </div>
               )}
             </div>
-
-            {/* Timer */}
             <div className="bg-[#231b3d] border border-[#2B1F4A] px-2 py-1 rounded text-sm">
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3 text-[#E94560]" />
                 <span className={`font-mono text-sm ${getTimeColorClass()}`}>{formatTime(timeLeft)}</span>
               </div>
             </div>
-
-            {/* Players count */}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -574,18 +629,13 @@ export default function CodeBattle() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-
-            {/* Exit button */}
             <Button variant="destructive" size="sm" className="h-7 px-4 bg-red-600/80 hover:bg-red-700 text-sm">
               Exit
             </Button>
           </div>
         </header>
       )}
-
-      {/* Main content area - Vertical stack */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Challenge navigation bar */}
         {!isEditorExpanded && (
           <div className="flex items-center justify-between px-3 py-2 bg-[#231b3d] border-b border-[#2B1F4A]">
             <div className="flex items-center gap-2">
@@ -594,9 +644,7 @@ export default function CodeBattle() {
                 {currentChallenge.points} pts
               </Badge>
             </div>
-
             <div className="flex items-center gap-2">
-              {/* Challenge navigation buttons */}
               {challengesData.map((challenge, index) => (
                 <Button
                   key={challenge.id}
@@ -623,8 +671,6 @@ export default function CodeBattle() {
             </div>
           </div>
         )}
-
-        {/* Problem description panel - Collapsible */}
         {!isEditorExpanded && (
           <Collapsible
             open={isProblemPanelOpen}
@@ -664,29 +710,24 @@ export default function CodeBattle() {
                       Examples
                     </TabsTrigger>
                   </TabsList>
-
                   <TabsContent value="description" className="mt-0 bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
                     <div className="space-y-4 p-2">
                       <h2 className="text-lg font-semibold">Problem Description</h2>
                       <p className="text-sm text-[#C2C2DD]">{currentChallenge.description}</p>
                     </div>
                   </TabsContent>
-
                   <TabsContent value="examples" className="mt-0 space-y-3">
                     {currentChallenge.examples.map((example, index) => (
                       <div key={index} className="bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
                         <h3 className="font-semibold text-[#B689F4] mb-2 text-sm">Example {index + 1}</h3>
-
                         <div className="mb-2">
                           <div className="text-xs text-[#C2C2DD] mb-1">Input:</div>
                           <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{example.input}</pre>
                         </div>
-
                         <div className="mb-2">
                           <div className="text-xs text-[#C2C2DD] mb-1">Output:</div>
                           <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{example.output}</pre>
                         </div>
-
                         {example.explanation && (
                           <div>
                             <div className="text-xs text-[#C2C2DD] mb-1">Explanation:</div>
@@ -701,10 +742,7 @@ export default function CodeBattle() {
             </CollapsibleContent>
           </Collapsible>
         )}
-
-        {/* Code editor - Dominant element */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Language selector */}
           <div className="flex items-center justify-between px-3 py-1 bg-[#18122B] border-b border-[#2B1F4A]">
             <div className="flex items-center">
               <select
@@ -713,12 +751,13 @@ export default function CodeBattle() {
                 className="bg-[#0D0A1A] text-[#F5F5F5] border border-[#2B1F4A] rounded px-2 py-1 text-xs"
                 disabled={isEditorReadOnly}
               >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
+                {languageOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
-
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
@@ -739,12 +778,9 @@ export default function CodeBattle() {
               </Button>
             </div>
           </div>
-
-          {/* Code editor */}
           <div className="flex-1 relative">
             <div className="absolute inset-0">
               <Editor
-                key={editorKey}
                 height="100%"
                 language={language === "javascript" ? "javascript" : language === "python" ? "python" : "java"}
                 value={code}
@@ -779,24 +815,21 @@ export default function CodeBattle() {
               )}
             </div>
           </div>
-
-          {/* Action buttons */}
           <div className="flex items-center justify-between px-3 py-2 bg-[#18122B] border-t border-b border-[#2B1F4A]">
             <div className="flex items-center gap-2">
               <Button
                 onClick={handleRunCode}
-                disabled={isRunning || isEditorReadOnly}
+                disabled={isExecuting || isEditorReadOnly}
                 className="bg-[#14AE5C] hover:bg-[#14AE5C]/80 text-white transition-all duration-200 transform hover:scale-105 h-8"
                 size="sm"
               >
-                {isRunning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
+                {isExecuting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
                 Run Code
               </Button>
-
               {!isSubmitted ? (
                 <Button
                   onClick={handleSubmitCode}
-                  disabled={isRunning || isEditorReadOnly}
+                  disabled={isExecuting || isEditorReadOnly}
                   className="bg-[#E94560] hover:bg-[#E94560]/80 text-white transition-all duration-200 transform hover:scale-105 h-8"
                   size="sm"
                 >
@@ -810,7 +843,6 @@ export default function CodeBattle() {
                 </Button>
               )}
             </div>
-
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -821,7 +853,6 @@ export default function CodeBattle() {
                 {isOutputPanelOpen ? <ChevronDown className="h-3 w-3 mr-1" /> : <ChevronUp className="h-3 w-3 mr-1" />}
                 {isOutputPanelOpen ? "Hide Output" : "Show Output"}
               </Button>
-
               <Button
                 variant="ghost"
                 size="sm"
@@ -838,8 +869,6 @@ export default function CodeBattle() {
             </div>
           </div>
         </div>
-
-        {/* Output panel - Collapsible */}
         <Collapsible open={isOutputPanelOpen} onOpenChange={setIsOutputPanelOpen} className="border-t border-[#2B1F4A]">
           <CollapsibleTrigger className="flex items-center justify-between w-full p-2 bg-[#18122B] hover:bg-[#231b3d] transition-colors md:hidden">
             <div className="flex items-center gap-2">
@@ -876,7 +905,6 @@ export default function CodeBattle() {
                     </TabsTrigger>
                   </TabsList>
                 </div>
-
                 <div className="flex-1 overflow-hidden">
                   <TabsContent value="output" className="p-0 m-0 h-full">
                     <pre
@@ -886,7 +914,6 @@ export default function CodeBattle() {
                       {output || "Run your code to see output here..."}
                     </pre>
                   </TabsContent>
-
                   <TabsContent value="testcases" className="p-0 m-0 h-full overflow-auto">
                     <div className="bg-[#1E1B38] p-2">
                       {testResults.map((test) => (
@@ -938,7 +965,7 @@ export default function CodeBattle() {
                                   <div className="mt-2 p-2 bg-[#E94560]/10 border border-[#E94560]/30 rounded">
                                     <div className="text-xs text-[#E94560] mb-1">Your Output:</div>
                                     <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
-                                      {test.id === 3 ? "Incorrect output" : "No output"}
+                                      {test.actualOutput}
                                     </pre>
                                   </div>
                                 )}
@@ -954,8 +981,6 @@ export default function CodeBattle() {
             </div>
           </CollapsibleContent>
         </Collapsible>
-
-        {/* Battle progress panel - Collapsible */}
         <Collapsible
           open={isProgressPanelOpen}
           onOpenChange={setIsProgressPanelOpen}
@@ -974,7 +999,6 @@ export default function CodeBattle() {
           </CollapsibleTrigger>
           <CollapsibleContent className="bg-[#231b3d]">
             <div className="p-3 space-y-3">
-              {/* Challenge progress */}
               <div className="bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A] mb-3">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-1">
                   <Trophy className="h-4 w-4 text-yellow-400" />
@@ -1013,8 +1037,6 @@ export default function CodeBattle() {
                   ))}
                 </div>
               </div>
-
-              {/* Your progress */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 w-32">
                   <div className="h-6 w-6 rounded-full bg-[#8A63D2] flex items-center justify-center relative">
@@ -1022,10 +1044,14 @@ export default function CodeBattle() {
                     {userStatus !== "idle" && (
                       <span className="absolute -top-1 -right-1 flex h-2 w-2">
                         <span
-                          className={`animate-ping absolute inline-flex h-full w-full rounded-full ${userStatus === "typing" ? "bg-blue-400" : "bg-green-400"} opacity-75`}
+                          className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
+                            userStatus === "typing" ? "bg-blue-400" : "bg-green-400"
+                          } opacity-75`}
                         ></span>
                         <span
-                          className={`relative inline-flex rounded-full h-2 w-2 ${userStatus === "typing" ? "bg-blue-500" : "bg-green-500"}`}
+                          className={`relative inline-flex rounded-full h-2 w-2 ${
+                            userStatus === "typing" ? "bg-blue-500" : "bg-green-500"
+                          }`}
                         ></span>
                       </span>
                     )}
@@ -1044,8 +1070,6 @@ export default function CodeBattle() {
                 </div>
                 <span className="text-xs font-mono w-8 text-right font-bold">{userProgress}%</span>
               </div>
-
-              {/* Opponents progress */}
               {opponents.map((opponent) => (
                 <div key={opponent.id} className="flex items-center gap-3">
                   <div className="flex items-center gap-2 w-32">
@@ -1058,10 +1082,14 @@ export default function CodeBattle() {
                       {opponent.status !== "idle" && (
                         <span className="absolute -top-1 -right-1 flex h-2 w-2">
                           <span
-                            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${opponent.status === "typing" ? "bg-blue-400" : "bg-green-400"} opacity-75`}
+                            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
+                              opponent.status === "typing" ? "bg-blue-400" : "bg-green-400"
+                            } opacity-75`}
                           ></span>
                           <span
-                            className={`relative inline-flex rounded-full h-2 w-2 ${opponent.status === "typing" ? "bg-blue-500" : "bg-green-500"}`}
+                            className={`relative inline-flex rounded-full h-2 w-2 ${
+                              opponent.status === "typing" ? "bg-blue-500" : "bg-green-500"
+                            }`}
                           ></span>
                         </span>
                       )}
@@ -1081,8 +1109,6 @@ export default function CodeBattle() {
                   <span className="text-xs font-mono w-8 text-right font-bold">{opponent.progress}%</span>
                 </div>
               ))}
-
-              {/* Challenge results summary */}
               {challengeResults.length > 0 && (
                 <div className="mt-4 bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
                   <h3 className="text-sm font-semibold mb-2">Challenge Results</h3>
@@ -1111,8 +1137,6 @@ export default function CodeBattle() {
           </CollapsibleContent>
         </Collapsible>
       </div>
-
-      {/* Submit Modal */}
       <Dialog open={isSubmitModalOpen} onOpenChange={setIsSubmitModalOpen}>
         <DialogContent className="bg-[#18122B] border border-[#2B1F4A] text-[#F5F5F5] max-w-md">
           <DialogHeader>
@@ -1124,7 +1148,6 @@ export default function CodeBattle() {
               Are you ready to submit your solution for Challenge {currentChallengeIndex + 1}?
             </DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4 py-2">
             <div className="bg-[#0D0A1A] rounded-lg p-4 border border-[#2B1F4A]">
               <p className="text-sm text-[#F5F5F5]">Once you finalize your submission:</p>
@@ -1144,7 +1167,6 @@ export default function CodeBattle() {
               </ul>
             </div>
           </div>
-
           <DialogFooter className="flex justify-between sm:justify-between">
             <Button
               variant="outline"
@@ -1159,8 +1181,6 @@ export default function CodeBattle() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Error Modal */}
       <Dialog open={isErrorModalOpen} onOpenChange={setIsErrorModalOpen}>
         <DialogContent className="bg-[#18122B] border border-[#2B1F4A] text-[#F5F5F5] max-w-md">
           <DialogHeader>
@@ -1168,7 +1188,6 @@ export default function CodeBattle() {
               <Lock className="h-5 w-5 text-red-400" />🛑 Challenge Locked!
             </DialogTitle>
           </DialogHeader>
-
           <div className="space-y-4 py-2">
             <div className="bg-[#0D0A1A] rounded-lg p-4 border border-red-500/30">
               <p className="text-lg text-center font-bold mb-2">🕹️Fix the Error to Continue</p>
@@ -1178,13 +1197,12 @@ export default function CodeBattle() {
               </p>
             </div>
           </div>
-
           <DialogFooter>
             <Button
               onClick={() => {
-                setIsErrorModalOpen(false)
-                setIsEditorReadOnly(false)
-                setIsSubmitted(false)
+                setIsErrorModalOpen(false);
+                setIsEditorReadOnly(false);
+                setIsSubmitted(false);
               }}
               className="bg-[#E94560] hover:bg-[#E94560]/80 text-white w-full"
             >
@@ -1194,5 +1212,5 @@ export default function CodeBattle() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
