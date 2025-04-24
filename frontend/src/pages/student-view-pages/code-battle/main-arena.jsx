@@ -60,36 +60,37 @@ const LANGUAGE_VERSIONS = languageOptions.reduce((acc, { value, version }) => {
   return acc;
 }, {});
 
-// Static challenges data (no boilerplate)
+// Static challenges data as fallback (updated to include functionName and numArguments)
 const staticChallengesData = [
   {
     id: 1,
     title: "Sort Array",
     points: 150,
     timeLimit: 1800,
-    description: `You are given an array of integers. Your task is to sort the array in ascending order and output the sorted numbers as a space-separated string. Use console.log (JavaScript), print (Python), or System.out.println (Java) to output the result.`,
+    description: `You are given an array of integers. Implement the function sortArray to sort the array in ascending order and return the sorted array.`,
     examples: [
       {
-        input: "5\n5 2 9 1 5",
+        input: "5 2 9 1 5",
         output: "1 2 5 5 9",
-        explanation: "The sorted array in ascending order, output as a space-separated string.",
+        explanation: "The sorted array in ascending order.",
       },
       {
-        input: "3\n3 1 2",
+        input: "3 1 2",
         output: "1 2 3",
-        explanation: "The sorted array in ascending order, output as a space-separated string.",
+        explanation: "The sorted array in ascending order.",
       },
     ],
     hints: [
       "Consider using built-in sorting functions for simplicity.",
-      "Ensure the output is a space-separated string, not an array or JSON.",
+      "Ensure the output is a space-separated string for console output.",
     ],
     testCases: [
-      { id: 1, input: "[5, 2, 9, 1, 5]", expectedOutput: "1 2 5 5 9", status: "waiting" },
-      { id: 2, input: "[3, 1, 2]", expectedOutput: "1 2 3", status: "waiting" },
-      { id: 3, input: "[10, -5, 0, 100, 20]", expectedOutput: "-5 0 10 20 100", status: "waiting" },
-      { id: 4, input: "[7, 7, 7, 7]", expectedOutput: "7 7 7 7", status: "waiting" },
+      { id: 1, input: "5 2 9 1 5", expectedOutput: "1 2 5 5 9", status: "waiting" },
+      { id: 2, input: "3 1 2", expectedOutput: "1 2 3", status: "waiting" },
+      { id: 3, input: "10 -5 0 100 20", expectedOutput: "-5 0 10 20 100", status: "waiting" },
     ],
+    functionName: "sortArray",
+    numArguments: 1,
   },
 ];
 
@@ -144,6 +145,8 @@ export default function CodeBattle() {
     description: "",
     examples: [],
     hints: [],
+    functionName: "",
+    numArguments: 0,
   };
 
   // Editor state
@@ -174,46 +177,84 @@ export default function CodeBattle() {
   const outputRef = useRef(null);
   const editorRef = useRef(null);
 
-  // Fetch battle details
   useEffect(() => {
     const loadBattleDetails = async () => {
       try {
-        if (battleCode) {
-          const data = await fetchBattleDetails(battleCode);
-          const formattedChallenges = data.challenges.map((challenge, index) => ({
-            id: index + 1,
-            title: challenge.problemTitle,
-            points: challenge.points,
-            timeLimit: Math.floor(data.duration * 60 / data.challenges.length),
-            description: challenge.problemDescription,
-            examples: challenge.inputConstraints.map((input, i) => ({
-              input,
-              output: challenge.expectedOutput[i],
-              explanation: `Example ${i + 1}`,
-            })),
-            hints: [],
-            testCases: challenge.inputConstraints.map((input, i) => ({
-              id: i + 1,
-              input,
-              expectedOutput: challenge.expectedOutput[i],
-              status: "waiting",
-            })),
-          }));
-          setChallengesData(formattedChallenges);
-          setBattleTitle(data.title);
-          setOpponents([
-            {
-              id: data.player2.id,
-              name: data.player2.name,
-              avatar: "/placeholder.svg?height=40&width=40",
-              progress: 75,
-              score: 120,
-              status: "idle",
-            },
-          ]);
+        if (!battleCode) {
+          throw new Error("No battle code provided");
         }
+        const data = await fetchBattleDetails(battleCode);
+        console.log("Raw battle data:", data);
+        
+        // Validate response
+        if (!data || typeof data !== "object") {
+          throw new Error("Invalid battle data received");
+        }
+        if (!Array.isArray(data.challenges)) {
+          console.error("Received data:", data);
+          throw new Error("Battle data is missing challenges or challenges is not an array");
+        }
+        if (data.challenges.length === 0) {
+          throw new Error("Battle has no challenges defined");
+        }
+
+        const formattedChallenges = data.challenges.map((challenge, index) => {
+          console.log(`Challenge ${index + 1}:`, challenge);
+          
+          // Validate required fields with more flexible field name matching
+          if (!challenge.title || !challenge.description || !challenge.points) {
+            throw new Error(`Challenge ${index + 1} is missing required fields (title, description, or points)`);
+          }
+          if (!challenge.functionName || !Number.isInteger(challenge.numArguments) || challenge.numArguments < 1) {
+            throw new Error(`Challenge ${index + 1} has invalid functionName or numArguments`);
+          }
+          if (!Array.isArray(challenge.testCases)) {
+            throw new Error(`Challenge ${index + 1} has invalid testCases`);
+          }
+
+          // Format test cases to ensure they have the required structure
+          const formattedTestCases = challenge.testCases.map((testCase, i) => ({
+            id: testCase.id || i + 1,
+            input: testCase.input,
+            expectedOutput: testCase.expectedOutput,
+            status: "waiting"
+          }));
+
+          // Create examples from test cases if none provided
+          const examples = challenge.examples || formattedTestCases.slice(0, 2).map(test => ({
+            input: test.input,
+            output: test.expectedOutput,
+            explanation: `Example test case`
+          }));
+
+          return {
+            id: challenge.id || index + 1,
+            title: challenge.title,
+            points: challenge.points,
+            timeLimit: challenge.timeLimit || Math.floor((data.duration || 30) * 60 / data.challenges.length),
+            description: challenge.description,
+            examples: examples,
+            hints: challenge.hints || [],
+            testCases: formattedTestCases,
+            functionName: challenge.functionName,
+            numArguments: challenge.numArguments,
+          };
+        });
+
+        setChallengesData(formattedChallenges);
+        setBattleTitle(data.title || "Algorithmic Coding Battle");
+        setOpponents([
+          {
+            id: data.player2?.id || 1,
+            name: data.player2?.name || "Opponent",
+            avatar: "/placeholder.svg?height=40&width=40",
+            progress: 75,
+            score: 120,
+            status: "idle",
+          },
+        ]);
       } catch (error) {
-        console.error("Failed to fetch battle details:", error);
+        console.error("Failed to fetch battle details:", error.message, error.stack);
         setChallengesData(staticChallengesData);
         setOpponents([
           {
@@ -225,9 +266,10 @@ export default function CodeBattle() {
             status: "typing",
           },
         ]);
+        setBattleTitle("Algorithmic Coding Battle");
       }
     };
-
+  
     loadBattleDetails();
   }, [battleCode, fetchBattleDetails]);
 
@@ -314,15 +356,67 @@ export default function CodeBattle() {
   };
 
   // Execute code with retry on 429 errors
-  const executeCode = async (codeToExecute, retries = 3, initialDelay = 1000) => {
+  const executeCode = async (codeToExecute, testInput, functionName, numArguments, language, retries = 3, initialDelay = 1000) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
+        // Parse testInput based on the format (handle both string and array formats)
+        let args;
+        try {
+          // Try parsing as JSON first (for array inputs)
+          args = JSON.parse(testInput);
+          if (!Array.isArray(args)) {
+            args = [args]; // Convert single value to array
+          }
+        } catch (e) {
+          // If JSON parsing fails, split by spaces
+          args = testInput.trim().split(/\s+/).map(arg => {
+            // Try to convert to number if possible
+            const num = Number(arg);
+            return isNaN(num) ? arg : num;
+          });
+        }
+
+        if (args.length !== numArguments) {
+          return { 
+            output: "", 
+            error: `Expected ${numArguments} arguments, got ${args.length}. Input: ${testInput}`, 
+            errorLine: null 
+          };
+        }
+
+        // Construct the execution code based on language
+        let executionCode;
+        if (language === "javascript") {
+          executionCode = `
+            ${codeToExecute}
+            const result = ${functionName}(${args.join(", ")});
+            console.log(JSON.stringify(result));
+          `;
+        } else if (language === "python") {
+          executionCode = `
+${codeToExecute}
+result = ${functionName}(${args.join(", ")})
+print(str(result))
+          `;
+        } else if (language === "java") {
+          executionCode = `
+public class Solution {
+    ${codeToExecute}
+    public static void main(String[] args) {
+        System.out.println(${functionName}(${args.join(", ")}));
+    }
+}
+          `;
+        } else {
+          return { output: "", error: `Unsupported language: ${language}`, errorLine: null };
+        }
+
         const response = await axios.post(
           "https://emkc.org/api/v2/piston/execute",
           {
             language: language,
             version: LANGUAGE_VERSIONS[language],
-            files: [{ content: codeToExecute }],
+            files: [{ content: executionCode }],
           },
           { withCredentials: false }
         );
@@ -345,8 +439,8 @@ export default function CodeBattle() {
           return { output: "", error: message, errorLine: line };
         }
 
-        const output = data.run.output;
-        return { output: output.trim(), error: null, errorLine: null };
+        const output = data.run.output.trim();
+        return { output, error: null, errorLine: null };
       } catch (error) {
         if (error.response && error.response.status === 429 && attempt < retries) {
           const delayMs = initialDelay * Math.pow(2, attempt - 1);
@@ -362,55 +456,100 @@ export default function CodeBattle() {
     return { output: "", error: "Max retries reached due to rate limiting", errorLine: null };
   };
 
-  // Handle run code with FIFO queue
+  // Handle run code
   const handleRunCode = async () => {
     setIsExecuting(true);
     setOutput("Executing code...");
 
-
     try {
-      const updatedTestResults = [];
-      for (const test of currentChallenge.testCases) {
-        const executionCode = `
-          ${code}
-          // Input: ${test.input}
-        `;
+      const updatedTestResults = await Promise.all(
+        currentChallenge.testCases.map(async (test) => {
+          const result = await executeCode(
+            code,
+            test.input,
+            currentChallenge.functionName,
+            currentChallenge.numArguments,
+            language
+          );
 
-        const result = await executeCode(executionCode);
+          if (result.error) {
+            return {
+              ...test,
+              status: "failed",
+              actualOutput: result.error,
+              errorLine: result.errorLine,
+            };
+          }
 
-        if (result.error) {
-          updatedTestResults.push({
-            ...test,
-            status: "failed",
-            actualOutput: result.error,
-            errorLine: result.errorLine,
-          });
-        } else {
           const isPassed = result.output === test.expectedOutput;
-          updatedTestResults.push({
+          return {
             ...test,
             status: isPassed ? "passed" : "failed",
             actualOutput: result.output,
             errorLine: null,
-          });
-        }
-      }
+          };
+        })
+      );
 
       setTestResults(updatedTestResults);
 
+      const failedResults = updatedTestResults.filter(t => t.status === "failed");
+      const firstError = failedResults[0]?.actualOutput;
+      const allSameError = failedResults.every(t => t.actualOutput === firstError);
+
       const passedCount = updatedTestResults.filter((t) => t.status === "passed").length;
-      const outputText = updatedTestResults
-        .map((t) => {
-          if (t.status === "passed") {
-            return `Test ${t.id}: Passed`;
+      let outputText = "";
+
+      const parseErrorMessage = (errorText) => {
+        const errorLines = errorText.split('\n');
+        // Find the file path line (usually contains '/piston/jobs/')
+        const fileLine = errorLines.find(line => line.includes('/piston/jobs/'));
+        
+        if (fileLine) {
+          // Get the line number from the file path line
+          const lineMatch = fileLine.match(/:(\d+)(?::(\d+))?$/);
+          const lineNumber = lineMatch ? parseInt(lineMatch[1]) : null;
+          
+          // Find the code line and pointer line after the file path line
+          const fileLineIndex = errorLines.indexOf(fileLine);
+          const codeLine = errorLines[fileLineIndex + 1];
+          const pointerLine = errorLines.find(line => line.includes('^'));
+          
+          // Find the actual error message (usually starts with the error type)
+          const errorMessageLine = errorLines.find(line => 
+            line.includes('Error:') || 
+            line.includes('SyntaxError:') || 
+            line.includes('TypeError:') || 
+            line.includes('ReferenceError:')
+          );
+
+          if (codeLine && pointerLine && errorMessageLine) {
+            return `${fileLine}\n${codeLine}\n${pointerLine}\n\n${errorMessageLine}`;
           }
-          if (t.errorLine) {
-            return `Test ${t.id}: Failed (Error at line ${t.errorLine}: ${t.actualOutput})`;
-          }
-          return `Test ${t.id}: Failed (Got: ${t.actualOutput}, Expected: ${t.expectedOutput})`;
-        })
-        .join("\n");
-      setOutput(`Test Results:\n${outputText}\n\nPassed ${passedCount}/${updatedTestResults.length} tests`);
+        }
+        return errorText; // Fallback to original error text if parsing fails
+      };
+
+      if (failedResults.length > 0 && allSameError) {
+        // If all failures are due to the same error, show it only once
+        outputText = parseErrorMessage(firstError);
+      } else {
+        // Otherwise show individual test results
+        outputText = updatedTestResults
+          .map((t) => {
+            if (t.status === "passed") {
+              return `Test ${t.id}: Passed`;
+            }
+            if (t.actualOutput.includes('Error:') || t.actualOutput.includes('/piston/jobs/')) {
+              return `Test ${t.id}: Failed\n${parseErrorMessage(t.actualOutput)}`;
+            }
+            return `Test ${t.id}: Failed (Got: ${t.actualOutput}, Expected: ${t.expectedOutput})`;
+          })
+          .join("\n\n");
+      }
+
+      outputText += `\n\nPassed ${passedCount}/${updatedTestResults.length} tests`;
+      setOutput(outputText);
 
       setUserProgress(Math.round((passedCount / updatedTestResults.length) * 100));
     } catch (error) {
@@ -450,7 +589,7 @@ export default function CodeBattle() {
       setChallengeResults([...challengeResults, result]);
     }
 
-    if (currentChallengeIndex === 2) {
+    if (currentChallengeIndex === challengesData.length - 1) {
       setIsErrorModalOpen(true);
       return;
     }
@@ -714,26 +853,24 @@ export default function CodeBattle() {
                     <div className="space-y-4 p-2">
                       <h2 className="text-lg font-semibold">Problem Description</h2>
                       <p className="text-sm text-[#C2C2DD]">{currentChallenge.description}</p>
+                      <h2 className="text-lg font-semibold">Function Name</h2>
+                      <p className="text-sm text-[#C2C2DD]">{currentChallenge.functionName}</p>
+                      <h2 className="text-lg font-semibold">Number of Arguments</h2>
+                      <p className="text-sm text-[#C2C2DD]">{currentChallenge.numArguments}</p>
                     </div>
                   </TabsContent>
                   <TabsContent value="examples" className="mt-0 space-y-3">
-                    {currentChallenge.examples.map((example, index) => (
+                    {currentChallenge.testCases.map((testCase, index) => (
                       <div key={index} className="bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
-                        <h3 className="font-semibold text-[#B689F4] mb-2 text-sm">Example {index + 1}</h3>
+                        <h3 className="font-semibold text-[#B689F4] mb-2 text-sm">Test Case {index + 1}</h3>
                         <div className="mb-2">
                           <div className="text-xs text-[#C2C2DD] mb-1">Input:</div>
-                          <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{example.input}</pre>
+                          <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{testCase.input}</pre>
                         </div>
                         <div className="mb-2">
-                          <div className="text-xs text-[#C2C2DD] mb-1">Output:</div>
-                          <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{example.output}</pre>
+                          <div className="text-xs text-[#C2C2DD] mb-1">Expected Output:</div>
+                          <pre className="bg-[#1E1B38] p-2 rounded overflow-x-auto text-xs">{testCase.expectedOutput}</pre>
                         </div>
-                        {example.explanation && (
-                          <div>
-                            <div className="text-xs text-[#C2C2DD] mb-1">Explanation:</div>
-                            <p className="text-xs">{example.explanation}</p>
-                          </div>
-                        )}
                       </div>
                     ))}
                   </TabsContent>
@@ -955,17 +1092,42 @@ export default function CodeBattle() {
                                   <div className="text-xs text-[#C2C2DD] mb-1">Input:</div>
                                   <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">{test.input}</pre>
                                 </div>
-                                <div className="mb-2">
-                                  <div className="text-xs text-[#C2C2DD] mb-1">Expected Output:</div>
-                                  <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
-                                    {test.expectedOutput}
-                                  </pre>
-                                </div>
-                                {test.status === "failed" && (
+                                {test.status === "failed" ? (
                                   <div className="mt-2 p-2 bg-[#E94560]/10 border border-[#E94560]/30 rounded">
-                                    <div className="text-xs text-[#E94560] mb-1">Your Output:</div>
+                                    <div className="text-xs text-[#E94560] mb-1">Error:</div>
                                     <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
-                                      {test.actualOutput}
+                                      {(() => {
+                                        if (test.actualOutput.includes('Error:') || test.actualOutput.includes('/piston/jobs/')) {
+                                          const errorLines = test.actualOutput.split('\n');
+                                          const fileLine = errorLines.find(line => line.includes('/piston/jobs/'));
+                                          
+                                          if (fileLine) {
+                                            const fileLineIndex = errorLines.indexOf(fileLine);
+                                            const codeLine = errorLines[fileLineIndex + 1];
+                                            const pointerLine = errorLines.find(line => line.includes('^'));
+                                            const errorMessageLine = errorLines.find(line => 
+                                              line.includes('Error:') || 
+                                              line.includes('SyntaxError:') || 
+                                              line.includes('TypeError:') || 
+                                              line.includes('ReferenceError:')
+                                            );
+
+                                            if (codeLine && pointerLine && errorMessageLine) {
+                                              return `${fileLine}\n${codeLine}\n${pointerLine}\n\n${errorMessageLine}`;
+                                            }
+                                          }
+                                        }
+                                        return test.actualOutput.includes('Error:') 
+                                          ? test.actualOutput 
+                                          : `Got: ${test.actualOutput}\nExpected: ${test.expectedOutput}`;
+                                      })()}
+                                    </pre>
+                                  </div>
+                                ) : (
+                                  <div className="mb-2">
+                                    <div className="text-xs text-[#C2C2DD] mb-1">Expected Output:</div>
+                                    <pre className="bg-[#0D0A1A] p-2 rounded text-xs overflow-x-auto">
+                                      {test.expectedOutput}
                                     </pre>
                                   </div>
                                 )}

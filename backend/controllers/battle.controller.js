@@ -51,13 +51,36 @@ export const getBattleById = async (req, res) => {
       return res.status(404).json({ message: "Battle not found" });
     }
 
-    // Allow access if battle is active and student is a participant
     const isParticipant = [battle.player1._id.toString(), battle.player2._id.toString()].includes(studentId);
     if (!isParticipant) {
       return res.status(403).json({ message: "You are not a participant in this battle" });
     }
 
-    // Format the response data
+    const transformedChallenges = battle.challenges.map((challenge, index) => {
+      const transformedTestCases = challenge.inputConstraints.map((input, i) => {
+        const args = input.trim().split(/\s+/).map(Number);
+        return {
+          id: i + 1,
+          input: JSON.stringify(args),
+          expectedOutput: challenge.expectedOutput[i],
+          status: "waiting",
+        };
+      });
+
+      return {
+        id: index + 1,
+        title: challenge.problemTitle,
+        points: challenge.points,
+        timeLimit: 1800,
+        description: challenge.problemDescription,
+        examples: [],
+        hints: [],
+        testCases: transformedTestCases,
+        functionName: challenge.functionName,
+        numArguments: challenge.numArguments,
+      };
+    });
+
     const formattedBattle = {
       battleCode: battle.battleCode,
       title: battle.title,
@@ -65,7 +88,7 @@ export const getBattleById = async (req, res) => {
       duration: battle.duration,
       commencement: battle.commencement,
       status: battle.status,
-      challenges: battle.challenges,
+      challenges: transformedChallenges,
       joinedPlayers: battle.joinedPlayers || [],
       player1: {
         id: battle.player1._id,
@@ -79,8 +102,8 @@ export const getBattleById = async (req, res) => {
         id: battle.courseId._id,
         name: battle.courseId.className,
         program: battle.courseId.program,
-        section: battle.courseId.section
-      }
+        section: battle.courseId.section,
+      },
     };
 
     res.status(200).json(formattedBattle);
@@ -112,7 +135,6 @@ export const createBattle = async (req, res) => {
 
     const professorId = req.professorId;
 
-    // Validate required fields
     if (
       !title ||
       !description ||
@@ -129,7 +151,6 @@ export const createBattle = async (req, res) => {
       return res.status(400).json({ message: "All required fields must be provided" });
     }
 
-    // Validate challenges
     if (
       challenges.some(
         (challenge) =>
@@ -146,12 +167,37 @@ export const createBattle = async (req, res) => {
       });
     }
 
-    // Verify that player1 and player2 are different
+    // Validate functionName and numArguments
+    if (
+      challenges.some(
+        (challenge) =>
+          !challenge.functionName ||
+          challenge.functionName.trim() === "" ||
+          !Number.isInteger(challenge.numArguments) ||
+          challenge.numArguments < 1
+      )
+    ) {
+      return res.status(400).json({
+        message: "Each challenge must have a valid function name and number of arguments (at least 1)",
+      });
+    }
+
+    // Validate input constraints match numArguments
+    for (const challenge of challenges) {
+      for (const input of challenge.inputConstraints) {
+        const args = input.trim().split(/\s+/);
+        if (args.length !== challenge.numArguments) {
+          return res.status(400).json({
+            message: `Input constraints must have exactly ${challenge.numArguments} argument(s)`,
+          });
+        }
+      }
+    }
+
     if (player1 === player2) {
       return res.status(400).json({ message: "Player 1 and Player 2 must be different students" });
     }
 
-    // Verify that the course exists and players are enrolled
     const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
@@ -161,23 +207,19 @@ export const createBattle = async (req, res) => {
       return res.status(400).json({ message: "Selected players must be enrolled in the course" });
     }
 
-    // Verify program and section match the course
     if (course.program !== program || course.section !== section) {
       return res.status(400).json({ message: "Program or section does not match the course" });
     }
 
-    // Validate commencement date for pending battles
     let finalCommencement = new Date(commencement);
     if (status === "pending" && finalCommencement <= new Date()) {
       return res.status(400).json({ message: "Commencement date must be in the future for scheduled battles" });
     }
 
-    // For immediate battles, set commencement to now
     if (status === "lobby") {
       finalCommencement = new Date();
     }
 
-    // Create the battle
     const battle = new Battle({
       title,
       description,
@@ -196,7 +238,6 @@ export const createBattle = async (req, res) => {
 
     await battle.save();
 
-    // Send notifications to selected players
     await sendBattleNotification(req, [player1, player2], battle);
 
     res.status(201).json({

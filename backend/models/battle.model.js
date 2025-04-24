@@ -15,6 +15,8 @@ const ChallengeSchema = new mongoose.Schema({
   points: { type: Number, required: true, default: 100 },
   inputConstraints: [{ type: String }],
   expectedOutput: [{ type: String }],
+  functionName: { type: String, required: true }, // e.g., "sumTwoNumbers", "multiply", "factorial"
+  numArguments: { type: Number, required: true }, // e.g., 2 for sumTwoNumbers, 1 for factorial
 });
 
 const BattleSchema = new mongoose.Schema(
