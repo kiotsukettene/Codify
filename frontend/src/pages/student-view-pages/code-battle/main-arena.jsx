@@ -124,6 +124,35 @@ const parseError = (errorMessage) => {
 // Utility for delayed execution
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Request queue implementation
+const requestQueue = {
+  queue: [],
+  processing: false,
+  
+  async add(fn) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ fn, resolve, reject });
+      this.process();
+    });
+  },
+
+  async process() {
+    if (this.processing || this.queue.length === 0) return;
+    this.processing = true;
+
+    const { fn, resolve, reject } = this.queue.shift();
+    try {
+      const result = await fn();
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    } finally {
+      this.processing = false;
+      setTimeout(() => this.process(), 1000); // Add 1s delay between requests
+    }
+  }
+};
+
 export default function CodeBattle() {
   const { battleCode } = useParams();
   const { fetchBattleDetails, battleDetails, updateChallengeProgress } = useBattleStore();
@@ -137,6 +166,8 @@ export default function CodeBattle() {
   const [completedChallenges, setCompletedChallenges] = useState([]);
   const [challengeResults, setChallengeResults] = useState([]);
   const [unlockedChallenges, setUnlockedChallenges] = useState([1]);
+  const [totalBattlePoints, setTotalBattlePoints] = useState(0);
+  const [earnedPoints, setEarnedPoints] = useState(0);
 
   // Current challenge data
   const currentChallenge = challengesData[currentChallengeIndex] || {
@@ -178,6 +209,23 @@ export default function CodeBattle() {
   const testCasesRef = useRef(null);
   const outputRef = useRef(null);
   const editorRef = useRef(null);
+
+  // Calculate progress percentage based on completed challenges
+  const calculateProgressPercentage = (completedChallenges, totalChallenges) => {
+    console.log('Calculating progress:', { completedChallenges, totalChallenges });
+    if (totalChallenges === 0) return 0;
+    // Ensure we're working with numbers
+    const completed = Array.isArray(completedChallenges) ? completedChallenges.length : 0;
+    const total = Number(totalChallenges) || 1;
+    const progress = Math.round((completed / total) * 100);
+    console.log('Progress calculated:', progress);
+    return progress;
+  };
+
+  // Add useEffect to monitor progress changes
+  useEffect(() => {
+    console.log('Progress updated:', userProgress);
+  }, [userProgress]);
 
   // Load battle details and progress
   const loadBattleAndProgress = async () => {
@@ -240,39 +288,44 @@ export default function CodeBattle() {
         };
       });
 
-      if (formattedChallenges.length === 0) {
-        throw new Error("No valid challenges found after formatting");
-      }
-
       setChallengesData(formattedChallenges);
       setBattleTitle(data.title || "Algorithmic Coding Battle");
 
-      // Find the last unlocked/completed challenge
-      const lastActiveIndex = formattedChallenges.reduce((maxIndex, challenge, index) => {
-        if (challenge.status === "unlocked" || challenge.status === "completed") {
-          return index;
-        }
-        return maxIndex;
-      }, 0);
+      // Calculate total points
+      const totalPoints = formattedChallenges.reduce((sum, challenge) => sum + challenge.points, 0);
+      setTotalBattlePoints(totalPoints);
 
-      setCurrentChallengeIndex(lastActiveIndex);
-      
-      // Set unlocked challenges (including completed ones)
-      const unlockedIds = formattedChallenges
-        .filter(c => c.status === "unlocked" || c.status === "completed")
-        .map(c => c.challengeId);
-      setUnlockedChallenges(unlockedIds);
-
-      // Set completed challenges
+      // Find completed challenges
       const completedIds = formattedChallenges
         .filter(c => c.status === "completed")
         .map(c => c.challengeId);
-      setCompletedChallenges(completedIds);
+      
+      console.log('Found completed challenges:', completedIds);
+      
+      // Update state in correct order
+      await Promise.all([
+        new Promise(resolve => {
+          setCompletedChallenges(completedIds);
+          resolve();
+        }),
+        new Promise(resolve => {
+          const progress = calculateProgressPercentage(completedIds, formattedChallenges.length);
+          console.log('Setting progress to:', progress);
+          setUserProgress(progress);
+          resolve();
+        })
+      ]);
+
+      // Calculate earned points
+      const completedPoints = formattedChallenges
+        .filter(challenge => completedIds.includes(challenge.challengeId))
+        .reduce((sum, challenge) => sum + challenge.points, 0);
+      setEarnedPoints(completedPoints);
 
       // Restore saved code and language if available
-      if (formattedChallenges[lastActiveIndex].savedCode) {
-        setCode(formattedChallenges[lastActiveIndex].savedCode);
-        setLanguage(formattedChallenges[lastActiveIndex].savedLanguage || "javascript");
+      if (formattedChallenges[currentChallengeIndex].savedCode) {
+        setCode(formattedChallenges[currentChallengeIndex].savedCode);
+        setLanguage(formattedChallenges[currentChallengeIndex].savedLanguage || "javascript");
       }
 
       setIsLoadingProgress(false);
@@ -386,105 +439,107 @@ export default function CodeBattle() {
     return unlockedChallenges.includes(challengeId);
   };
 
-  // Execute code with retry on 429 errors
+  // Update the executeCode function to use the queue
   const executeCode = async (codeToExecute, testInput, functionName, numArguments, language, retries = 3, initialDelay = 1000) => {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        // Parse testInput based on the format (handle both string and array formats)
-        let args;
+    const executeRequest = async () => {
+      for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-          // Try parsing as JSON first (for array inputs)
-          args = JSON.parse(testInput);
-          if (!Array.isArray(args)) {
-            args = [args]; // Convert single value to array
+          // Parse testInput based on the format (handle both string and array formats)
+          let args;
+          try {
+            args = JSON.parse(testInput);
+            if (!Array.isArray(args)) {
+              args = [args];
+            }
+          } catch (e) {
+            args = testInput.trim().split(/\s+/).map(arg => {
+              const num = Number(arg);
+              return isNaN(num) ? arg : num;
+            });
           }
-        } catch (e) {
-          // If JSON parsing fails, split by spaces
-          args = testInput.trim().split(/\s+/).map(arg => {
-            // Try to convert to number if possible
-            const num = Number(arg);
-            return isNaN(num) ? arg : num;
-          });
-        }
 
-        if (args.length !== numArguments) {
-          return { 
-            output: "", 
-            error: `Expected ${numArguments} arguments, got ${args.length}. Input: ${testInput}`, 
-            errorLine: null 
-          };
-        }
+          if (args.length !== numArguments) {
+            return { 
+              output: "", 
+              error: `Expected ${numArguments} arguments, got ${args.length}. Input: ${testInput}`, 
+              errorLine: null 
+            };
+          }
 
-        // Construct the execution code based on language
-        let executionCode;
-        if (language === "javascript") {
-          executionCode = `
-            ${codeToExecute}
-            const result = ${functionName}(${args.join(", ")});
-            console.log(JSON.stringify(result));
-          `;
-        } else if (language === "python") {
-          executionCode = `
+          // Construct the execution code based on language
+          let executionCode;
+          if (language === "javascript") {
+            executionCode = `
+              ${codeToExecute}
+              const result = ${functionName}(${args.join(", ")});
+              console.log(JSON.stringify(result));
+            `;
+          } else if (language === "python") {
+            executionCode = `
 ${codeToExecute}
 result = ${functionName}(${args.join(", ")})
 print(str(result))
-          `;
-        } else if (language === "java") {
-          executionCode = `
+            `;
+          } else if (language === "java") {
+            executionCode = `
 public class Solution {
     ${codeToExecute}
     public static void main(String[] args) {
         System.out.println(${functionName}(${args.join(", ")}));
     }
 }
-          `;
-        } else {
-          return { output: "", error: `Unsupported language: ${language}`, errorLine: null };
-        }
+            `;
+          } else {
+            return { output: "", error: `Unsupported language: ${language}`, errorLine: null };
+          }
 
-        const response = await axios.post(
-          "https://emkc.org/api/v2/piston/execute",
-          {
-            language: language,
-            version: LANGUAGE_VERSIONS[language],
-            files: [{ content: executionCode }],
-          },
-          { withCredentials: false }
-        );
-        const data = response.data;
+          const response = await axios.post(
+            "https://emkc.org/api/v2/piston/execute",
+            {
+              language: language,
+              version: LANGUAGE_VERSIONS[language],
+              files: [{ content: executionCode }],
+            },
+            { withCredentials: false }
+          );
 
-        if (data.message) {
-          const { message, line } = parseError(data.message);
-          return { output: "", error: message, errorLine: line };
-        }
+          const data = response.data;
 
-        if (data.compile && data.compile.code !== 0) {
-          const error = data.compile.stderr || data.compile.output || "Compilation failed";
-          const { message, line } = parseError(error);
-          return { output: "", error: message, errorLine: line };
-        }
+          if (data.message) {
+            const { message, line } = parseError(data.message);
+            return { output: "", error: message, errorLine: line };
+          }
 
-        if (data.run && data.run.code !== 0) {
-          const error = data.run.stderr || data.run.output || "Runtime error";
-          const { message, line } = parseError(error);
-          return { output: "", error: message, errorLine: line };
-        }
+          if (data.compile && data.compile.code !== 0) {
+            const error = data.compile.stderr || data.compile.output || "Compilation failed";
+            const { message, line } = parseError(error);
+            return { output: "", error: message, errorLine: line };
+          }
 
-        const output = data.run.output.trim();
-        return { output, error: null, errorLine: null };
-      } catch (error) {
-        if (error.response && error.response.status === 429 && attempt < retries) {
-          const delayMs = initialDelay * Math.pow(2, attempt - 1);
-          console.warn(`Rate limit hit, retrying after ${delayMs}ms (attempt ${attempt}/${retries})`);
-          await delay(delayMs);
-          continue;
+          if (data.run && data.run.code !== 0) {
+            const error = data.run.stderr || data.run.output || "Runtime error";
+            const { message, line } = parseError(error);
+            return { output: "", error: message, errorLine: line };
+          }
+
+          const output = data.run.output.trim();
+          return { output, error: null, errorLine: null };
+
+        } catch (error) {
+          if (error.response && error.response.status === 429 && attempt < retries) {
+            const delayMs = initialDelay * Math.pow(2, attempt - 1);
+            console.warn(`Rate limit hit, retrying after ${delayMs}ms (attempt ${attempt}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+            continue;
+          }
+          throw error;
         }
-        console.error("Execution failed:", error);
-        const { message, line } = parseError(error.message || "Unknown error");
-        return { output: "", error: `Error executing code: ${message}`, errorLine: line };
       }
-    }
-    return { output: "", error: "Max retries reached due to rate limiting", errorLine: null };
+      throw new Error("Max retries reached");
+    };
+
+    // Add the request to the queue
+    return requestQueue.add(executeRequest);
   };
 
   // Handle run code
@@ -533,20 +588,16 @@ public class Solution {
 
       const parseErrorMessage = (errorText) => {
         const errorLines = errorText.split('\n');
-        // Find the file path line (usually contains '/piston/jobs/')
         const fileLine = errorLines.find(line => line.includes('/piston/jobs/'));
         
         if (fileLine) {
-          // Get the line number from the file path line
           const lineMatch = fileLine.match(/:(\d+)(?::(\d+))?$/);
           const lineNumber = lineMatch ? parseInt(lineMatch[1]) : null;
           
-          // Find the code line and pointer line after the file path line
           const fileLineIndex = errorLines.indexOf(fileLine);
           const codeLine = errorLines[fileLineIndex + 1];
           const pointerLine = errorLines.find(line => line.includes('^'));
           
-          // Find the actual error message (usually starts with the error type)
           const errorMessageLine = errorLines.find(line => 
             line.includes('Error:') || 
             line.includes('SyntaxError:') || 
@@ -558,14 +609,12 @@ public class Solution {
             return `${fileLine}\n${codeLine}\n${pointerLine}\n\n${errorMessageLine}`;
           }
         }
-        return errorText; // Fallback to original error text if parsing fails
+        return errorText;
       };
 
       if (failedResults.length > 0 && allSameError) {
-        // If all failures are due to the same error, show it only once
         outputText = parseErrorMessage(firstError);
       } else {
-        // Otherwise show individual test results
         outputText = updatedTestResults
           .map((t) => {
             if (t.status === "passed") {
@@ -581,8 +630,6 @@ public class Solution {
 
       outputText += `\n\nPassed ${passedCount}/${updatedTestResults.length} tests`;
       setOutput(outputText);
-
-      setUserProgress(Math.round((passedCount / updatedTestResults.length) * 100));
     } catch (error) {
       console.error("Run code error:", error);
       setOutput(`Error running code: ${error.message}`);
@@ -637,8 +684,18 @@ public class Solution {
         timeSpent: currentChallenge.timeLimit - timeLeft,
       };
 
-      setChallengeResults([...challengeResults, result]);
-      setCompletedChallenges([...completedChallenges, currentChallenge.challengeId]);
+      // Update challenge results
+      const newChallengeResults = [...challengeResults, result];
+      setChallengeResults(newChallengeResults);
+      
+      // Update completed challenges
+      const newCompletedChallenges = [...completedChallenges, currentChallenge.challengeId];
+      setCompletedChallenges(newCompletedChallenges);
+
+      // Update earned points and progress
+      const newEarnedPoints = earnedPoints + currentChallenge.points;
+      setEarnedPoints(newEarnedPoints);
+      setUserProgress(calculateProgressPercentage(newCompletedChallenges, challengesData.length));
 
       // Unlock next challenge if available
       if (currentChallengeIndex < challengesData.length - 1) {
@@ -680,6 +737,9 @@ public class Solution {
   const handleNextChallenge = () => {
     if (currentChallengeIndex < challengesData.length - 1) {
       setCurrentChallengeIndex(currentChallengeIndex + 1);
+      // Maintain progress when moving to next challenge
+      const progress = calculateProgressPercentage(completedChallenges, challengesData.length);
+      setUserProgress(progress);
     }
   };
 
@@ -687,8 +747,19 @@ public class Solution {
   const handleSelectChallenge = (index) => {
     if (isChallengeUnlocked(challengesData[index].challengeId)) {
       setCurrentChallengeIndex(index);
+      // Recalculate progress to ensure it's maintained
+      const progress = calculateProgressPercentage(completedChallenges, challengesData.length);
+      setUserProgress(progress);
     }
   };
+
+  // Add effect to maintain progress when switching challenges
+  useEffect(() => {
+    if (challengesData.length > 0 && completedChallenges.length > 0) {
+      const progress = calculateProgressPercentage(completedChallenges, challengesData.length);
+      setUserProgress(progress);
+    }
+  }, [currentChallengeIndex, completedChallenges, challengesData]);
 
   // Get status icon
   const getStatusIcon = (status) => {
@@ -1300,13 +1371,19 @@ public class Solution {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <Progress
-                    value={userProgress}
-                    className="h-2 bg-[#0D0A1A]"
-                    indicatorClassName="bg-gradient-to-r from-[#7B3FBF] to-[#B689F4]"
-                  />
+                  <div className="w-full bg-[#0D0A1A] rounded-full h-2 relative overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#7B3FBF] to-[#B689F4] transition-all duration-300 ease-in-out"
+                      style={{ width: `${userProgress}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span className="text-xs text-[#C2C2DD]">
+                      {completedChallenges.length} of {challengesData.length} Challenges Completed
+                    </span>
+                    <span className="text-xs font-mono font-bold">{userProgress}%</span>
+                  </div>
                 </div>
-                <span className="text-xs font-mono w-8 text-right font-bold">{userProgress}%</span>
               </div>
               {opponents.map((opponent) => (
                 <div key={opponent.id} className="flex items-center gap-3">
