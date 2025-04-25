@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { isBefore, startOfToday, parse, format } from "date-fns";
+import { isBefore, startOfToday, parse, format, isToday } from "date-fns";
 import { toast } from "react-hot-toast";
 import {
   Popover,
@@ -39,11 +39,38 @@ const EditActivity = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [date, setDate] = useState(null);
   const [time, setTime] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Check if time input should be disabled
+  const isTimeInputDisabled = () => {
+    if (!date || !isToday(date)) return false;
+    const now = currentTime;
+    return now.getHours() >= 23 && now.getMinutes() >= 59;
+  };
+
+  // Validate if the selected time is in the future
+  const isTimeValid = () => {
+    if (!time || !date) return false;
+    if (!isToday(date)) return true; // Any time is valid for future dates
+    const selectedDateTime = parse(time, "HH:mm", date);
+    return selectedDateTime > currentTime;
+  };
 
   // Fetch activity on mount
   useEffect(() => {
     if (activitySlug) {
-      fetchActivityBySlug(activitySlug);
+      fetchActivityBySlug(activitySlug).catch((error) => {
+        console.error("Error fetching activity:", error);
+        toast.error("Failed to load activity. Please try again.");
+      });
     }
   }, [activitySlug, fetchActivityBySlug]);
 
@@ -69,8 +96,9 @@ const EditActivity = () => {
       subtitle.trim() !== "" ||
       instruction.trim() !== "" ||
       files.length > 0;
-    setIsFormValid(hasContent);
-  }, [title, subtitle, instruction, files]);
+    const hasValidTime = isTimeValid();
+    setIsFormValid(hasContent && hasValidTime);
+  }, [title, subtitle, instruction, files, time, date, currentTime]);
 
   const dueDateTime =
     date && time
@@ -82,6 +110,11 @@ const EditActivity = () => {
   const handleSubmit = async () => {
     if (!activity?._id) {
       toast.error("No activity to update");
+      return;
+    }
+
+    if (!isTimeValid()) {
+      toast.error("Selected time is in the past. Please choose a future time.");
       return;
     }
 
@@ -252,7 +285,13 @@ const EditActivity = () => {
             </PopoverContent>
           </Popover>
           <div className="mt-4">
-            <TimeField value={time} onChange={setTime} />
+            <TimeField
+              value={time}
+              onChange={setTime}
+              minTime={currentTime}
+              isToday={date && isToday(date)}
+              disabled={isTimeInputDisabled()}
+            />
           </div>
         </Card>
 

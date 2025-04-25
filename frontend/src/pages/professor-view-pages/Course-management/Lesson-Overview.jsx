@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Eye, FileText, Trophy, Users, Rocket } from "lucide-react";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import { Eye, FileText, Trophy, Users, Rocket, ClipboardX } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLessonStore } from "@/store/lessonStore";
@@ -15,7 +22,11 @@ import StudentTab from "@/components/professor-view/Student-Tab";
 
 const tabs = [
   { id: "overview", label: "Overview", icon: <Eye className="w-4 h-4" /> },
-  { id: "activities", label: "Activities", icon: <FileText className="w-4 h-4" /> },
+  {
+    id: "activities",
+    label: "Activities",
+    icon: <FileText className="w-4 h-4" />,
+  },
   { id: "scores", label: "Scores", icon: <Trophy className="w-4 h-4" /> },
   { id: "students", label: "Students", icon: <Users className="w-4 h-4" /> },
 ];
@@ -23,11 +34,23 @@ const tabs = [
 const LessonOverview = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const { courseSlug } = useParams();
-  const { courses, course, fetchCourseById, fetchCoursesByProfessor, isLoading, error } = useCourseStore();
-  const { activities, fetchActivitiesByCourse } = useActivityStore();
+  const {
+    courses,
+    course,
+    fetchCourseById,
+    fetchCoursesByProfessor,
+    isLoading,
+    error,
+  } = useCourseStore();
+  const {
+    activities,
+    fetchActivitiesByCourse,
+    fetchStudentSubmissionsByCourse,
+  } = useActivityStore();
   const { lessons, fetchLessonsByCourse } = useLessonStore();
   const { professor } = useprofAuthStore();
 
+  // Fetch all courses for the professor if not already loaded
   useEffect(() => {
     if (courses.length === 0) {
       fetchCoursesByProfessor();
@@ -37,6 +60,7 @@ const LessonOverview = () => {
   const currentCourse = courses.find((course) => course.slug === courseSlug);
   const courseId = currentCourse?._id;
 
+  // Fetch course details by ID
   useEffect(() => {
     if (courseId) {
       console.log("Fetching course with ID:", courseId);
@@ -44,6 +68,7 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchCourseById]);
 
+  // Fetch lessons and activities for the course
   useEffect(() => {
     if (courseId) {
       fetchLessonsByCourse(courseId);
@@ -51,34 +76,155 @@ const LessonOverview = () => {
     }
   }, [courseId, fetchLessonsByCourse, fetchActivitiesByCourse]);
 
-  const studentList = course?.studentsEnrolled?.map((student, index) => ({
-    id: student._id || index + 1,
-    name: `${student.firstName} ${student.lastName}`,
-    avatar: "/placeholder.svg?height=40&width=40",
-    crown: index === 0 ? "gold" : index === 1 ? "silver" : index === 2 ? "bronze" : null,
-    studentNo: student.studentId || "N/A",
-    email: student.email || "N/A",
-    grade: 0,
-  })) || [];
+  // State for student list with computed metrics
+  const [studentList, setStudentList] = useState([]);
+
+  // Fetch submissions and compute student metrics
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      if (!courseId || !course?.studentsEnrolled) return;
+
+      const totalActivities = activities.length; // Total activities in the course
+
+      const studentsWithMetrics = await Promise.all(
+        course.studentsEnrolled.map(async (student, index) => {
+          // Fetch submissions for the student in this course
+          const submissions = await fetchStudentSubmissionsByCourse(
+            courseId,
+            student._id
+          );
+
+          // Calculate metrics
+          const submittedActivities = submissions.filter(
+            (sub) => sub.status === "submitted"
+          ).length;
+          const incompleteActivities = totalActivities - submittedActivities;
+          const totalScore = submissions.reduce(
+            (sum, sub) => sum + (sub.score || 0),
+            0
+          );
+
+          return {
+            id: student._id || index + 1,
+            name: `${student.firstName} ${student.lastName}`,
+            avatar: "/placeholder.svg?height=40&width=40",
+            crown: null, // Will be set after sorting
+            studentNo: student.studentId || "N/A",
+            email: student.email || "N/A",
+            activities: submittedActivities,
+            incomplete: incompleteActivities,
+            totalScore: totalScore,
+            rank: index + 1, // Temporary, will be updated
+            hasMedal: false, // Will be updated after sorting
+            initials:
+              `${student.firstName[0]}${student.lastName[0]}`.toUpperCase(),
+          };
+        })
+      );
+
+      // Sort students by totalScore for ranking
+      studentsWithMetrics.sort((a, b) => b.totalScore - a.totalScore);
+      studentsWithMetrics.forEach((student, index) => {
+        student.rank = index + 1;
+        student.hasMedal = index < 3;
+        student.crown =
+          index === 0
+            ? "gold"
+            : index === 1
+            ? "silver"
+            : index === 2
+            ? "bronze"
+            : null;
+      });
+
+      setStudentList(studentsWithMetrics);
+    };
+
+    fetchStudentData();
+  }, [course, courseId, activities, fetchStudentSubmissionsByCourse]);
 
   // Map activities to their corresponding lesson slugs
-  const filteredActivities = activities
-    .filter((activity) => lessons.some((lesson) => lesson._id === activity.lessonId))
-    .map((activity) => {
-      const lesson = lessons.find((lesson) => lesson._id === activity.lessonId);
-      return {
-        ...activity,
-        lessonSlug: lesson ? lesson.slug : null,
-      };
-    })
-    .filter((activity) => activity.lessonSlug); // Ensure only activities with a valid lessonSlug are included
+  const enhancedActivities = activities.map((activity) => {
+    const lesson = lessons.find((lesson) => lesson._id === activity.lessonId);
+    return {
+      ...activity,
+      lessonSlug: lesson ? lesson.slug : "undefined",
+    };
+  });
 
-  const metrics = [
-    { title: "Class Performance", value: "0%", subtitle: "Average Score" },
-    { title: "Completion Rate", value: "0%", subtitle: "Activities Completed" },
-    { title: "Active Students", value: studentList.length.toString(), subtitle: "Currently Active" },
-    { title: "Top Performers", value: "0", subtitle: "Display Performance" },
-  ];
+  // Filter activities for the "activities" tab
+  const filteredActivities = enhancedActivities
+    .filter((activity) => activity.lessonSlug !== "undefined")
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  // Compute metrics for the ScoreTab
+  const computeMetrics = () => {
+    const totalActivities = filteredActivities.length;
+    const totalStudents = studentList.length;
+
+    // Calculate maximum possible score (sum of points from all activities)
+    const maxPossibleScore = filteredActivities.reduce(
+      (sum, activity) => sum + (activity.points || 100), // Default to 100 if points not available
+      0
+    );
+
+    // Class Performance: Average totalScore as a percentage of maxPossibleScore
+    const totalClassScore = studentList.reduce(
+      (sum, student) => sum + student.totalScore,
+      0
+    );
+    const classPerformance =
+      totalStudents > 0 && maxPossibleScore > 0
+        ? (
+            (totalClassScore / (totalStudents * maxPossibleScore)) *
+            100
+          ).toFixed(0) + "%"
+        : "0%";
+
+    // Completion Rate: Percentage of activities completed
+    const totalSubmittedActivities = studentList.reduce(
+      (sum, student) => sum + student.activities,
+      0
+    );
+    const completionRate =
+      totalStudents > 0 && totalActivities > 0
+        ? (
+            (totalSubmittedActivities / (totalStudents * totalActivities)) *
+            100
+          ).toFixed(0) + "%"
+        : "0%";
+
+    // Top Performers: Students with score >= 80% of maxPossibleScore
+    const topPerformersCount = studentList.filter(
+      (student) =>
+        maxPossibleScore > 0 && student.totalScore >= 0.8 * maxPossibleScore
+    ).length;
+
+    return [
+      {
+        title: "Class Performance",
+        value: classPerformance,
+        subtitle: "Average Score",
+      },
+      {
+        title: "Completion Rate",
+        value: completionRate,
+        subtitle: "Activities Completed",
+      },
+      {
+        title: "Active Students",
+        value: totalStudents.toString(),
+        subtitle: "Currently Active",
+      },
+      {
+        title: "Top Performers",
+        value: topPerformersCount.toString(),
+        subtitle: "High Achievers",
+      },
+    ];
+  };
+
+  const metrics = computeMetrics();
 
   if (isLoading && !course) return <div>Loading course...</div>;
   if (error) {
@@ -106,16 +252,23 @@ const LessonOverview = () => {
         details={{
           language: course?.language || currentCourse?.language,
           students: course?.studentCount
-            ? `${course.studentCount} student${course.studentCount === 1 ? "" : "s"}`
+            ? `${course.studentCount} student${
+                course.studentCount === 1 ? "" : "s"
+              }`
             : currentCourse?.studentCount
-            ? `${currentCourse.studentCount} student${currentCourse.studentCount === 1 ? "" : "s"}`
+            ? `${currentCourse.studentCount} student${
+                currentCourse.studentCount === 1 ? "" : "s"
+              }`
             : "0 students",
           instructor: professor
             ? `${professor.firstName} ${professor.lastName}`
             : "Unknown Instructor",
-          schedule: course?.schedule || currentCourse?.schedule
-            ? `${course?.schedule?.day || currentCourse?.schedule?.day}, ${course?.schedule?.time || currentCourse?.schedule?.time}`
-            : "No schedule available",
+          schedule:
+            course?.schedule || currentCourse?.schedule
+              ? `${course?.schedule?.day || currentCourse?.schedule?.day}, ${
+                  course?.schedule?.time || currentCourse?.schedule?.time
+                }`
+              : "No schedule available",
           code: course?.courseCode || currentCourse?.courseCode,
           section: course?.section || currentCourse?.section,
         }}
@@ -129,7 +282,11 @@ const LessonOverview = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-sm font-medium rounded-t-lg transition-colors relative
-                  ${activeTab === tab.id ? "bg-violet-100 text-violet-600" : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"}`}
+                  ${
+                    activeTab === tab.id
+                      ? "bg-violet-100 text-violet-600"
+                      : "text-gray-500 hover:text-violet-600 hover:bg-violet-50"
+                  }`}
                 whileHover={{ y: -2 }}
                 whileTap={{ y: 0 }}
               >
@@ -140,7 +297,9 @@ const LessonOverview = () => {
                     transition={{ type: "spring", bounce: 0.2 }}
                   />
                 )}
-                {React.cloneElement(tab.icon, { className: "w-3 h-3 sm:w-4 sm:h-4" })}
+                {React.cloneElement(tab.icon, {
+                  className: "w-3 h-3 sm:w-4 sm:h-4",
+                })}
                 {tab.label}
                 {activeTab === tab.id && (
                   <Rocket className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400 absolute-right-1" />
@@ -160,7 +319,20 @@ const LessonOverview = () => {
               transition={{ duration: 0.2 }}
             >
               {activeTab === "overview" && (
-                <OverviewTab lessons={lessons || []} course={course || currentCourse} />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key="overview"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <OverviewTab
+                      lessons={lessons || []}
+                      course={course || currentCourse}
+                    />
+                  </motion.div>
+                </AnimatePresence>
               )}
               {activeTab === "activities" && (
                 <AnimatePresence mode="wait">
@@ -183,22 +355,41 @@ const LessonOverview = () => {
                           <ActivityTab
                             index={index + 1}
                             activity={activity}
-                            courseSlug={courseSlug} // Pass courseSlug
-                            lessonSlug={activity.lessonSlug} // Pass the mapped lessonSlug
+                            courseSlug={courseSlug}
+                            lessonSlug={activity.lessonSlug}
                           />
                         </motion.div>
                       ))
                     ) : (
-                      <p className="text-gray-500">No activities available for this course.</p>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="flex flex-col items-center justify-center h-[calc(90vh-260px)] w-full"
+                      >
+                        <ClipboardX size={60} className="text-gray-400 mb-2" />
+                        <p className="text-gray-500 text-lg font-medium">
+                          This course has no activities yet
+                        </p>
+                      </motion.div>
                     )}
                   </motion.div>
                 </AnimatePresence>
               )}
               {activeTab === "scores" && (
-                <ScoreTab metrics={metrics} students={studentList} />
+                <ScoreTab
+                  metrics={metrics}
+                  students={studentList}
+                  activities={filteredActivities}
+                />
               )}
               {activeTab === "students" && (
-                <StudentTab studentList={studentList} activities={activities} />
+                <StudentTab
+                  studentList={studentList}
+                  activities={enhancedActivities}
+                  courseId={courseId}
+                  courseSlug={courseSlug}
+                />
               )}
             </motion.div>
           </AnimatePresence>

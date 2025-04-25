@@ -2,34 +2,104 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom"; // Add useLocation
 import ActivityOverview from "@/components/professor-view/Activity-Overview";
 import ActivityOutput from "@/components/professor-view/Activity-Output";
 import { useActivityStore } from "@/store/activityStore";
-
-const students = [
-  { id: "1", name: "All students", score: 0 },
-  { id: "2", name: "Dela Cruz, Momo W.", score: 0, avatar: "/placeholder.svg" },
-  { id: "3", name: "Antang, JunMar H.", score: 100, submitted: "11:58 PM", avatar: "/placeholder.svg", comment: "Ma'am sorry, namail ng pasa po kanina" },
-  { id: "4", name: "Dela Cruz, Momo W.", score: 0, avatar: "/placeholder.svg" },
-  { id: "5", name: "Caps, Elle B.", score: 0, avatar: "/placeholder.svg" },
-];
+import { useCourseStore } from "@/store/courseStore";
 
 const ActivityPage = () => {
   const { courseSlug, lessonSlug, activitySlug } = useParams();
-  const { activity, fetchActivityBySlug, isLoading, error } = useActivityStore();
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation(); // Get location to access state
+  const {
+    activity,
+    fetchActivityBySlug,
+    submissions,
+    fetchSubmissionsByActivity,
+    isLoading: isActivityLoading,
+    error: activityError,
+  } = useActivityStore();
+  const {
+    course,
+    fetchCourseBySlug,
+    isLoading: isCourseLoading,
+    error: courseError,
+  } = useCourseStore();
+  const [activeTab, setActiveTab] = useState(
+    location.state?.selectedStudentId ? "Student Output" : "overview" // Set tab based on state
+  );
   const navigate = useNavigate();
+  const selectedStudentId = location.state?.selectedStudentId; // Get selected student ID
 
+  // Fetch activity
   useEffect(() => {
     if (activitySlug) {
+      console.log("Fetching activity for slug:", activitySlug);
       fetchActivityBySlug(activitySlug);
     }
   }, [activitySlug, fetchActivityBySlug]);
 
-  if (isLoading) return <p>Loading activity...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
+  // Fetch course
+  useEffect(() => {
+    if (courseSlug) {
+      console.log("Fetching course for slug:", courseSlug);
+      fetchCourseBySlug(courseSlug);
+    }
+  }, [courseSlug, fetchCourseBySlug]);
+
+  // Fetch submissions
+  useEffect(() => {
+    if (activity?._id) {
+      console.log("Fetching submissions for activity ID:", activity._id);
+      fetchSubmissionsByActivity(activity._id);
+    }
+  }, [activity?._id, fetchSubmissionsByActivity]);
+
+  // Refetch submissions function
+  const refetchSubmissions = async () => {
+    if (activity?._id) {
+      console.log("Refetching submissions for activity ID:", activity._id);
+      await fetchSubmissionsByActivity(activity._id);
+      console.log("Submissions refetched:", submissions);
+    }
+  };
+
+  console.log("Course data:", course);
+  console.log("Submissions data:", submissions);
+
+  if (isActivityLoading || isCourseLoading) return <p>Loading...</p>;
+  if (activityError)
+    return <p className="text-red-500">Activity Error: {activityError}</p>;
+  if (courseError)
+    return <p className="text-red-500">Course Error: {courseError}</p>;
   if (!activity) return <p>No activity found</p>;
+  if (!course) return <p>No course found</p>;
+
+  const students =
+    Array.isArray(course?.studentsEnrolled) && Array.isArray(submissions)
+      ? course.studentsEnrolled
+          .map((student) => {
+            const submission = submissions.find(
+              (sub) =>
+                sub?.studentId?._id?.toString() === student?._id?.toString()
+            );
+            return {
+              id: student?._id || "",
+              name: `${student?.firstName || ""} ${student?.lastName || ""}`,
+              avatar: student?.avatar || "",
+              submitted: submission?.createdAt
+                ? new Date(submission.createdAt).toLocaleString()
+                : "",
+              score: submission?.score || 0,
+              comment: submission?.comment || "",
+              file: submission?.file || null,
+              submission: submission || null,
+            };
+          })
+          .filter((student) => student.id)
+      : [];
+
+  console.log("Processed students:", students);
 
   return (
     <div className="w-full px-4">
@@ -39,13 +109,14 @@ const ActivityPage = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}`)}
+            onClick={() =>
+              navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}`)
+            }
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-xl font-semibold">{activity.title}</h1>
         </div>
-        {/* Removed Actions Dropdown */}
       </div>
 
       {/* Tabs */}
@@ -57,7 +128,9 @@ const ActivityPage = () => {
               onClick={() => setActiveTab(tab)}
               className={cn(
                 "pb-2 relative transition-colors",
-                activeTab === tab ? "text-purple-600 font-medium" : "text-gray-600 hover:text-gray-900"
+                activeTab === tab
+                  ? "text-purple-600 font-medium"
+                  : "text-gray-600 hover:text-gray-900"
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -74,14 +147,27 @@ const ActivityPage = () => {
         <ActivityOverview
           fileName={activity.file}
           activityId={activity._id}
-          dueDate={activity.dueDate ? new Date(activity.dueDate).toLocaleString() : "No due date"}
+          dueDate={
+            activity.dueDate
+              ? new Date(activity.dueDate).toLocaleString()
+              : "No due date"
+          }
           points={activity.points || 0}
-          instructions={Array.isArray(activity.instructions) ? activity.instructions : [activity.instructions || "No instructions available"]}
+          instructions={
+            Array.isArray(activity.instructions)
+              ? activity.instructions
+              : [activity.instructions || "No instructions available"]
+          }
         />
       ) : (
         <div>
           <h2>Student Activity Output</h2>
-          <ActivityOutput students={students} />
+          <ActivityOutput
+            students={students}
+            activityId={activity._id}
+            refetchSubmissions={refetchSubmissions}
+            selectedStudentId={selectedStudentId} // Pass selected student ID
+          />
         </div>
       )}
     </div>

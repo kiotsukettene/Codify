@@ -1,9 +1,12 @@
 import Course from "../models/course.model.js";
 import { generateCourseCode } from "../utils/generateCourseCode.js";
 import slugify from "slugify";
+import mongoose from "mongoose";
 
 export const createCourse = async (req, res) => {
   try {
+    console.log("Request body:", req.body);
+    console.log("Institution ID from token:", req.institutionId);
     console.log("Request body:", req.body);
     console.log("Institution ID from token:", req.institutionId);
 
@@ -117,14 +120,74 @@ export const getCoursesByProfessor = async (req, res) => {
         path: "studentsEnrolled",
         select: "firstName lastName _id",
       })
-      .select("className program section studentsEnrolled _id courseCode slug language");
+      .select(
+        "className program section studentsEnrolled _id courseCode slug language"
+      );
 
     console.log("Fetched courses:", courses);
     res.status(200).json(courses);
   } catch (error) {
-    console.error("Error in getCoursesByProfessor:", error);
     res.status(500).json({
-      message: "Error fetching professor courses",
+      message: "Error fetching courses",
+      error: error.message,
+    });
+  }
+};
+
+export const getUniqueStudentCountByProfessor = async (req, res) => {
+  try {
+    const professorId = req.professorId;
+    const { year, section, program } = req.query;
+
+    const matchCriteria = {
+      professorId: new mongoose.Types.ObjectId(professorId),
+    };
+    if (year) matchCriteria.year = String(year);
+    if (section) matchCriteria.section = section;
+    if (program) matchCriteria.program = program;
+
+    console.log("Match Criteria:", matchCriteria);
+
+    // Debug: Check matched courses
+    const matchedCourses = await Course.aggregate([{ $match: matchCriteria }]);
+    console.log("Matched Courses:", matchedCourses);
+
+    // Debug: Check unwound documents
+    const unwound = await Course.aggregate([
+      { $match: matchCriteria },
+      { $unwind: "$studentsEnrolled" },
+    ]);
+    console.log("Unwound Documents:", unwound);
+
+    // Final aggregation
+    const result = await Course.aggregate([
+      { $match: matchCriteria },
+      { $unwind: "$studentsEnrolled" },
+      {
+        $group: {
+          _id: null,
+          uniqueStudents: { $addToSet: "$studentsEnrolled" },
+        },
+      },
+      {
+        $project: {
+          uniqueStudentCount: { $size: "$uniqueStudents" },
+        },
+      },
+    ]);
+
+    const uniqueStudentCount =
+      result.length > 0 ? result[0].uniqueStudentCount : 0;
+
+    console.log("Unique Student Count:", uniqueStudentCount);
+
+    res.status(200).json({
+      uniqueStudentCount,
+    });
+  } catch (error) {
+    console.error("Error fetching unique student count:", error);
+    res.status(500).json({
+      message: "Error fetching unique student count",
       error: error.message,
     });
   }
@@ -153,6 +216,32 @@ export const getCourseById = async (req, res) => {
     res.status(200).json(course);
   } catch (error) {
     console.error("Error fetching course:", error);
+    res.status(500).json({
+      message: "Error fetching course",
+      error: error.message,
+    });
+  }
+};
+
+export const getCourseBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const course = await Course.findOne({ slug })
+      .populate({
+        path: "professorId",
+        select: "firstName lastName email",
+      })
+      .populate({
+        path: "studentsEnrolled",
+        select: "firstName lastName email studentId",
+      });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json(course);
+  } catch (error) {
     res
       .status(500)
       .json({ message: "Error fetching course", error: error.message });
@@ -193,9 +282,9 @@ export const deleteCourse = async (req, res) => {
 
     res.status(200).json({ message: "Course deleted successfully!" });
   } catch (error) {
-    console.error("Error in deleteCourse:", error);
-    res
-      .status(500)
-      .json({ message: "Error deleting course", error: error.message });
+    res.status(500).json({
+      message: "Error deleting course",
+      error: error.message,
+    });
   }
 };
