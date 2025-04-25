@@ -104,13 +104,17 @@ export default function StudentBattleLobby() {
         const joinedPlayers = battleData.joinedPlayers || [];
         const readyPlayers = battleData.readyPlayers || [];
         
-        setHasJoined(joinedPlayers.includes(currentStudentId));
+        // Automatically set hasJoined to true since they're in the lobby
+        setHasJoined(true);
         setIsReady(readyPlayers.includes(currentStudentId));
         
         setOpponentStatus({
           joined: joinedPlayers.includes(opponentId),
           ready: readyPlayers.includes(opponentId)
         });
+
+        // Emit socket event to join battle room
+        socket.emit("joinBattleRoom", battleCode);
 
         setIsLoading(false);
       } catch (error) {
@@ -121,7 +125,7 @@ export default function StudentBattleLobby() {
     };
 
     fetchBattleData();
-  }, [battleCode, student?._id]);
+  }, [battleCode, student?._id, socket]);
 
   // Separate useEffect for socket connection and room joining
   useEffect(() => {
@@ -243,25 +247,8 @@ export default function StudentBattleLobby() {
     }
   }, [countdown, countdownActive]);
 
-  const handleJoinBattle = async () => {
-    try {
-      await axios.post(`${API_URL}/join/${battleCode}`, {}, { withCredentials: true });
-      setHasJoined(true);
-      socket.emit("joinBattleRoom", battleCode);
-      toast.success("Successfully joined the lobby!");
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || "Failed to join lobby";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    }
-  };
-
   const handleReadyClick = async () => {
     try {
-      if (!hasJoined) {
-        await handleJoinBattle();
-      }
-      
       setIsReady(true);
       socket.emit("playerReady", { 
         battleCode,
@@ -390,15 +377,7 @@ export default function StudentBattleLobby() {
                   }`}
                 ></div>
               </div>
-              {!hasJoined ? (
-                <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700 transition-colors"
-                  onClick={handleJoinBattle}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Join Lobby
-                </Button>
-              ) : !isReady ? (
+              {!isReady ? (
                 <Button
                   className="w-full bg-purple-600 hover:bg-purple-700 transition-colors"
                   onClick={handleReadyClick}
@@ -518,20 +497,16 @@ export default function StudentBattleLobby() {
 
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
-          <Button
-            className="bg-purple-600 hover:bg-purple-700 min-w-[200px] transition-colors"
-            disabled={!isReady || !opponentStatus.joined}
-          >
-            <Rocket className="h-5 w-5 mr-2" />
-            LAUNCH SEQUENCE
-          </Button>
-          <Button
-            variant="outline"
-            className="border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
-            onClick={() => navigate("/student/dashboard")}
-          >
-            ABORT MISSION
-          </Button>
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">Waiting for professor to start the battle...</p>
+            <Button
+              variant="outline"
+              className="border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
+              onClick={() => navigate("/student/dashboard")}
+            >
+              ABORT MISSION
+            </Button>
+          </div>
         </div>
       </div>
 

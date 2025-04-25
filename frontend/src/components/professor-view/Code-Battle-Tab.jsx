@@ -30,7 +30,7 @@ const CodeBattleTab = () => {
 
   console.log(battles);
 
-  const activeBattles = battles.filter((battle) => battle.status === "active");
+  const activeBattles = battles.filter((battle) => battle.status === "lobby" || battle.status === "active");
   const scheduledBattles = battles.filter((battle) => battle.status === "pending");
 
   const handleCreateBattle = () => {
@@ -54,7 +54,20 @@ const CodeBattleTab = () => {
       toast.error("Battle code not available");
       return;
     }
-    navigate(`/professor/code-battle/lobby/${battleCode}`);
+    // Check if battle is in lobby or arena
+    const battle = battles.find(b => b.battleCode === battleCode);
+    if (battle?.status === "active") {
+      navigate(`/professor/code-battle/arena/${battleCode}`);
+    } else if (battle?.status === "completed") {
+      toast.error("This battle has already ended");
+      return;
+    } else if (battle?.status === "pending") {
+      toast.error("This battle hasn't started yet");
+      return;
+    } else {
+      // Status is "lobby"
+      navigate(`/professor/code-battle/lobby/${battleCode}`);
+    }
   };
 
   // Calculate total points for a battle and challenger progress

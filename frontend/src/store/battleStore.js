@@ -37,6 +37,8 @@ const createBattleSlice = (set, get) => ({
         points: 100,
         inputConstraints: ["", "", ""],
         expectedOutput: ["", "", ""],
+        functionName: "", // Add functionName
+        numArguments: 0,  // Add numArguments
       },
     ],
     rules: "",
@@ -63,6 +65,8 @@ const createBattleSlice = (set, get) => ({
           points: 100,
           inputConstraints: ["", "", ""],
           expectedOutput: ["", "", ""],
+          functionName: "",
+          numArguments: 0,
         },
       ],
     },
@@ -203,10 +207,25 @@ const createBattleSlice = (set, get) => ({
         if (!challenge.points || challenge.points <= 0) {
           throw new Error(`Challenge ${i + 1} must have valid points (greater than 0)`);
         }
+        if (!challenge.functionName || challenge.functionName.trim() === "") {
+          throw new Error(`Challenge ${i + 1} must specify a function name`);
+        }
+        if (!Number.isInteger(challenge.numArguments) || challenge.numArguments < 1) {
+          throw new Error(`Challenge ${i + 1} must specify a valid number of arguments (at least 1)`);
+        }
+        // Validate input constraints match the number of arguments
+        for (let j = 0; j < challenge.inputConstraints.length; j++) {
+          const inputArgs = challenge.inputConstraints[j].trim().split(/\s+/);
+          if (inputArgs.length !== challenge.numArguments) {
+            throw new Error(
+              `Challenge ${i + 1}, Test Case ${j + 1}: Input must have exactly ${challenge.numArguments} argument(s)`
+            );
+          }
+        }
       }
       const response = await axios.post(`${API_URL}/create`, {
         ...state.battleData,
-        status: "active",
+        status: "lobby",
         commencement: new Date().toISOString(),
       });
       console.log("Create battle response:", response.data);
@@ -215,7 +234,7 @@ const createBattleSlice = (set, get) => ({
         title: `New Battle: ${state.battleData.title}`,
         message: `You've been selected for a code battle: ${state.battleData.description}`,
         battleCode: response.data.battle.battleCode,
-        time: Date.now(), // Add timestamp
+        time: Date.now(),
       });
       toast.success("Battle commenced successfully!");
       set({
@@ -236,6 +255,8 @@ const createBattleSlice = (set, get) => ({
               points: 100,
               inputConstraints: ["", "", ""],
               expectedOutput: ["", "", ""],
+              functionName: "",
+              numArguments: 0,
             },
           ],
           rules: "",
@@ -259,7 +280,6 @@ const createBattleSlice = (set, get) => ({
     try {
       const state = useBattleStore.getState();
 
-      // Basic form validation
       if (
         !state.battleData.title ||
         !state.battleData.description ||
@@ -274,13 +294,11 @@ const createBattleSlice = (set, get) => ({
         throw new Error("Please fill in all required fields");
       }
 
-      // Validate commencement date is in the future
       const commencementDate = new Date(state.battleData.commencement);
       if (commencementDate <= new Date()) {
         throw new Error("Commencement date must be in the future");
       }
 
-      // Validate challenges
       const challenges = state.battleData.challenges;
       for (let i = 0; i < challenges.length; i++) {
         const challenge = challenges[i];
@@ -302,6 +320,20 @@ const createBattleSlice = (set, get) => ({
         if (!challenge.points || challenge.points <= 0) {
           throw new Error(`Challenge ${i + 1} must have valid points (greater than 0)`);
         }
+        if (!challenge.functionName || challenge.functionName.trim() === "") {
+          throw new Error(`Challenge ${i + 1} must specify a function name`);
+        }
+        if (!Number.isInteger(challenge.numArguments) || challenge.numArguments < 1) {
+          throw new Error(`Challenge ${i + 1} must specify a valid number of arguments (at least 1)`);
+        }
+        for (let j = 0; j < challenge.inputConstraints.length; j++) {
+          const inputArgs = challenge.inputConstraints[j].trim().split(/\s+/);
+          if (inputArgs.length !== challenge.numArguments) {
+            throw new Error(
+              `Challenge ${i + 1}, Test Case ${j + 1}: Input must have exactly ${challenge.numArguments} argument(s)`
+            );
+          }
+        }
       }
 
       const response = await axios.post(`${API_URL}/create`, {
@@ -309,36 +341,32 @@ const createBattleSlice = (set, get) => ({
         status: "pending",
         commencement: new Date().toISOString(),
       });
-       // Only add notification if we have a valid battle response
-    if (response.data && response.data.battle && response.data.battle.battleCode) {
-      // Add notifications for both players
-      const notificationData = {
-        title: `New Battle: ${state.battleData.title}`,
-        message: `You've been selected for a code battle: ${state.battleData.description}`,
-        battleCode: response.data.battle.battleCode,
-        time: Date.now(),
-      };
+      if (response.data && response.data.battle && response.data.battle.battleCode) {
+        const notificationData = {
+          title: `New Battle: ${state.battleData.title}`,
+          message: `You've been selected for a code battle: ${state.battleData.description}`,
+          battleCode: response.data.battle.battleCode,
+          time: Date.now(),
+        };
 
-      // Store notifications in database for both players
-      await axios.post(`${API_URL}/notifications`, {
-        battleId: response.data.battle._id,
-        notifications: [
-          {
-            ...notificationData,
-            playerId: state.battleData.player1,
-          },
-          {
-            ...notificationData,
-            playerId: state.battleData.player2,
-          }
-        ]
-      });
+        await axios.post(`${API_URL}/notifications`, {
+          battleId: response.data.battle._id,
+          notifications: [
+            {
+              ...notificationData,
+              playerId: state.battleData.player1,
+            },
+            {
+              ...notificationData,
+              playerId: state.battleData.player2,
+            },
+          ],
+        });
 
-      // Only emit to currently connected players
-      state.addNotification(notificationData);
-    } else {
-      console.error("Invalid battle response:", response.data);
-    }
+        state.addNotification(notificationData);
+      } else {
+        console.error("Invalid battle response:", response.data);
+      }
       toast.success(`Battle scheduled for ${new Date(state.battleData.commencement).toLocaleString()}!`);
       set({
         battleData: {
@@ -358,6 +386,8 @@ const createBattleSlice = (set, get) => ({
               points: 100,
               inputConstraints: ["", "", ""],
               expectedOutput: ["", "", ""],
+              functionName: "",
+              numArguments: 0,
             },
           ],
           rules: "",
@@ -386,10 +416,8 @@ const createNotificationSlice = (set, get) => ({
       console.log(`Notification for battle ${notification.battleCode} already exists`);
       return state;
     }
-    // Parse notification.time
     let notificationTime = Number(notification.time);
     if (isNaN(notificationTime)) {
-      // Try parsing as ISO string
       const parsedTime = Date.parse(notification.time);
       if (isNaN(parsedTime)) {
         console.warn(
@@ -467,7 +495,7 @@ const createNotificationSlice = (set, get) => ({
           type: "challenge",
           title: battle.status === "active" ? "New Battle Challenge!" : "Upcoming Battle",
           message: `You've been selected for ${battle.status === "active" ? "an immediate" : "an upcoming"} code battle: ${battle.title}`,
-          time: Date.now(), // Use timestamp instead of "Just now"
+          time: Date.now(),
           read: false,
           battleCode: battle.battleCode,
         }));
@@ -496,6 +524,24 @@ const createBattleManagementSlice = (set, get) => ({
   isLoadingLeaderboard: false,
   battlesError: null,
   leaderboardError: null,
+  battleDetails: null,
+  isLoadingBattleDetails: false,
+  battleDetailsError: null,
+
+  fetchBattleDetails: async (battleCode) => {
+    set({ isLoadingBattleDetails: true, battleDetailsError: null });
+    try {
+      const response = await axios.get(`${API_URL}/${battleCode}`, { withCredentials: true });
+      set({ battleDetails: response.data, isLoadingBattleDetails: false });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error fetching battle details";
+      set({ battleDetailsError: errorMessage, isLoadingBattleDetails: false });
+      toast.error(errorMessage, { id: `battle-details-error-${Date.now()}` });
+      throw error;
+    }
+  },
+  
   fetchBattles: async () => {
     set({ isLoadingBattles: true, battlesError: null });
     try {
@@ -505,6 +551,19 @@ const createBattleManagementSlice = (set, get) => ({
       const errorMessage = error.response?.data?.message || "Error fetching battles";
       set({ battlesError: errorMessage, isLoadingBattles: false });
       toast.error(errorMessage, { id: `battles-error-${Date.now()}` });
+    }
+  },
+  fetchStudentBattles: async () => {
+    set({ isLoadingBattles: true, battlesError: null });
+    try {
+      const response = await axios.get(`${API_URL}/student`, { withCredentials: true });
+      set({ isLoadingBattles: false });
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error fetching battles";
+      set({ battlesError: errorMessage, isLoadingBattles: false });
+      toast.error(errorMessage, { id: `battles-error-${Date.now()}` });
+      throw error;
     }
   },
   deleteBattle: async (id) => {
@@ -565,6 +624,19 @@ const useBattleStore = create((set, get) => ({
   ...createBattleSlice(set, get),
   ...createNotificationSlice(set, get),
   ...createBattleManagementSlice(set, get),
+  updateChallengeProgress: async (battleCode, challengeId, progressData) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/${battleCode}/progress/${challengeId}`,
+        progressData,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update progress:", error);
+      throw error;
+    }
+  }
 }));
 
 export default useBattleStore;

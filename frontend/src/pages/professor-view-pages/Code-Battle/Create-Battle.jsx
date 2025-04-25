@@ -86,6 +86,8 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
           points: 100,
           inputConstraints: ["", "", ""],
           expectedOutput: ["", "", ""],
+          functionName: "",
+          numArguments: 0,
         })),
       });
     }
@@ -98,7 +100,11 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
         await editBattle(battleId, battleData);
         toast.success("Battle updated successfully!");
       } else {
-        const response = await submitBattle();
+        const battleWithStatus = {
+          ...battleData,
+          status: "lobby"
+        };
+        const response = await submitBattle(battleWithStatus);
         console.log("Navigating with battleCode:", response.battle.battleCode);
         toast.success("Battle commenced! Redirecting to lobby...");
         setTimeout(() => {
@@ -415,6 +421,26 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
                 />
               </div>
               <div className="space-y-2">
+                <label className="text-sm font-medium">Function Name</label>
+                <Input
+                  value={challenge.functionName || ""}
+                  onChange={(e) => updateChallenge(index, "functionName", e.target.value)}
+                  placeholder="e.g., sumTwoNumbers"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Number of Arguments</label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={challenge.numArguments || ""}
+                  onChange={(e) =>
+                    updateChallenge(index, "numArguments", parseInt(e.target.value) || 0)
+                  }
+                  placeholder="e.g., 2"
+                />
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Points</label>
                 <Input
                   type="number"
@@ -440,7 +466,12 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
                           newInputConstraints[testCaseIndex] = e.target.value;
                           updateChallenge(index, "inputConstraints", newInputConstraints);
                         }}
-                        placeholder={`Input for test case ${testCaseIndex + 1}`}
+                        placeholder={
+                          challenge.numArguments > 0
+                            ? `Enter ${challenge.numArguments} space-separated number(s)`
+                            : "Specify number of arguments first"
+                        }
+                        disabled={challenge.numArguments <= 0}
                       />
                     </div>
                   ))}

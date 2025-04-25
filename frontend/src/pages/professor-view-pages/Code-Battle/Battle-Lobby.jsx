@@ -221,13 +221,31 @@ const BattleLobby = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleStartBattle = () => {
-    if (players.player1.joined && players.player2.joined) {
-      setBattleStatus('started');
-      socket.emit('professorStartBattle', { battleCode });
-      setCountdownActive(true);
+  const handleStartBattle = async () => {
+    if (players.player1.ready && players.player2.ready) {
+      try {
+        // Update battle status to active using the correct endpoint
+        const response = await fetch(`${API_URL}/${battleCode}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ status: 'active' }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to update battle status');
+        }
+
+        setBattleStatus('started');
+        socket.emit('professorStartBattle', { battleCode });
+        setCountdownActive(true);
+      } catch (error) {
+        console.error('Error starting battle:', error);
+        toast.error(error.message || 'Failed to start battle. Please try again.');
+      }
     } else {
-      toast.error('Both players must join before starting the battle');
+      toast.error('Both players must be ready before starting the battle');
     }
   };
 
@@ -483,7 +501,7 @@ const BattleLobby = () => {
           <Button
             className="bg-purple-600 hover:bg-purple-700 min-w-[200px] transition-colors"
             onClick={handleStartBattle}
-            disabled={!players.player1.joined || !players.player2.joined || battleStatus !== 'waiting'}
+            disabled={!players.player1.ready || !players.player2.ready || battleStatus !== 'waiting'}
           >
             <Rocket className="h-5 w-5 mr-2" />
             LAUNCH SEQUENCE
