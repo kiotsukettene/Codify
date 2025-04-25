@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
-import SearchForm from "../student-view/SearchForm";
 
 function AdminHeader() {
   const { logout } = useAuthStore()

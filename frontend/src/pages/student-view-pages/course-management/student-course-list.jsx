@@ -7,7 +7,7 @@ import {
 import React, { useState, useEffect } from "react";
 import header from "@/assets/picture/courses/course-header.png";
 import { Separator } from "@/components/ui/separator";
-import { BookOpenCheck, Search, Users } from "lucide-react";
+import { BookOpenCheck, ChevronRight, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchForm from "@/components/student-view/SearchForm";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,11 @@ import { useNavigate } from "react-router-dom";
 import JoinCourseModal from "@/components/student-view/join-course-modal";
 import useStudentCourseStore from "@/store/studentCourseStore";
 import { useStudentStore } from "@/store/studentStore";
-
+import { motion } from "framer-motion";
 function StudentCourseListPage() {
   const navigate = useNavigate();
   const [joinCourse, setJoinCourse] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { enrolledCourses, fetchEnrolledCourses, isLoading } =
     useStudentCourseStore();
   const { student } = useStudentStore();
@@ -29,8 +30,26 @@ function StudentCourseListPage() {
     fetchEnrolledCourses();
   }, [fetchEnrolledCourses]);
 
+  const handleSearch = (query) => {
+    setSearchQuery(query.toLowerCase());
+  };
+
+  const filteredCourses = enrolledCourses.filter((course) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      course.className.toLowerCase().includes(searchLower) ||
+      course.program.toLowerCase().includes(searchLower) ||
+      course.language.toLowerCase().includes(searchLower) ||
+      (course.professorId &&
+        `${course.professorId.firstName} ${course.professorId.lastName}`
+          .toLowerCase()
+          .includes(searchLower))
+    );
+  });
+
   console.log("Enrolled Courses:", enrolledCourses); // Debugging line
   return (
+   
     <div className="mx-6 w-full py-4">
       <Card className="h-auto w-full bg-[#ededff]  shadow-none border-none flex lg:justify-between relative overflow-hidden rounded-xl">
         {/* Left Content */}
@@ -38,7 +57,7 @@ function StudentCourseListPage() {
           <CardHeader className="text-header text-4xl font-semibold text-center md:text-left">
             Hi, {student.firstName} Ready to Learn?
             <span className="text-base font-normal mt-1 ">
-              Continue your learning journey. Let’s go!
+              Continue your learning journey. Let's go!
             </span>
           </CardHeader>
 
@@ -75,9 +94,15 @@ function StudentCourseListPage() {
         </div>
       </Card>
 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="pb-10"
+      >
       <div className="flex flex-col px-8 text-center justify-between items-center mt-5 md:flex-row">
         <h1 className="text-header font-semibold text-4xl">My Courses</h1>
-        <SearchForm />
+        <SearchForm onSearch={handleSearch} />
       </div>
 
       {isLoading ? (
@@ -102,7 +127,9 @@ function StudentCourseListPage() {
           ))}
         </div>
       )}
+    </motion.div>
     </div>
+    
   );
 }
 

@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { useprofAuthStore } from "@/store/profAuthStore";
 
 function ProfessorHeader() {
-  const { logoutProfessor } = useprofAuthStore();
+  const { professor, logoutProfessor } = useprofAuthStore();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -34,6 +34,13 @@ function ProfessorHeader() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Derive initials for AvatarFallback
+  const initials = professor
+    ? `${professor.firstName?.[0] || ""}${
+        professor.lastName?.[0] || ""
+      }`.toUpperCase()
+    : "P";
 
   return (
     <div className="flex justify-end items-center w-full">

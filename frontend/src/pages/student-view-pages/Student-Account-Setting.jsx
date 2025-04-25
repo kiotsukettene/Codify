@@ -21,22 +21,23 @@ const StudentAccountSettings = () => {
 
   // Sample preset avatars
   const presetAvatars = [
-    "/placeholder.svg?height=100&width=100",
-    "/placeholder.svg?height=100&width=100",
-    "/placeholder.svg?height=100&width=100",
-    "/placeholder.svg?height=100&width=100",
+    "/src/assets/picture/Avatar/cat1.png",
+    "/src/assets/picture/Avatar/cat2.png",
+    "/src/assets/picture/Avatar/shitzu.png",
+    "/src/assets/picture/Avatar/Lion.png",
+    "/src/assets/picture/Avatar/Dog.png",
+    "/src/assets/picture/Avatar/Bear.png",
   ];
 
   useEffect(() => {
-    checkStudentAuth(); // Optional: Ensure authentication check
+    checkStudentAuth();
   }, []);
 
   // State for basic information
-  const [profileImage, setProfileImage] = useState(presetAvatars[0]);
+  const [profileImage, setProfileImage] = useState(student?.avatar || presetAvatars[0]);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
-  // const [fullName, setFullName] = useState("Alex Johnson");
-  // const [email, setEmail] = useState("alex.johnson@example.edu");
-  // const [phone, setPhone] = useState("(555) 123-4567");
+  const [phone, setPhone] = useState(student?.phone || "");
+  const [profileError, setProfileError] = useState("");
 
   // State for password management
   const [currentPassword, setCurrentPassword] = useState("");
@@ -47,20 +48,32 @@ const StudentAccountSettings = () => {
   // Academic information (read-only)
   const fullName =
     (student?.firstName || "Loading...") + " " + (student?.lastName || "");
-
   const email = student?.email || "Loading...";
-  const phone = student?.phone || "";
   const academicInfo = {
-    studentId: student.studentId,
-    institution: student.institution?.institutionName,
-    course: student.course,
-    yearLevel: student.year,
-  }
+    studentId: student?.studentId,
+    institution: student?.institution?.institutionName,
+    course: student?.course,
+    yearLevel: student?.year,
+  };
+
+  // Update profile image and phone when student data changes
+  useEffect(() => {
+    if (student?.avatar) {
+      setProfileImage(student.avatar);
+    }
+    if (student?.phone) {
+      setPhone(student.phone);
+    }
+  }, [student]);
 
   // Handle profile image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) { // Limit to 2MB
+        setProfileError("Image size must be less than 2MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfileImage(e.target.result);
@@ -105,21 +118,39 @@ const StudentAccountSettings = () => {
         setConfirmPassword("");
       }, 2000);
     } catch (err) {
-      setPasswordError("Failed to update password.");
+      setPasswordError(err.response?.data?.message || "Failed to update password");
     }
   };
 
   // Handle profile save
-  const handleProfileSave = () => {
-    // Show success notification
-    const notification = document.getElementById("notification");
-    notification.classList.remove("opacity-0");
-    notification.classList.add("opacity-100");
+  const handleProfileSave = async () => {
+    setProfileError("");
+    if (!student?._id) {
+      setProfileError("Student data not loaded");
+      return;
+    }
 
-    setTimeout(() => {
-      notification.classList.remove("opacity-100");
-      notification.classList.add("opacity-0");
-    }, 3000);
+    try {
+      await updateStudent({
+        _id: student._id,
+        avatar: profileImage,
+        phone,
+      });
+
+      // Show success notification
+      const notification = document.getElementById("notification");
+      notification.classList.remove("opacity-0");
+      notification.classList.add("opacity-100");
+
+      setTimeout(() => {
+        notification.classList.remove("opacity-100");
+        notification.classList.add("opacity-0");
+      }, 3000);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Failed to update profile";
+      console.error("Profile update error:", err.response?.data || err);
+      setProfileError(errorMessage);
+    }
   };
 
   return (
@@ -147,12 +178,16 @@ const StudentAccountSettings = () => {
               </h2>
               <button
                 onClick={handleProfileSave}
-                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center transition-all transform hover:scale-105 "
+                className="bg-primary text-white px-4 py-2 rounded-lg flex items-center transition-all transform hover:scale-105"
               >
                 <Save className="mr-2" size={18} />
-                Save Profile
+                Save Avatar
               </button>
             </div>
+
+            {profileError && (
+              <div className="text-sm text-red-500 mb-4">{profileError}</div>
+            )}
 
             <div className="flex flex-col md:flex-row items-center mb-6">
               {/* Profile Picture */}
@@ -166,19 +201,22 @@ const StudentAccountSettings = () => {
                 </div>
                 <button
                   onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-                  className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1 transition-all transform hover:scale-110 "
+                  className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1 transition-all transform hover:scale-110"
                 >
                   <Edit size={16} />
                 </button>
 
                 {/* Avatar Selector */}
                 {showAvatarSelector && (
-                  <div className="absolute top-full mt-2 left-0 bg-white p-3 rounded-lg  z-10 w-64 border border-purple-100">
+                  <div className="absolute top-full mt-2 left-0 bg-white p-3 rounded-lg z-10 w-64 border border-purple-100">
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       {presetAvatars.map((avatar, index) => (
                         <div
                           key={index}
-                          onClick={() => setProfileImage(avatar)}
+                          onClick={() => {
+                            setProfileImage(avatar);
+                            setShowAvatarSelector(false);
+                          }}
                           className={`cursor-pointer rounded-full overflow-hidden border-2 ${
                             profileImage === avatar
                               ? "border-purple-400"
@@ -193,18 +231,7 @@ const StudentAccountSettings = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-2">
-                      <label className="bg-primary text-white w-full py-2 rounded-lg flex items-center justify-center cursor-pointer ">
-                        <Upload size={16} className="mr-2" />
-                        Upload Custom
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
+                    
                   </div>
                 )}
               </div>
@@ -217,12 +244,10 @@ const StudentAccountSettings = () => {
                   </label>
                   <input
                     type="text"
-                    value={student.firstName + " " + student.lastName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    value={fullName}
                     className="w-full bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
                     disabled
                   />
-                  
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1 text-purple-700">
@@ -230,35 +255,24 @@ const StudentAccountSettings = () => {
                   </label>
                   <input
                     type="email"
-                    value={student.email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={email}
                     className="w-full bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
                     disabled
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-purple-700">
-                    Phone Number (Optional)
-                  </label>
-                  <input
-                    type="tel"
-                    value={student.phoneNumber}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
-                  />
-                </div>
+                
               </div>
             </div>
           </div>
 
           {/* Academic Information Section */}
-          <div className="bg-white rounded-xl p-6  border border-purple-100">
+          <div className="bg-white rounded-xl p-6 border border-purple-100">
             <h2 className="text-xl font-bold mb-4 flex items-center text-primary">
               <BookOpen className="mr-2" /> Academic Status
             </h2>
 
             <div className="space-y-4">
-              <div className="bg-purple-50 rounded-lg p-3 border border-purple-100 ">
+              <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
                 <div className="text-xs text-primary mb-1">
                   PLAYER STUDENT ID
                 </div>
@@ -270,7 +284,7 @@ const StudentAccountSettings = () => {
                 </div>
               </div>
 
-              <div className="bg-purple-50 rounded-lg p-3 border border-purple-100 ">
+              <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
                 <div className="text-xs text-primary mb-1">INSTITUTION</div>
                 <div className="flex items-center">
                   <School className="mr-2 text-primary" size={18} />
@@ -280,7 +294,7 @@ const StudentAccountSettings = () => {
                 </div>
               </div>
 
-              <div className="bg-purple-50 rounded-lg p-3 border border-purple-100 ">
+              <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
                 <div className="text-xs text-primary mb-1">GAME CLASS</div>
                 <div className="flex items-center">
                   <BookOpen className="mr-2 text-primary" size={18} />
@@ -301,7 +315,7 @@ const StudentAccountSettings = () => {
           </div>
 
           {/* Password Management Section */}
-          <div className="md:col-span-3 bg-white rounded-xl p-6  border border-purple-100">
+          <div className="md:col-span-3 bg-white rounded-xl p-6 border border-purple-100">
             <h2 className="text-xl font-bold mb-4 flex items-center text-primary">
               <Key className="mr-2" /> Update Password
             </h2>
@@ -360,7 +374,7 @@ const StudentAccountSettings = () => {
                 )}
                 <button
                   type="submit"
-                  className="bg-primary text-white px-6 py-2 rounded-lg flex items-center ml-auto transition-all transform hover:scale-105 "
+                  className="bg-primary text-white px-6 py-2 rounded-lg flex items-center ml-auto transition-all transform hover:scale-105"
                 >
                   <Shield className="mr-2" size={18} />
                   Update Password

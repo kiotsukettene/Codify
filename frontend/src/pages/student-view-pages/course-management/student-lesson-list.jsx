@@ -59,12 +59,11 @@ function StudentLessonListPage() {
     setTimeout(() => setShowGuide(false), 5000);
   };
 
-  // Ensure lessons is treated as an array, default to empty array if invalid
   const lessonList = Array.isArray(lessons) ? lessons : [];
 
   return (
-    <div className="flex flex-col mx-6">
-      <div className="flex flex-col lg:flex-row gap-3">
+    <div className="flex flex-col mx-6 w-full">
+      <div className="flex flex-col lg:flex-row  gap-3">
         <div className="w-full lg:w-2/3 p-4 rounded-lg h-screen overflow-hidden">
           <div className="flex-row">
             {/* Lesson Overview Card */}
@@ -87,7 +86,7 @@ function StudentLessonListPage() {
                   variant="outline"
                   className="border-primary text-primary"
                 >
-                  <Video /> Arena
+                  <Blend />  Arena
                 </Button>
 
                 {/*=================================
@@ -98,7 +97,7 @@ function StudentLessonListPage() {
                   className="border-primary text-primary" 
                   onClick={() => navigate("/video-conference")}
                 >
-                  <Blend /> Video Meet
+                  <Video /> Video Meet
                 </Button>
               </CardFooter>
             </Card>
