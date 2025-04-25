@@ -240,19 +240,11 @@ className="pb-10"
                         <div>
                           <h3 className="font-medium text-gray-800">{course.className || "Unnamed Course"}</h3>
                           <div className="text-sm text-gray-500 flex items-center">
-                            <span>{course.schedule?.day || "Day TBD"}</span>
+                            <span>{course.schedule?.day.charAt(0).toUpperCase() + course.schedule?.day.slice(1) || "Day TBD"}</span>
                             <span className="mx-2">•</span>
                             <span>{formatHour(course.schedule?.time || "Time TBD")}</span>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Progress indicator that appears on hover */}
-                      <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div
-                          className="h-full bg-primary rounded-full"
-                          style={{ width: `${Math.random() * 100}%` }}
-                        ></div>
                       </div>
                     </div>
                   </div>
