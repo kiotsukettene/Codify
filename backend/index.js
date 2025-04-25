@@ -143,7 +143,10 @@ io.on("connection", async (socket) => {
         return;
       }
 
-      const battle = await Battle.findOne({ battleCode });
+      const battle = await Battle.findOne({ battleCode })
+        .populate('player1', 'firstName lastName')
+        .populate('player2', 'firstName lastName');
+
       if (!battle) {
         socket.emit("error", { message: "Battle not found" });
         return;
@@ -152,11 +155,14 @@ io.on("connection", async (socket) => {
       socket.join(battleCode);
       console.log(`User ${socket.userId} joined battle room ${battleCode}`);
 
-      const isPlayer1 = battle.player1.toString() === socket.userId;
-      const isPlayer2 = battle.player2.toString() === socket.userId;
+      const isPlayer1 = battle.player1._id.toString() === socket.userId;
+      const isPlayer2 = battle.player2._id.toString() === socket.userId;
 
       if (isPlayer1 || isPlayer2) {
-        const message = `${isPlayer1 ? "Player 1" : "Player 2"} has joined the battle!`;
+        const player = isPlayer1 ? battle.player1 : battle.player2;
+        const playerName = `${player.firstName} ${player.lastName}`;
+        const message = `${playerName} has joined the battle!`;
+        
         io.to(battleCode).emit("playerJoined", {
           battleId: battle._id,
           studentId: socket.userId,
@@ -179,7 +185,10 @@ io.on("connection", async (socket) => {
 
   socket.on("playerReady", async ({ battleCode, studentId }) => {
     try {
-      const battle = await Battle.findOne({ battleCode });
+      const battle = await Battle.findOne({ battleCode })
+        .populate('player1', 'firstName lastName')
+        .populate('player2', 'firstName lastName');
+
       if (battle) {
         // Add to readyPlayers array if not already included
         if (!battle.readyPlayers?.includes(studentId)) {
@@ -189,7 +198,11 @@ io.on("connection", async (socket) => {
           );
         }
 
-        const message = `${studentId === battle.player1.toString() ? "Player 1" : "Player 2"} is ready for battle!`;
+        const isPlayer1 = battle.player1._id.toString() === studentId;
+        const player = isPlayer1 ? battle.player1 : battle.player2;
+        const playerName = `${player.firstName} ${player.lastName}`;
+        const message = `${playerName} is ready for battle!`;
+
         io.to(battleCode).emit("playerReady", {
           battleId: battle._id,
           studentId,

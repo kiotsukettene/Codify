@@ -76,7 +76,9 @@ router.put("/:battleCode/status", profVerifyToken, updateBattleStatus);
 // This generic route should be last
 router.get("/:battleCode", StudentVerifyToken, async (req, res) => {
   try {
-    const battle = await Battle.findOne({ battleCode: req.params.battleCode });
+    const battle = await Battle.findOne({ battleCode: req.params.battleCode })
+      .populate('player1', 'firstName lastName')
+      .populate('player2', 'firstName lastName');
     
     if (!battle) {
       return res.status(404).json({ message: "Battle not found" });
@@ -96,12 +98,12 @@ router.get("/:battleCode", StudentVerifyToken, async (req, res) => {
       commencement: battle.commencement,
       status: battle.status,
       player1: {
-        id: battle.player1,
-        name: "Player 1" // You might want to populate this from your user model
+        id: battle.player1._id,
+        name: `${battle.player1.firstName} ${battle.player1.lastName}`
       },
       player2: {
-        id: battle.player2,
-        name: "Player 2" // You might want to populate this from your user model
+        id: battle.player2._id,
+        name: `${battle.player2.firstName} ${battle.player2.lastName}`
       },
       challenges: battle.challenges.map(challenge => ({
         challengeId: challenge.challengeId,
