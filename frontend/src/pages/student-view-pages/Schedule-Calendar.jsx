@@ -14,6 +14,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import CreateEventModal from "@/components/student-view/create-schedule"
 
+const isDev = import.meta.env.MODE === "development"
+
 const API_URL = isDev
   ? "http://localhost:3000/api/events"
   : `${import.meta.env.VITE_API_URL}/api/events`;
