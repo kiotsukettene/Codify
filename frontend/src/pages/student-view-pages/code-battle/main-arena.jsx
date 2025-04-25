@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Editor } from "@monaco-editor/react";
 import {
   Clock,
@@ -24,6 +24,7 @@ import {
   ArrowRight,
   CheckSquare,
   Unlock,
+  AlertCircle,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ import { useParams } from "react-router-dom";
 import useBattleStore from "@/store/battleStore";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { SocketContext } from '@/context/auth-context/SocketProvider';
 
 // Language options with Piston API versions
 const languageOptions = [
@@ -157,6 +159,7 @@ export default function CodeBattle() {
   const { battleCode } = useParams();
   const { fetchBattleDetails, battleDetails, updateChallengeProgress } = useBattleStore();
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
+  const socket = useContext(SocketContext);
 
   // Battle state
   const [battleTitle, setBattleTitle] = useState("Algorithmic Coding Battle");
@@ -218,6 +221,9 @@ export default function CodeBattle() {
   const outputRef = useRef(null);
   const editorRef = useRef(null);
 
+  // Add this new state to store submitted code for each challenge
+  const [submittedCodes, setSubmittedCodes] = useState({});
+
   // Calculate progress percentage based on completed challenges
   const calculateProgressPercentage = (completedChallenges, totalChallenges) => {
     console.log('Calculating progress:', { completedChallenges, totalChallenges });
@@ -273,6 +279,17 @@ export default function CodeBattle() {
         const shouldBeUnlocked = index === 0 || (index > 0 && data.challenges[index - 1]?.playerProgress?.some(
           p => p.playerId === data.player1?.id && p.status === "completed"
         ));
+
+        // If the challenge is completed, store its code in submittedCodes
+        if (progress?.status === "completed") {
+          setSubmittedCodes(prev => ({
+            ...prev,
+            [challenge.challengeId]: {
+              code: progress.code || "",
+              language: progress.language || "javascript"
+            }
+          }));
+        }
 
         return {
           challengeId: challenge.challengeId,
@@ -365,22 +382,104 @@ export default function CodeBattle() {
     editorRef.current = editor;
   };
 
-  // Reset state when challenge changes
+  // Modify the handleFinalizeSubmission function to store the submitted code
+  const handleFinalizeSubmission = async () => {
+    const allTestsPassed = testResults.every(test => test.status === "passed");
+    
+    if (!allTestsPassed) {
+      setIsSubmitModalOpen(false);
+      setIsErrorModalOpen(true);
+      return;
+    }
+
+    try {
+      // Update challenge progress in the backend
+      await updateChallengeProgress(battleCode, currentChallenge.challengeId, {
+        status: "completed",
+        code,
+        language,
+        score: currentChallenge.points,
+        submittedAt: new Date().toISOString()
+      });
+
+      // Store the submitted code
+      setSubmittedCodes(prev => ({
+        ...prev,
+        [currentChallenge.challengeId]: {
+          code,
+          language
+        }
+      }));
+
+      setIsSubmitModalOpen(false);
+      setIsEditorReadOnly(true);
+      setIsSubmitted(true);
+      setUserStatus("submitted");
+
+      const result = {
+        challengeId: currentChallenge.challengeId,
+        title: currentChallenge.title,
+        passedTests: testResults.length,
+        totalTests: testResults.length,
+        score: currentChallenge.points,
+        timeSpent: currentChallenge.timeLimit - timeLeft,
+      };
+
+      // Update challenge results
+      const newChallengeResults = [...challengeResults, result];
+      setChallengeResults(newChallengeResults);
+      
+      // Update completed challenges
+      const newCompletedChallenges = [...completedChallenges, currentChallenge.challengeId];
+      setCompletedChallenges(newCompletedChallenges);
+
+      // Update earned points and progress
+      const newEarnedPoints = earnedPoints + currentChallenge.points;
+      setEarnedPoints(newEarnedPoints);
+      setUserProgress(calculateProgressPercentage(newCompletedChallenges, challengesData.length));
+
+      // Unlock next challenge if available
+      if (currentChallengeIndex < challengesData.length - 1) {
+        const nextChallenge = challengesData[currentChallengeIndex + 1];
+        if (!unlockedChallenges.includes(nextChallenge.challengeId)) {
+          await updateChallengeProgress(battleCode, nextChallenge.challengeId, {
+            status: "unlocked"
+          });
+          setUnlockedChallenges([...unlockedChallenges, nextChallenge.challengeId]);
+        }
+        setShowNextChallengeButton(true);
+      }
+    } catch (error) {
+      console.error("Failed to update challenge progress:", error);
+      toast.error("Failed to submit challenge. Please try again.");
+    }
+  };
+
+  // Modify the useEffect that handles challenge changes to restore submitted code
   useEffect(() => {
     if (currentChallenge) {
-      setCode(currentChallenge.savedCode || "");
+      // Check if there's submitted code for this challenge
+      const submittedCode = submittedCodes[currentChallenge.challengeId];
+      if (submittedCode && completedChallenges.includes(currentChallenge.challengeId)) {
+        setCode(submittedCode.code);
+        setLanguage(submittedCode.language);
+      } else {
+        // If no submitted code, use saved code or empty string
+        setCode(currentChallenge.savedCode || "");
+        setLanguage(currentChallenge.savedLanguage || "javascript");
+      }
+
       setTestResults(currentChallenge.testCases || []);
       setTimeLeft(currentChallenge.timeLimit || 1800);
       setOutput("");
       setUserProgress(0);
-      // Set editor to read-only if the challenge is completed
       setIsEditorReadOnly(completedChallenges.includes(currentChallenge.challengeId));
       setIsSubmitted(completedChallenges.includes(currentChallenge.challengeId));
       setShowNextChallengeButton(false);
       setUserStatus(completedChallenges.includes(currentChallenge.challengeId) ? "submitted" : "idle");
       setIsProblemPanelOpen(true);
     }
-  }, [currentChallengeIndex, currentChallenge?.challengeId, completedChallenges]);
+  }, [currentChallengeIndex, currentChallenge?.challengeId, completedChallenges, submittedCodes]);
 
   // Countdown timer
   useEffect(() => {
@@ -461,10 +560,19 @@ export default function CodeBattle() {
             }
             args = args.map(arg => (typeof arg === 'string' ? `"${arg}"` : arg));
           } catch (e) {
-            args = testInput.trim().split(/\s+/).map(arg => {
-              const num = Number(arg);
-              return isNaN(num) ? `"${arg}"` : num;
-            });
+            // Handle single array argument like "1,2,3"
+if (numArguments === 1 && testInput.includes(",")) {
+  const elements = testInput.split(",").map(x => {
+    const num = Number(x.trim());
+    return isNaN(num) ? `"${x.trim()}"` : num;
+  });
+  args = [`[${elements.join(",")}]`]; // Final result: one argument which is an array
+} else {
+  args = testInput.trim().split(/\s+/).map(arg => {
+    const num = Number(arg);
+    return isNaN(num) ? `"${arg}"` : num;
+  });
+}
           }
 
           if (args.length !== numArguments) {
@@ -663,80 +771,19 @@ public class Solution {
     }
   };
 
-  // Handle finalize submission with progress update
-  const handleFinalizeSubmission = async () => {
-    const allTestsPassed = testResults.every(test => test.status === "passed");
-    
-    if (!allTestsPassed) {
-      setIsSubmitModalOpen(false);
-      setIsErrorModalOpen(true);
-      return;
-    }
-
-    try {
-      // Update challenge progress in the backend
-      await updateChallengeProgress(battleCode, currentChallenge.challengeId, {
-        status: "completed",
-        code,
-        language,
-        score: currentChallenge.points,
-        submittedAt: new Date().toISOString()
-      });
-
-      setIsSubmitModalOpen(false);
-      setIsEditorReadOnly(true);
-      setIsSubmitted(true);
-      setUserStatus("submitted");
-
-      const result = {
-        challengeId: currentChallenge.challengeId,
-        title: currentChallenge.title,
-        passedTests: testResults.length,
-        totalTests: testResults.length,
-        score: currentChallenge.points,
-        timeSpent: currentChallenge.timeLimit - timeLeft,
-      };
-
-      // Update challenge results
-      const newChallengeResults = [...challengeResults, result];
-      setChallengeResults(newChallengeResults);
-      
-      // Update completed challenges
-      const newCompletedChallenges = [...completedChallenges, currentChallenge.challengeId];
-      setCompletedChallenges(newCompletedChallenges);
-
-      // Update earned points and progress
-      const newEarnedPoints = earnedPoints + currentChallenge.points;
-      setEarnedPoints(newEarnedPoints);
-      setUserProgress(calculateProgressPercentage(newCompletedChallenges, challengesData.length));
-
-      // Unlock next challenge if available
-      if (currentChallengeIndex < challengesData.length - 1) {
-        const nextChallenge = challengesData[currentChallengeIndex + 1];
-        if (!unlockedChallenges.includes(nextChallenge.challengeId)) {
-          await updateChallengeProgress(battleCode, nextChallenge.challengeId, {
-            status: "unlocked"
-          });
-          setUnlockedChallenges([...unlockedChallenges, nextChallenge.challengeId]);
-        }
-        setShowNextChallengeButton(true);
-      }
-    } catch (error) {
-      console.error("Failed to update challenge progress:", error);
-      toast.error("Failed to submit challenge. Please try again.");
-    }
-  };
-
-  // Auto-save code periodically
+  // Modify the auto-save useEffect
   useEffect(() => {
     let saveTimer;
     if (!isSubmitted && code && currentChallenge?.challengeId && battleCode) {
       saveTimer = setTimeout(async () => {
         try {
-          await updateChallengeProgress(battleCode, currentChallenge.challengeId, {
-            code,
-            language
-          });
+          // Don't auto-save if the challenge is completed and has submitted code
+          if (!completedChallenges.includes(currentChallenge.challengeId)) {
+            await updateChallengeProgress(battleCode, currentChallenge.challengeId, {
+              code,
+              language
+            });
+          }
         } catch (error) {
           console.error("Failed to auto-save code:", error);
         }
@@ -744,7 +791,7 @@ public class Solution {
 
       return () => clearTimeout(saveTimer);
     }
-  }, [code, language, currentChallenge?.challengeId, isSubmitted, battleCode, updateChallengeProgress]);
+  }, [code, language, currentChallenge?.challengeId, isSubmitted, battleCode, updateChallengeProgress, completedChallenges]);
 
   // Handle next challenge
   const handleNextChallenge = () => {
@@ -839,6 +886,27 @@ public class Solution {
       loadBattleAndProgress();
     }
   }, [battleCode]);
+
+  // Modify the onChange handler in the Editor component
+  const handleCodeChange = (newCode) => {
+    setCode(newCode);
+    
+    // Emit code update to server
+    if (socket && battleCode) {
+      socket.emit("codeUpdate", {
+        battleCode,
+        playerId: battleDetails?.player1?.id === userId ? "player1" : "player2",
+        code: newCode,
+        language
+      });
+      
+      // Also emit typing status
+      socket.emit("playerTyping", {
+        battleCode,
+        playerId: battleDetails?.player1?.id === userId ? "player1" : "player2"
+      });
+    }
+  };
 
   if (isLoadingProgress) {
     return (
@@ -1008,6 +1076,13 @@ public class Solution {
                     >
                       Examples
                     </TabsTrigger>
+                    <TabsTrigger
+                      value="rules"
+                      className="data-[state=active]:bg-[#2B1F4A] data-[state=active]:text-[#F5F5F5] text-[#C2C2DD] text-xs"
+                    >
+                      BattleRules
+                    </TabsTrigger>
+                    
                   </TabsList>
                   <TabsContent value="description" className="mt-0 bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
                     <div className="space-y-4 p-2">
@@ -1033,6 +1108,15 @@ public class Solution {
                         </div>
                       </div>
                     ))}
+                  </TabsContent>
+                  <TabsContent value="rules" className="mt-0">
+                    <div className="bg-[#0D0A1A] rounded-lg p-3 border border-[#2B1F4A]">
+                      <h3 className="font-semibold text-yellow-400 mb-2 flex items-center gap-1 text-sm">
+                        <AlertCircle className="h-3 w-3" />
+                        Battle Rules
+                      </h3>
+                      <p className="text-sm text-[#C2C2DD]">{battleDetails.battleRules}</p>
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>
@@ -1081,7 +1165,7 @@ public class Solution {
                 height="100%"
                 language={language === "javascript" ? "javascript" : language === "python" ? "python" : "java"}
                 value={code}
-                onChange={setCode}
+                onChange={handleCodeChange}
                 theme={theme}
                 onMount={handleEditorDidMount}
                 options={{
