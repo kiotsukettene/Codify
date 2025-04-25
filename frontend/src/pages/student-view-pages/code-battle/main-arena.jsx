@@ -482,7 +482,7 @@ export default function CodeBattle() {
         socket.emit("battleComplete", {
           battleCode,
           winnerId: currentPlayer.id,
-          winnerName: `${currentPlayer.firstName} ${currentPlayer.lastName}`
+          winnerName: `${currentPlayer.name}`
         });
         setIsVictoryModalOpen(true);
         return;

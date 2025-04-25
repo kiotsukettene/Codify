@@ -1,112 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Trophy, Clock, CheckCircle, XCircle, ArrowLeft, FileText, Home, User, Users } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate, useLocation, useParams } from "react-router-dom"
+import axios from "axios"
+import { useStudentStore } from "@/store/studentStore"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
-
-// Sample data for the battle results
-const sampleBattleResults = {
-  battleId: "battle-123",
-  battleTitle: "Algorithmic Coding Battle",
-  timeLimit: 3600, // 1 hour in seconds
-  timeUsed: 2145, // 35:45 in seconds
-  hasWinner: true,
-  winningCondition: "Finished all 3 challenges first",
-  players: [
-    {
-      id: "user123",
-      name: "Player1",
-      isWinner: true,
-      completedChallenges: [1, 2, 3],
-      totalScore: 580,
-      timeSpent: 2145, // in seconds
-      challengeResults: [
-        { id: 1, title: "Challenge 1", passedTests: 4, totalTests: 4, score: 150, timeSpent: 720 },
-        { id: 2, title: "Challenge 2", passedTests: 4, totalTests: 4, score: 180, timeSpent: 825 },
-        { id: 3, title: "Challenge 3", passedTests: 4, totalTests: 4, score: 250, timeSpent: 600 },
-      ],
-    },
-    {
-      id: "opponent1",
-      name: "CodeNinja",
-      isWinner: false,
-      completedChallenges: [1, 2],
-      totalScore: 330,
-      timeSpent: 2145, // in seconds
-      challengeResults: [
-        { id: 1, title: "Challenge 1", passedTests: 4, totalTests: 4, score: 150, timeSpent: 780 },
-        { id: 2, title: "Challenge 2", passedTests: 4, totalTests: 4, score: 180, timeSpent: 1050 },
-        { id: 3, title: "Challenge 3", passedTests: 0, totalTests: 4, score: 0, timeSpent: 315 },
-      ],
-    },
-  ],
-}
-
-// Alternative scenario: No winner
-const noWinnerResults = {
-  ...sampleBattleResults,
-  hasWinner: false,
-  winningCondition: "No challenges completed before time expired",
-  players: [
-    {
-      ...sampleBattleResults.players[0],
-      isWinner: false,
-      completedChallenges: [],
-      totalScore: 0,
-      challengeResults: [
-        { id: 1, title: "Challenge 1", passedTests: 2, totalTests: 4, score: 0, timeSpent: 1800 },
-        { id: 2, title: "Challenge 2", passedTests: 0, totalTests: 4, score: 0, timeSpent: 0 },
-        { id: 3, title: "Challenge 3", passedTests: 0, totalTests: 4, score: 0, timeSpent: 0 },
-      ],
-    },
-    {
-      ...sampleBattleResults.players[1],
-      isWinner: false,
-      completedChallenges: [],
-      totalScore: 0,
-      challengeResults: [
-        { id: 1, title: "Challenge 1", passedTests: 1, totalTests: 4, score: 0, timeSpent: 1800 },
-        { id: 2, title: "Challenge 2", passedTests: 0, totalTests: 4, score: 0, timeSpent: 0 },
-        { id: 3, title: "Challenge 3", passedTests: 0, totalTests: 4, score: 0, timeSpent: 0 },
-      ],
-    },
-  ],
-}
-
-// Alternative scenario: Winner by points
-const pointsWinnerResults = {
-  ...sampleBattleResults,
-  winningCondition: "Highest score when time expired",
-  players: [
-    {
-      ...sampleBattleResults.players[0],
-      completedChallenges: [1, 2],
-      totalScore: 330,
-      challengeResults: [
-        { id: 1, title: "Challenge 1", passedTests: 4, totalTests: 4, score: 150, timeSpent: 720 },
-        { id: 2, title: "Challenge 2", passedTests: 4, totalTests: 4, score: 180, timeSpent: 825 },
-        { id: 3, title: "Challenge 3", passedTests: 2, totalTests: 4, score: 0, timeSpent: 600 },
-      ],
-    },
-    {
-      ...sampleBattleResults.players[1],
-      isWinner: false,
-      completedChallenges: [1],
-      totalScore: 150,
-      challengeResults: [
-        { id: 1, title: "Challenge 1", passedTests: 4, totalTests: 4, score: 150, timeSpent: 780 },
-        { id: 2, title: "Challenge 2", passedTests: 2, totalTests: 4, score: 0, timeSpent: 1050 },
-        { id: 3, title: "Challenge 3", passedTests: 0, totalTests: 4, score: 0, timeSpent: 315 },
-      ],
-    },
-  ],
-}
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/battles"
+  : `${import.meta.env.VITE_API_URL}/api/battles`;
 
 // Format time from seconds to MM:SS
 const formatTime = (seconds) => {
@@ -117,8 +26,141 @@ const formatTime = (seconds) => {
 
 export default function BattleResults() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const battleResults = location.state || sampleBattleResults
+  const { battleCode } = useParams()
+  const { student } = useStudentStore()
+  const [isLoading, setIsLoading] = useState(true)
+  const [battleResults, setBattleResults] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchBattleResults = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/${battleCode}`, {
+          withCredentials: true
+        });
+
+        const battleData = response.data;
+        
+        // Format the battle results
+        const formattedResults = {
+          battleId: battleData.battleCode,
+          battleTitle: battleData.title,
+          timeLimit: battleData.duration * 60, // convert minutes to seconds
+          timeUsed: battleData.duration * 60, // This should be actual time used from the battle
+          hasWinner: true, // This will be determined by challenge completion
+          winningCondition: "Completed most challenges",
+          players: [
+            {
+              id: battleData.player1.id,
+              name: `${battleData.player1.name}`,
+              isWinner: false, // Will be set below
+              completedChallenges: [],
+              totalScore: 0,
+              timeSpent: 0,
+              challengeResults: battleData.challenges.map((challenge, index) => {
+                const progress = challenge.playerProgress?.find(p => p.playerId === battleData.player1.id);
+                return {
+                  id: index + 1,
+                  title: challenge.problemTitle,
+                  passedTests: progress?.status === "completed" ? challenge.testCases?.length || 0 : 0,
+                  totalTests: challenge.testCases?.length || 0,
+                  score: progress?.status === "completed" ? challenge.points : 0,
+                  timeSpent: progress?.timeSpent || 0
+                };
+              })
+            },
+            {
+              id: battleData.player2.id,
+              name: `${battleData.player2.name}`,
+              isWinner: false,
+              completedChallenges: [],
+              totalScore: 0,
+              timeSpent: 0,
+              challengeResults: battleData.challenges.map((challenge, index) => {
+                const progress = challenge.playerProgress?.find(p => p.playerId === battleData.player2.id);
+                return {
+                  id: index + 1,
+                  title: challenge.problemTitle,
+                  passedTests: progress?.status === "completed" ? challenge.testCases?.length || 0 : 0,
+                  totalTests: challenge.testCases?.length || 0,
+                  score: progress?.status === "completed" ? challenge.points : 0,
+                  timeSpent: progress?.timeSpent || 0
+                };
+              })
+            }
+          ]
+        };
+
+        // Calculate completed challenges and total scores
+        formattedResults.players.forEach(player => {
+          player.completedChallenges = player.challengeResults
+            .filter(c => c.passedTests === c.totalTests)
+            .map(c => c.id);
+          player.totalScore = player.challengeResults.reduce((sum, c) => sum + c.score, 0);
+          player.timeSpent = player.challengeResults.reduce((sum, c) => sum + c.timeSpent, 0);
+        });
+
+        // Determine winner
+        const [player1, player2] = formattedResults.players;
+        if (player1.completedChallenges.length > player2.completedChallenges.length) {
+          player1.isWinner = true;
+          formattedResults.winningCondition = "Completed more challenges";
+        } else if (player2.completedChallenges.length > player1.completedChallenges.length) {
+          player2.isWinner = true;
+          formattedResults.winningCondition = "Completed more challenges";
+        } else if (player1.totalScore > player2.totalScore) {
+          player1.isWinner = true;
+          formattedResults.winningCondition = "Higher total score";
+        } else if (player2.totalScore > player1.totalScore) {
+          player2.isWinner = true;
+          formattedResults.winningCondition = "Higher total score";
+        } else if (player1.timeSpent < player2.timeSpent) {
+          player1.isWinner = true;
+          formattedResults.winningCondition = "Faster completion time";
+        } else if (player2.timeSpent < player1.timeSpent) {
+          player2.isWinner = true;
+          formattedResults.winningCondition = "Faster completion time";
+        } else {
+          formattedResults.hasWinner = false;
+          formattedResults.winningCondition = "Battle ended in a tie";
+        }
+
+        setBattleResults(formattedResults);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching battle results:", error);
+        setError(error.response?.data?.message || "Failed to load battle results");
+        setIsLoading(false);
+      }
+    };
+
+    if (battleCode) {
+      fetchBattleResults();
+    }
+  }, [battleCode]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0D0A1A] flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error || !battleResults) {
+    return (
+      <div className="min-h-screen bg-[#0D0A1A] text-white flex items-center justify-center">
+        <div className="text-center">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-2">Failed to Load Results</h2>
+          <p className="text-gray-400 mb-4">{error || "Battle results not found"}</p>
+          <Button onClick={() => navigate('/student/code-battle')} variant="outline">
+            Return to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Find the winner (if any)
   const winner = battleResults.players.find((player) => player.isWinner)
@@ -278,79 +320,7 @@ export default function BattleResults() {
           ))}
         </div>
 
-        {/* Challenge Breakdown */}
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <FileText className="h-5 w-5 text-[#B689F4]" />
-          Challenge Breakdown
-        </h2>
-
-        <Card className="border border-[#2B1F4A] bg-[#18122B] mb-8 text-neutral-50">
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              {[1, 2, 3].map((challengeId) => (
-                <div key={challengeId}>
-                  <h3 className="text-lg font-medium mb-3">Challenge {challengeId}</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {battleResults.players.map((player) => {
-                      const challenge = player.challengeResults.find((c) => c.id === challengeId)
-                      const isCompleted = challenge?.passedTests === challenge?.totalTests
-
-                      return (
-                        <div
-                          key={`${player.id}-${challengeId}`}
-                          className={`p-3 rounded-lg border ${
-                            isCompleted ? "border-green-500/30 bg-green-500/10" : "border-[#2B1F4A] bg-[#0D0A1A]"
-                          }`}
-                        >
-                          <div className="flex justify-between items-center mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="h-6 w-6 rounded-full bg-[#231b3d] flex items-center justify-center">
-                                <User className="h-3 w-3" />
-                              </div>
-                              <span className="font-medium">{player.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {isCompleted ? (
-                                <Badge className="bg-green-500/20 text-green-400 border-green-500">
-                                  <CheckCircle className="h-3 w-3 mr-1" /> Completed
-                                </Badge>
-                              ) : challenge?.passedTests > 0 ? (
-                                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500">Partial</Badge>
-                              ) : (
-                                <Badge className="bg-red-500/20 text-red-400 border-red-500">
-                                  <XCircle className="h-3 w-3 mr-1" /> Not Completed
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                            <div className="bg-[#18122B] rounded p-1">
-                              <p className="text-[#C2C2DD]">Tests</p>
-                              <p className="font-medium">
-                                {challenge?.passedTests || 0}/{challenge?.totalTests || 0}
-                              </p>
-                            </div>
-                            <div className="bg-[#18122B] rounded p-1">
-                              <p className="text-[#C2C2DD]">Score</p>
-                              <p className="font-medium text-yellow-400">{challenge?.score || 0}</p>
-                            </div>
-                            <div className="bg-[#18122B] rounded p-1">
-                              <p className="text-[#C2C2DD]">Time</p>
-                              <p className="font-medium font-mono">{formatTime(challenge?.timeSpent || 0)}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  {challengeId < 3 && <Separator className="mt-4 bg-[#2B1F4A]" />}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
+       
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           
