@@ -86,6 +86,8 @@ import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
 import StudentBattleLobby from "./pages/student-view-pages/code-battle/student-battle-lobby";
 import BattleWinnerPage from "./pages/student-view-pages/code-battle/battle-winner-page";
 import AboutUs from "./pages/Guest-view-pages/About-us";
+import BattleResults from "./pages/student-view-pages/code-battle/battle-result";
+import BattleLostPage from "./pages/student-view-pages/code-battle/lost-player";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -108,9 +110,6 @@ function App() {
     (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth)
   ) {
     return <LoadingSpinner />;
-
-
-
   }
   return (
     <div>
@@ -483,7 +482,10 @@ function App() {
         <Route path="/student/code-battle/main-arena/:battleCode" element={<ProtectedRouteStudents><MainArena /></ProtectedRouteStudents>} />
         <Route path="/professor/code-battle/arena/:battleCode" element={<ProtectedRouteProfessors><CodeBattle /></ProtectedRouteProfessors>} />
         <Route path="/professor/code-battle/lobby/:battleCode" element={<ProtectedRouteProfessors><BattleLobby /></ProtectedRouteProfessors>} />
- 
+        <Route path="/student/code-battle/results/:battleCode" element={<ProtectedRouteStudents><BattleResults /></ProtectedRouteStudents>} />
+        <Route path="/winner" element={<BattleWinnerPage />} />
+        <Route path="/lost" element={<BattleLostPage />} />
+
         {/* Additional Routes */}
 
         <Route path="/video-conference" element={<VideoConference />} />

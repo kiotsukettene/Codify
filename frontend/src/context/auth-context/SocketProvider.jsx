@@ -45,6 +45,10 @@ export const SocketProvider = ({ children }) => {
       toast.success(message);
     });
 
+    socketInstance.on("battleCompleted", ({ winnerId, winnerName }) => {
+      console.log("Battle completed. Winner:", winnerName);
+    });
+
     socketInstance.on("connect_error", (error) => {
       console.error("Socket.IO connection error:", error.message);
     });

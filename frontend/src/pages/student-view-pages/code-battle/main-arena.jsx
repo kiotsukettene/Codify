@@ -41,8 +41,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import useBattleStore from "@/store/battleStore";
+import { useStudentStore } from "@/store/studentStore";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { SocketContext } from '@/context/auth-context/SocketProvider';
@@ -158,8 +159,11 @@ const requestQueue = {
 export default function CodeBattle() {
   const { battleCode } = useParams();
   const { fetchBattleDetails, battleDetails, updateChallengeProgress } = useBattleStore();
+  const { student } = useStudentStore();
+  const userId = student?._id; // Get userId from student store
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
   const socket = useContext(SocketContext);
+  const navigate = useNavigate();
 
   // Battle state
   const [battleTitle, setBattleTitle] = useState("Algorithmic Coding Battle");
@@ -210,6 +214,9 @@ export default function CodeBattle() {
   const [showNextChallengeButton, setShowNextChallengeButton] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
+  const [isDefeatModalOpen, setIsDefeatModalOpen] = useState(false);
+  const [winnerName, setWinnerName] = useState("");
 
   // Collapsible panel states
   const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(true);
@@ -382,7 +389,34 @@ export default function CodeBattle() {
     editorRef.current = editor;
   };
 
-  // Modify the handleFinalizeSubmission function to store the submitted code
+  // Add socket event listeners
+  useEffect(() => {
+    if (socket && battleCode && battleDetails) {
+      // Listen for battle completion event
+      socket.on("battleCompleted", ({ winnerId, winnerName }) => {
+        console.log("Received battleCompleted event:", { winnerId, winnerName });
+        
+        // Check if current player is the winner (could be either player1 or player2)
+        const currentPlayerId = battleDetails?.player1?.id === userId ? 
+          battleDetails.player1.id : battleDetails.player2.id;
+        
+        const isCurrentPlayerWinner = currentPlayerId === winnerId;
+        
+        if (isCurrentPlayerWinner) {
+          setIsVictoryModalOpen(true);
+        } else {
+          setWinnerName(winnerName);
+          setIsDefeatModalOpen(true);
+          setIsEditorReadOnly(true);
+        }
+      });
+
+      return () => {
+        socket.off("battleCompleted");
+      };
+    }
+  }, [socket, battleCode, battleDetails, userId]);
+
   const handleFinalizeSubmission = async () => {
     const allTestsPassed = testResults.every(test => test.status === "passed");
     
@@ -438,7 +472,23 @@ export default function CodeBattle() {
       setEarnedPoints(newEarnedPoints);
       setUserProgress(calculateProgressPercentage(newCompletedChallenges, challengesData.length));
 
-      // Unlock next challenge if available
+      // Check if all challenges are completed
+      if (newCompletedChallenges.length === challengesData.length) {
+        // Get current player info (could be either player1 or player2)
+        const isPlayer1 = battleDetails?.player1?.id === userId;
+        const currentPlayer = isPlayer1 ? battleDetails.player1 : battleDetails.player2;
+        
+        // Emit battle completion event with correct player info
+        socket.emit("battleComplete", {
+          battleCode,
+          winnerId: currentPlayer.id,
+          winnerName: `${currentPlayer.firstName} ${currentPlayer.lastName}`
+        });
+        setIsVictoryModalOpen(true);
+        return;
+      }
+
+      // If not all challenges completed, unlock next challenge if available
       if (currentChallengeIndex < challengesData.length - 1) {
         const nextChallenge = challengesData[currentChallengeIndex + 1];
         if (!unlockedChallenges.includes(nextChallenge.challengeId)) {
@@ -908,6 +958,78 @@ public class Solution {
     }
   };
 
+  const [battleDuration, setBattleDuration] = useState(0);
+  const [battleTimer, setBattleTimer] = useState(0);
+
+  // Initialize battle duration from battle details
+  useEffect(() => {
+    if (battleDetails?.duration) {
+      const durationInSeconds = battleDetails.duration * 60; // Convert minutes to seconds
+      setBattleDuration(durationInSeconds);
+      setBattleTimer(durationInSeconds);
+    }
+  }, [battleDetails]);
+
+  // Battle timer countdown
+  useEffect(() => {
+    if (battleTimer > 0) {
+      const timer = setInterval(() => {
+        setBattleTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            handleBattleEnd();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [battleTimer]);
+
+  // Auto-navigate after modal display
+  useEffect(() => {
+    let navigationTimer;
+    if (isVictoryModalOpen || isDefeatModalOpen) {
+      navigationTimer = setTimeout(() => {
+        navigate(`/student/code-battle/results/${battleCode}`);
+      }, 5000); // Auto navigate after 5 seconds
+    }
+    return () => clearTimeout(navigationTimer);
+  }, [isVictoryModalOpen, isDefeatModalOpen, battleCode, navigate]);
+
+  const handleBattleEnd = async () => {
+    // Compare challenge completion when time runs out
+    const currentPlayerChallenges = completedChallenges.length;
+    const opponentChallenges = opponents[0]?.completedChallenges?.length || 0;
+
+    if (currentPlayerChallenges > opponentChallenges) {
+      // Current player wins
+      socket.emit("battleComplete", {
+        battleCode,
+        winnerId: userId,
+        winnerName: `${battleDetails?.player1?.firstName} ${battleDetails?.player1?.lastName}`
+      });
+      setIsVictoryModalOpen(true);
+    } else if (currentPlayerChallenges < opponentChallenges) {
+      // Opponent wins
+      setWinnerName(opponents[0]?.name || "Opponent");
+      setIsDefeatModalOpen(true);
+    } else {
+      // It's a tie - handle according to your game rules
+      // For now, let's navigate to results
+      navigate(`/student/code-battle/results/${battleCode}`);
+    }
+  };
+
+  // Format battle timer for display
+  const formatBattleTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   if (isLoadingProgress) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#0D0A1A]">
@@ -922,7 +1044,7 @@ public class Solution {
   return (
     <div className="flex flex-col h-screen bg-[#0D0A1A] text-[#F5F5F5] overflow-hidden">
       {!isEditorExpanded && (
-        <header className="flex items-center justify-between px-3 py-2 bg-[#18122B] border-b border-[#2B1F4A] sticky top-0 z-10">
+        <header className="flex items-center justify-between px-4 py-3 bg-[#18122B] border-b border-[#2B1F4A] sticky top-0 z-10">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -999,6 +1121,12 @@ public class Solution {
             <Button variant="destructive" size="sm" className="h-7 px-4 bg-red-600/80 hover:bg-red-700 text-sm">
               Exit
             </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="flex items-center gap-1 text-white bg-purple-900/20">
+              <Clock className="h-4 w-4 text-purple-400" />
+              Battle Time: {formatBattleTime(battleTimer)}
+            </Badge>
           </div>
         </header>
       )}
@@ -1631,6 +1759,72 @@ public class Solution {
               Continue Editing
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isVictoryModalOpen} onOpenChange={setIsVictoryModalOpen}>
+        <DialogContent className="bg-[#18122B] border border-[#2B1F4A] text-[#F5F5F5] max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Trophy className="h-8 w-8 text-yellow-400" />
+              Victory! 🎉
+            </DialogTitle>
+            <DialogDescription className="text-[#C2C2DD] text-lg">
+              Congratulations! You've completed all challenges first!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-[#0D0A1A] rounded-lg p-6 border border-yellow-500/30 text-center">
+              <h3 className="text-xl font-bold text-yellow-400 mb-2">You're the Winner!</h3>
+              <p className="text-[#C2C2DD] mb-4">
+                You've successfully completed all challenges before your opponent.
+              </p>
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => navigate(`/student/code-battle/results/${battleCode}`)}
+                  className="bg-[#B689F4] hover:bg-[#B689F4]/80 text-white"
+                >
+                  <Trophy className="h-4 w-4 mr-2" />
+                  View Battle Results
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="text-sm text-gray-400 mt-4 text-center">
+            Redirecting to results in {Math.ceil((5000 - (Date.now() - (isVictoryModalOpen ? Date.now() : 0))) / 1000)} seconds...
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isDefeatModalOpen} onOpenChange={setIsDefeatModalOpen}>
+        <DialogContent className="bg-[#18122B] border border-[#2B1F4A] text-[#F5F5F5] max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Trophy className="h-8 w-8 text-red-400" />
+              Battle Ended
+            </DialogTitle>
+            <DialogDescription className="text-[#C2C2DD] text-lg">
+              {winnerName} has completed all challenges!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-[#0D0A1A] rounded-lg p-6 border border-red-500/30 text-center">
+              <h3 className="text-xl font-bold text-red-400 mb-2">Better Luck Next Time!</h3>
+              <p className="text-[#C2C2DD] mb-4">
+                Your opponent has finished all challenges. The battle is now complete.
+              </p>
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => navigate(`/student/code-battle/results/${battleCode}`)}
+                  className="bg-[#B689F4] hover:bg-[#B689F4]/80 text-white"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  View Battle Results
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="text-sm text-gray-400 mt-4 text-center">
+            Redirecting to results in {Math.ceil((5000 - (Date.now() - (isDefeatModalOpen ? Date.now() : 0))) / 1000)} seconds...
+          </div>
         </DialogContent>
       </Dialog>
     </div>

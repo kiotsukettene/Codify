@@ -229,6 +229,13 @@ io.on("connection", async (socket) => {
     connectedUsers.delete(userId);
     console.log("User disconnected:", userId);
   });
+
+  // Add battle completion handler
+  socket.on("battleComplete", ({ battleCode, winnerId, winnerName }) => {
+    console.log(`Battle ${battleCode} completed. Winner: ${winnerName}`);
+    // Broadcast to ALL users in the battle room INCLUDING the sender
+    io.in(battleCode).emit("battleCompleted", { winnerId, winnerName });
+  }); 
 });
 
 // Remainder of index.js remains unchanged

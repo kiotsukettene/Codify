@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 
 
 // Sample data for the battle results
@@ -115,16 +115,10 @@ const formatTime = (seconds) => {
   return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
 }
 
-export default function BattleResults({ scenario = "winner" }) {
+export default function BattleResults() {
   const navigate = useNavigate()
-
-  const [battleResults, setBattleResults] = useState(
-    scenario === "no-winner"
-      ? noWinnerResults
-      : scenario === "points-winner"
-        ? pointsWinnerResults
-        : sampleBattleResults,
-  )
+  const location = useLocation()
+  const battleResults = location.state || sampleBattleResults
 
   // Find the winner (if any)
   const winner = battleResults.players.find((player) => player.isWinner)
@@ -138,6 +132,7 @@ export default function BattleResults({ scenario = "winner" }) {
           <Button
             variant="ghost"
             className="p-1 h-8 w-8 hover:bg-[#2B1F4A] rounded-full text-[#C2C2DD] hover:text-[#F5F5F5]"
+            onClick={() => navigate('/student/code-battle')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
