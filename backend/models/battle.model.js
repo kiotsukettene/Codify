@@ -169,7 +169,6 @@ BattleSchema.methods.getPlayerProgress = function(playerId) {
 };
 
 // Add indexes for better query performance
-BattleSchema.index({ battleCode: 1 });
 BattleSchema.index({ courseId: 1, status: 1 });
 BattleSchema.index({ player1: 1, status: 1 });
 BattleSchema.index({ player2: 1, status: 1 });

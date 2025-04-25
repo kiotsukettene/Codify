@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Editor } from "@monaco-editor/react";
 import {
   Clock,
@@ -44,7 +44,7 @@ import { useParams } from "react-router-dom";
 import useBattleStore from "@/store/battleStore";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-
+import { SocketContext } from "@/context/auth-context/SocketProvider";
 // Language options with Piston API versions
 const languageOptions = [
   { value: "javascript", label: "JavaScript", version: "18.15.0" },
@@ -55,45 +55,13 @@ const languageOptions = [
   { value: "cpp", label: "C++", version: "10.2.0" },
 ];
 
+const socket = useContext(SocketContext);
+
 // Map languageOptions to LANGUAGE_VERSIONS
 const LANGUAGE_VERSIONS = languageOptions.reduce((acc, { value, version }) => {
   acc[value] = version;
   return acc;
 }, {});
-
-// Static challenges data as fallback (updated to include functionName and numArguments)
-const staticChallengesData = [
-  {
-    id: 1,
-    title: "Sort Array",
-    points: 150,
-    timeLimit: 1800,
-    description: `You are given an array of integers. Implement the function sortArray to sort the array in ascending order and return the sorted array.`,
-    examples: [
-      {
-        input: "5 2 9 1 5",
-        output: "1 2 5 5 9",
-        explanation: "The sorted array in ascending order.",
-      },
-      {
-        input: "3 1 2",
-        output: "1 2 3",
-        explanation: "The sorted array in ascending order.",
-      },
-    ],
-    hints: [
-      "Consider using built-in sorting functions for simplicity.",
-      "Ensure the output is a space-separated string for console output.",
-    ],
-    testCases: [
-      { id: 1, input: "5 2 9 1 5", expectedOutput: "1 2 5 5 9", status: "waiting" },
-      { id: 2, input: "3 1 2", expectedOutput: "1 2 3", status: "waiting" },
-      { id: 3, input: "10 -5 0 100 20", expectedOutput: "-5 0 10 20 100", status: "waiting" },
-    ],
-    functionName: "sortArray",
-    numArguments: 1,
-  },
-];
 
 // Mock data for backend integration
 const mockUserData = {
@@ -363,6 +331,17 @@ export default function CodeBattle() {
   // Handle editor mounting
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
+    
+    // Add change event listener to emit code updates
+    editor.onDidChangeModelContent(() => {
+        if (socket && battleDetails) {
+            socket.emit("codeUpdate", {
+                battleId: battleCode,
+                playerId: battleDetails.player1.id, // or player2.id depending on who's editing
+                code: editor.getValue()
+            });
+        }
+    });
   };
 
   // Reset state when challenge changes
@@ -452,55 +431,63 @@ export default function CodeBattle() {
     const executeRequest = async () => {
       for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-          // Parse testInput based on the format (handle both string and array formats)
+          // Parse testInput based on the format
           let args;
           try {
+            // Attempt to parse as JSON (handles numbers, arrays, or quoted strings)
             args = JSON.parse(testInput);
             if (!Array.isArray(args)) {
               args = [args];
             }
           } catch (e) {
-            args = testInput.trim().split(/\s+/).map(arg => {
-              const num = Number(arg);
-              return isNaN(num) ? arg : num;
-            });
+            // If JSON parsing fails, treat as a raw string input
+            args = [testInput]; // Treat the entire input as a single argument
           }
-
+  
+          // Validate number of arguments
           if (args.length !== numArguments) {
-            return { 
-              output: "", 
-              error: `Expected ${numArguments} arguments, got ${args.length}. Input: ${testInput}`, 
-              errorLine: null 
+            return {
+              output: "",
+              error: `Expected ${numArguments} arguments, got ${args.length}. Input: ${testInput}`,
+              errorLine: null,
             };
           }
-
+  
+          // Format arguments for JavaScript (quote strings, leave numbers as-is)
+          const formattedArgs = args.map((arg) => {
+            if (typeof arg === "string") {
+              return `"${arg.replace(/"/g, '\\"')}"`; // Escape quotes in strings
+            }
+            return arg; // Numbers or other types are passed as-is
+          });
+  
           // Construct the execution code based on language
           let executionCode;
           if (language === "javascript") {
             executionCode = `
               ${codeToExecute}
-              const result = ${functionName}(${args.join(", ")});
-              console.log(JSON.stringify(result));
+              const result = ${functionName}(${formattedArgs.join(", ")});
+              console.log(typeof result === 'string' ? result : JSON.stringify(result));
             `;
           } else if (language === "python") {
             executionCode = `
 ${codeToExecute}
-result = ${functionName}(${args.join(", ")})
+result = ${functionName}(${formattedArgs.join(", ")})
 print(str(result))
             `;
           } else if (language === "java") {
             executionCode = `
-public class Solution {
-    ${codeToExecute}
-    public static void main(String[] args) {
-        System.out.println(${functionName}(${args.join(", ")}));
-    }
-}
+  public class Solution {
+      ${codeToExecute}
+      public static void main(String[] args) {
+          System.out.println(${functionName}(${formattedArgs.join(", ")}));
+      }
+  }
             `;
           } else {
             return { output: "", error: `Unsupported language: ${language}`, errorLine: null };
           }
-
+  
           const response = await axios.post(
             "https://emkc.org/api/v2/piston/execute",
             {
@@ -510,34 +497,34 @@ public class Solution {
             },
             { withCredentials: false }
           );
-
+  
           const data = response.data;
-
+  
           if (data.message) {
             const { message, line } = parseError(data.message);
             return { output: "", error: message, errorLine: line };
           }
-
+  
           if (data.compile && data.compile.code !== 0) {
             const error = data.compile.stderr || data.compile.output || "Compilation failed";
             const { message, line } = parseError(error);
             return { output: "", error: message, errorLine: line };
           }
-
+  
           if (data.run && data.run.code !== 0) {
             const error = data.run.stderr || data.run.output || "Runtime error";
             const { message, line } = parseError(error);
             return { output: "", error: message, errorLine: line };
           }
-
+  
           const output = data.run.output.trim();
           return { output, error: null, errorLine: null };
-
+  
         } catch (error) {
           if (error.response && error.response.status === 429 && attempt < retries) {
             const delayMs = initialDelay * Math.pow(2, attempt - 1);
             console.warn(`Rate limit hit, retrying after ${delayMs}ms (attempt ${attempt}/${retries})`);
-            await new Promise(resolve => setTimeout(resolve, delayMs));
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
             continue;
           }
           throw error;
@@ -545,7 +532,7 @@ public class Solution {
       }
       throw new Error("Max retries reached");
     };
-
+  
     // Add the request to the queue
     return requestQueue.add(executeRequest);
   };
