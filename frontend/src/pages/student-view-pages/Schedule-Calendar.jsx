@@ -14,6 +14,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import CreateEventModal from "@/components/student-view/create-schedule"
 
+const API_URL = isDev
+  ? "http://localhost:3000/api/events"
+  : `${import.meta.env.VITE_API_URL}/api/events`;
+
 function StudentCalendar() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -41,7 +45,7 @@ function StudentCalendar() {
         console.log("Fetching events for:", { start, end })
 
         const response = await fetch(
-          `http://localhost:3000/api/events/?start=${start.toISOString()}&end=${end.toISOString()}`,
+          `${API_URL}/?start=${start.toISOString()}&end=${end.toISOString()}`,
           {
             method: "GET",
             credentials: "include",
@@ -148,7 +152,7 @@ function StudentCalendar() {
 
       console.log("Creating event with payload:", payload)
 
-      const response = await fetch("http://localhost:3000/api/events/schedule", {
+      const response = await fetch(`${API_URL}/schedule`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +240,7 @@ function StudentCalendar() {
 
       console.log("Updating event with payload:", payload)
 
-      const response = await fetch(`http://localhost:3000/api/events/${updatedEvent.id}`, {
+      const response = await fetch(`${API_URL}/${updatedEvent.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -306,7 +310,7 @@ function StudentCalendar() {
 
       console.log("Deleting event with ID:", eventId)
 
-      const response = await fetch(`http://localhost:3000/api/events/${eventId}`, {
+      const response = await fetch(`${API_URL}/${eventId}`, {
         method: "DELETE",
         credentials: "include",
       })
