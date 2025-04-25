@@ -118,7 +118,14 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
   };
 
   const handleSave = async () => {
-    await saveBattle();
+    try {
+      await saveBattle();
+      setTimeout(() => {
+        navigate('/professor/code-battle');
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to save battle:", error);
+    }
   };
 
   const isPlayerSelectionEnabled = selectedCourse && selectedProgram && selectedSection;
@@ -217,6 +224,13 @@ const CreateBattle = ({ isEditMode = false, battleId }) => {
                   type="datetime-local"
                   value={battleData.commencement}
                   onChange={(e) => setBattleData({ commencement: e.target.value })}
+                  min={(() => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    return tomorrow.toISOString().slice(0, 16);
+                  })()}
                 />
               </div>
             </div>

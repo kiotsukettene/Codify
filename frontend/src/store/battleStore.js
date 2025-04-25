@@ -339,7 +339,6 @@ const createBattleSlice = (set, get) => ({
       const response = await axios.post(`${API_URL}/create`, {
         ...state.battleData,
         status: "pending",
-        commencement: new Date().toISOString(),
       });
       if (response.data && response.data.battle && response.data.battle.battleCode) {
         const notificationData = {
