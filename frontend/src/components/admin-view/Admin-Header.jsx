@@ -39,7 +39,6 @@ function AdminHeader() {
   return (
     <div className="flex justify-between items-center w-full">
       <div className="flex item">
-        <SearchForm />
       </div>
 
       <div

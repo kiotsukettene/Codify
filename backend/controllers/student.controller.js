@@ -237,8 +237,11 @@ export const loginStudent = async (req, res) => {
     }
     studentTokenAndCookie(res, student._id);
 
-    student.lastLogin = new Date();
-    await student.save();
+    // Update lastLogin without full validation
+    await Student.updateOne(
+      { _id: student._id },
+      { $set: { lastLogin: new Date() } }
+    );
 
     res.status(200).json({
       success: true,
