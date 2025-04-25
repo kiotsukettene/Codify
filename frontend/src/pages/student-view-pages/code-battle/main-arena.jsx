@@ -55,7 +55,6 @@ const languageOptions = [
   { value: "cpp", label: "C++", version: "10.2.0" },
 ];
 
-const socket = useContext(SocketContext);
 
 // Map languageOptions to LANGUAGE_VERSIONS
 const LANGUAGE_VERSIONS = languageOptions.reduce((acc, { value, version }) => {
