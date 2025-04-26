@@ -67,6 +67,7 @@ export const registerStudent = async (req, res) => {
       lastName,
       email,
       course,
+      program,
       year,
       section,
       password: hashedPassword,
