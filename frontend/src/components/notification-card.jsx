@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/battles"
+  : `${import.meta.env.VITE_API_URL}/api/battles`;
+
 export default function NotificationCard({ notification, onClose }) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +33,7 @@ export default function NotificationCard({ notification, onClose }) {
       // First try to join the battle
       try {
         const joinResponse = await axios.post(
-          `http://localhost:3000/api/battles/join/${battleId}`,
+          `${API_URL}/join/${battleId}`,
           {},
           { withCredentials: true }
         );
@@ -43,7 +48,7 @@ export default function NotificationCard({ notification, onClose }) {
       // Mark notification as read
       if (notification.id) {
         await axios.patch(
-          `http://localhost:3000/api/notifications/${notification.id}`,
+          `${API_URL}/notifications/${notification.id}`,
           { read: true },
           { withCredentials: true }
         );
