@@ -35,14 +35,12 @@ import AddProfessor from "./pages/admin-view-pages/admin-professor/Add-Professor
 import StudentList from "./pages/admin-view-pages/admin-student/Student";
 import AddStudent from "./pages/admin-view-pages/admin-student/Add-Student";
 import CoursesAdmin from "./pages/admin-view-pages/courses";
-import CourseSetting from "./pages/admin-view-pages/Course-Settings";
 
 // Professor Pages
 import { useprofAuthStore } from "@/store/profAuthStore";
 import ProfessorLogin from "./pages/professor-view-pages/professor-auth/Professor-Login";
 import ProfForgotPassword from "./pages/professor-view-pages/professor-auth/Professor-Forgot-Password";
 import ProfNewPassword from "./pages/professor-view-pages/professor-auth/Professor-New-Password";
-import ProfSuccessPassword from "./pages/professor-view-pages/professor-auth/Professor-Success";
 import LessonOverview from "./pages/professor-view-pages/Course-management/Lesson-Overview";
 import Courses from "./pages/professor-view-pages/Course-management/Course";
 import ProfDashboard from "./pages/professor-view-pages/ProfDashboard";
@@ -55,6 +53,8 @@ import CreateBattle from "./pages/professor-view-pages/Code-Battle/Create-Battle
 import Account from "./pages/professor-view-pages/Professor-Account";
 import CodeBattle from "./pages/professor-view-pages/Code-Battle/Code-Battle";
 import EditActivity from "./pages/professor-view-pages/Course-management/Edit-Activity";
+import EditBattle from "./pages/professor-view-pages/Code-Battle/Edit-Battle";
+import BattleLobby from "./pages/professor-view-pages/Code-Battle/Battle-Lobby";
 
 // Student Pages
 import StudentLoginPage from "./pages/student-view-pages/auth/Student-Login";
@@ -83,10 +83,11 @@ import StudentCodeBattleOverview from "./pages/student-view-pages/code-battle/st
 import ArenaDashboardPage from "./pages/student-view-pages/code-battle/arena-dashboard";
 import MainArena from "./pages/student-view-pages/code-battle/main-arena";
 import TermsAndCondition from "./pages/Guest-view-pages/Terms-and-condition";
-import BattleResults from "./pages/student-view-pages/code-battle/battle-result";
+import StudentBattleLobby from "./pages/student-view-pages/code-battle/student-battle-lobby";
 import BattleWinnerPage from "./pages/student-view-pages/code-battle/battle-winner-page";
 import AboutUs from "./pages/Guest-view-pages/About-us";
-
+import BattleResults from "./pages/student-view-pages/code-battle/battle-result";
+import BattleLostPage from "./pages/student-view-pages/code-battle/lost-player";
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
@@ -109,9 +110,6 @@ function App() {
     (isCheckingAuth || isCheckingStudentAuth || isCheckingProfAuth)
   ) {
     return <LoadingSpinner />;
-
-
-
   }
   return (
     <div>
@@ -265,10 +263,6 @@ function App() {
               </RedirectAuthenticatedProfessor>
             }
           />
-          <Route
-            path="/professor/success-reset"
-            element={<ProfSuccessPassword />}
-          />
         </Route>
 
         {/* Professor Authentication */}
@@ -358,6 +352,8 @@ function App() {
               </ProtectedRouteProfessors>
             }
           />
+          <Route path="code-battle/edit/:id" element={<ProtectedRouteProfessors><EditBattle /></ProtectedRouteProfessors>} />
+          
           <Route
             path="account"
             element={
@@ -418,14 +414,6 @@ function App() {
               </ProtectedRouteInstitution>
             }
           />
-          <Route
-            path="course-settings"
-            element={
-              <ProtectedRouteInstitution>
-                <CourseSetting />
-              </ProtectedRouteInstitution>
-            }
-          />
         </Route>
 
         {/* Student Routes */}
@@ -479,15 +467,25 @@ function App() {
           <Route path="events" element={<StudentCalendarPage />} />
           <Route path="account-settings" element={<StudentAccountSettings />} />
           <Route path="code-battle" element={<StudentCodeBattleOverview />} />
-          {/* <Route path="code-editor" element={<ProtectedRouteStudents><CodeEditor /></ProtectedRouteStudents>} /> */}
+          
         </Route>
+        <Route 
+            path="/student/code-battle/lobby/:battleCode" 
+            element={
+              <ProtectedRouteStudents>
+                <StudentBattleLobby />
+              </ProtectedRouteStudents>
+            } 
+          />
 
-        <Route path="/arena-dashboard" element={<ArenaDashboardPage />} />
-        <Route path="/main-arena" element={<MainArena />} />
-        <Route path="/battle-result" element={<BattleResults/>}/>
-        <Route path="/modal-demo" element={<BattleWinnerPage/>} />
-        
-        
+        <Route path="/student/arena-dashboard" element={<ProtectedRouteStudents><ArenaDashboardPage /></ProtectedRouteStudents>} />
+        <Route path="/student/code-battle/main-arena/:battleCode" element={<ProtectedRouteStudents><MainArena /></ProtectedRouteStudents>} />
+        <Route path="/professor/code-battle/arena/:battleCode" element={<ProtectedRouteProfessors><CodeBattle /></ProtectedRouteProfessors>} />
+        <Route path="/professor/code-battle/lobby/:battleCode" element={<ProtectedRouteProfessors><BattleLobby /></ProtectedRouteProfessors>} />
+        <Route path="/professor/code-battle/results/:battleCode" element={<ProtectedRouteProfessors><BattleResults /></ProtectedRouteProfessors>} />
+        <Route path="/student/code-battle/results/:battleCode" element={<ProtectedRouteStudents><BattleResults /></ProtectedRouteStudents>} />
+        <Route path="/student/code-battle/winner/:battleCode" element={<ProtectedRouteStudents><BattleWinnerPage /></ProtectedRouteStudents>} />
+        <Route path="/student/code-battle/lost/:battleCode" element={<ProtectedRouteStudents><BattleLostPage /></ProtectedRouteStudents>} />
 
         {/* Additional Routes */}
 

@@ -1,28 +1,28 @@
 import { Search } from "lucide-react"
-import { Label } from "@/components/ui/label"
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarInput,
-} from "@/components/ui/sidebar"
-function SearchForm() {
-    return (
-        <form className='w-full max-w-lg my-4 pt-5' >
-          <SidebarGroup className="py-0">
-            <SidebarGroupContent className="relative">
-              <Label htmlFor="search" className="sr-only">
-                Search
-                </Label>
-              <SidebarInput
-                id="search"
-                placeholder="Search..."
-                className="pl-12 w-full h-9"
-              />
-              <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </form>
-      )
+import { Input } from "@/components/ui/input"
+import { useState } from "react"
+
+function SearchForm({ onSearch }) {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleSearch = (e) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    onSearch(query)
+  }
+
+  return (
+    <div className="relative w-full max-w-md">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Input
+        type="search"
+        placeholder="Search courses..."
+        value={searchQuery}
+        onChange={handleSearch}
+        className="pl-9 w-full"
+      />
+    </div>
+  )
 }
 
 export default SearchForm

@@ -13,8 +13,8 @@ import {
   googleLogin,
 } from "../controllers/student.controller.js";
 
-import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import { StudentVerifyToken } from "../middleware/studentVerifyToken.js";
 
 
 const router = express.Router();

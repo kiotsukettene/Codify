@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/card";
 import wave from "@/assets/picture/random-background/wave.png";
 import calendarImg from "@/assets/picture/random-background/calendar-img.png";
 import { Calendar } from "@/components/ui/calendar";
+import { motion } from "framer-motion";
+
+
 function StudentTaskPage() {
   const [date, setDate] = useState(new Date());
   const { activities, fetchStudentAllActivities, isLoading } =
@@ -28,6 +31,13 @@ function StudentTaskPage() {
   }
 
   return (
+
+    <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+    className="pb-10"
+  >
     <div className="container mx-auto py-4">
     <div className="flex flex-col lg:flex-row gap-4 h-full">
 
@@ -146,6 +156,7 @@ function StudentTaskPage() {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 }
 export default StudentTaskPage;

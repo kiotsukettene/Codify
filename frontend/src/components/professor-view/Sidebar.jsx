@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
   const data = [
     { to: "/professor/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -23,9 +23,10 @@ function AppSidebar() {
   return (
     <Sidebar className="w-72 h-screen border-r flex flex-col">
       <SidebarHeader className="border-b border-gray-200 pl-6 mt-2">
-        <div className="">
-          <img src={Logo} className="w-26 h-auto" alt="Logo" />
-        </div>
+      <Link to="/professor/dashboard">
+           <img src={Logo} className="w-26 h-auto" alt="Logo" />
+           </Link>
+        
       </SidebarHeader>
 
       <SidebarMenu className="mt-4">

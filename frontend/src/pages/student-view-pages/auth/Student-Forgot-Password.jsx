@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useStudentStore } from "@/store/studentStore";
-import { Loader, Mail, Info } from "lucide-react";
+import { Loader, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import ProfBg2 from "@/components/Auth/Prof-Bg-2";
@@ -89,9 +89,9 @@ function StudentForgotPasswordPage() {
           </div>
         </div>
       ) : (
-        <Card className="w-full max-w-[450px] p-8 sm:p-9 rounded-3xl shadow-sm">
+        <Card className="w-full max-w-[450px] p-8 sm:p-12 rounded-3xl shadow-sm">
           <CardHeader className="space-y-2 text-center p-0">
-            <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight mt-4">
+            <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight">
               Forgot Password?
             </h1>
             <p className="text-sm sm:text-[15px] text-muted-foreground">
@@ -142,12 +142,6 @@ function StudentForgotPasswordPage() {
               Go back to login
             </Link>
           </div>
-
-          <div className="mt-3 text-justify">
-          <p className="text-xs flex text-gray-500"> <Info className=" mr-1 w-4 h-4" />
-              Please check your Spam bin if the email is not in your inbox.</p>
-          </div>
-
         </Card>
       )}
     </div>

@@ -17,6 +17,7 @@ const ActivitySchema = new mongoose.Schema(
     },
     instructions: {
       type: String,
+      required: true,
     },
     dueDate: {
       type: Date,

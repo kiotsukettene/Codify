@@ -146,11 +146,15 @@ const CreateActivity = () => {
     const newActivity = {
       lessonId: lessonIdConverted,
       title,
-      subTitle: subtitle || "",
-      instructions: instruction || "",
-      dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null,
+      subTitle: subtitle,
+      instructions: instruction,
+      dueDate: dueDateTime ? new Date(dueDateTime).toISOString() : null, // Ensure ISO string
       points: 100,
     };
+
+    if (dueDateTime) {
+      newActivity.dueDate = new Date(dueDateTime).toISOString();
+    }
 
     try {
       console.log("Sending activity data:", newActivity);
@@ -158,6 +162,7 @@ const CreateActivity = () => {
       console.log("Created Activity Response:", createdActivity);
 
       if (createdActivity && createdActivity._id && createdActivity.slug) {
+        toast.success("Activity created successfully! 🎉");
         navigate(
           `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${createdActivity.slug}`
         );
@@ -166,11 +171,11 @@ const CreateActivity = () => {
           "Activity creation failed or slug is missing",
           createdActivity
         );
-        toast.error("Failed to create activity. Please try again.");
+        toast.error("Failed to create activity. Check server logs.");
       }
     } catch (error) {
       console.error("Error creating activity:", error);
-      toast.error("Error creating activity. Please try again.");
+      toast.error("Error creating activity. Check console logs.");
     }
   };
 

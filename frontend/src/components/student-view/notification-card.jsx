@@ -1,127 +1,145 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Award, BellRing, Paperclip, Rocket, Star, X, Zap} from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useState } from "react";
+import { BellRing, Paperclip, Rocket, Star, X, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import useBattleStore from "@/store/battleStore";
+import { useNavigate} from "react-router-dom";
+import { toast } from "react-hot-toast";
+import axios from "axios";
+import { useStudentStore } from "@/store/studentStore";
+import { SocketContext } from "@/context/auth-context/SocketProvider";
+import { useContext } from "react";
 
-// Sample notification data
-const sampleNotifications = [
-  {
-    id: 1,
-    type: "challenge",
-    title: "New Challenge: 'Geometry Speed Round'",
-    message: "Ready to test your skills?",
-    time: "Just now",
-    read: false,
-  },
-  {
-    id: 2,
-    type: "reminder",
-    title: "Assignment 'Photosynthesis Lab' is due",
-    message: "Don't miss it! Due in 1 day.",
-    time: "2 hours ago",
-    read: false,
-  },
-  {
-    id: 3,
-    type: "badge",
-    title: "You unlocked the 'Night Owl' badge!",
-    message: "For studying after 10 PM three nights in a row.",
-    time: "Yesterday",
-    read: true,
-    badgeImage: "/placeholder.svg?height=40&width=40",
-    xpEarned: 50,
-  },
-  {
-    id: 4,
-    type: "challenge",
-    title: "New Quiz: 'Algebra Fundamentals'",
-    message: "Test your equation-solving skills!",
-    time: "2 days ago",
-    read: true,
-  },
-  {
-    id: 5,
-    type: "badge",
-    title: "You unlocked the 'Perfect Score' badge!",
-    message: "For scoring 100% on your Math quiz.",
-    time: "3 days ago",
-    read: true,
-    badgeImage: "/placeholder.svg?height=40&width=40",
-    xpEarned: 100,
-  },
-]
+
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev
+  ? "http://localhost:3000/api/battles"
+  : `${import.meta.env.VITE_API_URL}/api/battles`;
 
 export default function NotificationCard() {
-  const [notifications, setNotifications] = useState(sampleNotifications)
+  const {
+    notifications,
+    unreadNotifications,
+    markNotificationAsRead,
+    dismissNotification,
+  } = useBattleStore();
+  const { student } = useStudentStore();
+  const socket = useContext(SocketContext);
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  console.log("Notifications in NotificationCard:", notifications);
+  console.log("NotificationCard rendered, unread count:", unreadNotifications);
 
-  const markAsRead = (id) => {
-    setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
+  const navigate = useNavigate();
+  const [joining, setJoining] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const dismissNotification = (id) => {
-    setNotifications(notifications.filter((n) => n.id !== id))
-  }
-
-  const getNotificationColor = (type) => {
+  const getNotificationIcon = (type) => {
     switch (type) {
       case "challenge":
-        return "#4f46e5" // indigo
-      case "badge":
-        return "#9333ea" // purple
+        return <Rocket className="h-4 w-4 text-white" />;
       case "reminder":
-        return "#f59e0b" // amber
+        return <Zap className="h-4 w-4 text-white" />;
       default:
-        return "#6b7280" // gray
+        return <Paperclip className="h-4 w-4 text-white" />;
     }
-  }
-
-  const getNotificationBgColor = (type) => {
-    switch (type) {
-      case "challenge":
-        return <Rocket/>
-      case "badge":
-        return <Award/>
-      case "reminder":
-        return <Zap/>
-      default:
-        return <Paperclip/>
-    }
-  }
+  };
 
   const getIconBgColor = (type) => {
     switch (type) {
       case "challenge":
-        return "bg-indigo-500"
-      case "badge":
-        return "bg-purple-500"
+        return "bg-indigo-500";
       case "reminder":
-        return "bg-amber-500"
+        return "bg-amber-500";
       default:
-        return "bg-gray-500"
+        return "bg-gray-500";
+    }
+  };
+
+  const handleNotificationClick = (notification) => {
+    if (!notification) {
+      console.error("Invalid notification:", notification);
+      toast.error("Invalid notification");
+      return;
     }
 
+    if (!notification.battleCode) {
+      console.error("No battle code in notification:", notification);
+      // Remove invalid notification
+      dismissNotification(notification.id);
+      toast.error("Invalid battle notification - removing it");
+      return;
+    }
 
-  }
-//   const getIcon = (type) => {
-//     switch (type) {
-//       case "challenge":
-//         return "bg-indigo-500"
-//       case "badge":
-//         return "bg-purple-500"
-//       case "reminder":
-//         return "bg-amber-500"
-//       default:
-//         return "bg-gray-500"
-//     }
-// }
+    markNotificationAsRead(notification.id);
+    const navigationPath = `/student/code-battle/lobby/${notification.battleCode}`;
+    navigate(navigationPath, { replace: true });
+  };
+
+  const handleJoinBattle = async (notification) => {
+    if (!notification || !notification.battleCode) {
+      console.error("Invalid notification or missing battle code:", notification);
+      dismissNotification(notification?.id);
+      toast.error("Invalid battle notification - removing it");
+      return;
+    }
+
+    setIsLoading(true);
+    setJoining(notification.battleCode);
+    
+    try {
+      const battleCode = notification.battleCode;
+      
+      // Verify battle exists before joining
+      try {
+        const battleCheck = await axios.get(`${API_URL}/${battleCode}`, {
+          withCredentials: true
+        });
+        
+        if (!battleCheck.data) {
+          throw new Error("Battle not found");
+        }
+      } catch (error) {
+        console.error("Battle verification failed:", error);
+        dismissNotification(notification.id);
+        toast.error("Battle no longer exists - removing notification");
+        return;
+      }
+
+      // Rest of the join logic...
+      socket.emit("joinBattleRoom", battleCode);
+      
+      try {
+        await axios.post(
+          `${API_URL}/join/${battleCode}`,
+          {},
+          { withCredentials: true }
+        );
+      } catch (joinError) {
+        if (joinError.response?.status !== 409) { // Ignore "already joined" errors
+          throw joinError;
+        }
+      }
+
+      if (notification.id) {
+        markNotificationAsRead(notification.id);
+      }
+
+      navigate(`/student/code-battle/lobby/${battleCode}`, { replace: true });
+
+    } catch (error) {
+      console.error("Error in handleJoinBattle:", error);
+      toast.error(error.response?.data?.message || "Failed to join battle");
+    } finally {
+      setIsLoading(false);
+      setJoining(null);
+    }
+  };
 
   return (
     <Popover>
@@ -132,13 +150,13 @@ export default function NotificationCard() {
           className="h-8 w-8 relative bg-violet-100 border-violet-200 hover:bg-violet-200"
         >
           <BellRing className="h-4 w-4 text-violet-600" />
-          {unreadCount > 0 && (
+          {unreadNotifications > 0 && (
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center shadow-md"
             >
-              {unreadCount}
+              {unreadNotifications}
             </motion.div>
           )}
         </Button>
@@ -157,7 +175,8 @@ export default function NotificationCard() {
             variant="ghost"
             size="sm"
             className="h-8 text-xs text-white hover:bg-violet-700 hover:text-white"
-            onClick={() => setNotifications(notifications.map((n) => ({ ...n, read: true })))}
+            onClick={() => notifications.forEach((n) => markNotificationAsRead(n.id))}
+            disabled={notifications.length === 0}
           >
             Mark all as read
           </Button>
@@ -168,15 +187,72 @@ export default function NotificationCard() {
             {notifications.length > 0 ? (
               <div className="space-y-2 p-2">
                 {notifications.map((notification) => (
-                  <NotificationItem
+                  <motion.div
                     key={notification.id}
-                    notification={notification}
-                    color={getNotificationColor(notification.type)}
-                    bgColor={getNotificationBgColor(notification.type)}
-                    iconBgColor={getIconBgColor(notification.type)}
-                    onDismiss={dismissNotification}
-                    markAsRead={markAsRead}
-                  />
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => handleNotificationClick(notification)}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <Card
+                      className={`relative overflow-hidden border border-violet-200 ${
+                        notification.read ? "opacity-80" : "opacity-100 shadow-sm"
+                      }`}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex gap-3">
+                          <div
+                            className={`flex-shrink-0 w-8 h-8 rounded-full ${getIconBgColor(
+                              notification.type
+                            )} p-1.5 flex items-center justify-center shadow-md`}
+                          >
+                            {getNotificationIcon(notification.type)}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start">
+                              <h4 className="font-bold text-sm text-gray-800">
+                                {notification.title}
+                              </h4>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 -mr-1 -mt-1 text-gray-400 hover:text-gray-600 hover:bg-violet-200 rounded-full"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  dismissNotification(notification.id);
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+
+                            <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
+
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-xs text-gray-500">{notification.time}</span>
+
+                              {notification.type === "challenge" && !notification.read && (
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-xs px-2 bg-indigo-500 hover:bg-indigo-600 text-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleJoinBattle(notification);
+                                  }}
+                                  disabled={joining === notification.battleCode || isLoading}
+                                >
+                                  {isLoading && joining === notification.battleCode ? "Joining..." : "Join Battle"}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             ) : (
@@ -189,113 +265,16 @@ export default function NotificationCard() {
         </ScrollArea>
 
         <div className="p-2 border-t border-violet-200 bg-violet-50">
-          <Button variant="ghost" size="sm" className="w-full bg-violet-200 text-violet-700 hover:bg-violet-300">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full bg-violet-200 text-violet-700 hover:bg-violet-300"
+            disabled={notifications.length === 0}
+          >
             View All
           </Button>
         </div>
       </PopoverContent>
     </Popover>
-  )
-}
-
-function NotificationItem({ notification, color, bgColor, iconBgColor, onDismiss, markAsRead }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.2 }}
-      onClick={() => markAsRead(notification.id)}
-      whileHover={{ scale: 1.02 }}
-    >
-      <Card
-        className={`
-        relative overflow-hidden border border-violet-200 ${bgColor}
-        ${notification.read ? "opacity-80" : "opacity-100 shadow-sm"}
-      `}
-      >
-        <CardContent className="p-3">
-          <div className="flex gap-3">
-            {/* Icon with color */}
-            <div
-              className={`flex-shrink-0 w-8 h-8 rounded-full ${iconBgColor} p-1.5 flex items-center justify-center shadow-md`}
-            >
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-start">
-                <h4 className="font-bold text-sm text-gray-800">{notification.title}</h4>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 -mr-1 -mt-1 text-gray-400 hover:text-gray-600 hover:bg-violet-200 rounded-full"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDismiss(notification.id)
-                  }}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-
-              <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-
-              {/* XP for badge notifications */}
-              {notification.type === "badge" && notification.xpEarned && (
-                <div className="mt-2 flex items-center">
-                  <Badge className="bg-amber-200 text-amber-800 border-0 px-2 py-0.5 text-xs font-bold">
-                    +{notification.xpEarned} COSMIC XP
-                  </Badge>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-gray-500">{notification.time}</span>
-
-                {/* Action buttons based on type */}
-                {notification.type === "badge" && (
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs px-2 bg-purple-500 hover:bg-purple-600 text-white"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      markAsRead(notification.id)
-                    }}
-                  >
-                    View Badge
-                  </Button>
-                )}
-
-                {notification.type === "challenge" && (
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs px-2 bg-indigo-500 hover:bg-indigo-600 text-white"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      markAsRead(notification.id)
-                    }}
-                  >
-                    Launch
-                  </Button>
-                )}
-
-                {notification.type === "reminder" && (
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs px-2 bg-amber-500 hover:bg-amber-600 text-white"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      markAsRead(notification.id)
-                    }}
-                  >
-                    View All
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  )
+  );
 }

@@ -22,19 +22,16 @@ const studentSchema = new mongoose.Schema(
       required: true,
     },
     program: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
-      ref: "CourseField",
     },
     year: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Number,
       required: true,
-      ref: "CourseField",
     },
     section: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
-      ref: "CourseField",
     },
     password: {
       type: String,
@@ -47,11 +44,15 @@ const studentSchema = new mongoose.Schema(
     institution: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Institution",
-      required: false,
+      required: true,
     },
     lastLogin: {
       type: Date,
       default: Date.now,
+    },
+    avatar: {
+      type: String,
+      default: "/src/assets/picture/Avatar/cat1.png", // Default avatar
     },
     solvedChallenges: [
       {
@@ -97,8 +98,6 @@ const studentSchema = new mongoose.Schema(
     ],
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
-    // verificationToken: String,
-    // verificationTokenExpiresAt: Date,
   },
   { timestamps: true }
 );

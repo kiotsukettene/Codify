@@ -10,7 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useLessonStore } from "@/store/lessonStore";
 import { useActivityStore } from "@/store/activityStore";
 
-const initialComments = [
+const comments = [
   { id: 1, author: "Jerez, Marianne Celest T.", message: "Thank you, ma'am!", avatar: lion },
   { id: 2, author: "Loreto, Russell Kelvin Anthony B.", message: "Pwede po pa-extend ng deadline?", avatar: lion },
   { id: 3, author: "Irheil Mae Antang", message: "This is very helpful!", avatar: lion },
@@ -18,12 +18,10 @@ const initialComments = [
 ];
 
 const Topic = () => {
-  const [comments, setComments] = useState(initialComments);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
   const [activeTopic, setActiveTopic] = useState(null);
   const [sections, setSections] = useState([]);
-  const [newComment, setNewComment] = useState("");
 
   const { courseSlug, lessonSlug } = useParams();
   const navigate = useNavigate();
@@ -103,30 +101,10 @@ const Topic = () => {
     }
   };
 
-  const handleAddComment = (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-  
-    const newCommentObj = {
-      id: comments.length + 1,
-      author: "Professor Name", // You should get this from your auth context
-      message: newComment,
-      avatar: lion, // You might want to use professor's avatar
-      isProfessor: true,
-    };
-  
-    setComments([...comments, newCommentObj]);
-    setNewComment("");
-  };
-
   return (
-      <div className="container mx-auto grid grid-cols-12 gap-6 ">
-        <motion.div
-         initial={{ opacity: 0, y: 20 }}
-         animate={{ opacity: 1, y: 0 }}
-         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="col-span-12 lg:col-span-8 space-y-4">
-          <div className="flex items-center gap-x-4 ">
+      <div className="container mx-auto p-4 grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="flex items-center gap-x-4">
             <Button
               variant="ghost"
               size="icon"
@@ -160,13 +138,9 @@ const Topic = () => {
               )}
             </section>
           ))}
-        </motion.div>
+        </div>
   
-        <motion.div 
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="col-span-12 lg:col-span-4 space-y-6">
+        <div className="col-span-12 lg:col-span-4 space-y-6">
           <Card className="transition-shadow duration-300">
             <CardContent className="p-6">
               <motion.div
@@ -244,15 +218,15 @@ const Topic = () => {
                   <h3 className="font-semibold">Class comments</h3>
                 </div>
                 <Button
-                variant="ghost"
-                className="text-purple-600 hover:text-purple-700 p-0 h-auto text-sm"
-                onClick={() => setIsDialogOpen(true)}
+                  variant="ghost"
+                  className="text-purple-600 hover:text-purple-700 p-0 h-auto text-sm"
+                  onClick={() => setIsDialogOpen(true)}
                 >
-                    {comments.length} Comments →
+                  4 Comments →
                 </Button>
               </div>
               <div className="space-y-4">
-                {comments.slice(-2).map((comment) => (
+                {comments.slice(0, 2).map((comment) => (
                   <div key={comment.id} className="flex items-start gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={comment.avatar} />
@@ -265,67 +239,28 @@ const Topic = () => {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 border-t pt-4">
-              <form onSubmit={handleAddComment} className="flex gap-2">
-                <input
-                  type="text"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-md text-sm"
-                  placeholder="Type your reply..."
-                />
-                <Button type="submit" size="sm">
-                  Send
-                </Button>
-              </form>
-            </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
   
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Class Comments</DialogTitle>
             </DialogHeader>
-
-            <div className="space-y-4">
-  {comments.map((comment) => (
-    <div key={comment.id} className="flex items-start gap-3 pb-4 border-b last:border-0">
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={comment.avatar} />
-        <AvatarFallback>{comment.initials}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <div className="text-sm font-semibold text-gray-900">{comment.author}</div>
-          {comment.isProfessor && (
-            <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded">
-              Professor
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-gray-600">{comment.message}</p>
-      </div>
-    </div>
-  ))}
-</div>
-
-
-
-            <div className="mt-4 border-t pt-4">
-              <form onSubmit={handleAddComment} className="flex gap-2">
-                <input
-                  type="text"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-md text-sm"
-                  placeholder="Type your reply..."
-                />
-                <Button type="submit" size="sm">
-                  Send
-                </Button>
-              </form>
+            <div className="space-y-4 mt-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="flex items-start gap-3 pb-4 border-b last:border-0">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={comment.avatar} />
+                    <AvatarFallback>{comment.initials}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="text-sm font-semibold text-gray-900">{comment.author}</div>
+                    <p className="text-xs text-gray-600">{comment.message}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </DialogContent>
         </Dialog>

@@ -146,21 +146,27 @@ export const getStudentById = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   try {
-    const { currentPassword, password: newPassword, ...otherFields } = req.body;
+    const { currentPassword, password: newPassword, profileImage, ...otherFields } = req.body;
 
     const student = await Student.findById(req.params.id);
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, student.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Current password is incorrect" });
+    // Only check password if it's being updated
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, student.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      // Hash new password if provided
+      otherFields.password = await bcrypt.hash(newPassword, 10);
     }
 
-    // Hash new password if provided
-    if (newPassword) {
-      otherFields.password = await bcrypt.hash(newPassword, 10);
+    // Update profile image if provided
+    if (profileImage) {
+      otherFields.profileImage = profileImage;
     }
 
     const updatedStudent = await Student.findByIdAndUpdate(
@@ -169,7 +175,7 @@ export const updateStudent = async (req, res) => {
       {
         new: true,
       }
-    );
+    ).select("-password"); // Exclude password from response
 
     res.status(200).json({
       success: true,
@@ -231,8 +237,11 @@ export const loginStudent = async (req, res) => {
     }
     studentTokenAndCookie(res, student._id);
 
-    student.lastLogin = new Date();
-    await student.save();
+    // Update lastLogin without full validation
+    await Student.updateOne(
+      { _id: student._id },
+      { $set: { lastLogin: new Date() } }
+    );
 
     res.status(200).json({
       success: true,

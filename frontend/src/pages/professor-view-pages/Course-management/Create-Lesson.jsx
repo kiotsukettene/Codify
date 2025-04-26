@@ -36,7 +36,6 @@ import { useParams, useNavigate } from "react-router-dom"; // For getting course
 import toast from "react-hot-toast"; // For notifications
 import { useCourseStore } from "@/store/courseStore"; // Import course store
 import { motion, AnimatePresence } from "framer-motion";
-import { Separator } from "@/components/ui/separator"
 
 
 const CreateLesson = () => {
@@ -57,7 +56,6 @@ const CreateLesson = () => {
   });
   const [isFormValid, setIsFormValid] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [submitted, setSubmitted] = useState(false); // Added submitted state
   
   
 
@@ -178,31 +176,27 @@ const CreateLesson = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (submitted) return; // Prevent double submission
-    setSubmitted(true); // Set submitted flag
-    setIsUploading(true); // Indicate upload start
+    console.log("Courses array in store:", courses);
 
+    // Convert courseSlug to courseId
     const courseId = getCourseIdFromSlug(courseSlug);
     if (!courseId) {
       toast.error("No course found for that slug!");
-      setIsUploading(false); // Reset upload state
-      setSubmitted(false); // Reset submitted flag
       return;
     }
     if (!title) {
       toast.error("Title is required!");
-      setIsUploading(false); // Reset upload state
-      setSubmitted(false); // Reset submitted flag
       return;
     }
 
     // Group sections based on subheader
     const groupedSections = groupSections(sections);
 
+    // Build your lesson payload (adjust the field names as per your Lesson schema)
     const lessonData = {
       courseId,
       title,
-      subTitle: subtitle,
+      subTitle: subtitle, // optional, if you have a subtitle for the lesson
       sections: groupedSections,
     };
 
@@ -210,15 +204,12 @@ const CreateLesson = () => {
 
     try {
       await createLesson(lessonData);
-      // toast.success("Lesson created successfully!"); // REMOVED - Assuming store handles this
-      navigate(`/professor/course/${courseSlug}`);
+      toast.success("Lesson created successfully!");
+      navigate(`/professor/course/${courseSlug}`); // Redirect to the lessons page for the course
     } catch (error) {
       console.error("Error creating lesson:", error);
-      toast.error("Error creating lesson: " + (error.message || "Please try again.")); // Show more specific error
-      setIsUploading(false); // Reset upload state on error
-      setSubmitted(false); // Reset submitted flag on error
+      toast.error("Error creating lesson!");
     }
-    // Removed setIsUploading(false) from here as navigation occurs on success
   };
 
   const deleteSection = (id) => {
@@ -296,9 +287,10 @@ const CreateLesson = () => {
                         variant="secondary"
                         className="ml-4a bg-purple-600 text-white hover:bg-purple-700"
                         onClick={handleSubmit}
-                        disabled={isUploading || !isFormValid || submitted} // Disable while uploading or if already submitted
+                        disabled={isUploading || !isFormValid}
+
                       >
-                        {isUploading ? "Saving..." : "Save"} {/* Show loading text */}
+                        Save
                       </Button>
                     </div>
                   </div>
@@ -331,13 +323,8 @@ const CreateLesson = () => {
                       placeholder="Type Title Description"
                       className="min-h-36 border-purple-100 resize-none focus-visible:ring-0"
                     />
-                    
                   </div>
-
-
                 </div>
-
-                <Separator className="bg-gray-300" />
 
                 <AnimatePresence>
                 {sections.map((section, index) => (

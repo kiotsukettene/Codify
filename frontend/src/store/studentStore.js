@@ -12,12 +12,12 @@ const API_URL = isDev
 axios.defaults.withCredentials = true;
 
 export const useStudentStore = create((set) => ({
-  student: null, // No need to initialize from localStorage
-  isAuthenticated: false, // Authentication state based on cookies
+  student: null,
+  isAuthenticated: false,
   students: [],
   error: null,
   isLoading: false,
-  isCheckingStudentAuth: true, // Used to check authentication status on page load
+  isCheckingStudentAuth: true,
   message: null,
   clearError: () => set({ error: null }),
 
@@ -43,7 +43,7 @@ export const useStudentStore = create((set) => ({
     try {
       const response = await axios.post(`${API_URL}/register`, {
         ...studentData,
-        password: studentData.lastName, // Default password logic
+        password: studentData.lastName,
       });
   
       set((state) => ({
@@ -55,7 +55,7 @@ export const useStudentStore = create((set) => ({
       set((state) => ({
         error: error.response?.data?.message || "Error adding student",
         isLoading: false,
-        students: state.students, // Explicitly preserve the existing students array
+        students: state.students,
       }));
       toast.error(error.response?.data?.message || "Error adding student");
     }
@@ -102,7 +102,7 @@ export const useStudentStore = create((set) => ({
     }
   },
 
-  loginWithGoogle: async (email, password) => {
+  loginWithGoogle: async () => {
     set({ isLoading: true, error: null });
 
     let token = null;
@@ -117,7 +117,7 @@ export const useStudentStore = create((set) => ({
         toast.error("Google Login Failed: " + error.message);
       }
       set({ isLoading: false });
-      return; // ⛔ Exit early if popup was closed
+      return;
     }
 
     try {
@@ -141,12 +141,12 @@ export const useStudentStore = create((set) => ({
     set({ isLoading: false });
   },
 
-  // Check if student is authenticated (used in protected routes)
+  // Check if student is authenticated
   checkStudentAuth: async () => {
     const state = useStudentStore.getState();
     if (state.isAuthenticated && state.student) {
       set({ isCheckingStudentAuth: false });
-      return; // Skip API call if already authenticated
+      return;
     }
     set({ isCheckingStudentAuth: true, error: null });
 
@@ -215,34 +215,38 @@ export const useStudentStore = create((set) => ({
         { withCredentials: true }
       );
       set({ student: null, isAuthenticated: false, isLoading: false });
-      window.location.href = "/student/login"; // Redirect to login page
+      window.location.href = "/student/login";
     } catch (error) {
       set({ error: "Error logging out", isLoading: false });
     }
   },
 
-  //student update
+  // Update student
   updateStudent: async (studentData) => {
     set({ isLoading: true, error: null });
 
     try {
       const response = await axios.put(
-        `${API_URL}/update/${studentData._id}`,
-
+        `${API_URL}/list/update/${studentData._id}`,
         studentData
       );
 
       set((state) => ({
-        isLoading: false,
+        student: state.student?._id === studentData._id ? response.data.student : state.student,
         students: state.students.map((student) =>
           student._id === studentData._id ? response.data.student : student
         ),
+        isLoading: false,
       }));
+      toast.success("Profile updated successfully");
     } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error updating student";
       set({
-        error: error.response?.data?.message || "Error updating student",
+        error: errorMessage,
         isLoading: false,
       });
+      toast.error(errorMessage);
+      throw error;
     }
   },
 }));

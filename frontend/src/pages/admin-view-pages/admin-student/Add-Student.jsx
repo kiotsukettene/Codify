@@ -1,11 +1,10 @@
-import  { useState, useEffect } from "react"
+import { useState} from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useNavigate } from "react-router-dom"
 import { useStudentStore } from "@/store/studentStore"
 import { useAuthStore } from "@/store/authStore"
-import { useCourseFieldStore } from "@/store/courseFieldStore"
 import toast from "react-hot-toast"
 import useToggleVisibility from "@/hooks/use-toggle-visibility"
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription} from "@/components/ui/dialog"
@@ -15,12 +14,6 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 function AddStudent({ onClose }) {
   const { institution } = useAuthStore()
   const { addStudent, isLoading, error } = useStudentStore()
-  const {
-    courseFields,
-    fetchCourseFieldsByType,
-    isLoading: fieldsLoading,
-    error: fieldsError,
-  } = useCourseFieldStore();
   const navigate = useNavigate()
   const [isVisible, toggleVisibility] = useToggleVisibility();
   const [formData, setFormData] = useState({
@@ -44,33 +37,6 @@ function AddStudent({ onClose }) {
     year: "",
     section: "",
   });
-
-  // Fetch course fields for Program, Year, and Section
-  useEffect(() => {
-    const types = ["Program", "Year", "Section"];
-    const fetchAllFields = async () => {
-      for (const type of types) {
-        try {
-          await fetchCourseFieldsByType(type);
-        } catch (error) {
-          console.error(`Error fetching type ${type}:`, error);
-        }
-      }
-    };
-    fetchAllFields();
-  }, [fetchCourseFieldsByType]);
-
-  // Filter course fields by type and status
-  const programs = courseFields.filter(
-    (field) => field.type === "Program" && field.status === "Active"
-  );
-  const years = courseFields.filter(
-    (field) => field.type === "Year" && field.status === "Active"
-  );
-  const sections = courseFields.filter(
-    (field) => field.type === "Section" && field.status === "Active"
-  );
-
 
   const validateForm = () => {
     let valid = true;
@@ -161,6 +127,7 @@ function AddStudent({ onClose }) {
       'section'
     ];
     
+    // Check if all required fields are filled
     const isComplete = requiredFields.every(field => formData[field].trim() !== '');
     
     // Check if there are no validation errors
@@ -179,9 +146,9 @@ function AddStudent({ onClose }) {
       year: "",
       section: "",
       password: "",
-      institutionId: institution?._id || "",
     });
-    onClose();
+    onClose()
+
   };
 
   const handleChange = (e) => {
@@ -194,16 +161,6 @@ function AddStudent({ onClose }) {
     // Validate the field that just changed
     validateField(name, value);
   }
-
-  const handleSelectChange = (name) => (value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({
-      ...prev,
-      [name]: !value
-        ? `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`
-        : "",
-    }));
-  };
 
   const validateField = (fieldName, value) => {
     const newErrors = { ...errors };
@@ -319,7 +276,7 @@ function AddStudent({ onClose }) {
           
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
-              <div className="space-y-2">
+              <div className="space-y-2 pt-4">
                 <div className="space-y-2">
                   <Label htmlFor="studentId">Student ID</Label>
                   <Input
@@ -389,142 +346,71 @@ function AddStudent({ onClose }) {
 
               
 
-             {/* Right Column */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="course">Program</Label>
-              <Select
-                name="course"
-                value={formData.course}
-                onValueChange={handleSelectChange("course")}
-                disabled={fieldsLoading || fieldsError}
-              >
-                <SelectTrigger
-                  className={`bg-[#FDFDFD] ${
-                    errors.course ? "border-red-500" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Choose a program" />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldsLoading && (
-                    <SelectItem disabled value="loading">
-                      Loading...
-                    </SelectItem>
-                  )}
-                  {!fieldsLoading && programs.length === 0 && (
-                    <SelectItem disabled value="no-data">
-                      No programs available
-                    </SelectItem>
-                  )}
-                  {programs.map((field) => (
-                    <SelectItem key={field._id} value={field.name}>
-                      {field.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-             
-              {errors.course && (
-                <p className="text-red-500 text-sm">{errors.course}</p>
-              )}
-              {fieldsError && (
-                <p className="text-red-500 text-sm">
-                  Failed to load programs: {fieldsError}
-                </p>
-              )}
-            </div>
-
-
-                <div className="space-y-2 pt-5">
-                  <Label htmlFor="year">Year</Label>
+              {/* Right Column */}
+              <div className="space-y-2 pt-4">
+                  <Label htmlFor="course">Program</Label>
                   <Select
-                name="year"
-                value={formData.year}
-                onValueChange={handleSelectChange("year")}
-                disabled={fieldsLoading || fieldsError}
-              >
-                <SelectTrigger
-                  className={`bg-[#FDFDFD] ${
-                    errors.year ? "border-red-500" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldsLoading && (
-                    <SelectItem disabled value="loading">
-                      Loading...
-                    </SelectItem>
-                  )}
-                  {!fieldsLoading && years.length === 0 && (
-                    <SelectItem disabled value="no-data">
-                      No years available
-                    </SelectItem>
-                  )}
-                  {years.map((field) => (
-                    <SelectItem key={field._id} value={field.name}>
-                      {field.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-                <div className="h-1">
-                {errors.year && (
-                <p className="text-red-500 text-sm">{errors.year}</p>
-              )}
-              {fieldsError && (
-                <p className="text-red-500 text-sm">
-                  Failed to load years: {fieldsError}
-                </p>
-              )}
-                  </div>
+                    value={formData.course}
+                    onValueChange={(value) => setFormData((prevData) => ({ ...prevData, course: value }))}
+                  >
+                  <SelectTrigger className={`bg-[#FDFDFD] text-xs ${errors.course ? "border-red-500" : ""}`}>
+                    <SelectValue placeholder="Select Program" />
+                  </SelectTrigger>
+                    <SelectContent>
+                                 <SelectItem value="BSCS">
+                                   Bachelor of Science in Computer Science (BSCS)
+                                 </SelectItem>
+                                 <SelectItem value="BSIT">
+                                   Bachelor of Science in Information Technology (BSIT)
+                                 </SelectItem>
+                                 <SelectItem value="BSEMC">
+                                   Bachelor of Science in Entertainment and Multimedia Computing
+                                   (BSEMC){" "}
+                                 </SelectItem>
+                                 <SelectItem value="BSIS">
+                                   Bachelor of Science in Information System (BSIS){" "}
+                                 </SelectItem>
+                               </SelectContent>
+                  </Select>
+                          <div className="h-1">
+              {errors.course && <p className="text-red-500 text-sm">{errors.course}</p>}
                 </div>
 
-                <div className="space-y-2 pt-2">
-                  <Label htmlFor="section">Section</Label>
+                <div className="space-y-2 pt-4 ">
+                  <Label htmlFor="year">Year</Label>
                   <Select
-                name="section"
-                value={formData.section}
-                onValueChange={handleSelectChange("section")}
-                disabled={fieldsLoading || fieldsError}
-              >
-                <SelectTrigger
-                  className={`bg-[#FDFDFD] ${
-                    errors.section ? "border-red-500" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Select section" />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldsLoading && (
-                    <SelectItem disabled value="loading">
-                      Loading...
-                    </SelectItem>
-                  )}
-                  {!fieldsLoading && sections.length === 0 && (
-                    <SelectItem disabled value="no-data">
-                      No sections available
-                    </SelectItem>
-                  )}
-                  {sections.map((field) => (
-                    <SelectItem key={field._id} value={field.name}>
-                      {field.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    value={formData.year}
+                    onValueChange={(value) => setFormData((prevData) => ({ ...prevData, year: value }))}
+                  >
+                  <SelectTrigger className={`bg-[#FDFDFD] text-xs ${errors.year ? "border-red-500" : ""}`}>
+                    <SelectValue placeholder="Select Year Level" />
+                  </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                    </SelectContent>
+                  </Select>
 
+                <div className="h-1">
+                    {errors.year && <p className="text-red-500 text-sm">{errors.year}</p>}
+                </div>
+                </div>
+
+                <div className="space-y-2 pt-4">
+                  <Label htmlFor="section">Section</Label>
+                  <Input
+                    id="section"
+                    name="section"
+                    type="text"
+                    value={formData.section}
+                    placeholder="e.g. B"
+                    onChange={handleChange}
+                    className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.section ? "border-red-500" : ""}`}
+                    />
                  <div className="h-1">
-              {errors.section && (
-                <p className="text-red-500 text-sm">{errors.section}</p>
-              )}
-              {fieldsError && (
-                <p className="text-red-500 text-sm">
-                  Failed to load sections: {fieldsError}
-                </p>
-              )}
+              {errors.section && <p className="text-red-500 text-sm">{errors.section}</p>}
               </div>
                 </div>
 

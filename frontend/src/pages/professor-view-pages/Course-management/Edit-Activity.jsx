@@ -102,9 +102,9 @@ const EditActivity = () => {
 
   const dueDateTime =
     date && time
-      ? new Date(`${format(date, "yyyy-MM-dd")}T${
+      ? `${format(date, "yyyy-MM-dd")}T${
           /^\d{2}:\d{2}$/.test(time) ? time : "23:59"
-        }:00`).toISOString()
+        }:00.000Z`
       : null;
 
   const handleSubmit = async () => {
@@ -128,6 +128,7 @@ const EditActivity = () => {
 
     try {
       await updateActivity(activity._id, updatedActivity, files);
+      toast.success("Activity updated successfully! 🎉");
       navigate(`/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${activitySlug}`);
     } catch (error) {
       console.error("Error updating activity:", error);
@@ -159,7 +160,7 @@ const EditActivity = () => {
   if (!activity) return <p>No activity found</p>;
 
   return (
-    <div className="w-full p-4 grid grid-cols-12 gap-6">
+    <div className="container mx-auto w-full p-6 grid grid-cols-12 gap-6">
       <div className="col-span-12 lg:col-span-9">
         <Card className="border-0 shadow-none">
           <CardContent className="p-0">
@@ -239,7 +240,7 @@ const EditActivity = () => {
 
       {/* Right Content - Upload Files and Due Date */}
       <div className="col-span-12 lg:col-span-3">
-        <div className="hidden lg:flex items-center justify-end lg:justify-between lg:ml-40">
+        <div className="hidden lg:flex items-center justify-end lg:justify-between lg:ml-48">
           <Button
             className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
             onClick={handleSubmit}

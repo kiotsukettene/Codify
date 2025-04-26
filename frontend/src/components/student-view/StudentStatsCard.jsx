@@ -1,37 +1,35 @@
 import { useState, useRef } from "react";
 import { motion, useAnimationControls } from "framer-motion";
 import confetti from "canvas-confetti";
+import { Award, Heart } from "lucide-react";
 
 // Cute emoji icons for each card
 const cardConfig = [
   {
-    emoji: "🏆",
+    
     label: "Total Wins",
     value: "15",
     color: "bg-pink-100",
     accent: "text-pink-500",
     border: "border-pink-300",
-    mascot: "🐰",
     description: "You're doing amazing! Keep collecting those wins!",
   },
   {
-    emoji: "⭐",
+    
     label: "Win Rate",
     value: "85%",
     color: "bg-blue-100",
     accent: "text-blue-500",
     border: "border-blue-300",
-    mascot: "🐳",
     description: "Wow! You're in the top players with this win rate!",
   },
   {
-    emoji: "🎮",
+
     label: "Total Battles",
     value: "24",
     color: "bg-green-100",
     accent: "text-green-500",
     border: "border-green-300",
-    mascot: "🐸",
     description: "Every battle makes you stronger and more experienced!",
   },
 ];
@@ -51,11 +49,11 @@ const Decorations = ({ color }) => {
 
       {/* Hearts */}
       <motion.div
-        className="absolute bottom-4 left-4 text-xs"
+        className="absolute bottom-2 left-6 text-red-500 text-xs"
         animate={{ scale: [1, 1.2, 1] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
-        💖
+        <Heart/>
       </motion.div>
 
       {/* Dots */}
@@ -159,7 +157,6 @@ const CuteCard = ({ emoji, label, value, color, accent, border, mascot, descript
       {/* Value with wiggle effect */}
       <motion.h2
         className={`text-6xl font-bold mb-2 font-nunito ${accent}`}
-        animate={{ scale: isHovered ? [1, 1.1, 1] : 1 }}
         transition={{ duration: 0.5 }}
       >
         {value}
@@ -206,13 +203,11 @@ const StudentStatCards = () => {
           {cardConfig.map((card, index) => (
             <CuteCard
               key={index}
-              emoji={card.emoji}
               label={card.label}
               value={card.value}
               color={card.color}
               accent={card.accent}
               border={card.border}
-              mascot={card.mascot}
               description={card.description}
             />
           ))}

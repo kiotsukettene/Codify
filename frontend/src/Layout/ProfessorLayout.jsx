@@ -24,11 +24,9 @@ function ProfessorLayout() {
             </header>
 
             {/* ✅ Page Content */}
-            <main className="flex-1 w-full bg-neutral-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 overflow-y-auto">
-              <div className="p-4 h-full">
-                <Outlet />
-              </div>
-            </main>
+            <div className="flex flex-1 w-full  mx-auto overflow-auto bg-neutral-50 p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <Outlet />
+            </div>
           </SidebarInset>
         </div>
       </div>

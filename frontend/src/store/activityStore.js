@@ -117,7 +117,7 @@ export const useActivityStore = create((set) => ({
         activities: [...state.activities, newActivity],
         isLoading: false,
       }));
-      toast.success("Activity created successfully! 🎉");
+      toast.success("Activity created successfully!");
       return newActivity;
     } catch (error) {
       set({
@@ -153,7 +153,7 @@ export const useActivityStore = create((set) => ({
         activity: response.data.updatedActivity,
         isLoading: false,
       }));
-      toast.success("Activity updated successfully! 🎉");
+      toast.success("Activity updated successfully!");
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error updating activity",

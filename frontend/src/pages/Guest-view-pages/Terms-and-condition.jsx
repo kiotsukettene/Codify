@@ -67,7 +67,7 @@ const TermsAndCondition = () => {
           </header>
     
           {/* Main content */}
-          <main className="flex-grow bg-white text-justify">
+          <main className="flex-grow bg-white">
             <div className="mx-auto px-4 py-0 relative ">
 
 
@@ -88,7 +88,7 @@ const TermsAndCondition = () => {
                   <p className="mb-4">
                     Codify is an online learning platform designed to help professors and students engage in coding lessons,
                     activities, and coding battles. To ensure a safe, fair, and effective learning environment, all
-                    users—including students, professors, and institutions— must comply with the policies outlined below.
+                    users—including students, professors, and administrators— must comply with the policies outlined below.
                   </p>
                   <p className="mb-4">If you do not agree with these terms, please refrain from using the platform.</p>
                 </section>
@@ -108,7 +108,7 @@ const TermsAndCondition = () => {
                   <h3 className="text-xl font-bold mb-2">2.1 Professors</h3>
                   <ul className="list-disc pl-8 mb-4 space-y-2">
                     <li>
-                      Professors are responsible for managing and overseeing courses, lessons, and coding
+                      Professors are responsible for creating, managing, and overseeing courses, lessons, and coding
                       battles.
                     </li>
                     <li>Professors must ensure all learning materials comply with intellectual property laws.</li>
@@ -191,13 +191,13 @@ const TermsAndCondition = () => {
                   </ul>
                 </section>
     
-                {/* <section className="mb-8">
+                <section className="mb-8">
                   <h2 className="text-2xl font-bold mb-4">TERMINATION OF ACCESS</h2>
                   <ul className="list-disc pl-8 mb-4 space-y-2">
                     <li>Violation of these terms may result in temporary suspension or permanent termination of access.</li>
                     <li>Codify reserves the right to remove or restrict accounts that misuse the platform.</li>
                   </ul>
-                </section> */}
+                </section>
     
                 <section className="mb-8">
                   <h2 className="text-2xl font-bold mb-4">MODIFICATIONS TO TERMS</h2>
@@ -210,7 +210,8 @@ const TermsAndCondition = () => {
                 <section className="mb-4">
                   <h2 className="text-2xl font-bold mb-4">CONTACT INFORMATION</h2>
                   <p className="mb-2">For any questions regarding these Terms and Conditions, users may contact:</p>
-                  <p className="mb-2">📧 Email: Codify.dev2025@gmail.com</p>
+                  <p className="mb-2">📧 Email: Codify@gmail.com</p>
+                  <p>📞 Phone: 123-456-7890</p>
                 </section>
               </motion.div>
     
