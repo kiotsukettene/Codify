@@ -1,3 +1,4 @@
+
 import { useState} from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +10,7 @@ import toast from "react-hot-toast"
 import useToggleVisibility from "@/hooks/use-toggle-visibility"
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription} from "@/components/ui/dialog"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+
 
 
 function AddStudent({ onClose }) {
@@ -162,6 +164,7 @@ function AddStudent({ onClose }) {
     validateField(name, value);
   }
 
+  // Add new function to validate individual fields
   const validateField = (fieldName, value) => {
     const newErrors = { ...errors };
     const nameRegex = /^[a-zA-Z\s-]+$/;
@@ -251,6 +254,7 @@ function AddStudent({ onClose }) {
     
     try {
       await addStudent(formData)
+      toast.success("Student added successfully")
       navigate("/admin/students")
       onClose()
     } catch (error) {
@@ -263,7 +267,7 @@ function AddStudent({ onClose }) {
       onPointerDownOutside={(e) => {
         e.preventDefault();
       }}
-      className="max-w-2xl "
+      className="max-w-2xl"
     >
     <DialogHeader>
       <DialogTitle>Create New Student Account</DialogTitle>
@@ -272,152 +276,126 @@ function AddStudent({ onClose }) {
       </DialogDescription>
     </DialogHeader>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="space-y-6">
           
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
-              <div className="space-y-2 pt-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="studentId">Student ID</Label>
                   <Input
-                  id="studentId"
-                  name="studentId"
-                  type="text"
-                  value={formData.studentId}
-                  placeholder="2022-0001-N"
-                  onChange={handleChange}
-                  className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.studentId ? "border-red-500" : ""}`}
+                    id="studentId"
+                    name="studentId"
+                    type="text"
+                    value={formData.studentId}
+                onChange={handleChange}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.studentId ? "border-red-500" : ""}`}
+                placeholder="2022-0001-N"
               />
-                  <div className="h-1">
-                     {errors.studentId && <p className="text-red-500 text-sm">{errors.studentId}</p>}
-                  </div>
-              </div>
+                          {errors.studentId && <p className="text-red-500 text-sm">{errors.studentId}</p>}
+            </div>
 
-              <div className="space-y-2 pt-4">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  placeholder="e.g. Juan"
-                  onChange={handleChange}
-                  className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.firstName ? "border-red-500" : ""}`}
-                  />
-                 <div className="h-1">
-                    {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
-                </div>
+                <div className="space-y-4 pt-4">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={formData.firstName}
+                onChange={handleChange}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.firstName ? "border-red-500" : ""}`}
+                placeholder="John"
+              />
+              {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
                 </div>
 
-                <div className="space-y-2 pt-4">
+                <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input 
                   id="lastName"
                   name="lastName" 
                   type="text"
                   value={formData.lastName} 
-                  placeholder="e.g. Dela Cruz"
                 onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.lastName ? "border-red-500" : ""}`}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.lastName ? "border-red-500" : ""}`}
               
               />
-              <div className="h-1">
-                  {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
-              </div>
+              {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
                 </div>
 
                 
-                <div className="space-y-2 pt-4">
+                <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     value={formData.email}
-                    placeholder="...@gmail.com"
                 onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.email ? "border-red-500" : ""}`}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.email ? "border-red-500" : ""}`}
               />
-                             <div className="h-1">
               {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-              </div>
                 </div>
               </div>
 
-              
-
               {/* Right Column */}
-              <div className="space-y-2 pt-4">
-                  <Label htmlFor="course">Program</Label>
-                  <Select
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="course">Course / Program</Label>
+                  <Input
+                    id="course"
+                    name="course"
+                    type="text"
                     value={formData.course}
-                    onValueChange={(value) => setFormData((prevData) => ({ ...prevData, course: value }))}
-                  >
-                  <SelectTrigger className={`bg-[#FDFDFD] text-xs ${errors.course ? "border-red-500" : ""}`}>
-                    <SelectValue placeholder="Select Program" />
-                  </SelectTrigger>
-                    <SelectContent>
-                                 <SelectItem value="BSCS">
-                                   Bachelor of Science in Computer Science (BSCS)
-                                 </SelectItem>
-                                 <SelectItem value="BSIT">
-                                   Bachelor of Science in Information Technology (BSIT)
-                                 </SelectItem>
-                                 <SelectItem value="BSEMC">
-                                   Bachelor of Science in Entertainment and Multimedia Computing
-                                   (BSEMC){" "}
-                                 </SelectItem>
-                                 <SelectItem value="BSIS">
-                                   Bachelor of Science in Information System (BSIS){" "}
-                                 </SelectItem>
-                               </SelectContent>
-                  </Select>
-                          <div className="h-1">
+                onChange={handleChange}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.course ? "border-red-500" : ""}`}
+              />
+                          <p style={{ fontSize: "11px", color: "#6b7280" }}>e.g. Bachelor of Science in Computer Science (BSCS)</p>
+
               {errors.course && <p className="text-red-500 text-sm">{errors.course}</p>}
                 </div>
 
-                <div className="space-y-2 pt-4 ">
+
+
+
+                <div className="space-y-2">
                   <Label htmlFor="year">Year</Label>
-                  <Select
-                    value={formData.year}
-                    onValueChange={(value) => setFormData((prevData) => ({ ...prevData, year: value }))}
-                  >
-                  <SelectTrigger className={`bg-[#FDFDFD] text-xs ${errors.year ? "border-red-500" : ""}`}>
-                    <SelectValue placeholder="Select Year Level" />
-                  </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
-                      <SelectItem value="4">4</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  
+<Select
+  value={formData.year}
+  onValueChange={(value) => setFormData((prevData) => ({ ...prevData, year: value }))}
+>
+  <SelectTrigger className={`bg-[#FDFDFD] ${errors.year ? "border-red-500" : ""}`}>
+    <SelectValue placeholder="Select Year Level" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="1">1</SelectItem>
+    <SelectItem value="2">2</SelectItem>
+    <SelectItem value="3">3</SelectItem>
+    <SelectItem value="4">4</SelectItem>
+  </SelectContent>
+</Select>
 
-                <div className="h-1">
-                    {errors.year && <p className="text-red-500 text-sm">{errors.year}</p>}
-                </div>
+              {errors.year && <p className="text-red-500 text-sm">{errors.year}</p>}
                 </div>
 
-                <div className="space-y-2 pt-4">
+
+
+
+                <div className="space-y-2">
                   <Label htmlFor="section">Section</Label>
                   <Input
                     id="section"
                     name="section"
                     type="text"
                     value={formData.section}
-                    placeholder="e.g. B"
-                    onChange={handleChange}
-                    className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.section ? "border-red-500" : ""}`}
-                    />
-                 <div className="h-1">
+                onChange={handleChange}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.section ? "border-red-500" : ""}`}
+              />
               {errors.section && <p className="text-red-500 text-sm">{errors.section}</p>}
-              </div>
                 </div>
-
-
-
                   {/* Button Group */}
-            <div className="flex justify-end space-x-4 pt-12">
+            <div className="flex justify-end space-x-4 pt-6">
               <Button type="button" variant="secondary" onClick={handleCancel} className="min-w-[100px] ">
                 Cancel
               </Button>
@@ -432,13 +410,9 @@ function AddStudent({ onClose }) {
               </div>
             </div>
 
+          
           </form>
-          <div className="h-1">
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          </div>
-
-
-
         </DialogContent>
   )
 }
