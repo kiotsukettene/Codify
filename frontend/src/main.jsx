@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
+import { io } from "socket.io-client";
 import { SocketProvider } from './context/auth-context/SocketProvider'
 import AuthProvider from './context/auth-context'
 
