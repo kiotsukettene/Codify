@@ -29,7 +29,7 @@ export const useprofAuthStore = create((set) => ({
       const response = await axios.get(`${API_URL}/${professorId}`);
       const { professor, courseCount } = response.data;
 
-      set({
+      set({ 
         professor,
         courseCount,
         isLoading: false,
@@ -115,7 +115,7 @@ export const useprofAuthStore = create((set) => ({
       set({
         professor: response.data.professor,
         isAuthenticated: true,
-        loading: false,
+        isLoading: false,
       });
     } catch (error) {
       set({

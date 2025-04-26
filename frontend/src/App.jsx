@@ -118,7 +118,7 @@ function App() {
       <Route path="/about" element={<AboutUs />} />
         <Route path="/terms" element={<TermsAndCondition />} />
         <Route
-          path="/payment-success"
+          path="/admin/payment-success"
           element={
             <ProtectedRouteInstitution>
               <PaymentSuccess />

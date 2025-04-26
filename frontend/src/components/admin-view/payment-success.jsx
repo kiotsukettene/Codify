@@ -29,7 +29,7 @@ function PaymentSuccess() {
         })
         .catch((error) => {
           console.error("Failed to send welcome email:", error);
-          toast.error("Failed to send welcome email");
+          // toast.error("Failed to send welcome email");
         });
     }
   }, [institution]);
