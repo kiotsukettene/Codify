@@ -351,25 +351,21 @@ export const registerProfessor = async (req, res) => {
 //fetch professor
 export const getProfessors = async (req, res) => {
   try {
-    // Ensure institutionId is available from authentication middleware
-    if (!req.institutionId) {
-      return res.status(403).json({
-        success: false,
-        message: "Unauthorized access. Institution ID missing.",
-      });
-    }
-
-    // Fetch students that belong to the authenticated institution
-    const professors = await Professor.find({
-      institution: req.institutionId,
-    }).populate("institution", "institutionName");
+    // Fetch all professors with their institution info
+    const professors = await Professor.find()
+      .populate("institution", "institutionName")
+      .select("-password -refreshToken"); // Exclude sensitive fields
 
     res.status(200).json({
       success: true,
       professors,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Error fetching professors:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || "Error fetching professors" 
+    });
   }
 };
 

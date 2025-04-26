@@ -26,7 +26,7 @@ export const useprofAuthStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       // Assumes your GET endpoint returns { professor, courseCount }
-      const response = await axios.get(`${API_URL}/${professorId}`);
+      const response = await axios.get(`${API_URL}/list/${professorId}`);
       const { professor, courseCount } = response.data;
 
       set({ 
@@ -48,15 +48,25 @@ export const useprofAuthStore = create((set) => ({
 
     try {
       const response = await axios.get(`${API_URL}/list`);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to fetch professors");
+      }
+      
       set({
         professors: response.data.professors,
         isLoading: false,
+        error: null
       });
     } catch (error) {
+      console.error("Error fetching professors:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Error fetching professors";
       set({
-        error: error.response?.data?.message || "Error fetching professors",
+        error: errorMessage,
         isLoading: false,
+        professors: []
       });
+      toast.error(errorMessage);
     }
   },
 

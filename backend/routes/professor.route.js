@@ -16,6 +16,7 @@ import { profVerifyToken } from "../middleware/professorVerifyToken.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
+
 router.get("/professor-check-auth", profVerifyToken, checkAuthProfessor);
 router.post("/login", loginProfessor);
 router.post("/logout", logoutProfessor);
@@ -23,12 +24,14 @@ router.post("/forgot-password", ForgotPasswordProfessor);
 router.post("/password/:token", resetPasswordProfessor);
 router.post("/google-login", googleLoginProfessor);
 router.post("/reset-password/:token", resetPasswordProfessor);
+
+// Move /list route before /:professorId
+router.get("/list", verifyToken, getProfessors);
 router.get("/:professorId", getProfessorById);
 
-//prof registration
+// Professor registration
 router.post("/register", verifyToken, registerProfessor);
-router.get("/list", verifyToken, getProfessors);
 router.put("/update/:id", verifyToken, updateProfessor);
 router.delete("/list/delete/:id", verifyToken, deleteProfessor);
 
-export default router;
+export default router
