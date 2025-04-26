@@ -29,6 +29,7 @@ const ChallengeSchema = new mongoose.Schema({
     },
     code: { type: String },
     language: { type: String },
+    timeSpent: { type: Number, default: 0 }, // Time spent in seconds
     submittedAt: { type: Date },
     score: { type: Number, default: 0 }
   }]

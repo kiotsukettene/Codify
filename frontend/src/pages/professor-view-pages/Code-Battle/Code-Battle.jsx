@@ -1,13 +1,21 @@
-import React, {useState, useEffect } from 'react'
+import React, {useState, useEffect, useContext } from 'react'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ArrowLeft, Flame, Sword, Shield } from "lucide-react"
+import { ArrowLeft, Flame, Sword, Shield, Trophy, ArrowRight } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import ProfCodeEditor from '@/components/Prof-Code-Editor'
 import { motion, AnimatePresence } from "framer-motion"
 import Bear from "@/assets/picture/Avatar/Bear.png"
 import useBattleStore from '@/store/battleStore'
 import { useParams, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { SocketContext } from '@/context/auth-context/SocketProvider'
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev
@@ -29,6 +37,10 @@ const CodeBattle = () => {
     const [error, setError] = useState(null);
 
     const [playersState, setPlayersState] = useState({});
+    const [showWinnerModal, setShowWinnerModal] = useState(false);
+    const [winnerDetails, setWinnerDetails] = useState(null);
+
+    const socket = useContext(SocketContext);
 
     // Initialize timer when battle data is loaded
     useEffect(() => {
@@ -106,7 +118,104 @@ const CodeBattle = () => {
         };
     }, [battleCode, battleState.status]);
 
-    // Handle battle end
+    // Add socket event listeners
+    useEffect(() => {
+        if (socket && battleCode) {
+            // Join battle room
+            socket.emit("joinBattleRoom", battleCode);
+
+            // Listen for player code updates
+            socket.on("codeUpdate", ({ playerId, code, language }) => {
+                console.log(`Received code update from player ${playerId}`);
+                setPlayersState(prev => ({
+                    ...prev,
+                    [playerId]: {
+                        ...prev[playerId],
+                        code,
+                        language,
+                        typing: true // Set typing status
+                    }
+                }));
+
+                // Reset typing status after delay
+                setTimeout(() => {
+                    setPlayersState(prev => ({
+                        ...prev,
+                        [playerId]: {
+                            ...prev[playerId],
+                            typing: false
+                        }
+                    }));
+                }, 2000);
+
+                // Update progress based on new code
+                updatePlayerProgress(playerId, code);
+            });
+
+            // Listen for player typing status
+            socket.on("playerTyping", ({ playerId }) => {
+                console.log(`Player ${playerId} is typing`);
+                setPlayersState(prev => ({
+                    ...prev,
+                    [playerId]: {
+                        ...prev[playerId],
+                        typing: true
+                    }
+                }));
+
+                // Reset typing status after delay
+                setTimeout(() => {
+                    setPlayersState(prev => ({
+                        ...prev,
+                        [playerId]: {
+                            ...prev[playerId],
+                            typing: false
+                        }
+                    }));
+                }, 2000);
+            });
+
+            // Listen for battle completion
+            socket.on("battleCompleted", ({ winnerId, winnerName }) => {
+                console.log("Battle completed event received:", { winnerId, winnerName });
+                
+                // Set winner details for modal
+                setWinnerDetails({
+                    winner: {
+                        name: winnerName,
+                        score: playersState[winnerId]?.pointsEarned || 0,
+                        avatar: playersState[winnerId]?.avatar
+                    },
+                    loser: {
+                        name: Object.entries(playersState).find(([id]) => id !== winnerId)?.[1]?.name,
+                        score: Object.entries(playersState).find(([id]) => id !== winnerId)?.[1]?.pointsEarned || 0,
+                        avatar: Object.entries(playersState).find(([id]) => id !== winnerId)?.[1]?.avatar
+                    }
+                });
+
+                setShowWinnerModal(true);
+                setBattleState(prev => ({
+                    ...prev,
+                    status: "completed",
+                    winner: winnerId
+                }));
+
+                // Auto-navigate after 5 seconds
+                setTimeout(() => {
+                    navigate(`/professor/code-battle/results/${battleCode}`);
+                }, 5000);
+            });
+
+            return () => {
+                socket.off("codeUpdate");
+                socket.off("playerTyping");
+                socket.off("battleCompleted");
+                socket.emit("leaveBattleRoom", battleCode);
+            };
+        }
+    }, [socket, battleCode]);
+
+    // Update handleBattleEnd to emit socket event
     const handleBattleEnd = async () => {
         try {
             // Check if battle is already marked as completed in localStorage
@@ -128,22 +237,48 @@ const CodeBattle = () => {
             const player1Score = playersState[battle.player1.id]?.pointsEarned || 0;
             const player2Score = playersState[battle.player2.id]?.pointsEarned || 0;
 
-            let winner;
+            let winner, loser;
             if (player1Score > player2Score) {
-                winner = battle.player1.id;
+                winner = battle.player1;
+                loser = battle.player2;
             } else if (player2Score > player1Score) {
-                winner = battle.player2.id;
+                winner = battle.player2;
+                loser = battle.player1;
             }
 
-            // Show battle end notification
+            if (winner) {
+                // Emit battle completion event
+                socket.emit("battleComplete", {
+                    battleCode,
+                    winnerId: winner.id,
+                    winnerName: winner.name
+                });
+            }
+
+            // Set winner details and show modal
+            setWinnerDetails({
+                winner: winner ? {
+                    name: winner.name,
+                    score: winner.id === battle.player1.id ? player1Score : player2Score,
+                    avatar: playersState[winner.id]?.avatar
+                } : null,
+                loser: loser ? {
+                    name: loser.name,
+                    score: loser.id === battle.player1.id ? player1Score : player2Score,
+                    avatar: playersState[loser.id]?.avatar
+                } : null,
+                isTie: !winner && !loser
+            });
+
             toast.success('Battle has ended!');
+            setShowWinnerModal(true);
             
-            // Update battle state with winner
             setBattleState(prev => ({
                 ...prev,
                 status: "completed",
-                winner
+                winner: winner?.id
             }));
+
         } catch (error) {
             console.error('Error ending battle:', error);
             toast.error('Failed to end battle properly');
@@ -266,6 +401,11 @@ const CodeBattle = () => {
                         <div>
                             <div className="font-medium flex items-center gap-2">
                                 {player.name}
+                                {player.typing && (
+                                    <span className="text-xs text-blue-400 animate-pulse">
+                                        typing...
+                                    </span>
+                                )}
                             </div>
                             <div className="text-xs text-gray-500">
                                 {battle.course?.name} | {battle.course?.section}
@@ -519,6 +659,62 @@ const CodeBattle = () => {
                     </div>
                 </motion.div>
             </main>
+
+            {/* Winner Modal */}
+            <Dialog open={showWinnerModal} onOpenChange={setShowWinnerModal}>
+                <DialogContent className="bg-[#18122B] border border-[#2B1F4A] text-[#F5F5F5] max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl flex justify-center items-center gap-2">
+                            <Trophy className="h-8 w-8 text-yellow-400" />
+                            Battle Completed!
+                        </DialogTitle>
+                        <DialogDescription className="text-[#C2C2DD] text-lg text-center">
+                            {winnerDetails?.isTie ? (
+                                "The battle ended in a tie!"
+                            ) : (
+                                `${winnerDetails?.winner?.name} has won the battle!`
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {!winnerDetails?.isTie && (
+                        <div className="space-y-4 py-4">
+                            <div className="bg-[#0D0A1A] rounded-lg p-6 border border-yellow-500/30 text-center">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="text-center flex-1">
+                                        <Avatar className="h-16 w-16 mx-auto mb-2">
+                                            <AvatarImage src={winnerDetails?.winner?.avatar} />
+                                            <AvatarFallback>{winnerDetails?.winner?.name?.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <p className="text-yellow-400 font-bold">{winnerDetails?.winner?.name}</p>
+                                        <p className="text-sm text-[#C2C2DD]">{winnerDetails?.winner?.score} points</p>
+                                    </div>
+                                    <div className="text-2xl font-bold text-[#C2C2DD]">VS</div>
+                                    <div className="text-center flex-1">
+                                        <Avatar className="h-16 w-16 mx-auto mb-2">
+                                            <AvatarImage src={winnerDetails?.loser?.avatar} />
+                                            <AvatarFallback>{winnerDetails?.loser?.name?.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <p className="text-[#C2C2DD] font-bold">{winnerDetails?.loser?.name}</p>
+                                        <p className="text-sm text-[#C2C2DD]">{winnerDetails?.loser?.score} points</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="text-sm text-gray-400 mt-4 text-center">
+                        Redirecting to results in {Math.ceil((5000 - (Date.now() - (showWinnerModal ? Date.now() : 0))) / 1000)} seconds...
+                    </div>
+
+                    <Button 
+                        onClick={() => navigate(`/professor/code-battle/results/${battleCode}`)}
+                        className="w-full bg-[#B689F4] hover:bg-[#B689F4]/80 text-white mt-2"
+                    >
+                        View Battle Results <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

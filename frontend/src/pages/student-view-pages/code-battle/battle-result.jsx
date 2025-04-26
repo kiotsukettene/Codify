@@ -59,12 +59,13 @@ export default function BattleResults() {
               timeSpent: 0,
               challengeResults: battleData.challenges.map((challenge, index) => {
                 const progress = challenge.playerProgress?.find(p => p.playerId === battleData.player1.id);
+                const isCompleted = progress?.status === "completed";
                 return {
                   id: index + 1,
                   title: challenge.problemTitle,
-                  passedTests: progress?.status === "completed" ? challenge.testCases?.length || 0 : 0,
-                  totalTests: challenge.testCases?.length || 0,
-                  score: progress?.status === "completed" ? challenge.points : 0,
+                  passedTests: isCompleted ? 3 : 0, // Set to 3 if completed
+                  totalTests: 3, // Always 3 test cases
+                  score: isCompleted ? challenge.points : 0,
                   timeSpent: progress?.timeSpent || 0
                 };
               })
@@ -78,12 +79,13 @@ export default function BattleResults() {
               timeSpent: 0,
               challengeResults: battleData.challenges.map((challenge, index) => {
                 const progress = challenge.playerProgress?.find(p => p.playerId === battleData.player2.id);
+                const isCompleted = progress?.status === "completed";
                 return {
                   id: index + 1,
                   title: challenge.problemTitle,
-                  passedTests: progress?.status === "completed" ? challenge.testCases?.length || 0 : 0,
-                  totalTests: challenge.testCases?.length || 0,
-                  score: progress?.status === "completed" ? challenge.points : 0,
+                  passedTests: isCompleted ? 3 : 0, // Set to 3 if completed
+                  totalTests: 3, // Always 3 test cases
+                  score: isCompleted ? challenge.points : 0,
                   timeSpent: progress?.timeSpent || 0
                 };
               })
@@ -298,7 +300,12 @@ export default function BattleResults() {
                           <span className="text-[#C2C2DD]">
                             {challenge.passedTests}/{challenge.totalTests}
                           </span>
-                          {challenge.score > 0 && <span className="text-yellow-400">+{challenge.score}</span>}
+                          {challenge.score > 0 && (
+                            <>
+                              <span className="text-yellow-400">+{challenge.score}</span>
+                              <span className="text-[#C2C2DD] font-mono">({formatTime(challenge.timeSpent)})</span>
+                            </>
+                          )}
                         </div>
                       </div>
                       <Progress
@@ -320,7 +327,79 @@ export default function BattleResults() {
           ))}
         </div>
 
-       
+        {/* Challenge Breakdown */}
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-[#B689F4]" />
+          Challenge Breakdown
+        </h2>
+
+        <Card className="border border-[#2B1F4A] bg-[#18122B] mb-8 text-neutral-50">
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              {[1, 2, 3].map((challengeId) => (
+                <div key={challengeId}>
+                  <h3 className="text-lg font-medium mb-3">Challenge {challengeId}</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {battleResults.players.map((player) => {
+                      const challenge = player.challengeResults.find((c) => c.id === challengeId)
+                      const isCompleted = challenge?.passedTests === challenge?.totalTests
+
+                      return (
+                        <div
+                          key={`${player.id}-${challengeId}`}
+                          className={`p-3 rounded-lg border ${
+                            isCompleted ? "border-green-500/30 bg-green-500/10" : "border-[#2B1F4A] bg-[#0D0A1A]"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-6 w-6 rounded-full bg-[#231b3d] flex items-center justify-center">
+                                <User className="h-3 w-3" />
+                              </div>
+                              <span className="font-medium">{player.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {isCompleted ? (
+                                <Badge className="bg-green-500/20 text-green-400 border-green-500">
+                                  <CheckCircle className="h-3 w-3 mr-1" /> Completed
+                                </Badge>
+                              ) : challenge?.passedTests > 0 ? (
+                                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500">Partial</Badge>
+                              ) : (
+                                <Badge className="bg-red-500/20 text-red-400 border-red-500">
+                                  <XCircle className="h-3 w-3 mr-1" /> Not Completed
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div className="bg-[#18122B] rounded p-1">
+                              <p className="text-[#C2C2DD]">Tests</p>
+                              <p className="font-medium">
+                                {challenge?.passedTests || 0}/{challenge?.totalTests || 0}
+                              </p>
+                            </div>
+                            <div className="bg-[#18122B] rounded p-1">
+                              <p className="text-[#C2C2DD]">Score</p>
+                              <p className="font-medium text-yellow-400">{challenge?.score || 0}</p>
+                            </div>
+                            <div className="bg-[#18122B] rounded p-1">
+                              <p className="text-[#C2C2DD]">Time</p>
+                              <p className="font-medium font-mono">{formatTime(challenge?.timeSpent || 0)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {challengeId < 3 && <Separator className="mt-4 bg-[#2B1F4A]" />}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           

@@ -392,30 +392,42 @@ export default function CodeBattle() {
   // Add socket event listeners
   useEffect(() => {
     if (socket && battleCode && battleDetails) {
-      // Listen for battle completion event
-      socket.on("battleCompleted", ({ winnerId, winnerName }) => {
-        console.log("Received battleCompleted event:", { winnerId, winnerName });
-        
-        // Check if current player is the winner (could be either player1 or player2)
-        const currentPlayerId = battleDetails?.player1?.id === userId ? 
-          battleDetails.player1.id : battleDetails.player2.id;
-        
-        const isCurrentPlayerWinner = currentPlayerId === winnerId;
-        
-        if (isCurrentPlayerWinner) {
-          setIsVictoryModalOpen(true);
-        } else {
-          setWinnerName(winnerName);
-          setIsDefeatModalOpen(true);
-          setIsEditorReadOnly(true);
-        }
-      });
+        socket.on("battleCompleted", ({ winnerId, winnerName }) => {
+            console.log("Received battleCompleted event:", { winnerId, winnerName });
+            
+            // Check if current player is the winner
+            const isCurrentPlayerWinner = userId === winnerId;
+            
+            if (isCurrentPlayerWinner) {
+                setIsVictoryModalOpen(true);
+            } else {
+                setWinnerName(winnerName);
+                setIsDefeatModalOpen(true);
+                setIsEditorReadOnly(true);
+            }
+        });
 
-      return () => {
-        socket.off("battleCompleted");
-      };
+        return () => {
+            socket.off("battleCompleted");
+            // ... other cleanup
+        };
     }
-  }, [socket, battleCode, battleDetails, userId]);
+}, [socket, battleCode, battleDetails, userId]);
+
+  // Update the useEffect that handles victory/defeat modals
+  useEffect(() => {
+    let navigationTimer;
+    if (isVictoryModalOpen) {
+        navigationTimer = setTimeout(() => {
+            navigate(`/student/code-battle/winner/${battleCode}`);
+        }, 3000);
+    } else if (isDefeatModalOpen) {
+        navigationTimer = setTimeout(() => {
+            navigate(`/student/code-battle/results/${battleCode}`);
+        }, 3000);
+    }
+    return () => clearTimeout(navigationTimer);
+}, [isVictoryModalOpen, isDefeatModalOpen, battleCode, navigate]);
 
   const handleFinalizeSubmission = async () => {
     const allTestsPassed = testResults.every(test => test.status === "passed");
@@ -937,26 +949,26 @@ public class Solution {
     }
   }, [battleCode]);
 
-  // Modify the onChange handler in the Editor component
+  // Modify the handleCodeChange function
   const handleCodeChange = (newCode) => {
     setCode(newCode);
     
     // Emit code update to server
     if (socket && battleCode) {
-      socket.emit("codeUpdate", {
-        battleCode,
-        playerId: battleDetails?.player1?.id === userId ? "player1" : "player2",
-        code: newCode,
-        language
-      });
-      
-      // Also emit typing status
-      socket.emit("playerTyping", {
-        battleCode,
-        playerId: battleDetails?.player1?.id === userId ? "player1" : "player2"
-      });
+        socket.emit("codeUpdate", {
+            battleCode,
+            playerId: userId, // Use actual student ID
+            code: newCode,
+            language
+        });
+        
+        // Also emit typing status
+        socket.emit("playerTyping", {
+            battleCode,
+            playerId: userId
+        });
     }
-  };
+};
 
   const [battleDuration, setBattleDuration] = useState(0);
   const [battleTimer, setBattleTimer] = useState(0);
@@ -987,17 +999,6 @@ public class Solution {
       return () => clearInterval(timer);
     }
   }, [battleTimer]);
-
-  // Auto-navigate after modal display
-  useEffect(() => {
-    let navigationTimer;
-    if (isVictoryModalOpen || isDefeatModalOpen) {
-      navigationTimer = setTimeout(() => {
-        navigate(`/student/code-battle/results/${battleCode}`);
-      }, 5000); // Auto navigate after 5 seconds
-    }
-    return () => clearTimeout(navigationTimer);
-  }, [isVictoryModalOpen, isDefeatModalOpen, battleCode, navigate]);
 
   const handleBattleEnd = async () => {
     // Compare challenge completion when time runs out
@@ -1772,25 +1773,8 @@ public class Solution {
               Congratulations! You've completed all challenges first!
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-[#0D0A1A] rounded-lg p-6 border border-yellow-500/30 text-center">
-              <h3 className="text-xl font-bold text-yellow-400 mb-2">You're the Winner!</h3>
-              <p className="text-[#C2C2DD] mb-4">
-                You've successfully completed all challenges before your opponent.
-              </p>
-              <div className="flex justify-center">
-                <Button
-                  onClick={() => navigate(`/student/code-battle/results/${battleCode}`)}
-                  className="bg-[#B689F4] hover:bg-[#B689F4]/80 text-white"
-                >
-                  <Trophy className="h-4 w-4 mr-2" />
-                  View Battle Results
-                </Button>
-              </div>
-            </div>
-          </div>
           <div className="text-sm text-gray-400 mt-4 text-center">
-            Redirecting to results in {Math.ceil((5000 - (Date.now() - (isVictoryModalOpen ? Date.now() : 0))) / 1000)} seconds...
+            Redirecting to victory page in {Math.ceil((2000 - (Date.now() - (isVictoryModalOpen ? Date.now() : 0))) / 1000)} seconds...
           </div>
         </DialogContent>
       </Dialog>
@@ -1805,25 +1789,8 @@ public class Solution {
               {winnerName} has completed all challenges!
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-[#0D0A1A] rounded-lg p-6 border border-red-500/30 text-center">
-              <h3 className="text-xl font-bold text-red-400 mb-2">Better Luck Next Time!</h3>
-              <p className="text-[#C2C2DD] mb-4">
-                Your opponent has finished all challenges. The battle is now complete.
-              </p>
-              <div className="flex justify-center">
-                <Button
-                  onClick={() => navigate(`/student/code-battle/results/${battleCode}`)}
-                  className="bg-[#B689F4] hover:bg-[#B689F4]/80 text-white"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Battle Results
-                </Button>
-              </div>
-            </div>
-          </div>
           <div className="text-sm text-gray-400 mt-4 text-center">
-            Redirecting to results in {Math.ceil((5000 - (Date.now() - (isDefeatModalOpen ? Date.now() : 0))) / 1000)} seconds...
+            Redirecting to results page in {Math.ceil((2000 - (Date.now() - (isDefeatModalOpen ? Date.now() : 0))) / 1000)} seconds...
           </div>
         </DialogContent>
       </Dialog>

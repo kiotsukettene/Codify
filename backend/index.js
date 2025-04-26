@@ -235,7 +235,19 @@ io.on("connection", async (socket) => {
     console.log(`Battle ${battleCode} completed. Winner: ${winnerName}`);
     // Broadcast to ALL users in the battle room INCLUDING the sender
     io.in(battleCode).emit("battleCompleted", { winnerId, winnerName });
-  }); 
+  });
+
+  socket.on("codeUpdate", ({ battleCode, playerId, code, language }) => {
+    console.log(`Code update in battle ${battleCode} from player ${playerId}`);
+    // Broadcast to all users in the battle room except sender
+    socket.to(battleCode).emit("codeUpdate", { playerId, code, language });
+  });
+
+  socket.on("playerTyping", ({ battleCode, playerId }) => {
+    console.log(`Player ${playerId} is typing in battle ${battleCode}`);
+    // Broadcast typing status to all users in the battle room except sender
+    socket.to(battleCode).emit("playerTyping", { playerId });
+  });
 });
 
 // Remainder of index.js remains unchanged
