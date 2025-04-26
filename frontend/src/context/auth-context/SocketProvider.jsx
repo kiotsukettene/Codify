@@ -5,6 +5,9 @@ import toast from "react-hot-toast";
 
 export const SocketContext = createContext(null);
 
+const isDev = import.meta.env.MODE === "development";
+const API_URL = isDev ? "http://localhost:3000" : import.meta.env.VITE_API_URL;
+
 export const SocketProvider = ({ children }) => {
   const { addNotification } = useBattleStore();
   const [socket, setSocket] = useState(null);
@@ -21,7 +24,7 @@ export const SocketProvider = ({ children }) => {
     // Get token from cookie
     const token = getCookie("token");
 
-    const socketInstance = io("http://localhost:3000", {
+    const socketInstance = io(API_URL, {
       withCredentials: true,
       auth: { token }
     });
