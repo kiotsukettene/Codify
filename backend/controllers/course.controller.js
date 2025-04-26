@@ -7,8 +7,6 @@ export const createCourse = async (req, res) => {
   try {
     console.log("Request body:", req.body);
     console.log("Institution ID from token:", req.institutionId);
-    console.log("Request body:", req.body);
-    console.log("Institution ID from token:", req.institutionId);
 
     const {
       className,
@@ -92,17 +90,11 @@ export const createCourse = async (req, res) => {
 export const getCoursesByInstitution = async (req, res) => {
   try {
     const institutionId = req.institutionId;
-    console.log("Fetching courses for institutionId:", institutionId); // Debug log
-    const courses = await Course.find({ institutionId })
-      .populate({
-        path: "studentsEnrolled",
-        select: "firstName lastName _id",
-      })
-      .select("className program section studentsEnrolled _id courseCode");
-    // console.log("Fetched courses:", courses); // Debug log
+    const courses = await Course.find({ institutionId }).populate(
+      "lessonCount"
+    );
     res.status(200).json(courses);
   } catch (error) {
-    console.error("Error in getCoursesByInstitution:", error);
     res.status(500).json({
       message: "Error fetching courses",
       error: error.message,
@@ -196,7 +188,6 @@ export const getUniqueStudentCountByProfessor = async (req, res) => {
 export const getCourseById = async (req, res) => {
   try {
     const { courseId } = req.params;
-    console.log("Fetching course with ID:", courseId); // Debug log
     const course = await Course.findById(courseId)
       .populate({
         path: "professorId",
@@ -251,7 +242,6 @@ export const getCourseBySlug = async (req, res) => {
 export const updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    console.log("Updating course with ID:", courseId); // Debug log
     const updatedCourse = await Course.findByIdAndUpdate(courseId, req.body, {
       new: true,
     });
@@ -264,17 +254,16 @@ export const updateCourse = async (req, res) => {
       updatedCourse,
     });
   } catch (error) {
-    console.error("Error in updateCourse:", error);
-    res
-      .status(500)
-      .json({ message: "Error updating course", error: error.message });
+    res.status(500).json({
+      message: "Error updating course",
+      error: error.message,
+    });
   }
 };
 
 export const deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    console.log("Deleting course with ID:", courseId); // Debug log
     const deletedCourse = await Course.findByIdAndDelete(courseId);
 
     if (!deletedCourse)

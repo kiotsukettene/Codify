@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -16,7 +17,6 @@ export const useCourseStore = create((set) => ({
   isLoading: false,
   error: null,
 
-  // Fetch all courses by institution ID (via professor's institution)
   fetchCoursesByProfessor: async () => {
     set({ isLoading: true, error: null });
     console.log(
@@ -100,10 +100,8 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get(`${API_URL}/course/${courseId}`);
-      console.log("API Response:", response.data); // Debug log
       set({ course: response.data, isLoading: false });
     } catch (error) {
-      console.error("Error fetching course:", error.response?.data || error); // Debug log
       set({
         error: error.response?.data?.message || "Error fetching course",
         isLoading: false,
@@ -114,18 +112,35 @@ export const useCourseStore = create((set) => ({
 
   createCourse: async (courseData) => {
     set({ isLoading: true, error: null });
-    console.log("Creating course with data:", courseData); // Debug log
-
     try {
+      // Check for duplicate course
+      const { className, program, year, section, professorId, institutionId } =
+        courseData;
+      const responseCheck = await axios.get(`${API_URL}/courses`, {
+        params: {
+          className,
+          program,
+          year,
+          section,
+          professorId,
+          institutionId,
+        },
+      });
+
+      if (responseCheck.data.length > 0) {
+        set({ isLoading: false });
+        toast.error("A course with these details already exists!");
+        return;
+      }
+
+      // Proceed with course creation if no duplicates
       const response = await axios.post(`${API_URL}/create`, courseData);
-      console.log("API Response:", response.data); // Debug log
       set((state) => ({
         courses: [...state.courses, response.data.course],
         isLoading: false,
       }));
       toast.success("Course created successfully!");
     } catch (error) {
-      console.error("Error creating course:", error.response?.data || error); // Debug log
       set({
         error: error.response?.data?.message || "Error creating course",
         isLoading: false,
@@ -136,14 +151,10 @@ export const useCourseStore = create((set) => ({
 
   fetchCoursesByInstitution: async () => {
     set({ isLoading: true, error: null });
-    console.log("Fetching courses from:", `${API_URL}/courses`); // Debug log
-
     try {
       const response = await axios.get(`${API_URL}/courses`);
-      console.log("API Response:", response.data); // Debug log
       set({ courses: response.data, isLoading: false });
     } catch (error) {
-      console.error("Error fetching courses:", error.response?.data || error); // Debug log
       set({
         error: error.response?.data?.message || "Error fetching courses",
         isLoading: false,
@@ -173,7 +184,6 @@ export const useCourseStore = create((set) => ({
         `${API_URL}/update/${courseId}`,
         updatedData
       );
-      console.log("API Response:", response.data); // Debug log
       set((state) => ({
         courses: state.courses.map((course) =>
           course._id === courseId ? response.data.updatedCourse : course
@@ -182,7 +192,6 @@ export const useCourseStore = create((set) => ({
       }));
       toast.success("Course updated successfully!");
     } catch (error) {
-      console.error("Error updating course:", error.response?.data || error); // Debug log
       set({
         error: error.response?.data?.message || "Error updating course",
         isLoading: false,
@@ -195,14 +204,12 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       await axios.delete(`${API_URL}/delete/${courseId}`);
-      console.log("Course deleted successfully"); // Debug log
       set((state) => ({
         courses: state.courses.filter((course) => course._id !== courseId),
         isLoading: false,
       }));
       toast.success("Course deleted successfully!");
     } catch (error) {
-      console.error("Error deleting course:", error.response?.data || error); // Debug log
       set({
         error: error.response?.data?.message || "Error deleting course",
         isLoading: false,

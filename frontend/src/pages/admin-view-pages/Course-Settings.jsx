@@ -11,7 +11,7 @@ export default function CourseSetting() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full bg-gray-50">
       <main className="flex flex-col flex-1 w-full px-4 py-10">
         <TabNavigation onTypeChange={handleTypeChange} />
         <div className="mt-6 bg-white rounded-md shadow-sm flex-1 flex flex-col">

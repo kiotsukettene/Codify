@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import CourseCard from "@/components/admin-view/Course-Card";
 import DeleteDialog from "@/components/Dialog/DeleteDialog";
@@ -15,9 +16,10 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CourseModal from "@/components/professor-view/Add-Course-Modal";
 import { useCourseStore } from "@/store/courseStore";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const CoursesAdmin = () => {
-  const { courses, fetchCoursesByProfessor, isLoading, deleteCourse } =
+  const { courses, fetchCoursesByInstitution, isLoading, deleteCourse } =
     useCourseStore();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,8 +34,8 @@ const CoursesAdmin = () => {
 
   // Fetch courses when the component mounts
   useEffect(() => {
-    fetchCoursesByProfessor();
-  }, [fetchCoursesByProfessor]);
+    fetchCoursesByInstitution();
+  }, [fetchCoursesByInstitution]);
 
   console.log("Courses:", courses); // Log the courses to check if they are fetched correctly
 
@@ -104,9 +106,13 @@ const CoursesAdmin = () => {
   };
 
   return (
-    <div className="w-full p-2 sm:p-6">
+    <div className="w-full p-6 sm:p-8 overflow-auto overflow-x-hidden">
       <div className="pb-10">
-        <div className="w-full flex items-center justify-between mb-4">
+        <motion.div 
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 5, y: 0 }}
+        transition={{ duration: 0.1, ease: "easeOut" }}
+        className="w-full flex items-center justify-between mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-purple-700">
             Courses
           </h1>
@@ -144,14 +150,14 @@ const CoursesAdmin = () => {
               />
             </Dialog>
           </div>
-        </div>
+        </motion.div>
       </div>
       {/* Card Courses */}
       <div
-        className={`grid place-items-center sm:place-items-start gap-8 sm:gap-12 transition-all duration-300 ${
+        className={`grid place-items-center sm:place-items-start gap-20 transition-all duration-300 ${
           isSidebarOpen
-            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
+            ? "sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+            : "grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4"
         }`}
       >
         {isLoading ? (
@@ -176,6 +182,7 @@ const CoursesAdmin = () => {
                 courseCode={course.courseCode}
                 section={course.section}
                 program={course.program}
+                year={course.year}
                 onEdit={() => handleEdit(course._id)}
                 onDelete={() => handleDeleteCourse(course._id)} // Trigger DeleteDialog
               />
@@ -205,6 +212,9 @@ const CoursesAdmin = () => {
               <PaginationPrevious
                 href="#"
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
               />
             </PaginationItem>
             {Array.from({ length: Math.min(3, totalPages) }, (_, i) => (
@@ -228,6 +238,11 @@ const CoursesAdmin = () => {
                 href="#"
                 onClick={() =>
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
                 }
               />
             </PaginationItem>
