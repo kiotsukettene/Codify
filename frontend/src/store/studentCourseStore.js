@@ -38,7 +38,7 @@ const useStudentCourseStore = create((set) => ({
         }
     },
 
-    joinCourse: async (courseCode) => {
+      joinCourse: async (courseCode) => {
         set({
             isLoading: true, error: null
         })

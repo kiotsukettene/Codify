@@ -13,13 +13,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import CreateEventModal from "@/components/student-view/create-schedule"
-import { motion } from "framer-motion"
-
-const isDev = import.meta.env.MODE === "development"
-
-const API_URL = isDev
-  ? "http://localhost:3000/api/events"
-  : `${import.meta.env.VITE_API_URL}/api/events`;
 
 function StudentCalendar() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -32,6 +25,8 @@ function StudentCalendar() {
   const [isDeletingEvent, setIsDeletingEvent] = useState(false)
   const [eventToEdit, setEventToEdit] = useState(null)
 
+  const isDev = import.meta.env.MODE === "development"
+  const API_URL = isDev ? "http://localhost:3000/api/events" : `${import.meta.env.VITE_API_URL}/api/events`
 
   const priorities = [
     { label: "High Priority", description: "Urgent or high-priority tasks", value: "high", color: "#f87171" },
@@ -156,7 +151,7 @@ function StudentCalendar() {
 
       console.log("Creating event with payload:", payload)
 
-      const response = await fetch(`${API_URL}/schedule`, {
+      const response = await fetch(`${API_URL}/api/events/schedule`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -380,6 +375,7 @@ function StudentCalendar() {
         )
       );
 
+      toast.success("Event rescheduled successfully!");
     } catch (error) {
       console.error("Error rescheduling event:", error.message);
       toast.error(error.message || "Failed to reschedule event");
@@ -422,23 +418,12 @@ function StudentCalendar() {
   const groupedEvents = groupEventsByDate()
 
   return (
-
-
-
-
-<div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
-  
-  <motion.div
-initial={{ opacity: 0, y: 20 }}
-animate={{ opacity: 1, y: 0 }}
-transition={{ duration: 0.6, ease: "easeOut" }}
-className="pb-10"
->
+    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 w-full">
   {/* Sidebar */}
   <div className="w-full md:w-80 border-r border-red-200 flex flex-col bg-white/50 backdrop-blur-sm">
     <div className="p-4 border-b border-blue-200">
       <Button
-        className="w-full bg-primary text-white font-medium shadow-md hover:shadow-lg transition-all"
+        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-medium shadow-md hover:shadow-lg transition-all"
         onClick={() => {
           setEventToEdit(null)
           setIsCreateModalOpen(true)
@@ -534,8 +519,6 @@ className="pb-10"
       )}
     </ScrollArea>
   </div>
-
-</motion.div>
 
   {/* Calendar Section */}
   <div className="flex-1 flex flex-col">

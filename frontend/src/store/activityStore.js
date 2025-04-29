@@ -13,7 +13,6 @@ export const useActivityStore = create((set) => ({
   activities: [],
   activity: null,
   submission: null,
-  submissions: [],
   isLoading: false,
   error: null,
 
@@ -75,27 +74,6 @@ export const useActivityStore = create((set) => ({
     }
   },
 
-  fetchSubmissionsByActivity: async (activityId) => {
-    set({ isLoading: true, error: null });
-    try {
-      console.log("Fetching submissions for activity ID:", activityId);
-      const response = await axios.get(`${API_URL}/submissions/${activityId}`);
-      console.log("Submissions fetched:", response.data);
-      set({ submissions: response.data, isLoading: false });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching submissions:", error);
-      set({
-        error: error.response?.data?.message || "Error fetching submissions",
-        isLoading: false,
-      });
-      toast.error(
-        error.response?.data?.message || "Error fetching submissions"
-      );
-      return [];
-    }
-  },
-
   createActivity: async (activityData, files) => {
     set({ isLoading: true, error: null });
     try {
@@ -117,7 +95,7 @@ export const useActivityStore = create((set) => ({
         activities: [...state.activities, newActivity],
         isLoading: false,
       }));
-      toast.success("Activity created successfully!");
+      toast.success("Activity created successfully! 🎉");
       return newActivity;
     } catch (error) {
       set({
@@ -153,7 +131,7 @@ export const useActivityStore = create((set) => ({
         activity: response.data.updatedActivity,
         isLoading: false,
       }));
-      toast.success("Activity updated successfully!");
+      toast.success("Activity updated successfully! 🎉");
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error updating activity",
@@ -184,6 +162,10 @@ export const useActivityStore = create((set) => ({
     }
   },
 
+  // Add this to useActivityStore in the create function
+  // In useActivityStore
+  // In useActivityStore.js
+  // In useActivityStore.js
   fetchStudentActivitiesByCourse: async (courseSlug) => {
     set({ isLoading: true, error: null });
     try {
@@ -205,6 +187,7 @@ export const useActivityStore = create((set) => ({
     }
   },
 
+  // In useActivityStore.js
   fetchStudentAllActivities: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -257,7 +240,7 @@ export const useActivityStore = create((set) => ({
       return response.data;
     } catch (error) {
       if (error.response?.status === 404) {
-        set({ submission: null, isLoading: false });
+        set({ submission: null, isLoading: false }); // No submission exists yet
         return null;
       }
       set({
@@ -269,39 +252,11 @@ export const useActivityStore = create((set) => ({
     }
   },
 
-  updateSubmission: async (submissionId, updates) => {
-    set({ isLoading: true, error: null });
-    try {
-      console.log("Updating submission ID:", submissionId, "Updates:", updates);
-      const response = await axios.put(
-        `${API_URL}/submissions/${submissionId}`,
-        updates
-      );
-      console.log("Submission updated:", response.data.submission);
-      set((state) => ({
-        submissions: state.submissions.map((sub) =>
-          sub._id === submissionId ? response.data.submission : sub
-        ),
-        isLoading: false,
-      }));
-
-      return response.data.submission;
-    } catch (error) {
-      console.error("Error updating submission:", error);
-      set({
-        error: error.response?.data?.message || "Error updating submission",
-        isLoading: false,
-      });
-      toast.error(error.response?.data?.message || "Error updating submission");
-      return null;
-    }
-  },
-
   unsubmitActivity: async (activityId) => {
     set({ isLoading: true, error: null });
     try {
       await axios.delete(`${API_URL}/submission/${activityId}`);
-      set({ submission: null, isLoading: false });
+      set({ submission: null, isLoading: false }); // Clear submission state
       toast.success("Submission removed successfully!");
       return true;
     } catch (error) {
@@ -313,27 +268,6 @@ export const useActivityStore = create((set) => ({
         error.response?.data?.message || "Error unsubmitting activity"
       );
       return false;
-    }
-  },
-
-  fetchStudentSubmissionsByCourse: async (courseId, studentId) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await axios.get(
-        `${API_URL}/student/${studentId}/course/${courseId}/submissions`
-      );
-      set({ submissions: response.data, isLoading: false });
-      return response.data;
-    } catch (error) {
-      set({
-        error:
-          error.response?.data?.message || "Error fetching student submissions",
-        isLoading: false,
-      });
-      toast.error(
-        error.response?.data?.message || "Error fetching student submissions"
-      );
-      return [];
     }
   },
 }));

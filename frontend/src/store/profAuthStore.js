@@ -26,7 +26,7 @@ export const useprofAuthStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       // Assumes your GET endpoint returns { professor, courseCount }
-      const response = await axios.get(`${API_URL}/list/${professorId}`);
+      const response = await axios.get(`${API_URL}/${professorId}`);
       const { professor, courseCount } = response.data;
 
       set({ 
