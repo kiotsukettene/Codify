@@ -50,14 +50,14 @@ function ProfessorHeader() {
        top-0 justify-end pr-4 md:space-x-4 lg:space-x-0"
       >
         {/* Notifications */}
-        <div>
+        {/* <div>
           <Button variant="outline" size="icon" className="h-8 w-8 relative">
             <BellRing className="h-4 w-4" />
             <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-xs text-destructive-foreground flex items-center justify-center">
               1
             </span>
           </Button>
-        </div>
+        </div> */}
 
         {/* Avatar with Dropdown */}
         <div className="relative" ref={dropdownRef}>

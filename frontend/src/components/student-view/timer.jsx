@@ -134,22 +134,7 @@ const CodeTimer = () => {
                   placeholder="Enter minutes"
                 />
               </div>
-              
-              <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">Sound Volume</label>
-                    <Button variant="ghost" size="icon" onClick={toggleMute} className="h-8 w-8">
-                      {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  <Slider
-                    value={[volume * 100]}
-                    onValueChange={(value) => setVolume(value[0] / 100)}
-                    max={100}
-                    step={1}
-                    className={isMuted ? "opacity-50" : ""}
-                  />
-                </div>
+         
 
               <Button onClick={handleSetCustomTime}>Set Timer</Button>
             </div>
