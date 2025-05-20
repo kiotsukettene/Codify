@@ -293,7 +293,6 @@ function StudentCalendar() {
             : event
         )
       )
-      toast.success("Event updated successfully!")
 
     } catch (error) {
       console.error("Error updating event:", error.message)
