@@ -252,6 +252,28 @@ export const useActivityStore = create((set) => ({
     }
   },
 
+  fetchSubmissionsByActivity: async (activityId) => {
+    set({ isLoading: true, error: null });
+    try {
+      console.log("Fetching submissions for activity ID:", activityId);
+      const response = await axios.get(`${API_URL}/submissions/${activityId}`);
+      console.log("Submissions fetched:", response.data);
+      set({ submissions: response.data, isLoading: false });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching submissions:", error);
+      set({
+        error: error.response?.data?.message || "Error fetching submissions",
+        isLoading: false,
+      });
+      toast.error(
+        error.response?.data?.message || "Error fetching submissions"
+      );
+      return [];
+    }
+  },
+
+
   unsubmitActivity: async (activityId) => {
     set({ isLoading: true, error: null });
     try {

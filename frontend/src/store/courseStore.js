@@ -15,6 +15,11 @@ export const useCourseStore = create((set) => ({
   uniqueStudentCount: 0, // Initialize uniqueStudentCount
   isLoading: false,
   error: null,
+  
+  getTotalCourse: () => {
+    const { courses } = get();
+    return courses.length;
+  },
 
   fetchCoursesByProfessor: async () => {
     set({ isLoading: true, error: null });

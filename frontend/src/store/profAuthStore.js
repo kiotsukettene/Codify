@@ -11,7 +11,7 @@ const API_URL = isDev
 
 axios.defaults.withCredentials = true;
 
-export const useprofAuthStore = create((set) => ({
+export const useprofAuthStore = create((set, get) => ({
   professor: null,
   isAuthenticated: false,
   professors: [],
@@ -22,6 +22,10 @@ export const useprofAuthStore = create((set) => ({
   message: null,
   clearError: () => set({ error: null }),
 
+  getTotalProf: () => {
+    const { professors } = get();
+    return professors.length;
+  },
   fetchProfessorById: async (professorId) => {
     set({ isLoading: true, error: null });
     try {

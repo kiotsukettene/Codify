@@ -162,7 +162,6 @@ const CreateActivity = () => {
       console.log("Created Activity Response:", createdActivity);
 
       if (createdActivity && createdActivity._id && createdActivity.slug) {
-        toast.success("Activity created successfully! 🎉");
         navigate(
           `/professor/course/${courseSlug}/lesson/${lessonSlug}/activity/${createdActivity.slug}`
         );

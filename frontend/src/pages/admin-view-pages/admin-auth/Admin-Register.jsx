@@ -136,7 +136,7 @@ function AdminRegisterPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full h-screen overflow-hidden flex flex-col items-center py-12">
+      <main className="relative bg-gradient-to-b from-[#4C1D95] via-[#6B21A8] to-[#A855F7] w-full h-screen overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex flex-col items-center py-12">
         <div className="absolute inset-0 z-0">
           <Particles
             className="w-full h-full"
@@ -148,12 +148,13 @@ function AdminRegisterPage() {
         </div>
 
         <div className="flex min-h-svh absolute flex-col items-center justify-center p-6 md:p-10 px-11">
-          <div className="w-full max-w-sm md:max-w-7xl">
+           <div className="w-full max-w-[1200px] mx-auto">
+
             <div className="flex flex-col gap-6 bg-white">
-              <form
-                onSubmit={handleAdminRegister}
-                className="p-6 m-0 md:p-8 grid md:grid-cols-2 gap-4"
-              >
+             <form
+  onSubmit={handleAdminRegister}
+  className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 w-full min-w-[800px] max-w-[1000px]"
+>
                 <div className="flex flex-col gap-6">
                   <img src={Logo} className="w-24 h-auto" alt="" />
                   <div className="flex flex-col space-y-1">
@@ -269,7 +270,7 @@ function AdminRegisterPage() {
                       )}
                     </div>
 
-                    <div className="col-span-2">
+                   <div className="col-span-2 min-h-[100px] transition-all duration-300">
                       <PasswordStrengthIndicator
                         password={password}
                         setPassword={setPassword}
