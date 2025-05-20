@@ -3,19 +3,38 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useStudentStore } from "@/store/studentStore";
+import { useprofAuthStore } from "@/store/profAuthStore";
+import { useEffect } from "react";
+import { useCourseStore } from "@/store/courseStore";
 
 
 const AdminDashboard = () => {
-  // Placeholder data - would be fetched from your backend in a real application
-  const stats = {
-    totalStudents: 1245,
-    totalProfessors: 87,
-    totalUsers: 1332, // Students + Professors
-    totalCourses: 56,
-  }
 
-  // Placeholder for registration date
-  const registrationDate = new Date("2023-09-15").toLocaleDateString("en-US", {
+  const getTotalStudents = useStudentStore((state) => state.getTotalStudents);
+  const fetchStudents = useStudentStore((state) => state.fetchStudents);
+  const getTotalProf = useprofAuthStore((state) => state.getTotalProf);
+  const fetchProfessors = useprofAuthStore((state) => state.fetchProfessors); 
+  const getTotalCourse = useCourseStore((state) => state.getTotalCourse);
+  const fetchCoursesByInstitution = useCourseStore((state) => state.fetchCoursesByInstitution); 
+
+
+  useEffect(() => {
+    fetchStudents();
+    fetchProfessors();
+    fetchCoursesByInstitution()
+  }, [fetchStudents, fetchProfessors, fetchCoursesByInstitution]);
+
+const stats = {
+    totalStudents: getTotalStudents(),
+    totalProfessors: getTotalProf(),
+    totalUsers: getTotalStudents() + getTotalProf(), 
+    totalCourses: getTotalCourse(),
+  };
+  
+
+ 
+  const registrationDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -35,20 +54,7 @@ const AdminDashboard = () => {
               Manage your institution's statistics and accounts
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button size="lg" asChild>
-              <Link href="/enroll">
-                <UserPlus className="mr-2 h-5 w-5" />
-                Enroll Account
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/users">
-                <Users className="mr-2 h-5 w-5" />
-                View All Users
-              </Link>
-            </Button>
-          </div>
+         
         </motion.div>
 
         {/* Main Stats Section */}
@@ -136,13 +142,13 @@ const AdminDashboard = () => {
                 <h3 className="text-base font-medium text-gray-500 dark:text-gray-400 mb-3">Plan Type</h3>
                 <p className="text-base font-semibold">One-Time License (Institutional Use)</p>
               </div>
-              <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg">
+              {/* <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg">
                 <h3 className="text-base font-medium text-gray-500 dark:text-gray-400 mb-3">Invoice</h3>
                 <Button variant="outline" size="lg" className="mt-2">
                   <Download className="mr-2 h-5 w-5" />
                   Download PDF
                 </Button>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </motion.Card>

@@ -9,7 +9,7 @@ import { useId, useMemo, useState } from "react";
 function PasswordStrengthIndicator({password, setPassword}) {
   const id = useId();
   const [isVisible, toggleVisibility] = useToggleVisibility();
-  const [showGuide, setShowGuide] = useState(false); 
+  const setShowGuide = true;
 
   
   
@@ -62,10 +62,8 @@ function PasswordStrengthIndicator({password, setPassword}) {
             placeholder="Password"
             type={isVisible ? "text" : "password"}
             value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setShowGuide(e.target.value.length > 0); // ✅ Show guide only when typing
-            }}
+            onChange={(e) => setPassword(e.target.value)} 
+
             onBlur={() => setShowGuide(false)} 
             aria-invalid={strengthScore < 4}
             aria-describedby={`${id}-description`}
@@ -101,8 +99,12 @@ function PasswordStrengthIndicator({password, setPassword}) {
         ></div>
       </div>
 
-      {showGuide && (
-        <div className="transition-opacity duration-300">
+     
+      <div
+  className="transition-opacity duration-300 opacity-100 pointer-events-auto"
+  style={{ minHeight: "100px", minWidth: "100%", maxWidth: "100%" }}
+>
+
           <p id={`${id}-description`} className="mb-2 text-sm text-left font-medium text-foreground">
             {getStrengthText(strengthScore)}. Must contain:
           </p>
@@ -110,7 +112,8 @@ function PasswordStrengthIndicator({password, setPassword}) {
             {strength.map((req, index) => (
               <li key={index} className="flex items-center gap-2">
                 {req.met ? (
-                  <Check size={16} className="text-emerald-500" aria-hidden="true" />
+                  <Check size={16} className="text-emerald-500 flex-shrink-0" />
+
                 ) : (
                   <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
                 )}
@@ -124,7 +127,7 @@ function PasswordStrengthIndicator({password, setPassword}) {
             ))}
           </ul>
         </div>
-      )}
+    
 
     </div>
   );

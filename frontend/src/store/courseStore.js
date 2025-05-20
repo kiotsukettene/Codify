@@ -10,12 +10,18 @@ const API_URL = isDev
 
 axios.defaults.withCredentials = true;
 
-export const useCourseStore = create((set) => ({
+export const useCourseStore = create((set,get) => ({
   courses: [],
   course: null,
   uniqueStudentCount: 0, // Initialize uniqueStudentCount
   isLoading: false,
   error: null,
+
+    getTotalCourse: () => {
+    const { courses } = get();
+    return courses.length;
+  },
+
 
   fetchCoursesByProfessor: async () => {
     set({ isLoading: true, error: null });

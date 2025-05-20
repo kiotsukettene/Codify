@@ -11,7 +11,7 @@ const API_URL = isDev
 
 axios.defaults.withCredentials = true;
 
-export const useStudentStore = create((set) => ({
+export const useStudentStore = create((set,get) => ({
   student: null,
   isAuthenticated: false,
   students: [],
@@ -22,6 +22,12 @@ export const useStudentStore = create((set) => ({
   clearError: () => set({ error: null }),
 
   // Fetch all students
+
+  getTotalStudents: () => {
+    const { students } = get();
+    return students.length;
+  },
+
   fetchStudents: async () => {
     set({ isLoading: true, error: null });
 

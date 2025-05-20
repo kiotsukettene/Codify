@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import CourseCard from "@/components/admin-view/Course-Card";
 import DeleteDialog from "@/components/Dialog/DeleteDialog";
-import { Plus } from "lucide-react";
+import { Heart, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -189,7 +189,8 @@ const CoursesAdmin = () => {
             </div>
           ))
         ) : (
-          <div className="flex items-center justify-center w-full min-h-[50vh]">
+          <div className="flex items-center justify-center w-full min-h-[50vh] space-x-2 ">
+            <Heart className="text-gray-500"/>
             <p className="text-gray-500 text-base text-center">
               No courses found.
             </p>
