@@ -151,7 +151,7 @@ function StudentCalendar() {
 
       console.log("Creating event with payload:", payload)
 
-      const response = await fetch(`${API_URL}/api/events/schedule`, {
+      const response = await fetch(`${API_URL}/schedule`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
