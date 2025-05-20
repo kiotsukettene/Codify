@@ -40,10 +40,7 @@ function AdminLoginPage() {
     try {
       await login(email, password); // ✅ Call Zustand store login function
       toast.success("Login successful!");
-
-      // ✅ Navigate to admin dashboard
       navigate("/admin/dashboard", { replace: true });
-
     } catch (error) {
       console.log(error?.message || "Failed to login. Try again.");
     }
@@ -64,9 +61,9 @@ function AdminLoginPage() {
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
 
       <motion.div 
-        initial={{ y: -200, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 120, damping: 10 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       className="w-full max-w-md mt-16">
         <form onSubmit={handleAdminLogin}>
           <Card>

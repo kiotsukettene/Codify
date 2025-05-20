@@ -33,12 +33,6 @@ const Header = ({ ProfName }) => {
       </div>
 
       {/* Right Section */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-        <SearchBar className="w-full sm:w-64" />
-        <Button className="px-4 py-2 bg-purple-600 text-white rounded-lg whitespace-nowrap w-full sm:w-auto">
-          Create New Course
-        </Button>
-      </div>
     </motion.div>
   );
 };

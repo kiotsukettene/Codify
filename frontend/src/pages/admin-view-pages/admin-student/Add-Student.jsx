@@ -1,21 +1,26 @@
-
-import { useState} from "react"
+import  { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useNavigate } from "react-router-dom"
 import { useStudentStore } from "@/store/studentStore"
 import { useAuthStore } from "@/store/authStore"
+import { useCourseFieldStore } from "@/store/courseFieldStore"
 import toast from "react-hot-toast"
 import useToggleVisibility from "@/hooks/use-toggle-visibility"
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription} from "@/components/ui/dialog"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 
 
-
 function AddStudent({ onClose }) {
   const { institution } = useAuthStore()
   const { addStudent, isLoading, error } = useStudentStore()
+  const {
+    courseFields,
+    fetchCourseFieldsByType,
+    isLoading: fieldsLoading,
+    error: fieldsError,
+  } = useCourseFieldStore();
   const navigate = useNavigate()
   const [isVisible, toggleVisibility] = useToggleVisibility();
   const [formData, setFormData] = useState({
@@ -39,6 +44,33 @@ function AddStudent({ onClose }) {
     year: "",
     section: "",
   });
+
+  // Fetch course fields for Program, Year, and Section
+  useEffect(() => {
+    const types = ["Program", "Year", "Section"];
+    const fetchAllFields = async () => {
+      for (const type of types) {
+        try {
+          await fetchCourseFieldsByType(type);
+        } catch (error) {
+          console.error(`Error fetching type ${type}:`, error);
+        }
+      }
+    };
+    fetchAllFields();
+  }, [fetchCourseFieldsByType]);
+
+  // Filter course fields by type and status
+  const programs = courseFields.filter(
+    (field) => field.type === "Program" && field.status === "Active"
+  );
+  const years = courseFields.filter(
+    (field) => field.type === "Year" && field.status === "Active"
+  );
+  const sections = courseFields.filter(
+    (field) => field.type === "Section" && field.status === "Active"
+  );
+
 
   const validateForm = () => {
     let valid = true;
@@ -129,7 +161,6 @@ function AddStudent({ onClose }) {
       'section'
     ];
     
-    // Check if all required fields are filled
     const isComplete = requiredFields.every(field => formData[field].trim() !== '');
     
     // Check if there are no validation errors
@@ -148,9 +179,9 @@ function AddStudent({ onClose }) {
       year: "",
       section: "",
       password: "",
+      institutionId: institution?._id || "",
     });
-    onClose()
-
+    onClose();
   };
 
   const handleChange = (e) => {
@@ -164,7 +195,16 @@ function AddStudent({ onClose }) {
     validateField(name, value);
   }
 
-  // Add new function to validate individual fields
+  const handleSelectChange = (name) => (value) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: !value
+        ? `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`
+        : "",
+    }));
+  };
+
   const validateField = (fieldName, value) => {
     const newErrors = { ...errors };
     const nameRegex = /^[a-zA-Z\s-]+$/;
@@ -254,7 +294,6 @@ function AddStudent({ onClose }) {
     
     try {
       await addStudent(formData)
-      toast.success("Student added successfully")
       navigate("/admin/students")
       onClose()
     } catch (error) {
@@ -267,7 +306,7 @@ function AddStudent({ onClose }) {
       onPointerDownOutside={(e) => {
         e.preventDefault();
       }}
-      className="max-w-2xl"
+      className="max-w-2xl "
     >
     <DialogHeader>
       <DialogTitle>Create New Student Account</DialogTitle>
@@ -276,126 +315,223 @@ function AddStudent({ onClose }) {
       </DialogDescription>
     </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit}>
           
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div className="space-y-2">
                   <Label htmlFor="studentId">Student ID</Label>
                   <Input
-                    id="studentId"
-                    name="studentId"
-                    type="text"
-                    value={formData.studentId}
-                onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.studentId ? "border-red-500" : ""}`}
-                placeholder="2022-0001-N"
+                  id="studentId"
+                  name="studentId"
+                  type="text"
+                  value={formData.studentId}
+                  placeholder="2022-0001-N"
+                  onChange={handleChange}
+                  className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.studentId ? "border-red-500" : ""}`}
               />
-                          {errors.studentId && <p className="text-red-500 text-sm">{errors.studentId}</p>}
-            </div>
+                  <div className="h-1">
+                     {errors.studentId && <p className="text-red-500 text-sm">{errors.studentId}</p>}
+                  </div>
+              </div>
 
-                <div className="space-y-4 pt-4">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    value={formData.firstName}
-                onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.firstName ? "border-red-500" : ""}`}
-                placeholder="John"
-              />
-              {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+              <div className="space-y-2 pt-4">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  value={formData.firstName}
+                  placeholder="e.g. Juan"
+                  onChange={handleChange}
+                  className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.firstName ? "border-red-500" : ""}`}
+                  />
+                 <div className="h-1">
+                    {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+                </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 pt-4">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input 
                   id="lastName"
                   name="lastName" 
                   type="text"
                   value={formData.lastName} 
+                  placeholder="e.g. Dela Cruz"
                 onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.lastName ? "border-red-500" : ""}`}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.lastName ? "border-red-500" : ""}`}
               
               />
-              {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+              <div className="h-1">
+                  {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+              </div>
                 </div>
 
                 
-                <div className="space-y-2">
+                <div className="space-y-2 pt-4">
                   <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     value={formData.email}
+                    placeholder="...@gmail.com"
                 onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.email ? "border-red-500" : ""}`}
+                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-xs ${errors.email ? "border-red-500" : ""}`}
               />
+                             <div className="h-1">
               {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+              </div>
                 </div>
               </div>
 
-              {/* Right Column */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="course">Course / Program</Label>
-                  <Input
-                    id="course"
-                    name="course"
-                    type="text"
-                    value={formData.course}
-                onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.course ? "border-red-500" : ""}`}
-              />
-                          <p style={{ fontSize: "11px", color: "#6b7280" }}>e.g. Bachelor of Science in Computer Science (BSCS)</p>
+              
 
-              {errors.course && <p className="text-red-500 text-sm">{errors.course}</p>}
-                </div>
+             {/* Right Column */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="course">Program</Label>
+              <Select
+                name="course"
+                value={formData.course}
+                onValueChange={handleSelectChange("course")}
+                disabled={fieldsLoading || fieldsError}
+              >
+                <SelectTrigger
+                  className={`bg-[#FDFDFD] ${
+                    errors.course ? "border-red-500" : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Choose a program" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fieldsLoading && (
+                    <SelectItem disabled value="loading">
+                      Loading...
+                    </SelectItem>
+                  )}
+                  {!fieldsLoading && programs.length === 0 && (
+                    <SelectItem disabled value="no-data">
+                      No programs available
+                    </SelectItem>
+                  )}
+                  {programs.map((field) => (
+                    <SelectItem key={field._id} value={field.name}>
+                      {field.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+             
+              {errors.course && (
+                <p className="text-red-500 text-sm">{errors.course}</p>
+              )}
+              {fieldsError && (
+                <p className="text-red-500 text-sm">
+                  Failed to load programs: {fieldsError}
+                </p>
+              )}
+            </div>
 
 
-
-
-                <div className="space-y-2">
+                <div className="space-y-2 pt-5">
                   <Label htmlFor="year">Year</Label>
-                  
-<Select
-  value={formData.year}
-  onValueChange={(value) => setFormData((prevData) => ({ ...prevData, year: value }))}
->
-  <SelectTrigger className={`bg-[#FDFDFD] ${errors.year ? "border-red-500" : ""}`}>
-    <SelectValue placeholder="Select Year Level" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="1">1</SelectItem>
-    <SelectItem value="2">2</SelectItem>
-    <SelectItem value="3">3</SelectItem>
-    <SelectItem value="4">4</SelectItem>
-  </SelectContent>
-</Select>
+                  <Select
+                name="year"
+                value={formData.year}
+                onValueChange={handleSelectChange("year")}
+                disabled={fieldsLoading || fieldsError}
+              >
+                <SelectTrigger
+                  className={`bg-[#FDFDFD] ${
+                    errors.year ? "border-red-500" : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fieldsLoading && (
+                    <SelectItem disabled value="loading">
+                      Loading...
+                    </SelectItem>
+                  )}
+                  {!fieldsLoading && years.length === 0 && (
+                    <SelectItem disabled value="no-data">
+                      No years available
+                    </SelectItem>
+                  )}
+                  {years.map((field) => (
+                    <SelectItem key={field._id} value={field.name}>
+                      {field.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-              {errors.year && <p className="text-red-500 text-sm">{errors.year}</p>}
+                <div className="h-1">
+                {errors.year && (
+                <p className="text-red-500 text-sm">{errors.year}</p>
+              )}
+              {fieldsError && (
+                <p className="text-red-500 text-sm">
+                  Failed to load years: {fieldsError}
+                </p>
+              )}
+                  </div>
                 </div>
 
-
-
-
-                <div className="space-y-2">
+                <div className="space-y-2 pt-2">
                   <Label htmlFor="section">Section</Label>
-                  <Input
-                    id="section"
-                    name="section"
-                    type="text"
-                    value={formData.section}
-                onChange={handleChange}
-                className={`bg-[#FDFDFD] placeholder:text-gray-400 placeholder:text-sm ${errors.section ? "border-red-500" : ""}`}
-              />
-              {errors.section && <p className="text-red-500 text-sm">{errors.section}</p>}
+                  <Select
+                name="section"
+                value={formData.section}
+                onValueChange={handleSelectChange("section")}
+                disabled={fieldsLoading || fieldsError}
+              >
+                <SelectTrigger
+                  className={`bg-[#FDFDFD] ${
+                    errors.section ? "border-red-500" : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Select section" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fieldsLoading && (
+                    <SelectItem disabled value="loading">
+                      Loading...
+                    </SelectItem>
+                  )}
+                  {!fieldsLoading && sections.length === 0 && (
+                    <SelectItem disabled value="no-data">
+                      No sections available
+                    </SelectItem>
+                  )}
+                  {sections.map((field) => (
+                    <SelectItem key={field._id} value={field.name}>
+                      {field.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+                 <div className="h-1">
+              {errors.section && (
+                <p className="text-red-500 text-sm">{errors.section}</p>
+              )}
+              {fieldsError && (
+                <p className="text-red-500 text-sm">
+                  Failed to load sections: {fieldsError}
+                </p>
+              )}
+              </div>
                 </div>
+
+
+
                   {/* Button Group */}
-            <div className="flex justify-end space-x-4 pt-6">
+            <div className="flex justify-end space-x-4 pt-12">
               <Button type="button" variant="secondary" onClick={handleCancel} className="min-w-[100px] ">
                 Cancel
               </Button>
@@ -410,9 +546,12 @@ function AddStudent({ onClose }) {
               </div>
             </div>
 
-          
           </form>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <div className="h-1">
+          </div>
+
+
+
         </DialogContent>
   )
 }

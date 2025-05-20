@@ -1,4 +1,3 @@
-
 import { create } from "zustand";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -114,13 +113,10 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       // Check for duplicate course
-      const { className, program, year, section, professorId, institutionId } =
+      const {  section, professorId, institutionId } =
         courseData;
       const responseCheck = await axios.get(`${API_URL}/courses`, {
         params: {
-          className,
-          program,
-          year,
           section,
           professorId,
           institutionId,
@@ -153,6 +149,7 @@ export const useCourseStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.get(`${API_URL}/courses`);
+      console.log("Fetched courses:", response.data); // Log the response
       set({ courses: response.data, isLoading: false });
     } catch (error) {
       set({

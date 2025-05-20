@@ -7,52 +7,56 @@ import { Student } from "../models/student.model.js"
 
 
 export const joinCourse = async (req, res) => {
-    try {
-        const { courseCode } = req.body
-        const studentId = req.studentId 
+  try {
+    const { courseCode } = req.body;
+    const studentId = req.studentId;
+    console.log("Student ID:", studentId, "Course Code:", courseCode);
 
-        if (!courseCode) {
-            return res.status(400).json({
-                message: "Course code is required"
-            })
-        }
-
-        // Find the course by courseCode
-        const course = await Course.findOne({ courseCode });
-
-        if(!course) return res.status(404).json({
-            message: "Course not found"
-        })
-
-        // Check if student is already enrolled
-        if (course.studentsEnrolled.includes(studentId)) {
-            return res.status(400).json({
-                message: "You are already enrolled in this course"
-            })
-        }
-
-        // Add student to the course
-
-        course.studentsEnrolled.push(studentId)
-        await course.save()
-
-        res.status(200).json({
-            message: "You have successfully joined the course!",
-            course: {
-                _id: course._id,
-                className: course.className,
-                courseCode: course.courseCode,
-            }
-        })
-    } catch (error) {
-        console.log("Error joining course: ", error);
-        res.status(400).json({
-            message: "Error joining course",
-            error: error.message
-        })
+    if (!courseCode) {
+      return res.status(400).json({ message: "Course code is required" });
     }
-}
+    if (!studentId) {
+      return res.status(401).json({ message: "Student authentication required" });
+    }
 
+    const course = await Course.findOne({ courseCode });
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    if (course.studentsEnrolled.includes(studentId)) {
+      return res.status(400).json({
+        message: "You are already enrolled in this course",
+      });
+    }
+
+    console.log("Course before save:", course);
+    console.log("studentsEnrolled before:", course.studentsEnrolled);
+    course.studentsEnrolled.push(studentId);
+    console.log("studentsEnrolled after:", course.studentsEnrolled);
+
+    try {
+      await course.save();
+    } catch (saveError) {
+      console.error("Error saving course:", saveError);
+      return res.status(500).json({ message: "Failed to update course enrollment", error: saveError.message });
+    }
+
+    res.status(200).json({
+      message: "You have successfully joined the course!",
+      course: {
+        _id: course._id,
+        className: course.className,
+        courseCode: course.courseCode,
+      },
+    });
+  } catch (error) {
+    console.log("Error joining course:", error);
+    res.status(400).json({
+      message: "Error joining course",
+      error: error.message,
+    });
+  }
+};
 // Fetch all courses the student is enrolled in
 
 export const getEnrolledCourses = async (req, res) => {

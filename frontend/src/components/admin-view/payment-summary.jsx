@@ -130,20 +130,12 @@ function PaymentSummary() {
                     {institution.phoneNumber}
                   </p>
                 </div>
-                <div className="flex justify-between">
-                  <p className="text-sm font-medium text-gray-500">
-                    Payment Method:
-                  </p>
-                  <p className="font-semibold text-gray-700">
-                    {institution.paymentMethod}
-                  </p>
-                </div>
               </div>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex justify-between">
               <p className="text-xl font-semibold text-gray-700">Total:</p>
               <p className="text-2xl font-bold text-primary text-blue-800">
-                ₱ {institution.amount.toLocaleString()}
+                ₱ 50,000
               </p>
             </div>
             <div className="flex justify-between gap-4">

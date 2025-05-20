@@ -30,7 +30,7 @@ export const registerStudent = async (req, res) => {
       !firstName ||
       !lastName ||
       !email ||
-      !course||
+      !course ||
       !year ||
       !section ||
       !institutionId
@@ -47,13 +47,13 @@ export const registerStudent = async (req, res) => {
     // Check if student already exists by email and institution
     const existingStudentByEmail = await Student.findOne({ email, institution: institutionId });
     if (existingStudentByEmail) {
-      return res.status(400).json({ message: "Student ID Already Exists" });
+      return res.status(400).json({ message: "Email Already Exists" });
     }
 
     // Check if studentId already exists (optionally scoped to institution)
     const existingStudentById = await Student.findOne({ studentId });
     if (existingStudentById) {
-      return res.status(400).json({ message: "Student Email Already Exists" });
+      return res.status(400).json({ message: "Student ID Already Exists" });
     }
 
     // Set lastName as the default password

@@ -61,7 +61,13 @@ const JoinCourseModal = ({ isOpen, onClose }) => {
             ) : null}
           </div>
 
-          {error && <p className="text-red-600 text-center font-medium">{error}</p>}
+          {error && (
+  <p className="text-red-600 text-center font-medium">
+    {error === "Course not found"
+      ? "Invalid course code. Please check and try again."
+      : error}
+  </p>
+)}
           {joinSuccess && (
             <p className="text-green-600 text-center font-medium">You've successfully joined the course!</p>
           )}

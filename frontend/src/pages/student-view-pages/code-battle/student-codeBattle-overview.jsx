@@ -67,10 +67,6 @@ const StudentCodeBattleOverview = () => {
  
 </Card>
 
-
-
-
-
       <div>
         <StudentStatCards/>
       </div>

@@ -4,13 +4,6 @@ import { Student } from "../models/student.model.js";
 export const addEvent = async (req, res) => {
   try {
     const { title, date, startTime, endTime, priority } = req.body;
-
-    console.log("Received addEvent request:", req.body);
-    console.log("Request cookies in addEvent:", req.cookies);
-    console.log("Request headers in addEvent:", req.headers);
-
-    // Use the student ID from the middleware
-    console.log("Student ID from middleware in addEvent:", req.studentId);
     if (!req.studentId) {
       console.log("Unauthorized: Student not authenticated, returning 401");
       return res.status(401).json({
@@ -50,8 +43,6 @@ export const addEvent = async (req, res) => {
 
     const startDateTime = new Date(`${date}T${startTime}`);
     const endDateTime = endTime ? new Date(`${date}T${endTime}`) : null;
-
-    console.log("Parsed dates:", { startDateTime, endDateTime });
 
     // Validate that endDateTime is after startDateTime (if endDateTime exists)
     if (endDateTime && endDateTime <= startDateTime) {
@@ -159,8 +150,6 @@ export const getEvents = async (req, res) => {
       allDay: event.allDay,
       priority: event.priority,
     }));
-
-    console.log("Returning events:", formattedEvents);
 
     res.status(200).json({
       success: true,

@@ -76,16 +76,12 @@ function StudentList() {
                     <AddStudent onClose={() => setIsModalOpen(false)} />
                   </DialogContent>
                 </Dialog>
-                <Button variant="outline" className="text-neutral-900">
-                  <SlidersHorizontal /> Filter
-                </Button>
               </CardDescription>
             </CardHeader>
             {isLoading ? (
               <p>Loading students...</p>
             ) : (
               <>
-                {error && <p className="text-red-500 p-4">{error}</p>}
                 <CardContent>
                   <Table className="w-full">
                     <TableHeader>

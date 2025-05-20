@@ -5,7 +5,6 @@ const studentSchema = new mongoose.Schema(
     studentId: {
       type: String,
       required: true,
-      unique: true,
     },
     firstName: {
       type: String,
@@ -101,7 +100,8 @@ const studentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-studentSchema.index({ email: 1, institution: 1 }, { unique: true });
+
+studentSchema.index({ email: 1, institution: 1, studentId: 1 }, { unique: true });
 
 studentSchema.index({ "events.start": 1, "events.end": 1 });
 export const Student = mongoose.model("Student", studentSchema);

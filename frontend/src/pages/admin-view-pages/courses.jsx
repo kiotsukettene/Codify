@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import CourseCard from "@/components/admin-view/Course-Card";
 import DeleteDialog from "@/components/Dialog/DeleteDialog";
@@ -95,7 +94,7 @@ const CoursesAdmin = () => {
     setIsModalOpen(false);
     setIsEditMode(false); // Reset edit mode
     setEditCourseData(null); // Clear edit data
-    fetchCoursesByProfessor(); // Refresh the course list
+    fetchCoursesByInstitution(); // Refresh the course list
   };
 
   const languageColors = {

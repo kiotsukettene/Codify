@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
+import SearchForm from "../student-view/SearchForm";
 
 function AdminHeader() {
   const { logout } = useAuthStore()
@@ -37,16 +38,9 @@ function AdminHeader() {
   }, []);
 
   return (
-    <div className="flex justify-between items-center w-full">
-      <div className="flex item">
-      </div>
-
-      <div
-        className="flex gap-3 items-center md:flex md:items-center z-[-1] md:z-auto md:static 
-      absolute top-0 right-0 p-4 md:space-x-4 lg:space-x-0"
-      >
-       
-
+    <div className="flex justify-end items-center w-full mr-4 ">
+    
+      <div>
         {/* Avatar with Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button onClick={toggleDropdown} className="focus:outline-none">

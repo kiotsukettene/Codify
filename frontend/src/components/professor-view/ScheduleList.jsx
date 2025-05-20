@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { Clock2, ChevronRight } from "lucide-react";
+import { Clock2, ChevronRight, CalendarX } from "lucide-react";
 import { motion } from "framer-motion";
 
 const ScheduleList = ({ scheduleData, onClick }) => {
@@ -11,34 +11,39 @@ const ScheduleList = ({ scheduleData, onClick }) => {
           Today's Schedule
         </h3>
       </div>
-      <div className="space-y-3">
-        {scheduleData.map((schedule, index) => (
-          <motion.button
-            key={schedule.id}
-            className="w-full flex items-start justify-between text-left p-3 hover:bg-gray-50 rounded-lg border-l-8 border-purple-800 bg-purple-100 transition-all sm:p-4"
-            onClick={() => onClick(schedule.id)}
-            initial={{ opacity: 0, x: -10 }} // Animation on load
-            animate={{ opacity: 1, x: 0 }} // Final position and opacity
-            transition={{ delay: 0.2 + index * 0.1 }} // Stagger the animations
-            whileHover={{ backgroundColor: "#f9f5ff" }} // Hover effect
-          >
-            <div className="flex-1 pr-4">
-              <p className="font-medium text-xs sm:text-sm truncate">
-                {schedule.subject}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {schedule.class} | {schedule.time}
-              </p>
-            </div>
-            <ChevronRight className="text-purple-800 w-3 h-3 sm:w-4 sm:h-4 self-center" />
-          </motion.button>
-        ))}
-      </div>
+      {scheduleData.length === 0 ? (
+         <div className="flex flex-col items-center justify-center gap-2 py-6 text-gray-500 min-h-[200px]">
+    <CalendarX className="w-10 h-10" />
+    <p className="text-sm">No Schedule Today</p>
+  </div>
+      ) : (
+        <div className="space-y-3">
+          {scheduleData.map((schedule, index) => (
+            <motion.button
+              key={schedule.id}
+              className="w-full flex items-start justify-between text-left p-3 hover:bg-gray-50 rounded-lg border-l-8 border-purple-800 bg-purple-100 transition-all sm:p-4"
+              onClick={() => onClick(schedule.id)}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 + index * 0.1 }}
+              whileHover={{ backgroundColor: "#f9f5ff" }}
+            >
+              <div className="flex-1 pr-4">
+                <p className="font-medium text-xs sm:text-sm truncate">
+                  {schedule.subject}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {schedule.class} | {schedule.time}
+                </p>
+              </div>
+              <ChevronRight className="text-purple-800 w-3 h-3 sm:w-4 sm:h-4 self-center" />
+            </motion.button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
-
-export default ScheduleList;
 
 ScheduleList.propTypes = {
   scheduleData: PropTypes.arrayOf(
@@ -49,4 +54,7 @@ ScheduleList.propTypes = {
       time: PropTypes.string.isRequired,
     })
   ).isRequired,
+  onClick: PropTypes.func.isRequired,
 };
+
+export default ScheduleList;

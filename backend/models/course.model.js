@@ -4,6 +4,11 @@ import generateCourseSlug from "../utils/sluggifyCourse.js";
 
 const CourseSchema = new mongoose.Schema(
   {
+        institutionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Institution",
+      required: true,
+    },
     professorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Professor",
