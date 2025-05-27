@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import useToggleVisibility from '@/hooks/use-toggle-visibility'
-import {  Eye, EyeOff, Loader } from 'lucide-react'
+import {  Eye, EyeOff, Loader, Loader2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useStudentStore } from '@/store/studentStore'
@@ -110,23 +110,32 @@ const handleGoogleSignIn = async () => {
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
 
-           <div className="pt-2 space-y-3 w-full">
-           <motion.button onClick={handleLogin} 
-           className="w-full h-10  justify-center items-center text-center  sm:h-12 text-sm sm:text-[15px] bg-[#7C3AED] hover:bg-[#6D28D9] rounded-md text-white" 
-           disabled={isLoading} 
-           type="submit" >
-            {isLoading ? <Loader className=" text-white justify-center items-center text-center align-center animate-spin" /> : "Login"}
-            </motion.button>
-    
-              <Button
-                onClick={handleGoogleSignIn} 
-                variant="outline"
-                className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white">
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-                Sign In with Google
-              </Button>
-            </div>
+      <div className="pt-2 space-y-3 w-full">
+  <Button
+    onClick={handleLogin}
+    className="w-full h-10 flex justify-center items-center text-center sm:h-12 text-sm sm:text-[15px] bg-[#7C3AED] hover:bg-[#6D28D9] rounded-md text-white"
+    disabled={isLoading}
+    type="submit"
+  >
+    {isLoading ? (  
+      <div className="flex justify-center items-center w-full h-full">
+        <Loader className="text-white animate-spin" />
+      </div>
+    ) : (
+      "Login"
+    )}
+  </Button>
 
+  <Button
+    onClick={handleGoogleSignIn}
+    variant="outline"
+    className="w-full h-10 sm:h-12 text-sm sm:text-[15px] bg-[#0F172A] hover:bg-[#1E293B] text-white border-0 hover:text-white"
+    disabled={isLoading} // Added disabled prop
+  >
+    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
+    Sign In with Google
+  </Button>
+</div>
           </CardContent>
         </Card>
         </motion.form>
