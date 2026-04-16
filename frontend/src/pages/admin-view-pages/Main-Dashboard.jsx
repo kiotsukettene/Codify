@@ -29,7 +29,6 @@ const stats = {
     totalStudents: getTotalStudents(),
     totalProfessors: getTotalProf(),
     totalUsers: getTotalStudents() + getTotalProf(), 
-    totalCourses: getTotalCourse(),
   };
   
 
@@ -105,7 +104,7 @@ const stats = {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-base font-medium text-gray-500 dark:text-gray-400">Total Courses</p>
-                  <h3 className="text-4xl font-bold mt-3">{stats.totalCourses.toLocaleString()}</h3>
+                  <h3 className="text-4xl font-bold mt-3">21</h3>
                 </div>
                 <div className="bg-amber-100 dark:bg-amber-900 p-4 rounded-full">
                   <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-300" />
